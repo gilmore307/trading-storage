@@ -22,9 +22,9 @@ artifact contract -> storage layout -> write/read policy -> retention/archive po
 
 ## Data Task Storage Role
 
-For historical data acquisition, `trading-storage` should eventually provide the SQL table/partition contract named by `trading-data` task key files and the durable location/schema for data task completion receipts.
+For historical data acquisition, development outputs first live under `trading-data/data/storage/` and are not owned as durable storage. `trading-storage` should eventually provide the SQL table/partition contract named by `trading-data` task key files and the durable location/schema for data task completion receipts.
 
-`trading-storage` owns persistence shape, retention, backup/restore, and reference rules. It does not decide provider semantics, normalize rows, or manage task lifecycle.
+`trading-storage` owns future durable persistence shape, retention, backup/restore, and reference rules. It does not decide provider semantics, normalize rows, manage task lifecycle, or own disposable development files under `trading-data/data/storage/`.
 
 ## Collaboration Boundary
 
@@ -37,6 +37,6 @@ Upstream inputs and downstream outputs should be described by artifact reference
 - Exact first implementation slice.
 - Exact request/task-key/completion-receipt shape consumed or produced by this repository.
 - Exact artifact, manifest, and ready-signal schema interactions.
-- Exact shared storage paths, SQL table/partition contracts, and completion receipt references.
+- Exact development-to-durable promotion rules, shared storage paths, SQL table/partition contracts, and completion receipt references.
 - Exact test harness and fixture policy.
 - Exact package/source layout once implementation begins.

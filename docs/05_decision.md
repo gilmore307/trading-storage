@@ -80,7 +80,7 @@ Historical data tasks will be initiated by `trading-manager` and executed by `tr
 
 ### Decision
 
-`trading-storage` will own the SQL table/partition contract for historical data task outputs and the durable schema/location for data task completion receipts once implementation begins.
+`trading-data` development outputs first live under local `trading-data/data/storage/`. `trading-storage` will own the SQL table/partition contract for historical data task outputs and the durable schema/location for data task completion receipts once durable storage implementation begins.
 
 ### Rationale
 
@@ -88,6 +88,30 @@ Persistence, retention, backup, restore, and reference stability belong to stora
 
 ### Consequences
 
+- Development files under `trading-data/data/storage/` are disposable and outside durable storage responsibility.
 - Exact SQL destination and receipt schemas remain pending contract work.
 - Storage does not perform provider calls or task lifecycle orchestration.
 - Completion receipt references become lifecycle evidence for `trading-manager`.
+
+
+## D005 - Development data files are outside durable storage responsibility
+
+Date: 2026-04-26
+
+### Context
+
+The user clarified that development-stage `trading-data` outputs should be local files rather than SQL rows.
+
+### Decision
+
+Treat `trading-data/data/storage/` as disposable development staging owned by `trading-data`, not durable storage. `trading-storage` will define promotion, SQL destination, receipt storage, retention, and backup/restore contracts later.
+
+### Rationale
+
+This prevents early schema experiments from polluting databases while keeping durable storage boundaries clean.
+
+### Consequences
+
+- Storage implementation should not assume development files are durable.
+- SQL contracts remain future work.
+- A promotion rule is required before development outputs become durable system data.
