@@ -12,6 +12,7 @@
 - Define promotion criteria from `trading-data/data/storage/` development files into durable storage contracts.
 - Define SQL table/partition contract for `trading-data` historical task outputs after development mode.
 - Define storage-resident data task completion receipt schema and reference format.
+- Align durable receipt and save contract work with `trading-main/templates/data_tasks/completion_receipt.json` and `save_spec.md`.
 - Identify any global fields, helper surfaces, templates, or type values that must be registered in `trading-main`.
 
 ## Open Gaps
@@ -24,6 +25,7 @@
 
 ## Recently Accepted
 
+- Linked storage receipt/save planning to `trading-main/templates/data_tasks/` drafts.
 - Recorded that `trading-data` development outputs stay under local `data/storage/`; storage responsibility begins with durable SQL destinations and durable task completion receipts once contracts are accepted.
 - Created initial `trading-storage` docs spine and repository boundary.
 - Added initial `.gitignore` for local environments, generated outputs, logs, and secrets.
