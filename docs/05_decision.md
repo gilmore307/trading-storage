@@ -68,3 +68,26 @@ A narrow component boundary prevents hidden coupling and keeps cross-repository 
 - Implementation work must stay inside the accepted component role.
 - Shared names and contracts must route through `trading-main`.
 - Generated outputs and secrets must stay out of Git.
+
+
+## D004 - Storage owns data task SQL destinations and completion receipts
+
+Date: 2026-04-26
+
+### Context
+
+Historical data tasks will be initiated by `trading-manager` and executed by `trading-data`, but durable outputs and completion evidence need storage-owned contracts.
+
+### Decision
+
+`trading-storage` will own the SQL table/partition contract for historical data task outputs and the durable schema/location for data task completion receipts once implementation begins.
+
+### Rationale
+
+Persistence, retention, backup, restore, and reference stability belong to storage; provider semantics and row normalization belong to data.
+
+### Consequences
+
+- Exact SQL destination and receipt schemas remain pending contract work.
+- Storage does not perform provider calls or task lifecycle orchestration.
+- Completion receipt references become lifecycle evidence for `trading-manager`.
