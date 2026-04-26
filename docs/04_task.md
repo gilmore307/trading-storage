@@ -25,6 +25,7 @@
 
 ## Recently Accepted
 
+- Clarified that completion receipt templates should stay minimal until durable storage consumers require more fields.
 - Linked storage receipt/save planning to `trading-main/templates/data_tasks/` drafts.
 - Recorded that `trading-data` development outputs stay under local `data/storage/`; storage responsibility begins with durable SQL destinations and durable task completion receipts once contracts are accepted.
 - Created initial `trading-storage` docs spine and repository boundary.
