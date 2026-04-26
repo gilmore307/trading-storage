@@ -115,3 +115,26 @@ This prevents early schema experiments from polluting databases while keeping du
 - Storage implementation should not assume development files are durable.
 - SQL contracts remain future work.
 - A promotion rule is required before development outputs become durable system data.
+
+
+## D006 - Completion receipts contain per-run evidence
+
+Date: 2026-04-26
+
+### Context
+
+The user clarified that one data task may have multiple scheduled or periodic runs.
+
+### Decision
+
+Treat data task completion receipts as task-level files that contain `runs[]` entries. Each run entry records per-run status, timestamps, outputs, row counts, and error.
+
+### Rationale
+
+This preserves one stable task definition while allowing durable storage contracts later to track every invocation.
+
+### Consequences
+
+- Receipt storage design should support appending/updating run entries.
+- Run ids and task ids are distinct.
+- Durable receipt schemas remain future contract work.

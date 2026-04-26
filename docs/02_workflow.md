@@ -22,7 +22,7 @@ artifact contract -> storage layout -> write/read policy -> retention/archive po
 
 ## Data Task Storage Role
 
-For historical data acquisition, development outputs first live under `trading-data/data/storage/` and are not owned as durable storage. Minimal draft receipt/output shapes are in `trading-main/templates/data_tasks/completion_receipt.json` and `templates/data_tasks/save_spec.md`. Receipt fields should be added only when storage, manager, or data actually consumes them. `trading-storage` should eventually provide the SQL table/partition contract named by `trading-data` task key files and the durable location/schema for data task completion receipts.
+For historical data acquisition, development outputs first live under `trading-data/data/storage/` and are not owned as durable storage. Minimal draft receipt/output shapes are in `trading-main/templates/data_tasks/completion_receipt.json` and `templates/data_tasks/save_spec.md`. Completion receipts are task-level files with `runs[]` entries for per-run evidence. Receipt fields should be added only when storage, manager, or data actually consumes them. `trading-storage` should eventually provide the SQL table/partition contract named by `trading-data` task key files and the durable location/schema for data task completion receipts.
 
 `trading-storage` owns future durable persistence shape, retention, backup/restore, and reference rules. It does not decide provider semantics, normalize rows, manage task lifecycle, or own disposable development files under `trading-data/data/storage/`.
 
