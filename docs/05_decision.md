@@ -138,3 +138,26 @@ This preserves one stable task definition while allowing durable storage contrac
 - Receipt storage design should support appending/updating run entries.
 - Run ids and task ids are distinct.
 - Durable receipt schemas remain future contract work.
+
+## D007 - Nested final artifacts use SQL JSONB as the durable canonical body
+
+Date: 2026-04-27
+
+### Context
+
+Some `trading-data` final outputs are naturally nested point-in-time artifacts rather than flat row series. `option_chain_snapshot` is the first concrete example: one logical artifact contains many option contracts and nested quote, IV, Greeks, derived, and underlying context.
+
+### Decision
+
+For nested final artifacts such as `option_chain_snapshot`, the durable SQL contract should store the complete normalized artifact in a PostgreSQL `jsonb` column inside the SQL table row. Development-stage files may remain local JSON under `trading-data/data/storage/` until durable storage contracts are implemented.
+
+### Rationale
+
+SQL JSONB keeps the full final artifact in transactional database storage, avoiding external file-path indirection while preserving the nested structure needed by downstream model inputs. It also leaves room for later SQL projections without making the first durable contract over-fragmented.
+
+### Consequences
+
+- The SQL row, not an external JSON file path, owns the canonical durable nested artifact body.
+- Projection tables, indexes, or materialized views may be added later for query speed, but they should be derived from the canonical JSONB body unless a later decision changes ownership.
+- Durable writes for one nested artifact should be transactional: failed writes must not leave partial final artifacts.
+- `trading-storage` still owns the exact table, partition, retention, backup, restore, and receipt contract before production use.
