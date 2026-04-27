@@ -80,7 +80,7 @@ Historical data tasks will be initiated by `trading-manager` and executed by `tr
 
 ### Decision
 
-`trading-data` development outputs first live under local `trading-data/data/storage/`. `trading-storage` will own the SQL table/partition contract for historical data task outputs and the durable schema/location for data task completion receipts once durable storage implementation begins.
+`trading-data` development outputs first live under local `trading-data/storage/`. `trading-storage` will own the SQL table/partition contract for historical data task outputs and the durable schema/location for data task completion receipts once durable storage implementation begins.
 
 ### Rationale
 
@@ -88,7 +88,7 @@ Persistence, retention, backup, restore, and reference stability belong to stora
 
 ### Consequences
 
-- Development files under `trading-data/data/storage/` are disposable and outside durable storage responsibility.
+- Development files under `trading-data/storage/` are disposable and outside durable storage responsibility.
 - Exact SQL destination and receipt schemas remain pending contract work.
 - Storage does not perform provider calls or task lifecycle orchestration.
 - Completion receipt references become lifecycle evidence for `trading-manager`.
@@ -104,7 +104,7 @@ The user clarified that development-stage `trading-data` outputs should be local
 
 ### Decision
 
-Treat `trading-data/data/storage/` as disposable development staging owned by `trading-data`, not durable storage. `trading-storage` will define promotion, SQL destination, receipt storage, retention, and backup/restore contracts later.
+Treat `trading-data/storage/` as disposable development staging owned by `trading-data`, not durable storage. `trading-storage` will define promotion, SQL destination, receipt storage, retention, and backup/restore contracts later.
 
 ### Rationale
 
@@ -149,7 +149,7 @@ Some `trading-data` final outputs are naturally nested point-in-time artifacts r
 
 ### Decision
 
-For nested final artifacts such as `option_chain_snapshot`, the durable SQL contract should store the complete normalized artifact in a PostgreSQL `jsonb` column inside the SQL table row. Development-stage files may remain local JSON under `trading-data/data/storage/` until durable storage contracts are implemented.
+For nested final artifacts such as `option_chain_snapshot`, the durable SQL contract should store the complete normalized artifact in a PostgreSQL `jsonb` column inside the SQL table row. Development-stage files may remain local JSON under `trading-data/storage/` until durable storage contracts are implemented.
 
 ### Rationale
 

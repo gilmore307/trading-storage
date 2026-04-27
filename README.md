@@ -2,7 +2,7 @@
 
 `trading-storage` is the shared persistence contract repository for the trading system.
 
-It defines durable artifact layout, SQL output destination contracts, completion receipt storage, references, retention, archive, restore, backup, and rehydrate expectations used by data, strategy, model, execution, dashboard, and manager workflows. Development-stage `trading-data` outputs intentionally stay in local `trading-data/data/storage/` until these durable contracts are accepted.
+It defines durable artifact layout, SQL output destination contracts, completion receipt storage, references, retention, archive, restore, backup, and rehydrate expectations used by data, strategy, model, execution, dashboard, and manager workflows. Development-stage `trading-data` outputs intentionally stay in local `trading-data/storage/` until these durable contracts are accepted.
 
 It does not own component responsibilities outside that boundary, global contracts, shared registry authority, generated runtime artifacts committed to Git, or secrets.
 
