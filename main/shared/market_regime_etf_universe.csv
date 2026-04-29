@@ -31,6 +31,7 @@ CPER,market_state_etf,commodities,1m,United States Copper Index Fund,USCF Invest
 DBA,market_state_etf,commodities,1m,Invesco DB Agriculture Fund,Invesco,Agriculture commodity fund used to observe agriculture price pressure.
 DBC,market_state_etf,commodities,1m,Invesco DB Commodity Index Tracking Fund,Invesco,Broad commodity basket ETF used to observe aggregate commodity pressure.
 DIA,market_state_etf,us_equity_core,1m,SPDR Dow Jones Industrial Average ETF Trust,State Street / SPDR,Dow Jones Industrial Average ETF used to observe old-economy/value blue-chip beta.
+ETHA,market_state_etf,crypto_beta,30m,iShares Ethereum Trust ETF,BlackRock / iShares,Spot Ethereum ETF used to observe Ethereum beta.
 FSOL,market_state_etf,crypto_beta,30m,Fidelity Solana Fund,Fidelity,Solana fund used to observe Solana crypto beta.
 GLD,market_state_etf,commodities,1m,SPDR Gold Shares,World Gold Trust Services / SPDR,Gold ETF used to observe gold safe-haven and real-rate sensitivity.
 HYG,market_state_etf,credit,30m,iShares iBoxx $ High Yield Corporate Bond ETF,BlackRock / iShares,High-yield corporate bond ETF used to observe credit risk appetite.
