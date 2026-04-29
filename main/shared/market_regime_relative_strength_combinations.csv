@@ -1,0 +1,71 @@
+combination_id,combination_group,numerator_symbol,denominator_symbol,numerator_bar_grain,denominator_bar_grain,feature_cadence,feature_family,interpretation,v1_status,notes
+qqq_spy,primary_30m,QQQ,SPY,1m,1m,30m,relative_strength,mega-cap/growth leadership vs broad market,accepted,
+iwm_spy,primary_30m,IWM,SPY,1m,1m,30m,relative_strength,small-cap risk appetite vs broad market,accepted,
+rsp_spy,primary_30m,RSP,SPY,1m,1m,30m,relative_strength,equal-weight breadth/concentration vs cap-weight market,accepted,
+dia_spy,primary_30m,DIA,SPY,1m,1m,30m,relative_strength,old-economy/value tilt vs broad market,accepted,
+eem_spy,primary_30m,EEM,SPY,1m,1m,30m,relative_strength,emerging-market beta vs US equities,accepted,
+efa_spy,primary_30m,EFA,SPY,1m,1m,30m,relative_strength,developed ex-US beta vs US equities,accepted,
+hyg_lqd,primary_30m,HYG,LQD,30m,30m,30m,relative_strength,high-yield credit appetite vs investment-grade credit,accepted,
+hyg_tlt,primary_30m,HYG,TLT,30m,30m,30m,relative_strength,credit risk appetite vs long-duration safety,accepted,
+lqd_tlt,primary_30m,LQD,TLT,30m,30m,30m,relative_strength,investment-grade credit vs Treasury duration,accepted,
+tlt_shy,primary_30m,TLT,SHY,30m,30m,30m,relative_strength,long-duration vs short-duration rate pressure,accepted,
+ief_shy,primary_30m,IEF,SHY,30m,30m,30m,relative_strength,intermediate-duration vs short-duration rate pressure,accepted,
+tlt_ief,primary_30m,TLT,IEF,30m,30m,30m,relative_strength,curve/duration extension pressure inside Treasuries,accepted,
+tlt_spy,primary_30m,TLT,SPY,30m,1m,30m,relative_strength,long-duration safe-haven bid vs equities,accepted,
+vnq_spy,primary_30m,VNQ,SPY,30m,1m,30m,relative_strength,rate-sensitive real estate vs broad equities,accepted,
+uup_spy,primary_30m,UUP,SPY,1m,1m,30m,relative_strength,dollar strength pressure vs risk assets,accepted,
+vixy_spy,primary_30m,VIXY,SPY,1m,1m,30m,relative_strength,volatility stress vs equities,accepted,
+gld_spy,primary_30m,GLD,SPY,1m,1m,30m,relative_strength,safe-haven gold bid vs equities,accepted,
+dbc_spy,primary_30m,DBC,SPY,1m,1m,30m,relative_strength,commodity pressure vs equities,accepted,
+uso_spy,primary_30m,USO,SPY,1m,1m,30m,relative_strength,oil shock or energy pressure vs equities,accepted,
+cper_dbc,primary_30m,CPER,DBC,1m,1m,30m,relative_strength,industrial copper impulse vs broad commodities,accepted,
+dba_dbc,primary_30m,DBA,DBC,1m,1m,30m,relative_strength,agriculture pressure vs broad commodities,accepted,
+slv_gld,primary_30m,SLV,GLD,1m,1m,30m,relative_strength,silver beta vs gold safety,accepted,
+gld_uup,primary_30m,GLD,UUP,1m,1m,30m,relative_strength,gold safety vs dollar pressure,accepted,
+ibit_spy,primary_30m,IBIT,SPY,30m,1m,30m,relative_strength,spot Bitcoin beta vs equities,accepted,
+bitw_ibit,primary_30m,BITW,IBIT,30m,30m,30m,relative_strength,diversified crypto basket vs spot Bitcoin beta,accepted,
+bkch_ibit,primary_30m,BKCH,IBIT,30m,30m,30m,relative_strength,crypto-related equities vs spot Bitcoin beta,accepted,
+fsol_ibit,primary_30m,FSOL,IBIT,30m,30m,30m,relative_strength,Solana beta rotation vs Bitcoin beta,accepted,
+xlb_spy,sector_rotation_30m,XLB,SPY,30m,1m,30m,relative_strength,materials leadership vs broad market,accepted,
+xlc_spy,sector_rotation_30m,XLC,SPY,30m,1m,30m,relative_strength,communication services leadership vs broad market,accepted,
+xle_spy,sector_rotation_30m,XLE,SPY,30m,1m,30m,relative_strength,energy leadership/inflation sensitivity vs broad market,accepted,
+xlf_spy,sector_rotation_30m,XLF,SPY,30m,1m,30m,relative_strength,financials leadership/rates-credit sensitivity vs broad market,accepted,
+xli_spy,sector_rotation_30m,XLI,SPY,30m,1m,30m,relative_strength,industrial cyclicality vs broad market,accepted,
+xlk_spy,sector_rotation_30m,XLK,SPY,30m,1m,30m,relative_strength,technology/growth leadership vs broad market,accepted,
+xlp_spy,sector_rotation_30m,XLP,SPY,30m,1m,30m,relative_strength,consumer staples defensiveness vs broad market,accepted,
+xlre_spy,sector_rotation_30m,XLRE,SPY,30m,1m,30m,relative_strength,real-estate/rate sensitivity vs broad market,accepted,
+xlu_spy,sector_rotation_30m,XLU,SPY,30m,1m,30m,relative_strength,utilities defensiveness/rate sensitivity vs broad market,accepted,
+xlv_spy,sector_rotation_30m,XLV,SPY,30m,1m,30m,relative_strength,healthcare defensiveness vs broad market,accepted,
+xly_spy,sector_rotation_30m,XLY,SPY,30m,1m,30m,relative_strength,consumer discretionary/cyclical appetite vs broad market,accepted,
+xly_xlp,sector_rotation_30m,XLY,XLP,30m,30m,30m,relative_strength,consumer discretionary risk appetite vs staples defense,accepted,
+xlk_xlp,sector_rotation_30m,XLK,XLP,30m,30m,30m,relative_strength,technology/growth vs staples defense,accepted,
+xli_xlu,sector_rotation_30m,XLI,XLU,30m,30m,30m,relative_strength,industrial cyclicality vs utilities defense,accepted,
+xlf_xlu,sector_rotation_30m,XLF,XLU,30m,30m,30m,relative_strength,financials/rates risk vs utilities defense,accepted,
+xle_xlp,sector_rotation_30m,XLE,XLP,30m,30m,30m,relative_strength,energy/inflation pressure vs staples defense,accepted,
+xlre_xlu,sector_rotation_30m,XLRE,XLU,30m,30m,30m,relative_strength,real estate vs utilities rate sensitivity,accepted,
+smh_xlk,daily_context,SMH,XLK,1d,30m,1d_context,relative_strength,semiconductor chain leadership vs broad technology,accepted,slow context only; do not forward-fill into 30m rows without accepted availability rule
+soxx_xlk,daily_context,SOXX,XLK,1d,30m,1d_context,relative_strength,semiconductor chain leadership vs broad technology,accepted,slow context only; do not forward-fill into 30m rows without accepted availability rule
+xsd_xlk,daily_context,XSD,XLK,1d,30m,1d_context,relative_strength,semiconductor chain leadership vs broad technology,accepted,slow context only; do not forward-fill into 30m rows without accepted availability rule
+igv_xlk,daily_context,IGV,XLK,1d,30m,1d_context,relative_strength,software leadership vs broad technology,accepted,slow context only; do not forward-fill into 30m rows without accepted availability rule
+xsw_xlk,daily_context,XSW,XLK,1d,30m,1d_context,relative_strength,software leadership vs broad technology,accepted,slow context only; do not forward-fill into 30m rows without accepted availability rule
+iyw_xlk,daily_context,IYW,XLK,1d,30m,1d_context,relative_strength,tech basket leadership vs broad technology,accepted,slow context only; do not forward-fill into 30m rows without accepted availability rule
+vgt_xlk,daily_context,VGT,XLK,1d,30m,1d_context,relative_strength,tech basket leadership vs broad technology,accepted,slow context only; do not forward-fill into 30m rows without accepted availability rule
+fdn_xlk,daily_context,FDN,XLK,1d,30m,1d_context,relative_strength,internet basket leadership vs broad technology,accepted,slow context only; do not forward-fill into 30m rows without accepted availability rule
+kbe_xlf,daily_context,KBE,XLF,1d,30m,1d_context,relative_strength,bank stress or leadership vs financials,accepted,slow context only; do not forward-fill into 30m rows without accepted availability rule
+kre_xlf,daily_context,KRE,XLF,1d,30m,1d_context,relative_strength,regional-bank stress or leadership vs financials,accepted,slow context only; do not forward-fill into 30m rows without accepted availability rule
+xop_xle,daily_context,XOP,XLE,1d,30m,1d_context,relative_strength,upstream energy chain leadership vs energy sector,accepted,slow context only; do not forward-fill into 30m rows without accepted availability rule
+xme_xlb,daily_context,XME,XLB,1d,30m,1d_context,relative_strength,metals/mining chain leadership vs materials sector,accepted,slow context only; do not forward-fill into 30m rows without accepted availability rule
+xrt_xly,daily_context,XRT,XLY,1d,30m,1d_context,relative_strength,retail leadership vs consumer discretionary,accepted,slow context only; do not forward-fill into 30m rows without accepted availability rule
+jets_xli,daily_context,JETS,XLI,1d,30m,1d_context,relative_strength,airlines leadership vs industrials,accepted,slow context only; do not forward-fill into 30m rows without accepted availability rule
+iyt_xli,daily_context,IYT,XLI,1d,30m,1d_context,relative_strength,transport leadership vs industrials,accepted,slow context only; do not forward-fill into 30m rows without accepted availability rule
+xbi_xlv,daily_context,XBI,XLV,1d,30m,1d_context,relative_strength,biotech risk appetite vs healthcare,accepted,slow context only; do not forward-fill into 30m rows without accepted availability rule
+aiq_qqq,daily_context,AIQ,QQQ,1d,1m,1d_context,relative_strength,thematic AI/growth appetite vs QQQ,accepted,slow context only; do not forward-fill into 30m rows without accepted availability rule
+arkf_qqq,daily_context,ARKF,QQQ,1d,1m,1d_context,relative_strength,fintech/blockchain thematic growth appetite vs QQQ,accepted,slow context only; do not forward-fill into 30m rows without accepted availability rule
+arkg_qqq,daily_context,ARKG,QQQ,1d,1m,1d_context,relative_strength,genomics thematic growth appetite vs QQQ,accepted,slow context only; do not forward-fill into 30m rows without accepted availability rule
+arkw_qqq,daily_context,ARKW,QQQ,1d,1m,1d_context,relative_strength,internet thematic growth appetite vs QQQ,accepted,slow context only; do not forward-fill into 30m rows without accepted availability rule
+arkx_qqq,daily_context,ARKX,QQQ,1d,1m,1d_context,relative_strength,space/defense thematic growth appetite vs QQQ,accepted,slow context only; do not forward-fill into 30m rows without accepted availability rule
+botz_qqq,daily_context,BOTZ,QQQ,1d,1m,1d_context,relative_strength,robotics thematic growth appetite vs QQQ,accepted,slow context only; do not forward-fill into 30m rows without accepted availability rule
+cibr_qqq,daily_context,CIBR,QQQ,1d,1m,1d_context,relative_strength,cybersecurity thematic growth appetite vs QQQ,accepted,slow context only; do not forward-fill into 30m rows without accepted availability rule
+ewt_eem,daily_context,EWT,EEM,1d,1m,1d_context,relative_strength,Taiwan leadership/stress inside emerging-market complex,accepted,slow context only; do not forward-fill into 30m rows without accepted availability rule
+ewy_eem,daily_context,EWY,EEM,1d,1m,1d_context,relative_strength,South Korea leadership/stress inside emerging-market complex,accepted,slow context only; do not forward-fill into 30m rows without accepted availability rule
+ewz_eem,daily_context,EWZ,EEM,1d,1m,1d_context,relative_strength,Brazil leadership/stress inside emerging-market complex,accepted,slow context only; do not forward-fill into 30m rows without accepted availability rule
