@@ -45,7 +45,6 @@ xle_xlp,sector_rotation,XLE,XLP,30m,30m,30m,energy/inflation pressure vs staples
 xlre_xlu,sector_rotation,XLRE,XLU,30m,30m,30m,real estate vs utilities rate sensitivity
 smh_xlk,daily_context,SMH,XLK,1d,30m,1d,semiconductor chain leadership vs broad technology
 igv_xlk,daily_context,IGV,XLK,1d,30m,1d,software leadership vs broad technology
-kre_xlf,daily_context,KRE,XLF,1d,30m,1d,regional-bank stress or leadership vs financials
 xop_xle,daily_context,XOP,XLE,1d,30m,1d,upstream energy chain leadership vs energy sector
 xme_xlb,daily_context,XME,XLB,1d,30m,1d,metals/mining chain leadership vs materials sector
 xrt_xly,daily_context,XRT,XLY,1d,30m,1d,retail leadership vs consumer discretionary

@@ -11,7 +11,6 @@ CIBR,sector_observation_etf,industry_chain,1d,First Trust Nasdaq Cybersecurity E
 IGV,sector_observation_etf,industry_chain,1d,iShares Expanded Tech-Software Sector ETF,BlackRock / iShares,Software sector ETF used to observe software leadership.
 IYT,sector_observation_etf,industry_chain,1d,iShares U.S. Transportation ETF,BlackRock / iShares,US transportation ETF used to observe transport and logistics cyclicality.
 JETS,sector_observation_etf,industry_chain,1d,U.S. Global Jets ETF,U.S. Global Investors,Airlines ETF used to observe travel and airline cyclicality.
-KRE,sector_observation_etf,industry_chain,1d,SPDR S&P Regional Banking ETF,State Street / SPDR,Regional bank ETF used to observe regional-bank stress or leadership.
 SMH,sector_observation_etf,industry_chain,1d,VanEck Semiconductor ETF,VanEck,Semiconductor ETF used to observe semiconductor leadership.
 XBI,sector_observation_etf,thematic_growth,1d,SPDR S&P Biotech ETF,State Street / SPDR,Biotech ETF used to observe high-beta biotech risk appetite.
 XLB,sector_observation_etf,sp500_sector,30m,Materials Select Sector SPDR Fund,State Street / SPDR,Materials sector ETF used to observe materials leadership.
