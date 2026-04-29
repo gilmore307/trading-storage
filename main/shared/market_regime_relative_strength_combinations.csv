@@ -3,8 +3,6 @@ qqq_spy,primary,QQQ,SPY,1m,1m,30m,mega-cap/growth leadership vs broad market
 iwm_spy,primary,IWM,SPY,1m,1m,30m,small-cap risk appetite vs broad market
 rsp_spy,primary,RSP,SPY,1m,1m,30m,equal-weight breadth/concentration vs cap-weight market
 dia_spy,primary,DIA,SPY,1m,1m,30m,old-economy/value tilt vs broad market
-eem_spy,primary,EEM,SPY,1m,1m,30m,emerging-market beta vs US equities
-efa_spy,primary,EFA,SPY,1m,1m,30m,developed ex-US beta vs US equities
 hyg_lqd,primary,HYG,LQD,30m,30m,30m,high-yield credit appetite vs investment-grade credit
 hyg_tlt,primary,HYG,TLT,30m,30m,30m,credit risk appetite vs long-duration safety
 lqd_tlt,primary,LQD,TLT,30m,30m,30m,investment-grade credit vs Treasury duration
