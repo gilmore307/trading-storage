@@ -8,16 +8,11 @@ BITW,sector_observation_etf,crypto_beta,30m,Bitwise 10 Crypto Index ETF,Bitwise 
 BKCH,sector_observation_etf,crypto_beta,30m,Global X Blockchain ETF,Global X,Blockchain and crypto-related equity ETF proxy.
 BOTZ,sector_observation_etf,industry_chain,1d,Global X Robotics & Artificial Intelligence ETF,Global X,Robotics and artificial intelligence thematic equity ETF.
 CIBR,sector_observation_etf,industry_chain,1d,First Trust Nasdaq Cybersecurity ETF,First Trust,Cybersecurity industry equity ETF.
-FDN,sector_observation_etf,thematic_growth,1d,First Trust Dow Jones Internet Index Fund,First Trust,Internet equity ETF used to observe internet platform growth beta.
 IGV,sector_observation_etf,industry_chain,1d,iShares Expanded Tech-Software Sector ETF,BlackRock / iShares,Software sector ETF used to observe software leadership.
 IYT,sector_observation_etf,industry_chain,1d,iShares U.S. Transportation ETF,BlackRock / iShares,US transportation ETF used to observe transport and logistics cyclicality.
-IYW,sector_observation_etf,industry_chain,1d,iShares U.S. Technology ETF,BlackRock / iShares,US technology ETF used to observe broad technology leadership.
 JETS,sector_observation_etf,industry_chain,1d,U.S. Global Jets ETF,U.S. Global Investors,Airlines ETF used to observe travel and airline cyclicality.
-KBE,sector_observation_etf,industry_chain,1d,SPDR S&P Bank ETF,State Street / SPDR,Bank ETF used to observe broad bank stress or leadership.
 KRE,sector_observation_etf,industry_chain,1d,SPDR S&P Regional Banking ETF,State Street / SPDR,Regional bank ETF used to observe regional-bank stress or leadership.
-MOO,sector_observation_etf,industry_chain,1d,VanEck Agribusiness ETF,VanEck,Agribusiness ETF used to observe agriculture supply-chain equities.
 SMH,sector_observation_etf,industry_chain,1d,VanEck Semiconductor ETF,VanEck,Semiconductor ETF used to observe semiconductor leadership.
-VGT,sector_observation_etf,industry_chain,1d,Vanguard Information Technology ETF,Vanguard,Information technology ETF used to observe broad tech sector leadership.
 XBI,sector_observation_etf,thematic_growth,1d,SPDR S&P Biotech ETF,State Street / SPDR,Biotech ETF used to observe high-beta biotech risk appetite.
 XLB,sector_observation_etf,sp500_sector,30m,Materials Select Sector SPDR Fund,State Street / SPDR,Materials sector ETF used to observe materials leadership.
 XLC,sector_observation_etf,sp500_sector,30m,Communication Services Select Sector SPDR Fund,State Street / SPDR,Communication services sector ETF used to observe communication/platform leadership.
@@ -33,7 +28,6 @@ XLY,sector_observation_etf,sp500_sector,30m,Consumer Discretionary Select Sector
 XME,sector_observation_etf,industry_chain,1d,SPDR S&P Metals & Mining ETF,State Street / SPDR,Metals and mining ETF used to observe mining/materials chain beta.
 XOP,sector_observation_etf,industry_chain,1d,SPDR S&P Oil & Gas Exploration & Production ETF,State Street / SPDR,Oil and gas exploration ETF used to observe upstream energy beta.
 XRT,sector_observation_etf,industry_chain,1d,SPDR S&P Retail ETF,State Street / SPDR,Retail ETF used to observe consumer retail cyclicality.
-XSW,sector_observation_etf,industry_chain,1d,SPDR S&P Software & Services ETF,State Street / SPDR,Software and services ETF used to observe software/services breadth.
 CPER,market_state_etf,commodities,1m,United States Copper Index Fund,USCF Investments,Copper fund used to observe industrial metal and cyclical commodity impulse.
 DBA,market_state_etf,commodities,1m,Invesco DB Agriculture Fund,Invesco,Agriculture commodity fund used to observe agriculture price pressure.
 DBC,market_state_etf,commodities,1m,Invesco DB Commodity Index Tracking Fund,Invesco,Broad commodity basket ETF used to observe aggregate commodity pressure.
@@ -53,7 +47,6 @@ SHY,market_state_etf,rates_curve,30m,iShares 1-3 Year Treasury Bond ETF,BlackRoc
 SLV,market_state_etf,commodities,1m,iShares Silver Trust,BlackRock / iShares,Silver ETF used to observe high-beta precious-metal exposure.
 SPY,market_state_etf,us_equity_core,1m,SPDR S&P 500 ETF Trust,State Street / SPDR,S&P 500 ETF used as the broad US equity market benchmark.
 TLT,market_state_etf,rates_curve,30m,iShares 20+ Year Treasury Bond ETF,BlackRock / iShares,Long Treasury bond ETF used to observe 20+ year duration and safe-haven demand.
-UNG,market_state_etf,commodities,1m,"United States Natural Gas Fund, LP",USCF Investments,Natural gas fund used to observe natural-gas commodity pressure.
 USO,market_state_etf,commodities,1m,"United States Oil Fund, LP",USCF Investments,Oil fund used to observe crude-oil commodity pressure.
 UUP,market_state_etf,usd_volatility,1m,Invesco DB US Dollar Index Bullish Fund,Invesco,US dollar index fund used to observe broad dollar strength.
 VIXY,market_state_etf,usd_volatility,1m,ProShares VIX Short-Term Futures ETF,ProShares,Short-term VIX futures ETF used to observe volatility stress.
