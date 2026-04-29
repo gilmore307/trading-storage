@@ -178,7 +178,7 @@ Move those assets into `trading-storage/main/`.
 This includes:
 
 - `main/templates/` for reusable drafting and implementation templates.
-- `main/shared/` for reviewed shared static files such as `market_etf_universe.csv`.
+- `main/shared/` for reviewed shared static files such as `market_regime_etf_universe.csv`.
 
 ### Consequences
 
