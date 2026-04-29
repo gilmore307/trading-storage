@@ -40,8 +40,8 @@ XRT,sector_observation_etf,industry_chain,1d,SPDR S&P Retail ETF,State Street / 
 XSD,sector_observation_etf,industry_chain,1d,SPDR S&P Semiconductor ETF,State Street / SPDR
 XSW,sector_observation_etf,industry_chain,1d,SPDR S&P Software & Services ETF,State Street / SPDR
 CPER,market_state_etf,commodities,1m,United States Copper Index Fund,USCF Investments
-DBC,market_state_etf,commodities,1m,Invesco DB Commodity Index Tracking Fund,Invesco
 DBA,market_state_etf,commodities,1m,Invesco DB Agriculture Fund,Invesco
+DBC,market_state_etf,commodities,1m,Invesco DB Commodity Index Tracking Fund,Invesco
 DIA,market_state_etf,us_equity_core,1m,SPDR Dow Jones Industrial Average ETF Trust,State Street / SPDR
 EEM,market_state_etf,us_equity_core,1m,iShares MSCI Emerging Markets ETF,BlackRock / iShares
 EFA,market_state_etf,us_equity_core,1m,iShares MSCI EAFE ETF,BlackRock / iShares
@@ -49,9 +49,12 @@ FSOL,market_state_etf,crypto_beta,30m,Fidelity Solana Fund,Fidelity
 GLD,market_state_etf,commodities,1m,SPDR Gold Shares,World Gold Trust Services / SPDR
 HYG,market_state_etf,credit,30m,iShares iBoxx $ High Yield Corporate Bond ETF,BlackRock / iShares
 IBIT,market_state_etf,crypto_beta,30m,iShares Bitcoin Trust ETF,BlackRock / iShares
+IEF,market_state_etf,rates_curve,30m,iShares 7-10 Year Treasury Bond ETF,BlackRock / iShares
 IWM,market_state_etf,us_equity_core,1m,iShares Russell 2000 ETF,BlackRock / iShares
 LQD,market_state_etf,credit,30m,iShares iBoxx $ Investment Grade Corporate Bond ETF,BlackRock / iShares
 QQQ,market_state_etf,us_equity_core,1m,"Invesco QQQ Trust, Series 1",Invesco
+RSP,market_state_etf,us_equity_core,1m,Invesco S&P 500 Equal Weight ETF,Invesco
+SHY,market_state_etf,rates_curve,30m,iShares 1-3 Year Treasury Bond ETF,BlackRock / iShares
 SLV,market_state_etf,commodities,1m,iShares Silver Trust,BlackRock / iShares
 SPY,market_state_etf,us_equity_core,1m,SPDR S&P 500 ETF Trust,State Street / SPDR
 TLT,market_state_etf,rates_curve,30m,iShares 20+ Year Treasury Bond ETF,BlackRock / iShares
