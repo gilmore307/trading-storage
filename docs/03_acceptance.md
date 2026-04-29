@@ -34,7 +34,7 @@ Implementation changes are acceptable only when they:
 - include meaningful tests for the behavior introduced;
 - avoid external side effects in default tests unless explicitly guarded;
 - use accepted contracts for cross-repository handoffs;
-- route new shared names through `trading-main/scripts/registry/`.
+- route new shared names through `trading-main/scripts/`.
 
 ## Verification Commands
 
