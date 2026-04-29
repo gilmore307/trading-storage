@@ -8,9 +8,6 @@ BITW,sector_observation_etf,crypto_beta,30m,Bitwise 10 Crypto Index ETF,Bitwise 
 BKCH,sector_observation_etf,crypto_beta,30m,Global X Blockchain ETF,Global X,Blockchain and crypto-related equity ETF proxy.
 BOTZ,sector_observation_etf,industry_chain,1d,Global X Robotics & Artificial Intelligence ETF,Global X,Robotics and artificial intelligence thematic equity ETF.
 CIBR,sector_observation_etf,industry_chain,1d,First Trust Nasdaq Cybersecurity ETF,First Trust,Cybersecurity industry equity ETF.
-EWT,sector_observation_etf,industry_chain,1d,iShares MSCI Taiwan ETF,BlackRock / iShares,Taiwan equity ETF used to observe Taiwan semiconductor/export beta.
-EWY,sector_observation_etf,industry_chain,1d,iShares MSCI South Korea ETF,BlackRock / iShares,South Korea equity ETF used to observe Korea technology/export beta.
-EWZ,sector_observation_etf,industry_chain,1d,iShares MSCI Brazil ETF,BlackRock / iShares,Brazil equity ETF used to observe Brazil commodity/EM beta.
 FDN,sector_observation_etf,thematic_growth,1d,First Trust Dow Jones Internet Index Fund,First Trust,Internet equity ETF used to observe internet platform growth beta.
 IGV,sector_observation_etf,industry_chain,1d,iShares Expanded Tech-Software Sector ETF,BlackRock / iShares,Software sector ETF used to observe software leadership.
 IYT,sector_observation_etf,industry_chain,1d,iShares U.S. Transportation ETF,BlackRock / iShares,US transportation ETF used to observe transport and logistics cyclicality.
