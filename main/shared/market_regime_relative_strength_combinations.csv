@@ -20,7 +20,7 @@ cper_dbc,primary,CPER,DBC,1m,1m,30m,industrial copper impulse vs broad commoditi
 dba_dbc,primary,DBA,DBC,1m,1m,30m,agriculture pressure vs broad commodities
 slv_gld,primary,SLV,GLD,1m,1m,30m,silver beta vs gold safety
 gld_uup,primary,GLD,UUP,1m,1m,30m,gold safety vs dollar pressure
-ibit_spy,primary,IBIT,SPY,30m,1m,30m,spot Bitcoin beta vs equities
+bitw_spy,primary,BITW,SPY,30m,1m,30m,broad crypto basket beta vs equities
 ibit_bitw,primary,IBIT,BITW,30m,30m,30m,Bitcoin beta leadership vs broad crypto basket
 etha_bitw,primary,ETHA,BITW,30m,30m,30m,Ethereum beta leadership vs broad crypto basket
 bkch_bitw,primary,BKCH,BITW,30m,30m,30m,crypto-related equities leadership vs broad crypto basket

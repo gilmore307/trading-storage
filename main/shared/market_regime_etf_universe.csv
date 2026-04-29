@@ -4,7 +4,7 @@ ARKF,sector_observation_etf,thematic_growth,1d,ARK Blockchain & Fintech Innovati
 ARKG,sector_observation_etf,thematic_growth,1d,ARK Genomic Revolution ETF,ARK Invest,Genomics and biotech innovation thematic equity ETF.
 ARKW,sector_observation_etf,thematic_growth,1d,ARK Next Generation Internet ETF,ARK Invest,Next-generation internet and platform growth thematic equity ETF.
 ARKX,sector_observation_etf,thematic_growth,1d,ARK Space & Defense Innovation ETF,ARK Invest,"Space, aerospace, and defense innovation thematic equity ETF."
-BITW,sector_observation_etf,crypto_beta,30m,Bitwise 10 Crypto Index ETF,Bitwise Asset Management,Diversified crypto asset basket proxy for broad crypto beta.
+BITW,market_state_etf,crypto_beta,30m,Bitwise 10 Crypto Index ETF,Bitwise Asset Management,Broad crypto basket ETF used to observe aggregate crypto beta.
 BKCH,sector_observation_etf,crypto_beta,30m,Global X Blockchain ETF,Global X,Blockchain and crypto-related equity ETF proxy.
 BOTZ,sector_observation_etf,industry_chain,1d,Global X Robotics & Artificial Intelligence ETF,Global X,Robotics and artificial intelligence thematic equity ETF.
 CIBR,sector_observation_etf,industry_chain,1d,First Trust Nasdaq Cybersecurity ETF,First Trust,Cybersecurity industry equity ETF.
