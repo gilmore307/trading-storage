@@ -76,11 +76,11 @@ Date: 2026-04-26
 
 ### Context
 
-Historical data tasks will be initiated by `trading-manager` and executed by `trading-data`, but durable outputs and completion evidence need storage-owned contracts.
+Historical data tasks will be initiated by `trading-manager` and executed by `trading-source`, but durable outputs and completion evidence need storage-owned contracts.
 
 ### Decision
 
-`trading-data` development outputs first live under local `trading-data/storage/`. `trading-storage` will own the SQL table/partition contract for historical data task outputs and the durable schema/location for data task completion receipts once durable storage implementation begins.
+`trading-source` development outputs first live under local `trading-source/storage/`. `trading-storage` will own the SQL table/partition contract for historical data task outputs and the durable schema/location for data task completion receipts once durable storage implementation begins.
 
 ### Rationale
 
@@ -88,7 +88,7 @@ Persistence, retention, backup, restore, and reference stability belong to stora
 
 ### Consequences
 
-- Development files under `trading-data/storage/` are disposable and outside durable storage responsibility.
+- Development files under `trading-source/storage/` are disposable and outside durable storage responsibility.
 - Exact SQL destination and receipt schemas remain pending contract work.
 - Storage does not perform provider calls or task lifecycle orchestration.
 - Completion receipt references become lifecycle evidence for `trading-manager`.
@@ -100,11 +100,11 @@ Date: 2026-04-26
 
 ### Context
 
-The user clarified that development-stage `trading-data` outputs should be local files rather than SQL rows.
+The user clarified that development-stage `trading-source` outputs should be local files rather than SQL rows.
 
 ### Decision
 
-Treat `trading-data/storage/` as disposable development staging owned by `trading-data`, not durable storage. `trading-storage` will define promotion, SQL destination, receipt storage, retention, and backup/restore contracts later.
+Treat `trading-source/storage/` as disposable development staging owned by `trading-source`, not durable storage. `trading-storage` will define promotion, SQL destination, receipt storage, retention, and backup/restore contracts later.
 
 ### Rationale
 
@@ -145,11 +145,11 @@ Date: 2026-04-27
 
 ### Context
 
-Some `trading-data` final outputs are naturally nested point-in-time artifacts rather than flat row series. `option_chain_snapshot` is the first concrete example: one logical artifact contains many option contracts and nested quote, IV, Greeks, derived, and underlying context.
+Some `trading-source` final outputs are naturally nested point-in-time artifacts rather than flat row series. `option_chain_snapshot` is the first concrete example: one logical artifact contains many option contracts and nested quote, IV, Greeks, derived, and underlying context.
 
 ### Decision
 
-For nested final artifacts such as `option_chain_snapshot`, the durable SQL contract should store the complete normalized artifact in a PostgreSQL `jsonb` column inside the SQL table row. Development-stage files may remain local JSON under `trading-data/storage/` until durable storage contracts are implemented.
+For nested final artifacts such as `option_chain_snapshot`, the durable SQL contract should store the complete normalized artifact in a PostgreSQL `jsonb` column inside the SQL table row. Development-stage files may remain local JSON under `trading-source/storage/` until durable storage contracts are implemented.
 
 ### Rationale
 
@@ -161,3 +161,28 @@ SQL JSONB keeps the full final artifact in transactional database storage, avoid
 - Projection tables, indexes, or materialized views may be added later for query speed, but they should be derived from the canonical JSONB body unless a later decision changes ownership.
 - Durable writes for one nested artifact should be transactional: failed writes must not leave partial final artifacts.
 - `trading-storage` still owns the exact table, partition, retention, backup, restore, and receipt contract before production use.
+
+## D008 - Shared non-code assets live under main
+
+Date: 2026-04-29
+Status: Accepted
+
+### Context
+
+`trading-main/storage/` held reusable templates and shared static files, but `trading-main` should keep global registry/guidance responsibility instead of owning checked-in storage assets directly.
+
+### Decision
+
+Move those assets into `trading-storage/main/`.
+
+This includes:
+
+- `main/templates/` for reusable drafting and implementation templates.
+- `main/shared/` for reviewed shared static files such as `market_etf_universe.csv`.
+
+### Consequences
+
+- `trading-main/storage/` is retired.
+- Cross-repository references should use `trading-storage/main/...` paths.
+- Shared names and template-introduced vocabulary still route through the `trading-main` SQL registry before cross-repository use.
+- Generated outputs, runtime artifacts, logs, notebooks, caches, and secrets remain out of Git.

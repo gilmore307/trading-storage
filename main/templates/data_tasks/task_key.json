@@ -1,0 +1,7 @@
+{
+  "task_id": "<stable-manager-task-id>",
+  "source": "<source-name>",
+  "credential_config_id": null,
+  "params": {},
+  "output_root": "storage/<task-id>"
+}

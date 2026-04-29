@@ -1,0 +1,16 @@
+{
+  "task_id": "<stable-manager-task-id>",
+  "source": "<source-name>",
+  "runs": [
+    {
+      "run_id": "<run-id>",
+      "data_task_run_status": "<succeeded|failed>",
+      "started_at": "<iso-datetime>",
+      "completed_at": "<iso-datetime>",
+      "output_dir": "storage/<task-id>/runs/<run-id>",
+      "outputs": [],
+      "row_counts": {},
+      "error": null
+    }
+  ]
+}

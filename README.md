@@ -2,7 +2,7 @@
 
 `trading-storage` is the shared persistence contract repository for the trading system.
 
-It defines durable artifact layout, SQL output destination contracts, completion receipt storage, references, retention, archive, restore, backup, and rehydrate expectations used by data, strategy, model, execution, dashboard, and manager workflows. Development-stage `trading-data` outputs intentionally stay in local `trading-data/storage/` until these durable contracts are accepted.
+It defines durable artifact layout, SQL output destination contracts, completion receipt storage, references, retention, archive, restore, backup, and rehydrate expectations used by source, derived, model, execution, dashboard, and manager workflows. It also owns checked-in reusable non-code assets migrated from `trading-main/storage/` under `main/`.
 
 It does not own component responsibilities outside that boundary, global contracts, shared registry authority, generated runtime artifacts committed to Git, or secrets.
 
@@ -10,6 +10,7 @@ It does not own component responsibilities outside that boundary, global contrac
 
 ```text
 docs/        Repository scope, context, workflow, acceptance, task, decisions, and local memory.
+main/        Checked-in reusable non-code assets shared across trading repositories.
 ```
 
 Source, scripts, tests, and package layout are intentionally not created yet. Add them only after the component contracts, storage expectations, and first implementation slice are explicit. When implementation begins, use `src/` for importable/reusable code, `scripts/` for executable maintenance or operational entrypoints, and `tests/` for first-party tests; `scripts/` may import `src/`, but `src/` must not import `scripts/`.
@@ -29,7 +30,7 @@ docs/
 
 ## Platform Dependencies
 
-- `trading-main` owns global contracts, registry, shared helpers, templates, and platform guidance.
+- `trading-main` owns global registry, shared helpers, and platform guidance; reusable non-code assets now live under `trading-storage/main/`.
 - `trading-storage` owns durable storage layout and retention unless this repository is `trading-storage` itself.
 - `trading-manager` owns orchestration and lifecycle routing.
 

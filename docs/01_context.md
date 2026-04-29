@@ -2,17 +2,17 @@
 
 ## Why This Repository Exists
 
-The trading platform is split across multiple repositories so each major responsibility has a clear owner. `trading-storage` exists because defines durable artifact layout, references, retention, archive, restore, backup, and rehydrate expectations used by data, strategy, model, execution, dashboard, and manager workflows.
+The trading platform is split across multiple repositories so each major responsibility has a clear owner. `trading-storage` exists because it defines durable artifact layout, references, retention, archive, restore, backup, and rehydrate expectations used by source, derived, model, execution, dashboard, and manager workflows. It also owns checked-in reusable non-code assets under `main/`.
 
 ## Related Systems
 
 | System | Relationship |
 |---|---|
-| `trading-main` | Owns global architecture, registry, templates, shared helpers, and cross-repository contracts. |
+| `trading-main` | Owns global architecture, registry, template operating rules, shared helpers, and cross-repository contracts. |
 | `trading-manager` | Owns orchestration, lifecycle, scheduling, retries, requests, and promotion routing. |
-| `trading-data` | Produces data artifacts, manifests, and ready signals. |
+| `trading-source` | Produces source-backed data artifacts, manifests, and ready signals. |
 | `trading-storage` | Owns durable storage layout, retention, archive, backup, restore, and artifact placement rules. |
-| `trading-strategy` | Produces strategy research and backtest artifacts. |
+| `trading-derived` | Produces derived labels, samples, signals, candidates, and research/backtest artifacts. |
 | `trading-model` | Produces offline model/state research outputs and verdicts. |
 | `trading-execution` | Consumes promoted decisions for paper/live execution. |
 | `trading-dashboard` | Presents already-produced outputs and evidence. |
@@ -24,6 +24,7 @@ Potential external interfaces include:
 - local/shared filesystem storage.
 - backup/archive targets once chosen.
 - trading-main artifact and manifest contracts.
+- checked-in shared assets under `main/`, including reusable templates and shared static CSVs.
 
 Specific providers, credentials, package choices, deployment targets, and runtime settings are not settled unless recorded in this repository's decisions or inherited from `trading-main` contracts.
 
@@ -45,7 +46,8 @@ Current system-level dependencies:
 
 - `trading-main/docs/07_helpers.md` for shared helper policy;
 - `trading-main/docs/08_registry.md` for registry operating rules;
-- `trading-main/docs/09_templates.md` and `trading-main/templates/` for reusable drafting surfaces;
+- `trading-main/docs/09_templates.md` for reusable template operating rules;
+- `trading-storage/main/templates/` for reusable drafting surfaces;
 - `trading-main/requirements.txt` for reviewed shared Python dependencies;
 - related component repositories through accepted contracts, not internal implementation details.
 
