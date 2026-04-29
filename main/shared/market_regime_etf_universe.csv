@@ -17,7 +17,6 @@ KBE,sector_observation_etf,industry_chain,1d,SPDR S&P Bank ETF,State Street / SP
 KRE,sector_observation_etf,industry_chain,1d,SPDR S&P Regional Banking ETF,State Street / SPDR,Regional bank ETF used to observe regional-bank stress or leadership.
 MOO,sector_observation_etf,industry_chain,1d,VanEck Agribusiness ETF,VanEck,Agribusiness ETF used to observe agriculture supply-chain equities.
 SMH,sector_observation_etf,industry_chain,1d,VanEck Semiconductor ETF,VanEck,Semiconductor ETF used to observe semiconductor leadership.
-SOXX,sector_observation_etf,industry_chain,1d,iShares Semiconductor ETF,BlackRock / iShares,Semiconductor ETF used to observe large-cap semiconductor leadership.
 VGT,sector_observation_etf,industry_chain,1d,Vanguard Information Technology ETF,Vanguard,Information technology ETF used to observe broad tech sector leadership.
 XBI,sector_observation_etf,thematic_growth,1d,SPDR S&P Biotech ETF,State Street / SPDR,Biotech ETF used to observe high-beta biotech risk appetite.
 XLB,sector_observation_etf,sp500_sector,30m,Materials Select Sector SPDR Fund,State Street / SPDR,Materials sector ETF used to observe materials leadership.
@@ -34,7 +33,6 @@ XLY,sector_observation_etf,sp500_sector,30m,Consumer Discretionary Select Sector
 XME,sector_observation_etf,industry_chain,1d,SPDR S&P Metals & Mining ETF,State Street / SPDR,Metals and mining ETF used to observe mining/materials chain beta.
 XOP,sector_observation_etf,industry_chain,1d,SPDR S&P Oil & Gas Exploration & Production ETF,State Street / SPDR,Oil and gas exploration ETF used to observe upstream energy beta.
 XRT,sector_observation_etf,industry_chain,1d,SPDR S&P Retail ETF,State Street / SPDR,Retail ETF used to observe consumer retail cyclicality.
-XSD,sector_observation_etf,industry_chain,1d,SPDR S&P Semiconductor ETF,State Street / SPDR,Semiconductor ETF used to observe equal-weight semiconductor breadth.
 XSW,sector_observation_etf,industry_chain,1d,SPDR S&P Software & Services ETF,State Street / SPDR,Software and services ETF used to observe software/services breadth.
 CPER,market_state_etf,commodities,1m,United States Copper Index Fund,USCF Investments,Copper fund used to observe industrial metal and cyclical commodity impulse.
 DBA,market_state_etf,commodities,1m,Invesco DB Agriculture Fund,Invesco,Agriculture commodity fund used to observe agriculture price pressure.

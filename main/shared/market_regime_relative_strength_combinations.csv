@@ -44,8 +44,6 @@ xlf_xlu,sector_rotation,XLF,XLU,30m,30m,30m,financials/rates risk vs utilities d
 xle_xlp,sector_rotation,XLE,XLP,30m,30m,30m,energy/inflation pressure vs staples defense
 xlre_xlu,sector_rotation,XLRE,XLU,30m,30m,30m,real estate vs utilities rate sensitivity
 smh_xlk,daily_context,SMH,XLK,1d,30m,1d,semiconductor chain leadership vs broad technology
-soxx_xlk,daily_context,SOXX,XLK,1d,30m,1d,semiconductor chain leadership vs broad technology
-xsd_xlk,daily_context,XSD,XLK,1d,30m,1d,semiconductor chain leadership vs broad technology
 igv_xlk,daily_context,IGV,XLK,1d,30m,1d,software leadership vs broad technology
 xsw_xlk,daily_context,XSW,XLK,1d,30m,1d,software leadership vs broad technology
 iyw_xlk,daily_context,IYW,XLK,1d,30m,1d,tech basket leadership vs broad technology
