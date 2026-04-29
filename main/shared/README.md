@@ -6,4 +6,4 @@ Use this folder for reviewed cross-project files such as shared vocabularies, lo
 
 Current files:
 
-- `market_etf_universe.csv` — curated ETF universe for market-state and sector/industry/theme observation. `bar_grain` is the intended observation granularity.
+- `market_etf_universe.csv` — curated ETF universe for market-state and sector/industry/theme observation. `bar_grain` is the intended observation granularity. `market_state_etf` rows are Layer 1 regime/bar instruments; only `sector_observation_etf` rows require holdings analysis for Layer 2 security-selection exposure.
