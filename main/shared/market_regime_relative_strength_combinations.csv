@@ -21,10 +21,10 @@ dba_dbc,primary,DBA,DBC,1m,1m,30m,agriculture pressure vs broad commodities
 slv_gld,primary,SLV,GLD,1m,1m,30m,silver beta vs gold safety
 gld_uup,primary,GLD,UUP,1m,1m,30m,gold safety vs dollar pressure
 ibit_spy,primary,IBIT,SPY,30m,1m,30m,spot Bitcoin beta vs equities
-etha_ibit,primary,ETHA,IBIT,30m,30m,30m,Ethereum beta rotation vs Bitcoin beta
-bitw_ibit,primary,BITW,IBIT,30m,30m,30m,diversified crypto basket vs spot Bitcoin beta
-bkch_ibit,primary,BKCH,IBIT,30m,30m,30m,crypto-related equities vs spot Bitcoin beta
-fsol_ibit,primary,FSOL,IBIT,30m,30m,30m,Solana beta rotation vs Bitcoin beta
+ibit_bitw,primary,IBIT,BITW,30m,30m,30m,Bitcoin beta leadership vs broad crypto basket
+etha_bitw,primary,ETHA,BITW,30m,30m,30m,Ethereum beta leadership vs broad crypto basket
+bkch_bitw,primary,BKCH,BITW,30m,30m,30m,crypto-related equities leadership vs broad crypto basket
+fsol_bitw,primary,FSOL,BITW,30m,30m,30m,Solana beta leadership vs broad crypto basket
 xlb_spy,sector_rotation,XLB,SPY,30m,1m,30m,materials leadership vs broad market
 xlc_spy,sector_rotation,XLC,SPY,30m,1m,30m,communication services leadership vs broad market
 xle_spy,sector_rotation,XLE,SPY,30m,1m,30m,energy leadership/inflation sensitivity vs broad market
