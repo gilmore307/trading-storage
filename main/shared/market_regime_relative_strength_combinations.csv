@@ -10,7 +10,6 @@ tlt_shy,primary,TLT,SHY,30m,30m,30m,long-duration vs short-duration rate pressur
 ief_shy,primary,IEF,SHY,30m,30m,30m,intermediate-duration vs short-duration rate pressure
 tlt_ief,primary,TLT,IEF,30m,30m,30m,curve/duration extension pressure inside Treasuries
 tlt_spy,primary,TLT,SPY,30m,1m,30m,long-duration safe-haven bid vs equities
-vnq_spy,primary,VNQ,SPY,30m,1m,30m,rate-sensitive real estate vs broad equities
 uup_spy,primary,UUP,SPY,1m,1m,30m,dollar strength pressure vs risk assets
 vixy_spy,primary,VIXY,SPY,1m,1m,30m,volatility stress vs equities
 gld_spy,primary,GLD,SPY,1m,1m,30m,safe-haven gold bid vs equities
@@ -47,7 +46,6 @@ igv_xlk,daily_context,IGV,XLK,1d,30m,1d,software leadership vs broad technology
 xop_xle,daily_context,XOP,XLE,1d,30m,1d,upstream energy chain leadership vs energy sector
 xme_xlb,daily_context,XME,XLB,1d,30m,1d,metals/mining chain leadership vs materials sector
 xrt_xly,daily_context,XRT,XLY,1d,30m,1d,retail leadership vs consumer discretionary
-jets_xli,daily_context,JETS,XLI,1d,30m,1d,airlines leadership vs industrials
 iyt_xli,daily_context,IYT,XLI,1d,30m,1d,transport leadership vs industrials
 xbi_xlv,daily_context,XBI,XLV,1d,30m,1d,biotech risk appetite vs healthcare
 aiq_qqq,daily_context,AIQ,QQQ,1d,1m,1d,thematic AI/growth appetite vs QQQ
@@ -55,5 +53,4 @@ arkf_qqq,daily_context,ARKF,QQQ,1d,1m,1d,fintech/blockchain thematic growth appe
 arkg_qqq,daily_context,ARKG,QQQ,1d,1m,1d,genomics thematic growth appetite vs QQQ
 arkw_qqq,daily_context,ARKW,QQQ,1d,1m,1d,internet thematic growth appetite vs QQQ
 arkx_qqq,daily_context,ARKX,QQQ,1d,1m,1d,space/defense thematic growth appetite vs QQQ
-botz_qqq,daily_context,BOTZ,QQQ,1d,1m,1d,robotics thematic growth appetite vs QQQ
 cibr_qqq,daily_context,CIBR,QQQ,1d,1m,1d,cybersecurity thematic growth appetite vs QQQ

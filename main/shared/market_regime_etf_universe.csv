@@ -6,11 +6,9 @@ ARKW,sector_observation_etf,thematic_growth,1d,ARK Next Generation Internet ETF,
 ARKX,sector_observation_etf,thematic_growth,1d,ARK Space & Defense Innovation ETF,ARK Invest,"Space, aerospace, and defense innovation thematic equity ETF."
 BITW,market_state_etf,crypto_beta,30m,Bitwise 10 Crypto Index ETF,Bitwise Asset Management,Broad crypto basket ETF used to observe aggregate crypto beta.
 BKCH,sector_observation_etf,crypto_beta,30m,Global X Blockchain ETF,Global X,Blockchain and crypto-related equity ETF proxy.
-BOTZ,sector_observation_etf,industry_chain,1d,Global X Robotics & Artificial Intelligence ETF,Global X,Robotics and artificial intelligence thematic equity ETF.
 CIBR,sector_observation_etf,industry_chain,1d,First Trust Nasdaq Cybersecurity ETF,First Trust,Cybersecurity industry equity ETF.
 IGV,sector_observation_etf,industry_chain,1d,iShares Expanded Tech-Software Sector ETF,BlackRock / iShares,Software sector ETF used to observe software leadership.
 IYT,sector_observation_etf,industry_chain,1d,iShares U.S. Transportation ETF,BlackRock / iShares,US transportation ETF used to observe transport and logistics cyclicality.
-JETS,sector_observation_etf,industry_chain,1d,U.S. Global Jets ETF,U.S. Global Investors,Airlines ETF used to observe travel and airline cyclicality.
 SMH,sector_observation_etf,industry_chain,1d,VanEck Semiconductor ETF,VanEck,Semiconductor ETF used to observe semiconductor leadership.
 XBI,sector_observation_etf,thematic_growth,1d,SPDR S&P Biotech ETF,State Street / SPDR,Biotech ETF used to observe high-beta biotech risk appetite.
 XLB,sector_observation_etf,sp500_sector,30m,Materials Select Sector SPDR Fund,State Street / SPDR,Materials sector ETF used to observe materials leadership.
@@ -48,4 +46,3 @@ TLT,market_state_etf,rates_curve,30m,iShares 20+ Year Treasury Bond ETF,BlackRoc
 USO,market_state_etf,commodities,1m,"United States Oil Fund, LP",USCF Investments,Oil fund used to observe crude-oil commodity pressure.
 UUP,market_state_etf,usd_volatility,1m,Invesco DB US Dollar Index Bullish Fund,Invesco,US dollar index fund used to observe broad dollar strength.
 VIXY,market_state_etf,usd_volatility,1m,ProShares VIX Short-Term Futures ETF,ProShares,Short-term VIX futures ETF used to observe volatility stress.
-VNQ,market_state_etf,credit,30m,Vanguard Real Estate ETF,Vanguard,Real estate ETF used to observe rate-sensitive REIT exposure.
