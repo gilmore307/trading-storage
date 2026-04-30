@@ -2,7 +2,7 @@
 
 ## Why This Repository Exists
 
-The trading platform is split across multiple repositories so each major responsibility has a clear owner. `trading-storage` exists because it defines durable artifact layout, references, retention, archive, restore, backup, and rehydrate expectations used by source, derived, model, execution, dashboard, and manager workflows. It also owns checked-in reusable non-code assets under `main/`.
+The trading platform is split across multiple repositories so each major responsibility has a clear owner. `trading-storage` exists because it defines durable artifact layout, references, retention, archive, restore, backup, and rehydrate expectations used by data, model, execution, dashboard, and manager workflows. It also owns checked-in reusable non-code assets under `main/`.
 
 ## Related Systems
 
@@ -10,9 +10,8 @@ The trading platform is split across multiple repositories so each major respons
 |---|---|
 | `trading-main` | Owns global architecture, registry, template operating rules, shared helpers, and cross-repository contracts. |
 | `trading-manager` | Owns orchestration, lifecycle, scheduling, retries, requests, and promotion routing. |
-| `trading-source` | Produces source-backed data artifacts, manifests, and ready signals. |
+| `trading-data` | Produces feed evidence, source tables, deterministic feature tables, manifests, and ready signals. |
 | `trading-storage` | Owns durable storage layout, retention, archive, backup, restore, and artifact placement rules. |
-| `trading-derived` | Produces derived labels, samples, signals, candidates, and research/backtest artifacts. |
 | `trading-model` | Produces offline model/state research outputs and verdicts. |
 | `trading-execution` | Consumes promoted decisions for paper/live execution. |
 | `trading-dashboard` | Presents already-produced outputs and evidence. |

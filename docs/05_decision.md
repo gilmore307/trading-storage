@@ -76,11 +76,11 @@ Date: 2026-04-26
 
 ### Context
 
-Historical data tasks will be initiated by `trading-manager` and executed by `trading-source`, but durable outputs and completion evidence need storage-owned contracts.
+Historical data tasks will be initiated by `trading-manager` and executed by `trading-data`, but durable outputs and completion evidence need storage-owned contracts.
 
 ### Decision
 
-`trading-source` development outputs first live under local `trading-source/storage/`. `trading-storage` will own the SQL table/partition contract for historical data task outputs and the durable schema/location for data task completion receipts once durable storage implementation begins.
+`trading-data` development outputs may first live in local disposable staging. `trading-storage` will own the SQL table/partition contract for historical data task outputs and the durable schema/location for data task completion receipts once durable storage implementation begins.
 
 ### Rationale
 
@@ -88,7 +88,7 @@ Persistence, retention, backup, restore, and reference stability belong to stora
 
 ### Consequences
 
-- Development files under `trading-source/storage/` are disposable and outside durable storage responsibility.
+- Development staging files in data-production repositories are disposable and outside durable storage responsibility.
 - Exact SQL destination and receipt schemas remain pending contract work.
 - Storage does not perform provider calls or task lifecycle orchestration.
 - Completion receipt references become lifecycle evidence for `trading-manager`.
@@ -100,11 +100,11 @@ Date: 2026-04-26
 
 ### Context
 
-The user clarified that development-stage `trading-source` outputs should be local files rather than SQL rows.
+The user previously clarified that early development-stage data-production outputs may be local files rather than SQL rows; accepted formal source/feature/model outputs now prefer SQL contracts.
 
 ### Decision
 
-Treat `trading-source/storage/` as disposable development staging owned by `trading-source`, not durable storage. `trading-storage` will define promotion, SQL destination, receipt storage, retention, and backup/restore contracts later.
+Treat local data-production staging as disposable, not durable storage. `trading-storage` will define promotion, SQL destination, receipt storage, retention, and backup/restore contracts later.
 
 ### Rationale
 
@@ -145,11 +145,11 @@ Date: 2026-04-27
 
 ### Context
 
-Some `trading-source` final outputs are naturally nested point-in-time artifacts rather than flat row series. `option_chain_snapshot` is the first concrete example: one logical artifact contains many option contracts and nested quote, IV, Greeks, derived, and underlying context.
+Some `trading-data` source outputs are naturally nested point-in-time artifacts rather than flat row series. `option_chain_snapshot` is the first concrete example: one logical artifact contains many option contracts and nested quote, IV, Greeks, derived, and underlying context.
 
 ### Decision
 
-For nested final artifacts such as `option_chain_snapshot`, the durable SQL contract should store the complete normalized artifact in a PostgreSQL `jsonb` column inside the SQL table row. Development-stage files may remain local JSON under `trading-source/storage/` until durable storage contracts are implemented.
+For nested final artifacts such as `option_chain_snapshot`, the durable SQL contract should store the complete normalized artifact in a PostgreSQL `jsonb` column inside the SQL table row. Development-stage files may remain local disposable JSON until durable storage contracts are implemented.
 
 ### Rationale
 

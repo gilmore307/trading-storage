@@ -22,9 +22,9 @@ artifact contract -> storage layout -> write/read policy -> retention/archive po
 
 ## Data Task Storage Role
 
-For historical data acquisition, development outputs first live under `trading-source/storage/` and are not owned as durable storage. Minimal draft receipt/output shapes are in `trading-storage/main/templates/data_tasks/completion_receipt.json` and `trading-storage/main/templates/data_tasks/save_spec.md`. Completion receipts are task-level files with `runs[]` entries for per-run evidence. Receipt fields should be added only when storage, manager, or source workflows actually consume them. `trading-storage` should eventually provide the SQL table/partition contract named by `trading-source` task key files and the durable location/schema for data task completion receipts.
+For data production, development outputs may start as local disposable staging files, but accepted source and feature outputs should move toward durable SQL/artifact contracts. Minimal draft receipt/output shapes are in `trading-storage/main/templates/data_tasks/completion_receipt.json` and `trading-storage/main/templates/data_tasks/save_spec.md`. Completion receipts are task-level files with `runs[]` entries for per-run evidence. Receipt fields should be added only when storage, manager, or data workflows actually consume them. `trading-storage` should eventually provide the SQL table/partition contract named by `trading-data` task key files and the durable location/schema for data task completion receipts.
 
-`trading-storage` owns future durable persistence shape, retention, backup/restore, and reference rules. It does not decide provider semantics, normalize rows, manage task lifecycle, or own disposable development files under `trading-source/storage/`.
+`trading-storage` owns future durable persistence shape, retention, backup/restore, and reference rules. It does not decide provider semantics, normalize rows, manage task lifecycle, or own disposable development files in data-production repositories.
 
 ## Collaboration Boundary
 
