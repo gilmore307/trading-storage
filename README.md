@@ -2,7 +2,7 @@
 
 `trading-storage` is the shared persistence contract repository for the trading system.
 
-It defines durable artifact layout, SQL output destination contracts, completion receipt storage, references, retention, archive, restore, backup, and rehydrate expectations used by source, derived, model, execution, dashboard, and manager workflows. It also owns checked-in reusable non-code assets migrated from `trading-main/storage/` under `main/`.
+It defines durable artifact layout, SQL output destination contracts, completion receipt storage, references, retention, archive, restore, backup, and rehydrate expectations used by source, derived, model, execution, dashboard, and manager workflows. It also owns checked-in reusable non-code assets migrated from `trading-manager/storage/` under `main/`.
 
 It does not own component responsibilities outside that boundary, global contracts, shared registry authority, generated runtime artifacts committed to Git, or secrets.
 
@@ -30,8 +30,8 @@ docs/
 
 ## Platform Dependencies
 
-- `trading-main` owns global registry, shared helpers, and platform guidance; reusable non-code assets now live under `trading-storage/main/`.
+- `trading-manager` owns global registry, shared helpers, and platform guidance; reusable non-code assets now live under `trading-storage/main/`.
 - `trading-storage` owns durable storage layout and retention unless this repository is `trading-storage` itself.
-- `trading-main` owns control-plane orchestration and lifecycle routing.
+- `trading-manager` owns control-plane orchestration and lifecycle routing.
 
-Any new global helper, reusable template, shared field, status, type, config key, or vocabulary discovered here must be routed back to `trading-main` before other repositories depend on it.
+Any new global helper, reusable template, shared field, status, type, config key, or vocabulary discovered here must be routed back to `trading-manager` before other repositories depend on it.

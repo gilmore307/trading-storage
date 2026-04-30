@@ -8,7 +8,7 @@ Acceptance focuses on:
 
 - repository boundary clarity;
 - workflow clarity;
-- compatibility with `trading-main` contracts and registry rules;
+- compatibility with `trading-manager` contracts and registry rules;
 - compatibility with `trading-storage` where durable artifacts are involved;
 - absence of committed generated outputs, logs, notebooks, credentials, and secrets;
 - evidence-backed tests once code exists.
@@ -21,7 +21,7 @@ Documentation changes are acceptable when they:
 
 - update the narrowest authoritative file;
 - preserve separation between scope, context, workflow, acceptance, task, decision, and memory;
-- route global helper, template, field, status, type, and shared vocabulary changes to `trading-main`;
+- route global helper, template, field, status, type, and shared vocabulary changes to `trading-manager`;
 - mark unresolved contract/storage/runtime questions as open gaps;
 - avoid pretending implementation choices are settled before evidence exists.
 
@@ -34,7 +34,7 @@ Implementation changes are acceptable only when they:
 - include meaningful tests for the behavior introduced;
 - avoid external side effects in default tests unless explicitly guarded;
 - use accepted contracts for cross-repository handoffs;
-- route new shared names through `trading-main/scripts/`.
+- route new shared names through `trading-manager/scripts/`.
 
 ## Verification Commands
 
@@ -67,8 +67,8 @@ A change must be rejected or returned if it:
 
 - takes over another component repository responsibility.
 - commits generated outputs, logs, notebooks, or credentials.
-- invents shared fields/statuses/types without trading-main registry review.
+- invents shared fields/statuses/types without trading-manager registry review.
 - stores secret values.
 - writes artifacts to undocumented paths.
 - claims acceptance without test or inspection evidence.
-- duplicates global contract definitions locally instead of referencing trading-main.
+- duplicates global contract definitions locally instead of referencing trading-manager.

@@ -12,7 +12,7 @@ This repository exists to keep that responsibility explicit, testable, and separ
 
 - shared artifact storage layout contracts.
 - checked-in reusable templates and shared static files under `main/`.
-- artifact reference and path policy in coordination with trading-main contracts.
+- artifact reference and path policy in coordination with trading-manager contracts.
 - retention, archive, rehydrate, backup, and restore expectations.
 - storage validation and compatibility checks once implementation exists.
 - storage-local tests for path/reference/retention helpers once code exists.
@@ -23,9 +23,9 @@ This repository exists to keep that responsibility explicit, testable, and separ
 - derived or model logic.
 - execution/order placement.
 - dashboard visualization.
-- global contract/type registration outside trading-main.
+- global contract/type registration outside trading-manager.
 - committed generated artifacts or production data.
-- Defining global artifact, manifest, ready-signal, request, field, status, or type contracts outside `trading-main`.
+- Defining global artifact, manifest, ready-signal, request, field, status, or type contracts outside `trading-manager`.
 - Storing generated data, artifacts, logs, notebooks, credentials, or secrets in Git.
 
 ## Owner Intent
@@ -37,12 +37,12 @@ The repository should prefer explicit interfaces, fixture-backed tests, and narr
 ## Boundary Rules
 
 - Component-local implementation belongs here only when it matches this repository's role.
-- Global contracts, registry entries, shared helpers, and template operating rules belong in `trading-main`; checked-in reusable template files live under `trading-storage/main/templates/`.
+- Global contracts, registry entries, shared helpers, and template operating rules belong in `trading-manager`; checked-in reusable template files live under `trading-storage/main/templates/`.
 - Durable storage layout and retention belong in `trading-storage` unless this repository is defining that storage contract.
-- Scheduling, retries, lifecycle routing, and promotion decisions belong in the `trading-main` control plane unless explicitly delegated by contract.
+- Scheduling, retries, lifecycle routing, and promotion decisions belong in the `trading-manager` control plane unless explicitly delegated by contract.
 - Generated artifacts and runtime outputs are not source files.
 - Secrets and credentials must stay outside the repository.
-- Shared helpers, templates, fields, statuses, and type values discovered here must be recorded through `trading-main` before cross-repository use.
+- Shared helpers, templates, fields, statuses, and type values discovered here must be recorded through `trading-manager` before cross-repository use.
 
 ## Out-of-Scope Signals
 
@@ -50,6 +50,6 @@ A request should be rejected or re-scoped if it asks `trading-storage` to:
 
 - take over another component repository responsibility.
 - commit generated runtime outputs or secrets.
-- define global contracts without routing them through trading-main.
+- define global contracts without routing them through trading-manager.
 - invent shared fields/statuses/types without registry review.
 - bypass accepted storage or manager lifecycle boundaries.

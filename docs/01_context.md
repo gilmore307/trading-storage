@@ -8,8 +8,8 @@ The trading platform is split across multiple repositories so each major respons
 
 | System | Relationship |
 |---|---|
-| `trading-main` | Owns global architecture, registry, template operating rules, shared helpers, and cross-repository contracts. |
-| `trading-main` control plane | Owns orchestration, lifecycle, scheduling, retries, requests, and promotion routing. |
+| `trading-manager` | Owns global architecture, registry, template operating rules, shared helpers, and cross-repository contracts. |
+| `trading-manager` control plane | Owns orchestration, lifecycle, scheduling, retries, requests, and promotion routing. |
 | `trading-data` | Produces feed evidence, source tables, deterministic feature tables, manifests, and ready signals. |
 | `trading-storage` | Owns durable storage layout, retention, archive, backup, restore, and artifact placement rules. |
 | `trading-model` | Produces offline model/state research outputs and verdicts. |
@@ -22,19 +22,19 @@ Potential external interfaces include:
 
 - local/shared filesystem storage.
 - backup/archive targets once chosen.
-- trading-main artifact and manifest contracts.
+- trading-manager artifact and manifest contracts.
 - checked-in shared assets under `main/`, including reusable templates and shared static CSVs.
 
-Specific providers, credentials, package choices, deployment targets, and runtime settings are not settled unless recorded in this repository's decisions or inherited from `trading-main` contracts.
+Specific providers, credentials, package choices, deployment targets, and runtime settings are not settled unless recorded in this repository's decisions or inherited from `trading-manager` contracts.
 
 ## Environment
 
 Development is server-hosted under `/root/projects/trading-storage`.
 
-The shared Python environment is anchored by `trading-main` at:
+The shared Python environment is anchored by `trading-manager` at:
 
 ```text
-/root/projects/trading-main/.venv
+/root/projects/trading-manager/.venv
 ```
 
 `trading-storage` should not create an independent virtual environment unless a documented exception is accepted.
@@ -43,16 +43,16 @@ The shared Python environment is anchored by `trading-main` at:
 
 Current system-level dependencies:
 
-- `trading-main/docs/07_helpers.md` for shared helper policy;
-- `trading-main/docs/08_registry.md` for registry operating rules;
-- `trading-main/docs/09_templates.md` for reusable template operating rules;
+- `trading-manager/docs/07_helpers.md` for shared helper policy;
+- `trading-manager/docs/08_registry.md` for registry operating rules;
+- `trading-manager/docs/09_templates.md` for reusable template operating rules;
 - `trading-storage/main/templates/` for reusable drafting surfaces;
-- `trading-main/requirements.txt` for reviewed shared Python dependencies;
+- `trading-manager/requirements.txt` for reviewed shared Python dependencies;
 - related component repositories through accepted contracts, not internal implementation details.
 
 ## Global Registration Discipline
 
-If this repository introduces a name that other repositories may consume, route it back to `trading-main` before treating it as stable.
+If this repository introduces a name that other repositories may consume, route it back to `trading-manager` before treating it as stable.
 
 This includes shared fields, artifact types, manifest types, ready-signal types, request types, status values, global helper methods, reusable templates, config keys, and provider-independent terminology.
 

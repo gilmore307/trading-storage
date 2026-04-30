@@ -15,7 +15,7 @@ artifact contract -> storage layout -> write/read policy -> retention/archive po
 - Producers write artifacts according to storage contracts rather than inventing local paths.
 - Consumers dereference artifacts through documented references and layout rules.
 - Backup and restore expectations must be explicit before important data depends on the storage layer.
-- Shared fields, statuses, type values, helpers, and reusable templates must come from `trading-main`.
+- Shared fields, statuses, type values, helpers, and reusable templates must come from `trading-manager`.
 - Runtime outputs must be written outside Git-tracked source paths.
 - Cross-repository handoffs should use accepted request, artifact, manifest, and ready-signal contracts.
 
