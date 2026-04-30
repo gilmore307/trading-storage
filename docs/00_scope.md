@@ -39,7 +39,7 @@ The repository should prefer explicit interfaces, fixture-backed tests, and narr
 - Component-local implementation belongs here only when it matches this repository's role.
 - Global contracts, registry entries, shared helpers, and template operating rules belong in `trading-main`; checked-in reusable template files live under `trading-storage/main/templates/`.
 - Durable storage layout and retention belong in `trading-storage` unless this repository is defining that storage contract.
-- Scheduling, retries, lifecycle routing, and promotion decisions belong in `trading-manager` unless explicitly delegated by contract.
+- Scheduling, retries, lifecycle routing, and promotion decisions belong in the `trading-main` control plane unless explicitly delegated by contract.
 - Generated artifacts and runtime outputs are not source files.
 - Secrets and credentials must stay outside the repository.
 - Shared helpers, templates, fields, statuses, and type values discovered here must be recorded through `trading-main` before cross-repository use.

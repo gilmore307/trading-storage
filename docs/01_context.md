@@ -9,7 +9,7 @@ The trading platform is split across multiple repositories so each major respons
 | System | Relationship |
 |---|---|
 | `trading-main` | Owns global architecture, registry, template operating rules, shared helpers, and cross-repository contracts. |
-| `trading-manager` | Owns orchestration, lifecycle, scheduling, retries, requests, and promotion routing. |
+| `trading-main` control plane | Owns orchestration, lifecycle, scheduling, retries, requests, and promotion routing. |
 | `trading-data` | Produces feed evidence, source tables, deterministic feature tables, manifests, and ready signals. |
 | `trading-storage` | Owns durable storage layout, retention, archive, backup, restore, and artifact placement rules. |
 | `trading-model` | Produces offline model/state research outputs and verdicts. |

@@ -76,7 +76,7 @@ Date: 2026-04-26
 
 ### Context
 
-Historical data tasks will be initiated by `trading-manager` and executed by `trading-data`, but durable outputs and completion evidence need storage-owned contracts.
+Historical data tasks will be initiated by the `trading-main` control plane and executed by `trading-data`, but durable outputs and completion evidence need storage-owned contracts.
 
 ### Decision
 
@@ -91,7 +91,7 @@ Persistence, retention, backup, restore, and reference stability belong to stora
 - Development staging files in data-production repositories are disposable and outside durable storage responsibility.
 - Exact SQL destination and receipt schemas remain pending contract work.
 - Storage does not perform provider calls or task lifecycle orchestration.
-- Completion receipt references become lifecycle evidence for `trading-manager`.
+- Completion receipt references become lifecycle evidence for the `trading-main` control plane.
 
 
 ## D005 - Development data files are outside durable storage responsibility
