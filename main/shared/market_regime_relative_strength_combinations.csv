@@ -22,7 +22,7 @@ gld_uup,primary,GLD,UUP,1m,1m,30m,gold safety vs dollar pressure
 bitw_spy,primary,BITW,SPY,30m,1m,30m,broad crypto basket beta vs equities
 ibit_bitw,primary,IBIT,BITW,30m,30m,30m,Bitcoin beta leadership vs broad crypto basket
 etha_bitw,primary,ETHA,BITW,30m,30m,30m,Ethereum beta leadership vs broad crypto basket
-bkch_bitw,primary,BKCH,BITW,30m,30m,30m,crypto-related equities leadership vs broad crypto basket
+bkch_bitw,sector_rotation,BKCH,BITW,30m,30m,30m,crypto-related equities leadership vs broad crypto basket
 fsol_bitw,primary,FSOL,BITW,30m,30m,30m,Solana beta leadership vs broad crypto basket
 xlb_spy,sector_rotation,XLB,SPY,30m,1m,30m,materials leadership vs broad market
 xlc_spy,sector_rotation,XLC,SPY,30m,1m,30m,communication services leadership vs broad market

@@ -186,3 +186,22 @@ This includes:
 - Cross-repository references should use `trading-storage/main/...` paths.
 - Shared names and template-introduced vocabulary still route through the `trading-main` SQL registry before cross-repository use.
 - Generated outputs, runtime artifacts, logs, notebooks, caches, and secrets remain out of Git.
+
+## D009 - Sector-observation combinations belong to Layer 2
+
+Date: 2026-04-30
+Status: Accepted
+
+### Context
+
+The shared relative-strength combination table drives both Layer 1 broad market-state evidence and Layer 2 sector/industry candidate evidence. Chentong accepted the stricter boundary that all sector/industry rotation-related evidence should move to Layer 2 so Layer 1 stays clean. The `bkch_bitw` pair uses `BKCH`, a `sector_observation_etf`, but was still marked as `primary`, which caused crypto-related equity candidate/theme leadership evidence to remain in Layer 1.
+
+### Decision
+
+Classify `bkch_bitw` as `sector_rotation` instead of `primary`.
+
+### Consequences
+
+- `feature_01_market_regime` no longer generates `bkch_bitw_*` Layer 1 payload keys.
+- `feature_02_security_selection` emits `bkch_bitw` as a Layer 2 candidate-comparison row.
+- Future combinations involving `sector_observation_etf` candidates should default to Layer 2 unless explicitly reviewed as broad market/cross-asset evidence.
