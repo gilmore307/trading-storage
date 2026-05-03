@@ -26,7 +26,11 @@ docs/
   04_task.md
   05_decision.md
   06_memory.md
+  91_layer_01_market_regime.md
+  92_layer_02_sector_context.md
 ```
+
+Layer-specific `91_`/`92_` docs record active persistence boundaries for Layer 1 and Layer 2 while the lower-number docs spine is being evaluated.
 
 ## Platform Dependencies
 

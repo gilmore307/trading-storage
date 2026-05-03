@@ -205,3 +205,15 @@ Classify `bkch_bitw` as `sector_rotation` instead of `primary`.
 - `feature_01_market_regime` no longer generates `bkch_bitw_*` Layer 1 payload keys.
 - `feature_02_sector_context` emits `bkch_bitw` as a Layer 2 candidate-comparison row.
 - Future combinations involving `sector_observation_etf` candidates should default to Layer 2 unless explicitly reviewed as broad market/cross-asset evidence.
+
+
+## D010 - Storage preserves compact numeric layer field names
+
+Date: 2026-05-03
+Status: Accepted
+
+Storage contracts should preserve the canonical layer-owned field names accepted by `trading-manager` and `trading-model`. For model-layer fields this means compact numeric prefixes such as `1_*` and `2_*` in physical SQL columns as well as docs/model-facing payloads.
+
+SQL DDL should quote numeric-leading identifiers where required instead of inventing semantic aliases such as `layer01_*` or `layer02_*`. Generic identity, lineage, timestamp, and receipt/run metadata columns may remain generic.
+
+Storage owns durability, availability, row keys, retention, restore, and receipt boundaries; it does not decide model semantics or promote explainability/diagnostics fields into downstream contracts.
