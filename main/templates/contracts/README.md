@@ -13,4 +13,4 @@ Current templates:
 
 When a contract becomes concrete, its stable type names should be registered in `scripts/` and its concrete entries should be inserted through SQL registry migrations.
 
-See `../../../../docs/09_templates.md` for template acceptance and promotion rules.
+See `../../../../docs/92_templates.md` for template acceptance and promotion rules.

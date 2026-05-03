@@ -9,7 +9,7 @@ It does not own component responsibilities outside that boundary, global contrac
 ## Top-Level Structure
 
 ```text
-docs/        Repository scope, context, workflow, acceptance, task, decisions, and local memory.
+docs/        Repository scope/context, layer storage workflows with acceptance, task/decision/memory.
 main/        Checked-in reusable non-code assets shared across trading repositories.
 ```
 
@@ -21,16 +21,14 @@ Source, scripts, tests, and package layout are intentionally not created yet. Ad
 docs/
   00_scope.md
   01_context.md
-  02_workflow.md
-  03_acceptance.md
-  04_task.md
-  05_decision.md
-  06_memory.md
-  91_layer_01_market_regime.md
-  92_layer_02_sector_context.md
+  02_layer_01_market_regime.md
+  03_layer_02_sector_context.md
+  80_task.md
+  81_decision.md
+  82_memory.md
 ```
 
-Layer-specific `91_`/`92_` docs record active persistence boundaries for Layer 1 and Layer 2 while the lower-number docs spine is being evaluated.
+Layer-specific `02_`/`03_` docs record active persistence workflows, boundaries, and acceptance gates for Layer 1 and Layer 2.
 
 ## Platform Dependencies
 

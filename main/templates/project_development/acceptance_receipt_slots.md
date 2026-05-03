@@ -36,7 +36,7 @@ Reuse the default registry-registered vocabularies for `acceptance_outcome` and 
   "task_identity": "task_register_status_vocab",
   "workflow_identity": "skill_cleanup",
   "acceptance_outcome": "accepted",
-  "acceptance_reference": "docs/03_acceptance.md#status-vocabulary-cleanup",
+  "acceptance_reference": "docs/02_layer_01_market_regime.md#layer-acceptance",
   "reviewed_files": [
     "skills/openclaw/project_development/templates/acceptance_receipt_slots.md",
     "skills/openclaw/project_development/templates/maintenance_output_slots.md"

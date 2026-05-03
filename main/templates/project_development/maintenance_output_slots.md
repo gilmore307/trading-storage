@@ -48,7 +48,7 @@ When task states are summarized, reuse the default registry-registered vocabular
   "dictionary_issue_list": [],
   "split_issue_list": [],
   "memory_route_issue_list": [
-    "Move implementation notes from chat into docs/05_decision.md."
+    "Move implementation notes from chat into docs/81_decision.md."
   ],
   "follow_up_task_list": [
     "task_reconcile_docs_drift"
