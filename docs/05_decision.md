@@ -203,5 +203,5 @@ Classify `bkch_bitw` as `sector_rotation` instead of `primary`.
 ### Consequences
 
 - `feature_01_market_regime` no longer generates `bkch_bitw_*` Layer 1 payload keys.
-- `feature_02_security_selection` emits `bkch_bitw` as a Layer 2 candidate-comparison row.
+- `feature_02_sector_context` emits `bkch_bitw` as a Layer 2 candidate-comparison row.
 - Future combinations involving `sector_observation_etf` candidates should default to Layer 2 unless explicitly reviewed as broad market/cross-asset evidence.
