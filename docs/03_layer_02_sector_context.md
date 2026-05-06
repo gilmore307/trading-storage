@@ -21,7 +21,7 @@ Storage contracts preserve point-in-time availability, row keys, restore/rehydra
 
 ## Column naming
 
-Generic identity, lineage, timestamp, and receipt columns may remain generic. Layer-owned model columns use canonical compact `2_*` names. SQL DDL should quote numeric-leading identifiers where required instead of inventing `layer02_*` semantic aliases.
+Generic identity, lineage, timestamp, and receipt columns may remain generic. Layer-owned model columns use canonical compact `2_*` names. SQL DDL should quote numeric-leading identifiers where required instead of inventing `layer02_*` semantic aliases. The active V2.2 `model_02_sector_context` column set uses signed direction, direction-neutral trend/tradability, transition risk, separate handoff state/bias, coverage, data-quality, and evidence-count fields; old readiness aliases such as `2_selection_readiness_score` are not durable storage contract columns.
 
 ## Stage flow
 
