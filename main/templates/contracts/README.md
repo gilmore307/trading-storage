@@ -1,16 +1,32 @@
 # Contract Templates
 
-This directory stores reusable templates for system-level trading contracts.
+This directory stores the accepted V1 template contracts for cross-repository trading handoffs.
 
-Templates belong here instead of `docs/` because they are drafting surfaces, not ratified system docs.
+Templates live here because `trading-storage` owns durable artifact/storage semantics. `trading-manager` registers stable type names and orchestrates when these contracts are emitted or consumed.
 
-Current templates:
+Current contracts:
 
-- `artifact.md` — artifact contract drafting template.
-- `manifest.md` — manifest contract drafting template.
-- `ready_signal.md` — ready-signal contract drafting template.
-- `request.md` — request contract drafting template.
+- `request.md` — `manager_request_v1`, the manager-issued work-intent contract.
+- `manifest.md` — `run_manifest_v1`, the durable run-evidence contract.
+- `artifact.md` — `artifact_ref_v1`, the immutable output-artifact reference contract.
+- `ready_signal.md` — `ready_signal_v1`, the downstream consumability marker.
 
-When a contract becomes concrete, its stable type names should be registered in `scripts/` and its concrete entries should be inserted through SQL registry migrations.
+Relationship:
 
-See `../../../../docs/92_templates.md` for template acceptance and promotion rules.
+```text
+manager_request_v1
+  -> run_manifest_v1
+      -> artifact_ref_v1
+      -> ready_signal_v1
+```
+
+Acceptance rules:
+
+- Production instances must not use ignored local `storage/` paths as durable handoff locators.
+- Secrets are referenced by registry/config aliases only.
+- Ready signals authorize consumption only when referenced manifests and validation checks support that status.
+- Fixture/local evidence may rehearse these shapes, but cannot become production-ready without reviewed manager/storage implementation.
+
+When a type name becomes stable, register it in `trading-manager/scripts/registry/` through SQL migrations and regenerate `scripts/registry/current.csv`.
+
+See `../../../../docs/92_templates.md` for template promotion rules.

@@ -217,3 +217,30 @@ Storage contracts should preserve the canonical layer-owned field names accepted
 SQL DDL should quote numeric-leading identifiers where required instead of inventing semantic aliases such as `layer01_*` or `layer02_*`. Generic identity, lineage, timestamp, and receipt/run metadata columns may remain generic.
 
 Storage owns durability, availability, row keys, retention, restore, and receipt boundaries; it does not decide model semantics or promote explainability/diagnostics fields into downstream contracts.
+
+## D011 - V1 handoff contracts are accepted as storage templates
+
+Date: 2026-05-08
+Status: Accepted
+
+### Context
+
+The model stack and data-source/model-input design phase are closed. Remaining non-production work can now define cross-repository handoff contracts without waiting for accumulated production data.
+
+### Decision
+
+Accept four storage-owned V1 template contracts under `main/templates/contracts/`:
+
+- `manager_request_v1` for manager-issued work intent.
+- `run_manifest_v1` for run evidence.
+- `artifact_ref_v1` for immutable output references.
+- `ready_signal_v1` for downstream consumability markers.
+
+These contracts define logical shape, required fields, mutability, readiness, and secret-handling rules. They do not by themselves implement production queues, SQL persistence, or artifact storage.
+
+### Consequences
+
+- `trading-manager` may register these type names and use them as control-plane vocabulary.
+- Future storage implementation should persist these shapes rather than reviving older local completion-receipt-only drafts as final contracts.
+- Ignored local `storage/` paths remain development evidence only and must not become production handoff locators.
+- Production use still requires physical SQL/storage implementation, retention/backup/restore policy, and verified manager orchestration.
