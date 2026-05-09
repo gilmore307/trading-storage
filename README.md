@@ -11,9 +11,12 @@ It does not own component responsibilities outside that boundary, global contrac
 ```text
 docs/        Repository scope/context, layer storage workflows with acceptance, task/decision/memory.
 main/        Checked-in reusable non-code assets shared across trading repositories.
+scripts/     Executable storage artifact helpers and maintenance entrypoints.
+src/         Importable storage helper package.
+tests/       First-party storage tests.
 ```
 
-Source, scripts, tests, and package layout are intentionally not created yet. Add them only after the component contracts, storage expectations, and first implementation slice are explicit. When implementation begins, use `src/` for importable/reusable code, `scripts/` for executable maintenance or operational entrypoints, and `tests/` for first-party tests; `scripts/` may import `src/`, but `src/` must not import `scripts/`.
+The first implementation slice is storage-owned JSON artifact writing for completion receipt payloads. `src/` owns reusable code, `scripts/` owns executable entrypoints, and `tests/` owns verification; `scripts/` may import `src/`, but `src/` must not import `scripts/`.
 
 ## Docs Spine
 
@@ -29,6 +32,14 @@ docs/
 ```
 
 Layer-specific `02_`/`03_` docs record active persistence workflows, boundaries, and acceptance gates for Layer 1 and Layer 2.
+
+## Verification
+
+```bash
+PYTHONPATH=src python3 -m unittest discover -s tests
+python3 -m compileall -q src scripts
+```
+
 
 ## Platform Dependencies
 

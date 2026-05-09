@@ -6,17 +6,13 @@
 
 ## Queued Tasks
 
-- Define the first implementation slice for `trading-storage` using the accepted V1 handoff contracts.
-- Define package/source/test layout after the first implementation slice is accepted.
-- Define fixture policy and default test commands.
 - Identify SQL table/partition candidates for the first durable artifact/manifest/ready-signal implementation.
+- Add development-to-durable promotion automation only after manager-side consumers require it.
 
 ## Open Gaps
 
-- Exact first implementation slice.
-- Exact source/package layout.
-- Exact fixture and test policy.
 - Exact physical SQL DDL for request, manifest, artifact-ref, and ready-signal persistence.
+- Durable object-store backend policy beyond the current filesystem development helper.
 
 ## Deferred Until Manager Phase
 
@@ -26,6 +22,8 @@
 
 ## Recently Accepted
 
+- Implemented the first storage slice: canonical JSON artifact writes for storage-owned completion receipt payloads under `src/trading_storage/artifact_store.py`, executable helper `scripts/artifacts/store_completion_receipt_payload.py`, and tests under `tests/`.
+- Accepted package/source/test layout: `src/` for importable helpers, `scripts/` for executable entrypoints, `tests/` for first-party verification, and ignored local `storage/` for generated artifact payloads.
 - Accepted V1 cross-repository handoff template contracts under `main/templates/contracts/`: `manager_request_v1`, `run_manifest_v1`, `artifact_ref_v1`, and `ready_signal_v1`.
 - Clarified task-level completion receipt with nested `runs[]` entries for per-run evidence.
 - Clarified that completion receipt templates should stay minimal until durable storage consumers require more fields.
