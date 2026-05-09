@@ -1,8 +1,8 @@
-"""Template pipeline for a trading-source historical acquisition source.
+"""Template pipeline for a trading-data historical acquisition source.
 
 Copy this file into:
 
-    trading-source/src/data_sources/<source>/pipeline.py
+    trading-data/src/data_source/<source>/pipeline.py
 
 Keep one public source entry point (`run`) while preserving clear internal step
 boundaries for fetch, clean, save, and receipt generation.

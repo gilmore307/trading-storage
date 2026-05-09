@@ -59,7 +59,7 @@ When task states are summarized, reuse the default registry-registered vocabular
 
 ## Notes
 
-- Reuse previously ratified shared slots from `trading-main/scripts/` where they fit.
+- Reuse previously ratified shared slots from `trading-manager/scripts/` where they fit.
 - `maintenance_status`: `healthy`, `needs_attention`, `blocked`
 - `docs_status`: `aligned`, `drifted`, `blocked`
 - Report only maintenance findings the project can state concretely.

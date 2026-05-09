@@ -2,7 +2,7 @@
 
 ## Status
 
-The current `trading-storage` storage-contract-and-first-helper phase is closed.
+The current `trading-storage` storage-contract-and-lifecycle-helper phase is closed.
 
 This closeout covers the storage-owned surfaces needed by the current data/model/manager phase:
 
@@ -11,6 +11,7 @@ This closeout covers the storage-owned surfaces needed by the current data/model
 - V1 handoff templates for `manager_request_v1`, `run_manifest_v1`, `artifact_ref_v1`, and `ready_signal_v1`;
 - storage-owned completion receipt payload helper;
 - local ignored `storage/` development artifact boundary;
+- local retention/archive/cleanup helper and scheduling templates;
 - package/source/test layout for future storage helpers.
 
 ## Accepted Storage-Owned Shape
@@ -32,11 +33,13 @@ The accepted V1 templates live under:
 main/templates/contracts/
 ```
 
-The first implementation helper is:
+The accepted implementation helpers are:
 
 ```text
 src/trading_storage/artifact_store.py
 scripts/artifacts/store_completion_receipt_payload.py
+src/trading_storage/lifecycle.py
+scripts/lifecycle/maintain_local_storage.py
 ```
 
 ## Boundaries Preserved
@@ -46,7 +49,7 @@ This closeout does not enable or claim:
 - production object-store infrastructure;
 - production SQL partitioning for every output family;
 - production queue execution;
-- manager lifecycle mutation;
+- host-level timer installation or manager lifecycle mutation;
 - provider calls;
 - model promotion approval;
 - broker/order/fill/account lifecycle;
@@ -59,7 +62,8 @@ Those are later component production phases and must be accepted through the man
 Future storage work should begin only when a concrete manager/component consumer requires it:
 
 - physical SQL DDL for durable request/manifest/artifact/ready persistence beyond current manager MVP rows;
-- object-store backend policy, retention, backup, restore, archive, and rehydrate mechanics beyond the local filesystem helper;
+- object-store backend policy and production backup/restore infrastructure beyond the local filesystem helper;
+- SQL retention policy by source/feature/model output family;
 - development-to-durable promotion automation for source/feature/model outputs;
 - partitioning/index policy for high-volume artifacts;
 - lifecycle mutation rules for storage-resident artifacts after manager consumers require them.
@@ -73,6 +77,7 @@ The closeout is acceptable only while these gates pass:
 ```bash
 PYTHONPATH=src python3 -m unittest discover -s tests
 python3 -m compileall -q src scripts
+PYTHONPATH=src python3 scripts/lifecycle/maintain_local_storage.py --root .
 git diff --check
 ```
 

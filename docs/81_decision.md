@@ -20,7 +20,7 @@ A narrow component boundary prevents hidden coupling and keeps cross-repository 
 ### Consequences
 
 - Implementation work must stay inside the accepted component role.
-- Shared names and contracts must route through `trading-main`.
+- Shared names and contracts must route through `trading-manager`.
 - Generated outputs and secrets must stay out of Git.
 
 
@@ -43,7 +43,7 @@ A narrow component boundary prevents hidden coupling and keeps cross-repository 
 ### Consequences
 
 - Implementation work must stay inside the accepted component role.
-- Shared names and contracts must route through `trading-main`.
+- Shared names and contracts must route through `trading-manager`.
 - Generated outputs and secrets must stay out of Git.
 
 
@@ -66,7 +66,7 @@ A narrow component boundary prevents hidden coupling and keeps cross-repository 
 ### Consequences
 
 - Implementation work must stay inside the accepted component role.
-- Shared names and contracts must route through `trading-main`.
+- Shared names and contracts must route through `trading-manager`.
 - Generated outputs and secrets must stay out of Git.
 
 
@@ -76,7 +76,7 @@ Date: 2026-04-26
 
 ### Context
 
-Historical data tasks will be initiated by the `trading-main` control plane and executed by `trading-data`, but durable outputs and completion evidence need storage-owned contracts.
+Historical data tasks will be initiated by the `trading-manager` control plane and executed by `trading-data`, but durable outputs and completion evidence need storage-owned contracts.
 
 ### Decision
 
@@ -91,7 +91,7 @@ Persistence, retention, backup, restore, and reference stability belong to stora
 - Development staging files in data-production repositories are disposable and outside durable storage responsibility.
 - Exact SQL destination and receipt schemas remain pending contract work.
 - Storage does not perform provider calls or task lifecycle orchestration.
-- Completion receipt references become lifecycle evidence for the `trading-main` control plane.
+- Completion receipt references become lifecycle evidence for the `trading-manager` control plane.
 
 
 ## D005 - Development data files are outside durable storage responsibility
@@ -169,7 +169,7 @@ Status: Accepted
 
 ### Context
 
-`trading-main/storage/` held reusable templates and shared static files, but `trading-main` should keep global registry/guidance responsibility instead of owning checked-in storage assets directly.
+`trading-manager/storage/` held reusable templates and shared static files, but `trading-manager` should keep global registry/guidance responsibility instead of owning checked-in storage assets directly.
 
 ### Decision
 
@@ -182,9 +182,9 @@ This includes:
 
 ### Consequences
 
-- `trading-main/storage/` is retired.
+- `trading-manager/storage/` is retired.
 - Cross-repository references should use `trading-storage/main/...` paths.
-- Shared names and template-introduced vocabulary still route through the `trading-main` SQL registry before cross-repository use.
+- Shared names and template-introduced vocabulary still route through the `trading-manager` SQL registry before cross-repository use.
 - Generated outputs, runtime artifacts, logs, notebooks, caches, and secrets remain out of Git.
 
 ## D009 - Sector-observation combinations belong to Layer 2
@@ -245,7 +245,7 @@ These contracts define logical shape, required fields, mutability, readiness, an
 - Ignored local `storage/` paths remain development evidence only and must not become production handoff locators.
 - Production use still requires physical SQL/storage implementation, retention/backup/restore policy, and verified manager orchestration.
 
-## D012 - Current storage-contract phase is closed
+## D012 - Initial storage-contract phase was closed
 
 Date: 2026-05-09
 Status: Accepted
@@ -256,12 +256,37 @@ Status: Accepted
 
 ### Decision
 
-Close the current storage-contract-and-first-helper phase. `docs/90_storage_closeout.md` is the authoritative closeout receipt.
+Close the initial storage-contract-and-first-helper phase. `docs/90_storage_closeout.md` was the authoritative closeout receipt for that slice; D013 extends the closeout with local lifecycle maintenance.
 
-No active storage-phase tasks remain. Future storage work is deferred until a concrete manager/component consumer requires it: production object-store backend policy, durable SQL partitioning, development-to-durable promotion automation, storage-resident lifecycle mutation, or high-volume artifact retention/backup/restore mechanics.
+At that point, no active storage-phase tasks remained. Future production storage work was deferred until a concrete manager/component consumer required it: production object-store backend policy, durable SQL partitioning, development-to-durable promotion automation, storage-resident lifecycle mutation, or high-volume artifact retention/backup/restore mechanics.
 
 ### Consequences
 
 - `trading-storage` remains the persistence contract and payload-durability owner.
 - This closeout does not enable provider calls, manager dispatch, model activation, broker execution, production object-store infrastructure, or universal SQL partitioning.
 - New storage implementation should start from the accepted V1 handoff contracts and a specific consumer acceptance gate.
+
+## D013 - Local storage lifecycle is conservative and reviewable
+
+Date: 2026-05-09
+Status: Accepted
+
+### Context
+
+The repository had clean Git boundaries, but local runtime files still relied only on broad `.gitignore` rules and deferred production-storage wording. That was not enough: temporary files, logs, run staging, and local artifacts need an explicit first-principles lifecycle before formal runs begin.
+
+### Decision
+
+Accept `docs/04_storage_lifecycle.md` as the local lifecycle contract and add the first storage-owned lifecycle helper:
+
+- `src/trading_storage/lifecycle.py`
+- `scripts/lifecycle/maintain_local_storage.py`
+- `main/templates/maintenance/` timer templates
+
+The helper dry-runs by default. It retains `storage/artifacts/`, archives `logs/`, `runs/`, and `outputs/` before removing active copies, deletes old `tmp/` files without archive, removes Python/tool caches, prunes aged local archives, keeps archive destinations under the repository root, and skips symlinks.
+
+### Consequences
+
+- Local ignored files now have explicit retention behavior instead of relying on ad hoc cleanup.
+- Timer templates may be reviewed and installed later, but this repository change does not enable host-level scheduling by itself.
+- Production object-store policy, SQL partitioning, backup/restore infrastructure, and manager-coordinated lifecycle mutation remain separate production-phase work.

@@ -1,6 +1,22 @@
 # scripts
 
-Executable storage maintenance and artifact helpers live here.
+Executable storage maintenance and artifact helpers live here. Scripts may import `src/`; `src/` must not import scripts.
+
+## Lifecycle helpers
+
+- `lifecycle/maintain_local_storage.py` plans or applies conservative local retention rules for ignored runtime files.
+
+Dry-run:
+
+```bash
+PYTHONPATH=src python3 scripts/lifecycle/maintain_local_storage.py --root .
+```
+
+Apply after review:
+
+```bash
+PYTHONPATH=src python3 scripts/lifecycle/maintain_local_storage.py --root . --apply
+```
 
 ## Artifact helpers
 

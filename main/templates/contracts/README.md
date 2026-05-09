@@ -27,6 +27,6 @@ Acceptance rules:
 - Ready signals authorize consumption only when referenced manifests and validation checks support that status.
 - Fixture/local evidence may rehearse these shapes, but cannot become production-ready without reviewed manager/storage implementation.
 
-When a type name becomes stable, register it in `trading-manager/scripts/registry/` through SQL migrations and regenerate `scripts/registry/current.csv`.
+When a type name becomes stable, register it in `trading-manager/scripts/registry/` through SQL migrations and regenerate `trading-manager/scripts/registry/current.csv`.
 
-See `../../../../docs/92_templates.md` for template promotion rules.
+See `trading-manager/docs/92_templates.md` for template promotion rules.

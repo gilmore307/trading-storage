@@ -54,5 +54,5 @@ Reuse the default registry-registered vocabularies for `acceptance_outcome` and 
 
 ## Notes
 
-- Reuse previously ratified shared slots from `trading-main/scripts/` where they fit.
+- Reuse previously ratified shared slots from `trading-manager/scripts/` where they fit.
 - Only OpenClaw writes the acceptance receipt and final acceptance outcome.

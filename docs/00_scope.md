@@ -14,8 +14,9 @@ This repository exists to keep that responsibility explicit, testable, and separ
 - checked-in reusable templates and shared static files under `main/`.
 - artifact reference and path policy in coordination with trading-manager contracts.
 - retention, archive, rehydrate, backup, and restore expectations.
-- storage validation and compatibility checks once implementation exists.
-- storage-local tests for path/reference/retention helpers once code exists.
+- conservative local lifecycle maintenance for ignored runtime files.
+- storage validation and compatibility checks.
+- storage-local tests for path/reference/retention helpers.
 
 ## Out of Scope
 
@@ -39,7 +40,7 @@ The repository should prefer explicit interfaces, fixture-backed tests, and narr
 - Component-local implementation belongs here only when it matches this repository's role.
 - Global contracts, registry entries, shared helpers, and template operating rules belong in `trading-manager`; checked-in reusable template files live under `trading-storage/main/templates/`.
 - Durable storage layout and retention belong in `trading-storage` unless this repository is defining that storage contract.
-- Scheduling, retries, lifecycle routing, and promotion decisions belong in the `trading-manager` control plane unless explicitly delegated by contract.
+- Scheduling, retries, cross-component lifecycle routing, and promotion decisions belong in the `trading-manager` control plane unless explicitly delegated by contract; storage may provide local maintenance helpers and installable scheduling templates.
 - Generated artifacts and runtime outputs are not source files.
 - Secrets and credentials must stay outside the repository.
 - Shared helpers, templates, fields, statuses, and type values discovered here must be recorded through `trading-manager` before cross-repository use.

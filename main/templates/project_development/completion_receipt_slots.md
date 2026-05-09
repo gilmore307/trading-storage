@@ -55,5 +55,5 @@ Reuse the default registry-registered vocabularies for `task_lifecycle_state`, `
 
 ## Notes
 
-- Reuse previously ratified shared slots from `trading-main/scripts/` where they fit.
+- Reuse previously ratified shared slots from `trading-manager/scripts/` where they fit.
 - Codex may report readiness or not-readiness, but must not report final acceptance or rejection.

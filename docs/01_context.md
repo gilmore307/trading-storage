@@ -21,9 +21,10 @@ The trading platform is split across multiple repositories so each major respons
 Potential external interfaces include:
 
 - local/shared filesystem storage.
+- local ignored runtime directories such as `storage/`, `tmp/`, `logs/`, `runs/`, and `outputs/`.
 - backup/archive targets once chosen.
 - trading-manager artifact and manifest contracts.
-- checked-in shared assets under `main/`, including reusable templates and shared static CSVs.
+- checked-in shared assets under `main/`, including reusable templates, maintenance templates, and shared static CSVs.
 
 Specific providers, credentials, package choices, deployment targets, and runtime settings are not settled unless recorded in this repository's decisions or inherited from `trading-manager` contracts.
 
@@ -61,4 +62,5 @@ This includes shared fields, artifact types, manifest types, ready-signal types,
 - Do not store generated artifacts, logs, notebooks, credentials, or secrets in Git.
 - Keep component-local implementation inside this repository's boundary.
 - Use manifests, ready signals, artifact references, and requests for cross-repository handoffs once contracts are accepted.
+- Use `docs/04_storage_lifecycle.md` for local cleanup/retention behavior; do not let ignored local files become the system of record.
 - Do not depend on another component's internal implementation details.

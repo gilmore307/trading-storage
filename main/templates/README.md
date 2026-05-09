@@ -9,5 +9,6 @@ See `trading-manager/docs/92_templates.md` for the docs-level template operating
 ## Template Sets
 
 - `contracts/` — reusable contract drafting templates.
-- `data_tasks/` — parked draft templates for manager-driven historical `trading-source` acquisition tasks. These are not active registry contracts until the task architecture is redesigned after model/source contracts settle.
+- `data_tasks/` — parked draft templates for manager-driven historical `trading-data` acquisition tasks. These are not active registry contracts until the task architecture is redesigned after model/source contracts settle.
+- `maintenance/` — operator-reviewed scheduling templates for storage-local retention helpers. These are not installed by Git commits.
 - `project_development/` — parked project-development slot drafts moved out of the OpenClaw skill. These are not active registry contracts until reviewed one by one and re-registered.

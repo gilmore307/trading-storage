@@ -8,11 +8,12 @@ This directory is the authoritative documentation spine for `trading-storage`.
 - `01_context.md` — why the repository exists, related systems, environment assumptions, and dependencies.
 - `02_layer_01_market_regime.md` — Layer 1 storage workflow, artifact boundary, and acceptance gates.
 - `03_layer_02_sector_context.md` — Layer 2 storage workflow, artifact boundary, and acceptance gates.
+- `04_storage_lifecycle.md` — local retention, archive, cleanup, scheduling template, and production boundary.
 - `80_task.md` — current task state, queued work, blockers, and recently accepted work.
 - `81_decision.md` — ratified repository decisions.
 - `82_memory.md` — durable local continuity that does not fit narrower docs.
-- `90_storage_closeout.md` — current storage-contract-and-first-helper phase closeout receipt.
+- `90_storage_closeout.md` — current storage-contract-and-lifecycle-helper phase closeout receipt.
 
-Layer workflow and acceptance live in the numbered layer files. Add future layers as `04_layer_03_...`, `05_layer_04_...`, and so on before adding broad workflow prose.
+Layer workflow and acceptance live in the numbered layer files. Repository-wide lifecycle policy lives in `04_storage_lifecycle.md`. Add future layer-specific docs as `05_layer_03_...`, `06_layer_04_...`, and so on before adding broad workflow prose.
 
 Do not place generated data, artifacts, notebooks, logs, credentials, or implementation outputs in this directory.
