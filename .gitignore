@@ -14,13 +14,13 @@ htmlcov/
 !.env.example
 
 # Local/generated data and artifacts
-data/
-artifacts/
-outputs/
-runs/
-storage/
-logs/
-tmp/
+/data/
+/artifacts/
+/outputs/
+/runs/
+/storage/
+/logs/
+/tmp/
 *.log
 
 # Secrets and credentials
