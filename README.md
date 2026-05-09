@@ -29,9 +29,10 @@ docs/
   80_task.md
   81_decision.md
   82_memory.md
+  90_storage_closeout.md
 ```
 
-Layer-specific `02_`/`03_` docs record active persistence workflows, boundaries, and acceptance gates for Layer 1 and Layer 2.
+Layer-specific `02_`/`03_` docs record active persistence workflows, boundaries, and acceptance gates for Layer 1 and Layer 2. `90_storage_closeout.md` records the current storage-contract-and-first-helper phase closeout.
 
 ## Verification
 

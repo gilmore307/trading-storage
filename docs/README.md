@@ -11,6 +11,7 @@ This directory is the authoritative documentation spine for `trading-storage`.
 - `80_task.md` — current task state, queued work, blockers, and recently accepted work.
 - `81_decision.md` — ratified repository decisions.
 - `82_memory.md` — durable local continuity that does not fit narrower docs.
+- `90_storage_closeout.md` — current storage-contract-and-first-helper phase closeout receipt.
 
 Layer workflow and acceptance live in the numbered layer files. Add future layers as `04_layer_03_...`, `05_layer_04_...`, and so on before adding broad workflow prose.
 

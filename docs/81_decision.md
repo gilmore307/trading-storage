@@ -244,3 +244,24 @@ These contracts define logical shape, required fields, mutability, readiness, an
 - Future storage implementation should persist these shapes rather than reviving older local completion-receipt-only drafts as final contracts.
 - Ignored local `storage/` paths remain development evidence only and must not become production handoff locators.
 - Production use still requires physical SQL/storage implementation, retention/backup/restore policy, and verified manager orchestration.
+
+## D012 - Current storage-contract phase is closed
+
+Date: 2026-05-09
+Status: Accepted
+
+### Context
+
+`trading-storage` now has a clear repository boundary, checked-in reusable non-code assets under `main/`, accepted V1 handoff templates, and the first storage-owned helper for writing completion receipt payload artifacts.
+
+### Decision
+
+Close the current storage-contract-and-first-helper phase. `docs/90_storage_closeout.md` is the authoritative closeout receipt.
+
+No active storage-phase tasks remain. Future storage work is deferred until a concrete manager/component consumer requires it: production object-store backend policy, durable SQL partitioning, development-to-durable promotion automation, storage-resident lifecycle mutation, or high-volume artifact retention/backup/restore mechanics.
+
+### Consequences
+
+- `trading-storage` remains the persistence contract and payload-durability owner.
+- This closeout does not enable provider calls, manager dispatch, model activation, broker execution, production object-store infrastructure, or universal SQL partitioning.
+- New storage implementation should start from the accepted V1 handoff contracts and a specific consumer acceptance gate.

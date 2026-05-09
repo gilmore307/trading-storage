@@ -6,21 +6,20 @@
 
 ## Queued Tasks
 
-- Identify SQL table/partition candidates for the first durable artifact/manifest/ready-signal implementation.
-- Add development-to-durable promotion automation only after manager-side consumers require it.
+- None for the current storage-contract-and-first-helper closeout phase.
 
-## Open Gaps
+## Deferred Beyond Current Closeout
 
-- Exact physical SQL DDL for request, manifest, artifact-ref, and ready-signal persistence.
-- Durable object-store backend policy beyond the current filesystem development helper.
-
-## Deferred Until Manager Phase
-
+- Physical SQL DDL for durable request/manifest/artifact/ready persistence beyond current manager MVP rows.
+- Durable object-store backend policy, retention, backup, restore, archive, and rehydrate mechanics beyond the local filesystem development helper.
+- Development-to-durable promotion automation and SQL destination migrations for historical source/feature/model outputs.
 - Production queue execution and storage-resident lifecycle mutation for request/manifest/artifact/ready-signal records.
-- Development-to-durable promotion automation and SQL destination migrations for historical source/feature outputs.
-- These implementation details must follow the accepted `manager_request_v1`, `run_manifest_v1`, `artifact_ref_v1`, and `ready_signal_v1` template contracts rather than inventing local-only alternatives.
+
+These implementation details must follow the accepted `manager_request_v1`, `run_manifest_v1`, `artifact_ref_v1`, and `ready_signal_v1` template contracts rather than inventing local-only alternatives. They are component production-phase work, not blockers for this closeout.
 
 ## Recently Accepted
+
+- Closed the current storage-contract-and-first-helper phase in `docs/90_storage_closeout.md`: V1 handoff templates, reusable checked-in non-code assets, local generated-artifact boundary, and storage-owned completion receipt payload helper are accepted. No production object store, SQL partitioning, provider call, manager dispatch, model activation, or broker execution is enabled by this closeout.
 
 - Implemented the first storage slice: canonical JSON artifact writes for storage-owned completion receipt payloads under `src/trading_storage/artifact_store.py`, executable helper `scripts/artifacts/store_completion_receipt_payload.py`, and tests under `tests/`.
 - Accepted package/source/test layout: `src/` for importable helpers, `scripts/` for executable entrypoints, `tests/` for first-party verification, and ignored local `storage/` for generated artifact payloads.
