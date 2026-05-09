@@ -2,27 +2,30 @@
 
 ## Active Tasks
 
-- None.
+- None for the historical-data training preparation boundary.
 
-## Queued Tasks
+The storage-contract-and-lifecycle-helper phase is closed. Current historical training can use local receipt payload persistence, artifact refs, manager summary rows, and dry-run-first lifecycle maintenance.
 
-- None for the current storage-contract-and-lifecycle-helper closeout phase.
+## Historical-Training Todo Status
 
-## Deferred Beyond Current Closeout
+- Local generated artifacts remain ignored and storage-owned.
+- Completion receipt payload storage is implemented through `src/trading_storage/artifact_store.py` and `scripts/artifacts/store_completion_receipt_payload.py`.
+- Local lifecycle maintenance is implemented through `src/trading_storage/lifecycle.py` and `scripts/lifecycle/maintain_local_storage.py`.
+- Maintenance systemd templates are checked in but intentionally not installed or enabled.
 
-- Physical SQL DDL for durable request/manifest/artifact/ready persistence beyond current manager MVP rows.
-- Durable object-store backend selection and production backup/restore infrastructure.
-- SQL partitioning and retention policy by source/feature/model output family.
-- Development-to-durable promotion automation and SQL destination migrations for historical source/feature/model outputs.
-- Production queue execution and storage-resident lifecycle mutation for request/manifest/artifact/ready-signal records.
-- Host-level installation/enabling of the local retention systemd timer after operator review.
+## Not Current Historical-Training Scope
 
-These implementation details must follow the accepted `manager_request_v1`, `run_manifest_v1`, `artifact_ref_v1`, and `ready_signal_v1` template contracts rather than inventing local-only alternatives. They are component production-phase work, not blockers for this closeout.
+These items are intentionally outside the current no-broker historical-training run and must not be treated as active storage work items:
+
+- production object-store backend selection;
+- high-volume SQL partitioning and retention by source/feature/model output family;
+- development-to-durable promotion automation before a concrete consumer requires it;
+- production queue execution and storage-resident lifecycle mutation;
+- host-level timer enablement without operator review.
 
 ## Recently Accepted
 
 - Closed the current storage-contract-and-lifecycle-helper phase in `docs/90_storage_closeout.md`: V1 handoff templates, reusable checked-in non-code assets, local generated-artifact boundary, storage-owned completion receipt payload helper, and local retention/archive/cleanup helper are accepted. No production object store, SQL partitioning, provider call, manager dispatch, model activation, or broker execution is enabled by this closeout.
-
 - Implemented local lifecycle maintenance: `src/trading_storage/lifecycle.py`, `scripts/lifecycle/maintain_local_storage.py`, tests, and systemd timer templates under `main/templates/maintenance/`. The helper dry-runs by default, retains `storage/artifacts/`, archives logs/runs/outputs before removal, deletes old `tmp/`, and prunes local archives after 180 days.
 - Implemented the first storage slice: canonical JSON artifact writes for storage-owned completion receipt payloads under `src/trading_storage/artifact_store.py`, executable helper `scripts/artifacts/store_completion_receipt_payload.py`, and tests under `tests/`.
 - Accepted package/source/test layout: `src/` for importable helpers, `scripts/` for executable entrypoints, `tests/` for first-party verification, and ignored local `storage/` for generated artifact payloads.

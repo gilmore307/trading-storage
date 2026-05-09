@@ -57,9 +57,9 @@ This closeout does not enable or claim:
 
 Those are later component production phases and must be accepted through the manager/storage handoff route before implementation.
 
-## Deferred Beyond This Closeout
+## Not Current Historical-Training Scope
 
-Future storage work should begin only when a concrete manager/component consumer requires it:
+There are no active storage work items for the current no-broker historical-training preparation boundary. Future storage work should begin only when a concrete manager/component consumer requires it:
 
 - physical SQL DDL for durable request/manifest/artifact/ready persistence beyond current manager MVP rows;
 - object-store backend policy and production backup/restore infrastructure beyond the local filesystem helper;
@@ -68,7 +68,7 @@ Future storage work should begin only when a concrete manager/component consumer
 - partitioning/index policy for high-volume artifacts;
 - lifecycle mutation rules for storage-resident artifacts after manager consumers require them.
 
-These are not blockers for closing the current storage phase.
+These are not blockers for current historical training.
 
 ## Acceptance Evidence
 
