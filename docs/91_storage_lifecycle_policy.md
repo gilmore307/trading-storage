@@ -22,7 +22,9 @@ Every compression, archive, delete, and restore action writes manifest/receipt e
 
 ### trading-manager
 
-Owns requests, run/artifact/ready refs, workflow state, promotion/review decisions, and lifecycle request routing. It may request or observe storage lifecycle work, but it does not delete files, compress SQL, mutate storage paths, or decide physical cleanup by itself.
+Owns the unified control-plane view for lifecycle maintenance: lifecycle requests, priorities, deadlines, task summary visibility, scheduling intent, run/artifact/ready refs, workflow state, promotion/review decisions, and lifecycle request routing. Storage lifecycle work should enter normal operation through `manager_request_v1`/`storage_lifecycle_request_v1` so it is visible beside data/model tasks.
+
+Manager may request, prioritize, schedule, and observe storage lifecycle work, but it does not delete files, compress SQL, mutate storage paths, choose physical storage actions by itself, or bypass storage protected-set checks.
 
 ### trading-data
 

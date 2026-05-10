@@ -304,6 +304,7 @@ Historical training will produce model artifacts, source data, feature/evaluatio
 
 Accept the V0.1 storage lifecycle design:
 
+- `trading-manager` owns the unified lifecycle request/task-summary surface so storage maintenance is visible and prioritized beside data/model work.
 - `trading-storage` owns artifact index, dependency graph, protected-set builder, lifecycle state, retention policy, compression/archive/restore manifests, cleanup planning, lifecycle receipts, tombstones, and future lifecycle daemon.
 - Promoted model bodies, including old promoted model bodies, are permanently preserved.
 - Regenerable intermediate training data may be deleted after TTL when protected-set checks and quarantine rules pass.
@@ -317,5 +318,5 @@ Accept the V0.1 storage lifecycle design:
 ### Consequences
 
 - The existing local ignored-file helper remains valid, but production lifecycle mutation is not authorized until artifact index, protected-set builder, lifecycle planner, receipt writing, and restore verification are implemented and reviewed.
-- `trading-manager` may register lifecycle contract/type names and observe/request lifecycle work, but it must not directly delete files, compress SQL, or mutate storage paths.
+- `trading-manager` may register lifecycle contract/type names and request/prioritize/schedule/observe lifecycle work through the unified manager task system, but it must not directly delete files, compress SQL, or mutate storage paths.
 - `trading-data` and `trading-model` should add artifact metadata needed by storage lifecycle classification, including artifact kind, reproducibility class, lineage refs, source/model version refs, and recommended retention class.
