@@ -2,9 +2,10 @@
 
 ## Active Tasks
 
-- None for the historical-data training preparation boundary.
+- Implement the next storage lifecycle phase in controlled slices: artifact index, protected-set builder, dry-run lifecycle planner, file compression executor, SQL archive executor, restore verifier, and finally a daemon/scheduled maintenance wrapper.
+- Keep lifecycle execution dry-run-only until artifact index, protected-set checks, quarantine-before-delete, and lifecycle receipts are implemented and reviewed.
 
-The storage-contract-and-lifecycle-helper phase is closed. Current historical training can use local receipt payload persistence, artifact refs, manager summary rows, and dry-run-first lifecycle maintenance.
+The initial storage-contract-and-lifecycle-helper phase is closed. Current historical training can use local receipt payload persistence, artifact refs, manager summary rows, and dry-run-first local lifecycle maintenance. The new V0.1 lifecycle policy is accepted as the next shape but does not authorize production deletion, SQL detach/drop, or daemon execution yet.
 
 ## Historical-Training Todo Status
 
@@ -12,19 +13,21 @@ The storage-contract-and-lifecycle-helper phase is closed. Current historical tr
 - Completion receipt payload storage is implemented through `src/trading_storage/artifact_store.py` and `scripts/artifacts/store_completion_receipt_payload.py`.
 - Local lifecycle maintenance is implemented through `src/trading_storage/lifecycle.py` and `scripts/lifecycle/maintain_local_storage.py`.
 - Maintenance systemd templates are checked in but intentionally not installed or enabled.
+- V0.1 lifecycle design is documented in `docs/91_storage_lifecycle_policy.md` through `docs/95_lifecycle_receipts.md`: promoted model bodies are kept permanently, regenerable intermediate data may expire by TTL, source data is compressed before deletion unless disposable, SQL detail is archived through export/restore workflows, and all lifecycle actions require manifest/receipt evidence.
 
 ## Not Current Historical-Training Scope
 
 These items are intentionally outside the current no-broker historical-training run and must not be treated as active storage work items:
 
 - production object-store backend selection;
-- high-volume SQL partitioning and retention by source/feature/model output family;
+- production lifecycle mutation before artifact index/protected-set/receipt support exists;
 - development-to-durable promotion automation before a concrete consumer requires it;
 - production queue execution and storage-resident lifecycle mutation;
 - host-level timer enablement without operator review.
 
 ## Recently Accepted
 
+- Accepted the V0.1 storage lifecycle system design in `docs/91_storage_lifecycle_policy.md` through `docs/95_lifecycle_receipts.md`, including lifecycle states, artifact index, reproducibility/retention/read-mode classes, protected-set builder, quarantine-before-delete, compression/archive/restore flows, lifecycle receipts, and tombstones. Implementation remains future controlled slices and is dry-run-first.
 - Closed the current storage-contract-and-lifecycle-helper phase in `docs/90_storage_closeout.md`: V1 handoff templates, reusable checked-in non-code assets, local generated-artifact boundary, storage-owned completion receipt payload helper, and local retention/archive/cleanup helper are accepted. No production object store, SQL partitioning, provider call, manager dispatch, model activation, or broker execution is enabled by this closeout.
 - Implemented local lifecycle maintenance: `src/trading_storage/lifecycle.py`, `scripts/lifecycle/maintain_local_storage.py`, tests, and systemd timer templates under `main/templates/maintenance/`. The helper dry-runs by default, retains `storage/artifacts/`, archives logs/runs/outputs before removal, deletes old `tmp/`, and prunes local archives after 180 days.
 - Implemented the first storage slice: canonical JSON artifact writes for storage-owned completion receipt payloads under `src/trading_storage/artifact_store.py`, executable helper `scripts/artifacts/store_completion_receipt_payload.py`, and tests under `tests/`.

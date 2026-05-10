@@ -1,0 +1,105 @@
+# Protected Set Policy
+
+Status: accepted V0.1 design; production execution requires this builder before deletion/archive mutation
+
+## Purpose
+
+The protected set is the storage-owned safety boundary for lifecycle work. Before compression, archive, SQL detach/drop, quarantine, or deletion, storage must determine which artifacts and SQL partitions are currently protected by model lineage, active tasks, review evidence, downstream chains, or control-plane records.
+
+A cleanup tool that cannot build a protected set may produce a report, but it must not delete or detach durable artifacts.
+
+## Protected inputs
+
+The builder must inspect or receive references from:
+
+- promoted model lineage;
+- current active model lineage;
+- active review/promotion candidates;
+- activation/deactivation records;
+- manager `manager_request_v1` records for open work;
+- manager `run_manifest_v1`, `artifact_ref_v1`, and `ready_signal_v1` rows;
+- dataset snapshot/split manifests;
+- current downstream target chain state;
+- open task/run manifests;
+- SQL online dependency metadata;
+- lifecycle quarantine records;
+- manually pinned artifacts.
+
+## Protected reason codes
+
+Initial reason codes:
+
+| Code | Meaning |
+| --- | --- |
+| `current_promoted_model_lineage` | Artifact is required by the current promoted model. |
+| `old_promoted_model_body` | Artifact is part of an old promoted model body and must be retained. |
+| `active_review_lineage` | Artifact is referenced by an active review/promotion candidate. |
+| `active_run_input_or_output` | Artifact belongs to an open run/task. |
+| `ready_signal_consumable` | A ready signal marks the artifact consumable by downstream workflows. |
+| `dataset_snapshot_or_split` | Artifact is a frozen dataset snapshot/split manifest or required evidence. |
+| `active_target_chain_dependency` | Current target-major chain may still consume it. |
+| `source_data_shared_dependency` | Source data may be reused by another model or feature family. |
+| `sql_online_dependency` | SQL partition/table is still queried online. |
+| `manual_pin` | Human/operator/reviewer pinned it. |
+| `unknown_metadata` | Metadata is insufficient; protect until classified. |
+
+## Lifecycle gate rules
+
+- Deletion requires protected set clear, quarantine, and a final protected-set recheck.
+- SQL detach/drop requires protected set clear, archive/restore verification, quarantine, and a final protected-set recheck.
+- Compression requires no active writer and no active consumer that requires the uncompressed path.
+- Direct-readable compression may preserve consumability if the artifact URI/read mode is updated through reviewed metadata.
+- Restore-required archives must not replace online artifacts while consumers still need direct reads.
+
+## Quarantine-before-delete
+
+Deletion flow:
+
+```text
+delete_candidate
+  -> protected-set check
+  -> quarantined_for_delete for 7-30 days
+  -> final protected-set recheck
+  -> deletion_receipt_v1
+  -> artifact_tombstone_v1
+  -> deleted
+```
+
+The quarantine record should include artifact ids, paths/URIs, policy id, reason codes, first check timestamp, quarantine expiry, and review/approval refs if any.
+
+If any protected reason appears during the final recheck, deletion is cancelled and the artifact returns to the appropriate protected lifecycle state.
+
+## Compression safety
+
+Compression flow:
+
+```text
+cold_compressible
+  -> verify no active writer
+  -> verify no direct-read consumer requires current path
+  -> compress
+  -> checksum original and compressed payload/export
+  -> restore smoke when restore_required
+  -> compression_receipt_v1
+  -> cold_compressed
+```
+
+Deleting the uncompressed copy after compression is a separate policy decision unless the compression rule explicitly permits `delete_uncompressed_after_verify=true`.
+
+## SQL archive safety
+
+SQL archive flow:
+
+```text
+closed partition/table
+  -> protected-set check
+  -> export schema and data
+  -> compress archive
+  -> checksum
+  -> restore smoke
+  -> archive_receipt_v1
+  -> optional quarantine for online detach/drop
+  -> detach/drop online copy only after final recheck
+```
+
+Live PostgreSQL data files must never be compressed directly.

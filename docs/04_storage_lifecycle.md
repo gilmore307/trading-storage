@@ -2,9 +2,19 @@
 
 ## Purpose
 
-This file defines the local storage lifecycle for `trading-storage`: what is kept, what is archived, what is deleted, and what remains deferred until production storage is accepted.
+This file defines the current local storage lifecycle helper for `trading-storage`: what is kept, what is archived, what is deleted, and what remains deferred until production storage is accepted.
 
 The goal is simple: source-controlled files stay clean, durable evidence is explicit, and disposable local files cannot quietly become the system of record.
+
+The broader production-oriented lifecycle design now lives in:
+
+- `91_storage_lifecycle_policy.md`
+- `92_artifact_index.md`
+- `93_protected_set.md`
+- `94_compression_archive.md`
+- `95_lifecycle_receipts.md`
+
+Those files define the next lifecycle system; this file remains the contract for the already implemented local ignored-file helper.
 
 ## Storage Classes
 

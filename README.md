@@ -31,9 +31,14 @@ docs/
   81_decision.md
   82_memory.md
   90_storage_closeout.md
+  91_storage_lifecycle_policy.md
+  92_artifact_index.md
+  93_protected_set.md
+  94_compression_archive.md
+  95_lifecycle_receipts.md
 ```
 
-Layer-specific `02_`/`03_` docs record retained Layer 1/2 persistence workflows and acceptance gates. `04_storage_lifecycle.md` owns the local retention/archive/cleanup contract. `90_storage_closeout.md` records the current storage-contract-and-lifecycle-helper phase closeout.
+Layer-specific `02_`/`03_` docs record retained Layer 1/2 persistence workflows and acceptance gates. `04_storage_lifecycle.md` owns the existing local retention/archive/cleanup helper contract. `90_storage_closeout.md` records the previous storage-contract-and-lifecycle-helper phase closeout. `91_`-`95_` define the next storage lifecycle system: policy, artifact index, protected set, compression/archive/restore, and lifecycle receipts.
 
 ## Verification
 

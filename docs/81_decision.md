@@ -290,3 +290,32 @@ The helper dry-runs by default. It retains `storage/artifacts/`, archives `logs/
 - Local ignored files now have explicit retention behavior instead of relying on ad hoc cleanup.
 - Timer templates may be reviewed and installed later, but this repository change does not enable host-level scheduling by itself.
 - Production object-store policy, SQL partitioning, backup/restore infrastructure, and manager-coordinated lifecycle mutation remain separate production-phase work.
+
+## D014 - Storage lifecycle V0.1 design is accepted
+
+Date: 2026-05-10
+Status: Accepted
+
+### Context
+
+Historical training will produce model artifacts, source data, feature/evaluation detail, SQL partitions, logs, and intermediate files across multiple repositories. Disk pressure must be handled without breaking audit, rollback, rebuild, or point-in-time evidence. Deletion, compression, and archive operations are dangerous enough that they need storage-owned policy, dependency checks, manifests, and receipts.
+
+### Decision
+
+Accept the V0.1 storage lifecycle design:
+
+- `trading-storage` owns artifact index, dependency graph, protected-set builder, lifecycle state, retention policy, compression/archive/restore manifests, cleanup planning, lifecycle receipts, tombstones, and future lifecycle daemon.
+- Promoted model bodies, including old promoted model bodies, are permanently preserved.
+- Regenerable intermediate training data may be deleted after TTL when protected-set checks and quarantine rules pass.
+- Downloaded source data is compressed before deletion unless explicitly classified as disposable cache; PIT, vintage, provider-window-limited, expensive, shared, or lineage-referenced source data is retained or compressed by default.
+- SQL detail is archived through dump/export + compression + checksum + restore smoke. Live PostgreSQL data files are never compressed directly.
+- Lifecycle states include `hot`, `warm`, `cold_compressible`, `cold_compressed`, `archivable`, `archived`, `delete_candidate`, `quarantined_for_delete`, `deleted`, and `restored`.
+- Deletion and SQL detach/drop require quarantine and a final protected-set recheck.
+- Lifecycle rules should be declarative policy, not hidden script branches.
+- Every compression, archive, deletion, and restore action must emit receipt evidence; deleted artifacts retain tombstones.
+
+### Consequences
+
+- The existing local ignored-file helper remains valid, but production lifecycle mutation is not authorized until artifact index, protected-set builder, lifecycle planner, receipt writing, and restore verification are implemented and reviewed.
+- `trading-manager` may register lifecycle contract/type names and observe/request lifecycle work, but it must not directly delete files, compress SQL, or mutate storage paths.
+- `trading-data` and `trading-model` should add artifact metadata needed by storage lifecycle classification, including artifact kind, reproducibility class, lineage refs, source/model version refs, and recommended retention class.
