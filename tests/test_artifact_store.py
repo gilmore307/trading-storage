@@ -57,6 +57,28 @@ class ArtifactStoreTests(unittest.TestCase):
             with self.assertRaises(StorageArtifactError):
                 store_json_artifact({"value": 2}, **kwargs)
 
+    def test_rejects_path_unsafe_artifact_tokens(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            base_kwargs = {
+                "artifact_id": "art_safe",
+                "artifact_type": "sample_payload",
+                "producer_repo": "trading-storage",
+                "producer_workflow": "unit_test",
+                "manifest_id": "manifest_safe",
+                "schema_ref": "sample_payload_v1",
+                "storage_root": Path(tmp),
+            }
+            unsafe_cases = (
+                ("artifact_id", "../escape"),
+                ("artifact_id", "art\\escape"),
+                ("artifact_type", "."),
+            )
+            for field, unsafe_value in unsafe_cases:
+                kwargs = dict(base_kwargs)
+                kwargs[field] = unsafe_value
+                with self.assertRaises(StorageArtifactError):
+                    store_json_artifact({"value": 1}, **kwargs)
+
     def test_store_completion_receipt_payload_wraps_receipt(self):
         with tempfile.TemporaryDirectory() as tmp:
             stored = store_completion_receipt_payload(

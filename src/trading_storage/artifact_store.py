@@ -39,7 +39,12 @@ def canonical_json_bytes(payload: Mapping[str, Any]) -> bytes:
 
 
 def _safe_token(value: str, *, field: str) -> str:
-    if not value or "/" in value or ".." in Path(value).parts:
+    if (
+        not value
+        or value == "."
+        or any(separator in value for separator in ("/", "\\"))
+        or ".." in Path(value).parts
+    ):
         raise StorageArtifactError(f"unsafe {field}: {value!r}")
     return value
 

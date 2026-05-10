@@ -3,7 +3,7 @@ Description=Daily trading-storage local retention policy
 Documentation=file:/root/projects/trading-storage/docs/04_storage_lifecycle.md
 
 [Timer]
-OnCalendar=*-*-* 03:20:00
+OnCalendar=*-*-* 03:20:00 America/New_York
 Persistent=true
 Unit=trading-storage-local-retention.service
 
