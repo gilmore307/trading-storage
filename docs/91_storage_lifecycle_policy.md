@@ -34,6 +34,8 @@ Owns source acquisition, normalization, and feature/source artifact semantics. C
 
 Owns model artifacts, evaluation artifacts, promotion candidates, model versions, and model lineage. Model/evaluation/promotion artifacts should identify model id/version, dataset snapshot/split refs, feature contract refs, source refs, code version refs, and promotion/activation refs where available.
 
+Promotion scripts may classify artifact retention intent, especially `keep_forever` for promoted model bodies and lineage, but they must not call storage cleanup, compression, archive, SQL detach/drop, or deletion executors directly. Promotion classifies artifacts; manager schedules lifecycle; storage executes lifecycle.
+
 ### trading-storage
 
 Owns the artifact index, dependency graph, protected-set builder, lifecycle state, retention policy, compression/archive manifests, restore manifests, cleanup planning, lifecycle receipts, tombstones, and future lifecycle daemon.

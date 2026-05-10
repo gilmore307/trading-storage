@@ -13,7 +13,7 @@ The initial storage-contract-and-lifecycle-helper phase is closed. Current histo
 - Completion receipt payload storage is implemented through `src/trading_storage/artifact_store.py` and `scripts/artifacts/store_completion_receipt_payload.py`.
 - Local lifecycle maintenance is implemented through `src/trading_storage/lifecycle.py` and `scripts/lifecycle/maintain_local_storage.py`.
 - Maintenance systemd templates are checked in but intentionally not installed or enabled.
-- V0.1 lifecycle design is documented in `docs/91_storage_lifecycle_policy.md` through `docs/95_lifecycle_receipts.md`: promoted model bodies are kept permanently, regenerable intermediate data may expire by TTL, source data is compressed before deletion unless disposable, SQL detail is archived through export/restore workflows, all lifecycle actions require manifest/receipt evidence, and normal lifecycle maintenance enters through manager's unified request/task-summary surface before storage executes physical actions.
+- V0.1 lifecycle design is documented in `docs/91_storage_lifecycle_policy.md` through `docs/95_lifecycle_receipts.md`: promoted model bodies are kept permanently, regenerable intermediate data may expire by TTL, source data is compressed before deletion unless disposable, SQL detail is archived through export/restore workflows, all lifecycle actions require manifest/receipt evidence, promotion may classify retention intent but not execute cleanup, and normal lifecycle maintenance enters through manager's unified request/task-summary surface before storage executes physical actions.
 
 ## Not Current Historical-Training Scope
 
