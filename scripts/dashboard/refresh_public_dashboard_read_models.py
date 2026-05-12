@@ -23,7 +23,7 @@ def main(argv: list[str] | None = None) -> int:
             storage_root=args.storage_root,
         ).receipt,
     ]
-    print(json.dumps({"contract_type": "dashboard_read_model_refresh_batch_receipt_v1", "results": results}, indent=2, sort_keys=True))
+    print(json.dumps({"contract_type": "dashboard_read_model_refresh_batch_receipt", "results": results}, indent=2, sort_keys=True))
     return 0
 
 

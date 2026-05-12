@@ -2,13 +2,13 @@
 
 ## Purpose
 
-`artifact_ref_v1` is the durable cross-repository reference for an immutable output artifact. It lets `trading-manager`, `trading-data`, `trading-model`, `trading-storage`, and downstream consumers refer to a produced file/table/object without depending on local development paths.
+`artifact_ref` is the durable cross-repository reference for an immutable output artifact. It lets `trading-manager`, `trading-data`, `trading-model`, `trading-storage`, and downstream consumers refer to a produced file/table/object without depending on local development paths.
 
 Artifacts are not readiness by themselves. A consumer may use an artifact only when a compatible manifest and ready signal authorize it.
 
 ## Contract Type
 
-- **Type name:** `artifact_ref_v1`
+- **Type name:** `artifact_ref`
 - **Owning repository:** `trading-storage`
 - **Registered through:** `trading-manager/scripts/registry/`
 - **Status:** Accepted template contract; production instances still require manager/storage implementation.
@@ -17,7 +17,8 @@ Artifacts are not readiness by themselves. A consumer may use an artifact only w
 
 | Field | Meaning |
 | --- | --- |
-| `contract_version` | Must be `artifact_ref_v1`. |
+| `contract_type` | Must be `artifact_ref`. |
+| `schema_version` | Integer schema version, currently `1`. |
 | `artifact_id` | Stable immutable artifact id. A new content version gets a new id. |
 | `artifact_type` | Registered artifact type or reviewed local type while unpromoted. |
 | `producer_repo` | Repository that produced the artifact. |
@@ -45,7 +46,8 @@ Artifacts are not readiness by themselves. A consumer may use an artifact only w
 
 ```json
 {
-  "contract_version": "artifact_ref_v1",
+  "contract_type": "artifact_ref",
+  "schema_version": 1,
   "artifact_id": "art_...",
   "artifact_type": "model_eval_labels",
   "producer_repo": "trading-model",

@@ -8,7 +8,7 @@ This closeout covers the storage-owned surfaces needed by the current data/model
 
 - repository boundary and docs spine;
 - reusable checked-in non-code assets under `main/`;
-- V1 handoff templates for `manager_request_v1`, `run_manifest_v1`, `artifact_ref_v1`, and `ready_signal_v1`;
+- V1 handoff templates for `manager_request`, `run_manifest`, `artifact_ref`, and `ready_signal`;
 - storage-owned completion receipt payload helper;
 - local ignored `storage/` development artifact boundary;
 - local retention/archive/cleanup helper and scheduling templates;
@@ -23,7 +23,7 @@ The accepted current shape is:
 ```text
 component completion receipt JSON
   -> storage-owned payload write
-  -> artifact_ref_v1 metadata
+  -> artifact_ref metadata
   -> manager records concise run/artifact/ready facts
 ```
 

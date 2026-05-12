@@ -1,6 +1,6 @@
 """Current system-status dashboard read-model producer.
 
-This module builds the storage-owned `current_system_status_summary_v1` payload
+This module builds the storage-owned `current_system_status_summary` payload
 from read-only infrastructure observations: host resource posture, systemd
 service/timer state, dashboard read-model freshness, and public dashboard API
 route configuration.  It does not call providers, dispatch manager work,
@@ -24,9 +24,9 @@ from typing import Any, Mapping, TextIO
 from .artifact_store import now_utc
 from .dashboard_read_models import materialize_dashboard_read_model
 
-CURRENT_SYSTEM_STATUS_CONTRACT = "current_system_status_summary_v1"
+CURRENT_SYSTEM_STATUS_CONTRACT = "current_system_status_summary"
 CURRENT_SYSTEM_STATUS_SCHEMA_REF = f"storage/dashboard/schemas/{CURRENT_SYSTEM_STATUS_CONTRACT}.schema.json"
-HISTORICAL_TASK_PROGRESS_CONTRACT = "historical_task_progress_summary_v1"
+HISTORICAL_TASK_PROGRESS_CONTRACT = "historical_task_progress_summary"
 DEFAULT_STALE_AFTER_SECONDS = 120
 
 SYSTEMD_UNITS = (
@@ -126,7 +126,7 @@ def build_current_system_status_summary(*, storage_root: Path, generated_at_utc:
     )
     return {
         "contract_type": CURRENT_SYSTEM_STATUS_CONTRACT,
-        "contract_version": "1.0.0",
+        "schema_version": 1,
         "generated_at_utc": generated_at_utc,
         "source_system": "trading-storage",
         "status": status,
@@ -148,7 +148,7 @@ def build_current_system_status_summary(*, storage_root: Path, generated_at_utc:
             },
         },
         "profile_refs": [
-            {"registry_ref": "CURRENT_SYSTEM_STATUS_SUMMARY_V1", "field": "contract_type"},
+            {"registry_ref": "CURRENT_SYSTEM_STATUS_SUMMARY", "field": "contract_type"},
             {"registry_ref": "DASHBOARD_READ_MODEL_COMMON_ENVELOPE", "field": "common_envelope"},
         ],
         "issue_refs": [
@@ -172,7 +172,7 @@ def refresh_current_system_status_read_model(*, storage_root: Path = Path("stora
     payload = build_current_system_status_summary(storage_root=storage_root)
     materialized = materialize_dashboard_read_model(payload, storage_root=storage_root, expected_contract_type=CURRENT_SYSTEM_STATUS_CONTRACT)
     return {
-        "contract_type": "dashboard_read_model_refresh_receipt_v1",
+        "contract_type": "dashboard_read_model_refresh_receipt",
         "generated_at_utc": now_utc(),
         "refreshed_contract_type": CURRENT_SYSTEM_STATUS_CONTRACT,
         "materialized": materialized.index_row,
@@ -192,7 +192,7 @@ def write_current_system_status_summary(payload: Mapping[str, Any], *, output: T
 
 
 def main(argv: list[str] | None = None) -> int:
-    parser = argparse.ArgumentParser(description="Build or refresh current_system_status_summary_v1 from read-only infrastructure observations.")
+    parser = argparse.ArgumentParser(description="Build or refresh current_system_status_summary from read-only infrastructure observations.")
     parser.add_argument("--storage-root", type=Path, default=Path("storage"))
     parser.add_argument("--refresh", action="store_true", help="Materialize the summary into storage/dashboard instead of printing only.")
     args = parser.parse_args(argv)

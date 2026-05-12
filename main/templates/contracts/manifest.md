@@ -2,13 +2,13 @@
 
 ## Purpose
 
-`run_manifest_v1` is the durable evidence record for one completed or failed cross-repository run. It records the request, code/config, inputs, outputs, validation checks, and final usability state.
+`run_manifest` is the durable evidence record for one completed or failed cross-repository run. It records the request, code/config, inputs, outputs, validation checks, and final usability state.
 
-A manifest explains what happened. It does not by itself authorize downstream consumption; that is the job of `ready_signal_v1`.
+A manifest explains what happened. It does not by itself authorize downstream consumption; that is the job of `ready_signal`.
 
 ## Contract Type
 
-- **Type name:** `run_manifest_v1`
+- **Type name:** `run_manifest`
 - **Owning repository:** `trading-storage`
 - **Registered through:** `trading-manager/scripts/registry/`
 - **Status:** Accepted template contract; production persistence still requires manager/storage implementation.
@@ -17,7 +17,8 @@ A manifest explains what happened. It does not by itself authorize downstream co
 
 | Field | Meaning |
 | --- | --- |
-| `contract_version` | Must be `run_manifest_v1`. |
+| `contract_type` | Must be `run_manifest`. |
+| `schema_version` | Integer schema version, currently `1`. |
 | `manifest_id` | Stable manifest id. |
 | `request_id` | Manager request id, or `manual:<id>` for reviewed manual runs. |
 | `run_id` | Producer-local run id. |
@@ -48,7 +49,8 @@ A manifest explains what happened. It does not by itself authorize downstream co
 
 ```json
 {
-  "contract_version": "run_manifest_v1",
+  "contract_type": "run_manifest",
+  "schema_version": 1,
   "manifest_id": "mf_...",
   "request_id": "req_...",
   "run_id": "run_...",

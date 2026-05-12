@@ -2,13 +2,13 @@
 
 ## Purpose
 
-`ready_signal_v1` is the lightweight handoff marker that tells downstream consumers a set of manifests and artifacts may be consumed under defined rules.
+`ready_signal` is the lightweight handoff marker that tells downstream consumers a set of manifests and artifacts may be consumed under defined rules.
 
 A ready signal is narrower than a manifest: it is not a full run log and it does not contain bulky evidence. It points to manifests and artifact refs and states readiness semantics.
 
 ## Contract Type
 
-- **Type name:** `ready_signal_v1`
+- **Type name:** `ready_signal`
 - **Owning repository:** `trading-storage`
 - **Registered through:** `trading-manager/scripts/registry/`
 - **Status:** Accepted template contract; production emission still requires manager/storage implementation.
@@ -17,13 +17,14 @@ A ready signal is narrower than a manifest: it is not a full run log and it does
 
 | Field | Meaning |
 | --- | --- |
-| `contract_version` | Must be `ready_signal_v1`. |
+| `contract_type` | Must be `ready_signal`. |
+| `schema_version` | Integer schema version, currently `1`. |
 | `signal_id` | Stable signal id. |
 | `signal_type` | Registered ready-signal type, e.g. `data_source_ready`, `model_eval_ready`, `promotion_review_ready`. |
 | `producer_repo` | Repository that emitted the signal. |
 | `workflow_id` | Workflow/source/model/script id associated with the signal. |
-| `manifest_refs` | One or more `run_manifest_v1` ids/refs. |
-| `artifact_refs` | One or more `artifact_ref_v1` ids/refs made consumable. |
+| `manifest_refs` | One or more `run_manifest` ids/refs. |
+| `artifact_refs` | One or more `artifact_ref` ids/refs made consumable. |
 | `ready_status` | `ready`, `partial_ready`, `not_ready`, `superseded`, or `failed`. |
 | `ready_at` | UTC timestamp when the status became true. |
 | `valid_after` | Earliest point-in-time timestamp at which consumers may use the payload. |
@@ -42,7 +43,8 @@ A ready signal is narrower than a manifest: it is not a full run log and it does
 
 ```json
 {
-  "contract_version": "ready_signal_v1",
+  "contract_type": "ready_signal",
+  "schema_version": 1,
   "signal_id": "rsig_...",
   "signal_type": "data_source_ready",
   "producer_repo": "trading-data",

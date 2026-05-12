@@ -45,8 +45,8 @@ identify candidate
   -> checksum original
   -> checksum compressed result
   -> restore smoke if read_mode=restore_required
-  -> write compression_manifest_v1
-  -> write compression_receipt_v1
+  -> write compression_manifest
+  -> write compression_receipt
   -> update artifact index
   -> remove uncompressed copy only if policy allows
 ```
@@ -87,8 +87,8 @@ closed partition/table
   -> compress dump/export
   -> checksum
   -> restore smoke in isolated destination
-  -> write sql_archive_manifest_v1
-  -> write archive_receipt_v1
+  -> write sql_archive_manifest
+  -> write archive_receipt
   -> update artifact index
   -> detach/drop online partition only if policy allows after quarantine
 ```
@@ -120,7 +120,7 @@ Restore verifier responsibilities:
 - read manifest;
 - restore into an isolated temp directory/database/schema;
 - verify checksum/digest/row count/schema;
-- emit `restore_receipt_v1`;
+- emit `restore_receipt`;
 - leave production state untouched unless explicitly requested.
 
 ## Initial implementation order

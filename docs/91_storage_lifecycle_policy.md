@@ -22,7 +22,7 @@ Every compression, archive, delete, and restore action writes manifest/receipt e
 
 ### trading-manager
 
-Owns the unified control-plane view for lifecycle maintenance: lifecycle requests, priorities, deadlines, task summary visibility, scheduling intent, run/artifact/ready refs, workflow state, promotion/review decisions, and lifecycle request routing. Storage lifecycle work should enter normal operation through `manager_request_v1`/`storage_lifecycle_request_v1` so it is visible beside data/model tasks.
+Owns the unified control-plane view for lifecycle maintenance: lifecycle requests, priorities, deadlines, task summary visibility, scheduling intent, run/artifact/ready refs, workflow state, promotion/review decisions, and lifecycle request routing. Storage lifecycle work should enter normal operation through `manager_request`/`storage_lifecycle_request` so it is visible beside data/model tasks.
 
 Manager may request, prioritize, schedule, and observe storage lifecycle work, but it does not delete files, compress SQL, mutate storage paths, choose physical storage actions by itself, or bypass storage protected-set checks.
 
@@ -121,7 +121,7 @@ Policy: never compress PostgreSQL live data files directly. Archive through dump
 Lifecycle behavior should be driven by reviewed YAML/JSON policy records, not hidden script branches. A rule should contain at least:
 
 ```yaml
-policy_id: storage_lifecycle_default_v1
+policy_id: storage_lifecycle_default
 rule_id: pit_source_compress
 selector:
   artifact_kind: pit_source_data

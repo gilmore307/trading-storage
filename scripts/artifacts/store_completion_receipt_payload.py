@@ -13,7 +13,7 @@ from trading_storage.artifact_store import store_completion_receipt_payload
 
 
 def main(argv: list[str] | None = None) -> int:
-    parser = argparse.ArgumentParser(description="Store component_completion_receipt_payload_v1 JSON and emit artifact_ref_v1 metadata.")
+    parser = argparse.ArgumentParser(description="Store component_completion_receipt_payload JSON and emit artifact_ref metadata.")
     parser.add_argument("receipt", type=Path, help="Component completion receipt JSON payload.")
     parser.add_argument("--request-id", required=True)
     parser.add_argument("--run-id", required=True)

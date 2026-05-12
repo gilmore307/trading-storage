@@ -6,18 +6,18 @@ Templates live here because `trading-storage` owns durable artifact/storage sema
 
 Current contracts:
 
-- `request.md` — `manager_request_v1`, the manager-issued work-intent contract.
-- `manifest.md` — `run_manifest_v1`, the durable run-evidence contract.
-- `artifact.md` — `artifact_ref_v1`, the immutable output-artifact reference contract.
-- `ready_signal.md` — `ready_signal_v1`, the downstream consumability marker.
+- `request.md` — `manager_request`, the manager-issued work-intent contract.
+- `manifest.md` — `run_manifest`, the durable run-evidence contract.
+- `artifact.md` — `artifact_ref`, the immutable output-artifact reference contract.
+- `ready_signal.md` — `ready_signal`, the downstream consumability marker.
 
 Relationship:
 
 ```text
-manager_request_v1
-  -> run_manifest_v1
-      -> artifact_ref_v1
-      -> ready_signal_v1
+manager_request
+  -> run_manifest
+      -> artifact_ref
+      -> ready_signal
 ```
 
 Acceptance rules:

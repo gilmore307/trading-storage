@@ -16,8 +16,8 @@ The builder must inspect or receive references from:
 - current active model lineage;
 - active review/promotion candidates;
 - activation/deactivation records;
-- manager `manager_request_v1` records for open work;
-- manager `run_manifest_v1`, `artifact_ref_v1`, and `ready_signal_v1` rows;
+- manager `manager_request` records for open work;
+- manager `run_manifest`, `artifact_ref`, and `ready_signal` rows;
 - dataset snapshot/split manifests;
 - current downstream target chain state;
 - open task/run manifests;
@@ -60,8 +60,8 @@ delete_candidate
   -> protected-set check
   -> quarantined_for_delete for 7-30 days
   -> final protected-set recheck
-  -> deletion_receipt_v1
-  -> artifact_tombstone_v1
+  -> deletion_receipt
+  -> artifact_tombstone
   -> deleted
 ```
 
@@ -80,7 +80,7 @@ cold_compressible
   -> compress
   -> checksum original and compressed payload/export
   -> restore smoke when restore_required
-  -> compression_receipt_v1
+  -> compression_receipt
   -> cold_compressed
 ```
 
@@ -97,7 +97,7 @@ closed partition/table
   -> compress archive
   -> checksum
   -> restore smoke
-  -> archive_receipt_v1
+  -> archive_receipt
   -> optional quarantine for online detach/drop
   -> detach/drop online copy only after final recheck
 ```

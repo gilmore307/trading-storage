@@ -28,7 +28,7 @@ A file scanner without an artifact index can report disk usage. It cannot safely
 | `content_format` | `json`, `jsonl`, `csv`, `parquet`, `postgres_table`, `pg_dump`, etc. |
 | `read_mode` | `direct_readable`, `restore_required`, or `metadata_only`. |
 | `schema_ref` | Contract/schema reference for interpreting the payload. |
-| `manifest_ref` | Producing `run_manifest_v1` or lifecycle manifest. |
+| `manifest_ref` | Producing `run_manifest` or lifecycle manifest. |
 | `lineage_refs` | Upstream artifact/model/source refs used to create this artifact. |
 | `dependency_refs` | Artifacts that must remain available while this artifact is protected. |
 | `reproducibility_class` | How safely the artifact can be recreated. |
@@ -79,7 +79,7 @@ Downstream consumers must not assume a compressed artifact is directly readable 
 The dependency graph is derived from:
 
 - artifact index `lineage_refs` and `dependency_refs`;
-- manager `artifact_ref_v1` and `ready_signal_v1` rows;
+- manager `artifact_ref` and `ready_signal` rows;
 - run manifests;
 - dataset snapshot/split manifests;
 - model promotion and activation records;

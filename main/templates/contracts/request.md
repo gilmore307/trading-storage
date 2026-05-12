@@ -2,13 +2,13 @@
 
 ## Purpose
 
-`manager_request_v1` is the durable cross-repository request contract. It records intended work issued by `trading-manager`, a human, or an approved agent into a target repository.
+`manager_request` is the durable cross-repository request contract. It records intended work issued by `trading-manager`, a human, or an approved agent into a target repository.
 
-Requests are intent records. They do not prove a run completed; completion is recorded by `run_manifest_v1` and made consumable by `ready_signal_v1`.
+Requests are intent records. They do not prove a run completed; completion is recorded by `run_manifest` and made consumable by `ready_signal`.
 
 ## Contract Type
 
-- **Type name:** `manager_request_v1`
+- **Type name:** `manager_request`
 - **Owning repository:** `trading-storage`
 - **Registered through:** `trading-manager/scripts/registry/`
 - **Status:** Accepted template contract; production queue/storage implementation still requires manager/storage work.
@@ -17,7 +17,8 @@ Requests are intent records. They do not prove a run completed; completion is re
 
 | Field | Meaning |
 | --- | --- |
-| `contract_version` | Must be `manager_request_v1`. |
+| `contract_type` | Must be `manager_request`. |
+| `schema_version` | Integer schema version, currently `1`. |
 | `request_id` | Stable request id. |
 | `idempotency_key` | Key used to prevent duplicate execution. |
 | `requester` | `trading-manager`, human reviewer id, or approved agent id. |
@@ -48,7 +49,8 @@ Requests are intent records. They do not prove a run completed; completion is re
 
 ```json
 {
-  "contract_version": "manager_request_v1",
+  "contract_type": "manager_request",
+  "schema_version": 1,
   "request_id": "req_...",
   "idempotency_key": "source_04_event_overlay:ABC:2026-05-08",
   "requester": "trading-manager",
@@ -61,7 +63,7 @@ Requests are intent records. They do not prove a run completed; completion is re
   "not_before": "2026-05-08T08:00:00Z",
   "parameters": {"symbol": "ABC", "timeframe": "1Min"},
   "input_artifact_refs": ["art_..."],
-  "expected_output_types": ["run_manifest_v1", "artifact_ref_v1", "ready_signal_v1"],
+  "expected_output_types": ["run_manifest", "artifact_ref", "ready_signal"],
   "manager_controls": {
     "allow_live_provider_calls": false,
     "autonomous_historical_provider_acquisition": false,

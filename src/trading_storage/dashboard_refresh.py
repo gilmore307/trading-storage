@@ -20,8 +20,8 @@ from typing import Any, Mapping, Sequence
 from .artifact_store import now_utc
 from .dashboard_read_models import MaterializedDashboardReadModel, materialize_dashboard_read_model
 
-HISTORICAL_TASK_PROGRESS_CONTRACT = "historical_task_progress_summary_v1"
-REFRESH_RECEIPT_CONTRACT = "dashboard_read_model_refresh_receipt_v1"
+HISTORICAL_TASK_PROGRESS_CONTRACT = "historical_task_progress_summary"
+REFRESH_RECEIPT_CONTRACT = "dashboard_read_model_refresh_receipt"
 DEFAULT_TRADING_MANAGER_ROOT = Path("/root/projects/trading-manager")
 DEFAULT_PRODUCER_TIMEOUT_SECONDS = 30.0
 

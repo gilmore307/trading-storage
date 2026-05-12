@@ -2,7 +2,7 @@
 
 This is the first concrete storage implementation slice: canonical JSON payloads
 are written under an ignored local storage root, while callers receive an
-`artifact_ref_v1`-shaped metadata record suitable for manager SQL.
+`artifact_ref`-shaped metadata record suitable for manager SQL.
 """
 
 from __future__ import annotations
@@ -71,7 +71,7 @@ def store_json_artifact(
     row_count: int | None = None,
     overwrite_same_hash: bool = True,
 ) -> StoredArtifact:
-    """Store canonical JSON payload bytes and return artifact_ref_v1 metadata."""
+    """Store canonical JSON payload bytes and return artifact_ref metadata."""
 
     for field_name, value in {
         "artifact_id": artifact_id,
@@ -96,7 +96,8 @@ def store_json_artifact(
     uri = "storage://trading-storage/" + str(path.relative_to(storage_root)).replace("\\", "/")
     timestamp = produced_at or now_utc()
     artifact_ref = {
-        "contract_version": "artifact_ref_v1",
+        "contract_type": "artifact_ref",
+        "schema_version": 1,
         "artifact_id": artifact_id,
         "artifact_type": artifact_type,
         "producer_repo": producer_repo,
@@ -137,7 +138,8 @@ def store_completion_receipt_payload(
     artifact_id = f"art_receipt_{_safe_token(run_id, field='run_id')}"
     manifest_id = f"manifest_{_safe_token(run_id, field='run_id')}"
     payload = {
-        "contract_type": "component_completion_receipt_payload_v1",
+        "contract_type": "component_completion_receipt_payload",
+        "schema_version": 1,
         "request_id": request_id,
         "run_id": run_id,
         "producer_repo": producer_repo,
@@ -151,6 +153,6 @@ def store_completion_receipt_payload(
         producer_repo=producer_repo,
         producer_workflow=workflow_id,
         manifest_id=manifest_id,
-        schema_ref="component_completion_receipt_payload_v1",
+        schema_ref="component_completion_receipt_payload",
         storage_root=storage_root,
     )

@@ -28,28 +28,29 @@ CLOCK_SKEW = timedelta(minutes=5)
 
 INITIAL_CONTRACT_TYPES = frozenset(
     {
-        "current_system_status_summary_v1",
-        "alert_exception_summary_v1",
-        "historical_task_progress_summary_v1",
-        "realtime_task_progress_summary_v1",
-        "model_layer_readiness_summary_v1",
-        "model_promotion_posture_summary_v1",
-        "registry_dictionary_profile_v1",
+        "current_system_status_summary",
+        "alert_exception_summary",
+        "historical_task_progress_summary",
+        "realtime_task_progress_summary",
+        "model_layer_readiness_summary",
+        "model_promotion_posture_summary",
+        "registry_dictionary_profile",
     }
 )
 PARKED_CONTRACT_TYPES = frozenset(
     {
-        "realtime_signal_summary_v1",
-        "runtime_decision_quality_summary_v1",
-        "trading_performance_summary_v1",
-        "storage_lifecycle_status_summary_v1",
+        "realtime_signal_summary",
+        "runtime_decision_quality_summary",
+        "trading_performance_summary",
+        "storage_lifecycle_status_summary",
     }
 )
 REGISTERED_CONTRACT_TYPES = INITIAL_CONTRACT_TYPES | PARKED_CONTRACT_TYPES
+LEGACY_CONTRACT_ALIASES = {f"{contract_type}_v1": contract_type for contract_type in REGISTERED_CONTRACT_TYPES}
 
 REQUIRED_ENVELOPE_FIELDS = (
     "contract_type",
-    "contract_version",
+    "schema_version",
     "generated_at_utc",
     "source_system",
     "status",
@@ -67,7 +68,7 @@ SECRET_KEY_RE = re.compile(r"(api[_-]?key|secret|token|password|passphrase|crede
 SECRET_VALUE_RE = re.compile(
     r"(-----BEGIN [A-Z ]*PRIVATE KEY-----|sk-[A-Za-z0-9_-]{16,}|xox[baprs]-[A-Za-z0-9-]{16,})"
 )
-SAFE_CONTRACT_RE = re.compile(r"^[a-z][a-z0-9_]*_v[0-9]+$")
+SAFE_CONTRACT_RE = re.compile(r"^[a-z][a-z0-9_]*$")
 
 
 class DashboardReadModelError(ValueError):
@@ -110,9 +111,10 @@ def _compact_timestamp(value: str) -> str:
 def _safe_contract_type(contract_type: str) -> str:
     if not isinstance(contract_type, str) or not SAFE_CONTRACT_RE.fullmatch(contract_type):
         raise DashboardReadModelError(f"unsafe or unregistered-shaped contract_type: {contract_type!r}")
-    if contract_type not in REGISTERED_CONTRACT_TYPES:
+    canonical = LEGACY_CONTRACT_ALIASES.get(contract_type, contract_type)
+    if canonical not in REGISTERED_CONTRACT_TYPES:
         raise DashboardReadModelError(f"contract_type is not registered for dashboard read models: {contract_type!r}")
-    return contract_type
+    return canonical
 
 
 def _expect_list(payload: Mapping[str, Any], field: str) -> None:
@@ -162,7 +164,7 @@ def validate_dashboard_read_model(
             f"contract_type {contract_type!r} does not match expected contract {expected_contract_type!r}"
         )
 
-    for field in ("contract_version", "source_system", "status", "summary", "schema_ref"):
+    for field in ("source_system", "status", "summary", "schema_ref"):
         if not isinstance(payload[field], str) or not payload[field].strip():
             raise DashboardReadModelError(f"{field} must be a non-empty string")
 
@@ -175,6 +177,10 @@ def validate_dashboard_read_model(
     if not isinstance(payload["freshness"], Mapping):
         raise DashboardReadModelError("freshness must be a JSON object")
 
+    schema_version = payload["schema_version"]
+    if not isinstance(schema_version, int) or schema_version < 1:
+        raise DashboardReadModelError("schema_version must be a positive integer")
+
     generated_at = _parse_utc_timestamp(str(payload["generated_at_utc"]), field="generated_at_utc")
     current_time = (now or datetime.now(timezone.utc)).astimezone(timezone.utc)
     if generated_at > current_time + CLOCK_SKEW:
@@ -182,7 +188,8 @@ def validate_dashboard_read_model(
 
     schema_ref = str(payload["schema_ref"])
     expected_schema_suffix = f"dashboard/schemas/{contract_type}.schema.json"
-    if schema_ref != contract_type and not schema_ref.endswith(expected_schema_suffix):
+    legacy_schema_suffix = f"dashboard/schemas/{payload['contract_type']}.schema.json"
+    if schema_ref != contract_type and not schema_ref.endswith(expected_schema_suffix) and not schema_ref.endswith(legacy_schema_suffix):
         raise DashboardReadModelError(
             "schema_ref must be the contract type or the accepted storage schema path for the contract"
         )
@@ -204,7 +211,7 @@ def common_dashboard_schema(contract_type: str) -> dict[str, Any]:
         "additionalProperties": True,
         "properties": {
             "contract_type": {"const": contract_type},
-            "contract_version": {"type": "string", "minLength": 1},
+            "schema_version": {"type": "integer", "minimum": 1},
             "generated_at_utc": {"type": "string", "format": "date-time"},
             "source_system": {"type": "string", "minLength": 1},
             "status": {"type": "string", "minLength": 1},
@@ -271,8 +278,16 @@ def materialize_dashboard_read_model(
     if not schema_path.exists():
         _write_atomic_json(schema_path, common_dashboard_schema(contract_type))
 
-    content = _write_atomic_json(snapshot_path, payload)
-    latest_content = _write_atomic_json(latest_path, payload)
+    payload_to_write: Mapping[str, Any] = payload
+    if str(payload.get("contract_type")) != contract_type:
+        normalized_payload = dict(payload)
+        normalized_payload["contract_type"] = contract_type
+        schema_ref = str(normalized_payload.get("schema_ref") or "")
+        normalized_payload["schema_ref"] = schema_ref.replace(str(payload.get("contract_type")), contract_type)
+        payload_to_write = normalized_payload
+
+    content = _write_atomic_json(snapshot_path, payload_to_write)
+    latest_content = _write_atomic_json(latest_path, payload_to_write)
     if latest_content != content:
         raise DashboardReadModelError("latest.json content diverged from validated snapshot")
 
@@ -280,7 +295,7 @@ def materialize_dashboard_read_model(
     byte_count = len(content)
     index_row = {
         "contract_type": contract_type,
-        "contract_version": payload["contract_version"],
+        "schema_version": payload["schema_version"],
         "generated_at_utc": payload["generated_at_utc"],
         "indexed_at_utc": now_utc(),
         "latest_uri": _storage_uri(storage_root, latest_path),

@@ -231,10 +231,10 @@ The model stack and data-source/model-input design phase are closed. Remaining n
 
 Accept four storage-owned V1 template contracts under `main/templates/contracts/`:
 
-- `manager_request_v1` for manager-issued work intent.
-- `run_manifest_v1` for run evidence.
-- `artifact_ref_v1` for immutable output references.
-- `ready_signal_v1` for downstream consumability markers.
+- `manager_request` for manager-issued work intent.
+- `run_manifest` for run evidence.
+- `artifact_ref` for immutable output references.
+- `ready_signal` for downstream consumability markers.
 
 These contracts define logical shape, required fields, mutability, readiness, and secret-handling rules. They do not by themselves implement production queues, SQL persistence, or artifact storage.
 

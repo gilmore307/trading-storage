@@ -10,7 +10,7 @@ Receipt records are control evidence. They do not embed large payloads.
 
 ## Receipt families
 
-### `compression_receipt_v1`
+### `compression_receipt`
 
 Emitted after file/object compression completes and validation passes or fails.
 
@@ -30,7 +30,7 @@ Required content:
 - timestamp;
 - status.
 
-### `archive_receipt_v1`
+### `archive_receipt`
 
 Emitted after file or SQL archive creation.
 
@@ -50,7 +50,7 @@ Required content:
 - timestamp;
 - status.
 
-### `deletion_receipt_v1`
+### `deletion_receipt`
 
 Emitted only after quarantine and final protected-set recheck pass.
 
@@ -69,7 +69,7 @@ Required content:
 - timestamp;
 - status.
 
-### `restore_receipt_v1`
+### `restore_receipt`
 
 Emitted after restore verification or actual restore.
 
@@ -88,15 +88,15 @@ Required content:
 
 Lifecycle manifests describe restorable payloads:
 
-- `compression_manifest_v1` for compressed file/object artifacts;
-- `sql_archive_manifest_v1` for exported SQL table/partition archives;
-- `restore_manifest_v1` for how to restore a compressed/archive artifact.
+- `compression_manifest` for compressed file/object artifacts;
+- `sql_archive_manifest` for exported SQL table/partition archives;
+- `restore_manifest` for how to restore a compressed/archive artifact.
 
 Manifests should be referenced by receipts and artifact index rows.
 
 ## Tombstones
 
-Deletion does not erase history. A deleted artifact leaves `artifact_tombstone_v1` metadata:
+Deletion does not erase history. A deleted artifact leaves `artifact_tombstone` metadata:
 
 | Field | Meaning |
 | --- | --- |

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Refresh the storage-owned current_system_status_summary_v1 read model."""
+"""Refresh the storage-owned current_system_status_summary read model."""
 
 from __future__ import annotations
 
@@ -11,7 +11,7 @@ from trading_storage.dashboard_system_status import refresh_current_system_statu
 
 
 def main(argv: list[str] | None = None) -> int:
-    parser = argparse.ArgumentParser(description="Refresh current_system_status_summary_v1 dashboard read model.")
+    parser = argparse.ArgumentParser(description="Refresh current_system_status_summary dashboard read model.")
     parser.add_argument("--storage-root", type=Path, default=Path("storage"))
     args = parser.parse_args(argv)
     result = refresh_current_system_status_read_model(storage_root=args.storage_root)

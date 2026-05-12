@@ -16,7 +16,7 @@ from trading_storage.dashboard_refresh import (
 def historical_payload() -> dict:
     return {
         "contract_type": HISTORICAL_TASK_PROGRESS_CONTRACT,
-        "contract_version": "1.0.0",
+        "schema_version": 1,
         "generated_at_utc": "2026-05-12T00:00:00Z",
         "source_system": "trading-manager",
         "status": "ready",
@@ -31,9 +31,9 @@ def historical_payload() -> dict:
         "profile_refs": [],
         "issue_refs": [],
         "diagnostic_refs": [],
-        "lineage_refs": [{"contract_type": "manager_historical_scheduler_status_v1"}],
+        "lineage_refs": [{"contract_type": "manager_historical_scheduler_status"}],
         "freshness": {"class": "runtime_status_snapshot", "status": "fresh", "stale_after_seconds": 900},
-        "schema_ref": "storage/dashboard/schemas/historical_task_progress_summary_v1.schema.json",
+        "schema_ref": "storage/dashboard/schemas/historical_task_progress_summary.schema.json",
     }
 
 
@@ -55,7 +55,7 @@ class DashboardRefreshTests(unittest.TestCase):
 
             latest_path = storage_root / "dashboard" / "read_models" / HISTORICAL_TASK_PROGRESS_CONTRACT / "latest.json"
             self.assertTrue(latest_path.exists())
-            self.assertEqual(result.receipt["contract_type"], "dashboard_read_model_refresh_receipt_v1")
+            self.assertEqual(result.receipt["contract_type"], "dashboard_read_model_refresh_receipt")
             self.assertEqual(result.receipt["refreshed_contract_type"], HISTORICAL_TASK_PROGRESS_CONTRACT)
             self.assertTrue(result.receipt["side_effects"]["storage_dashboard_write"])
             self.assertFalse(result.receipt["side_effects"]["provider_calls"])

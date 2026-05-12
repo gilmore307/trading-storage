@@ -20,8 +20,8 @@ FIXED_NOW = datetime(2026, 5, 12, 12, 0, 0, tzinfo=timezone.utc)
 
 def sample_payload(**overrides):
     payload = {
-        "contract_type": "current_system_status_summary_v1",
-        "contract_version": "1.0.0",
+        "contract_type": "current_system_status_summary",
+        "schema_version": 1,
         "generated_at_utc": "2026-05-12T00:00:00Z",
         "source_system": "trading-manager",
         "status": "healthy",
@@ -31,9 +31,9 @@ def sample_payload(**overrides):
         "profile_refs": [],
         "issue_refs": [],
         "diagnostic_refs": [],
-        "lineage_refs": [{"ref": "manager_status_snapshot_v1"}],
+        "lineage_refs": [{"ref": "manager_status_snapshot"}],
         "freshness": {"class": "fresh", "stale_after_seconds": 300, "status": "healthy"},
-        "schema_ref": "storage/dashboard/schemas/current_system_status_summary_v1.schema.json",
+        "schema_ref": "storage/dashboard/schemas/current_system_status_summary.schema.json",
     }
     payload.update(overrides)
     return payload
@@ -43,7 +43,7 @@ class DashboardReadModelTests(unittest.TestCase):
     def test_validate_common_envelope_returns_contract_type(self):
         contract_type = validate_dashboard_read_model(sample_payload(), now=FIXED_NOW)
 
-        self.assertEqual(contract_type, "current_system_status_summary_v1")
+        self.assertEqual(contract_type, "current_system_status_summary")
 
     def test_materializes_snapshot_latest_schema_and_index(self):
         with tempfile.TemporaryDirectory() as tmp:
@@ -60,8 +60,8 @@ class DashboardReadModelTests(unittest.TestCase):
             schema = json.loads(materialized.schema_path.read_text(encoding="utf-8"))
             index_rows = [json.loads(line) for line in materialized.index_path.read_text(encoding="utf-8").splitlines()]
 
-            self.assertEqual(snapshot["contract_type"], "current_system_status_summary_v1")
-            self.assertEqual(schema["properties"]["contract_type"]["const"], "current_system_status_summary_v1")
+            self.assertEqual(snapshot["contract_type"], "current_system_status_summary")
+            self.assertEqual(schema["properties"]["contract_type"]["const"], "current_system_status_summary")
             self.assertEqual(len(index_rows), 1)
             self.assertEqual(index_rows[0]["snapshot_uri"], materialized.storage_uri)
             self.assertEqual(index_rows[0]["content_hash_sha256"], materialized.content_hash)
@@ -71,7 +71,7 @@ class DashboardReadModelTests(unittest.TestCase):
         with self.assertRaises(DashboardReadModelError):
             validate_dashboard_read_model(
                 sample_payload(),
-                expected_contract_type="alert_exception_summary_v1",
+                expected_contract_type="alert_exception_summary",
                 now=FIXED_NOW,
             )
 
@@ -92,7 +92,7 @@ class DashboardReadModelTests(unittest.TestCase):
     def test_rejects_unsafe_contract_shape(self):
         with self.assertRaises(DashboardReadModelError):
             validate_dashboard_read_model(
-                sample_payload(contract_type="../current_system_status_summary_v1"),
+                sample_payload(contract_type="../current_system_status_summary"),
                 now=FIXED_NOW,
             )
 
@@ -105,10 +105,10 @@ class DashboardReadModelTests(unittest.TestCase):
             from scripts.dashboard.materialize_read_model import main
 
             with contextlib.redirect_stdout(io.StringIO()):
-                result = main([str(payload_path), "--contract-type", "current_system_status_summary_v1", "--storage-root", str(storage_root)])
+                result = main([str(payload_path), "--contract-type", "current_system_status_summary", "--storage-root", str(storage_root)])
 
             self.assertEqual(result, 0)
-            self.assertTrue((storage_root / "dashboard/read_models/current_system_status_summary_v1/latest.json").exists())
+            self.assertTrue((storage_root / "dashboard/read_models/current_system_status_summary/latest.json").exists())
 
 
 if __name__ == "__main__":

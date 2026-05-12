@@ -5,13 +5,13 @@ Executable storage maintenance and artifact helpers live here. Scripts may impor
 ## Dashboard helpers
 
 - `dashboard/materialize_read_model.py` validates a dashboard read-model common envelope and writes storage-owned snapshot/latest/schema/index files under `storage/dashboard/`.
-- `dashboard/refresh_historical_task_progress_read_model.py` runs the manager-owned `historical_task_progress_summary_v1` producer and materializes the validated payload into the accepted storage layout.
+- `dashboard/refresh_historical_task_progress_read_model.py` runs the manager-owned `historical_task_progress_summary` producer and materializes the validated payload into the accepted storage layout.
 
 Examples:
 
 ```bash
 PYTHONPATH=src python3 scripts/dashboard/materialize_read_model.py summary.json \
-  --contract-type current_system_status_summary_v1
+  --contract-type current_system_status_summary
 
 PYTHONPATH=src python3 scripts/dashboard/refresh_historical_task_progress_read_model.py \
   --trading-manager-root /root/projects/trading-manager \
@@ -36,7 +36,7 @@ PYTHONPATH=src python3 scripts/lifecycle/maintain_local_storage.py --root . --ap
 
 ## Artifact helpers
 
-- `artifacts/store_completion_receipt_payload.py` stores a component completion receipt JSON as a storage-owned `component_completion_receipt_payload_v1` artifact and prints `artifact_ref_v1` metadata.
+- `artifacts/store_completion_receipt_payload.py` stores a component completion receipt JSON as a storage-owned `component_completion_receipt_payload` artifact and prints `artifact_ref` metadata.
 
 Example:
 
