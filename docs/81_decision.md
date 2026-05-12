@@ -320,3 +320,26 @@ Accept the V0.1 storage lifecycle design:
 - The existing local ignored-file helper remains valid, but production lifecycle mutation is not authorized until artifact index, protected-set builder, lifecycle planner, receipt writing, and restore verification are implemented and reviewed.
 - `trading-manager` may register lifecycle contract/type names and request/prioritize/schedule/observe lifecycle work through the unified manager task system, but it must not directly delete files, compress SQL, or mutate storage paths.
 - `trading-data` and `trading-model` should add artifact metadata needed by storage lifecycle classification, including artifact kind, reproducibility class, lineage refs, source/model version refs, and recommended retention class.
+
+
+## D015 - Dashboard summary read models live in storage
+
+Date: 2026-05-12
+Status: Accepted
+
+### Context
+
+`trading-dashboard` is being designed as an owner-facing summary surface, not an internal maintenance console. Chentong clarified that dashboard summary/read-model outputs should live in the storage repository.
+
+### Decision
+
+Accept `trading-storage` as the durable/materialized home for dashboard summary/read-model outputs. Storage owns physical placement, retention, backup, restore, archive, materialized snapshot history, and lifecycle treatment for these summaries.
+
+Semantic ownership stays with the upstream domain owner: `trading-manager` owns task/scheduler/promotion summary semantics, `trading-model` owns model metric semantics, `trading-execution` owns realtime/execution summary semantics, `trading-data` owns provider/data summary semantics, and `trading-storage` owns persistence/lifecycle and storage-health summary semantics.
+
+### Consequences
+
+- Dashboard reads storage-hosted summaries instead of raw internal component tables.
+- `docs/96_dashboard_read_models.md` owns the storage-side design boundary.
+- This decision does not create physical tables, object paths, refresh jobs, or lifecycle mutation.
+- Shared summary contract names must be registered through `trading-manager` before implementation depends on them across repositories.

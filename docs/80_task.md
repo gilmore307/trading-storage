@@ -13,7 +13,7 @@ The initial storage-contract-and-lifecycle-helper phase is closed. Current histo
 - Completion receipt payload storage is implemented through `src/trading_storage/artifact_store.py` and `scripts/artifacts/store_completion_receipt_payload.py`.
 - Local lifecycle maintenance is implemented through `src/trading_storage/lifecycle.py` and `scripts/lifecycle/maintain_local_storage.py`.
 - Maintenance systemd templates are checked in but intentionally not installed or enabled.
-- V0.1 lifecycle design is documented in `docs/91_storage_lifecycle_policy.md` through `docs/95_lifecycle_receipts.md`: promoted model bodies are kept permanently, regenerable intermediate data may expire by TTL, source data is compressed before deletion unless disposable, SQL detail is archived through export/restore workflows, all lifecycle actions require manifest/receipt evidence, promotion may classify retention intent but not execute cleanup, and normal lifecycle maintenance enters through manager's unified request/task-summary surface before storage executes physical actions.
+- V0.1 lifecycle design is documented in `docs/91_storage_lifecycle_policy.md` through `docs/95_lifecycle_receipts.md`: promoted model bodies are kept permanently, regenerable intermediate data may expire by TTL, source data is compressed before deletion unless disposable, SQL detail is archived through export/restore workflows, all lifecycle actions require manifest/receipt evidence, promotion may classify retention intent but not execute cleanup, and normal lifecycle maintenance enters through manager's unified request/task-summary surface before storage executes physical actions. `docs/96_dashboard_read_models.md` now records that dashboard summary/read-model outputs belong in storage as future durable/materialized read models.
 
 ## Not Current Historical-Training Scope
 
@@ -23,6 +23,7 @@ These items are intentionally outside the current no-broker historical-training 
 - production lifecycle mutation before artifact index/protected-set/receipt support exists;
 - development-to-durable promotion automation before a concrete consumer requires it;
 - production queue execution and storage-resident lifecycle mutation;
+- physical dashboard summary/read-model tables, object paths, refresh jobs, or dashboard read adapters before a controlled implementation slice is accepted;
 - host-level timer enablement without operator review.
 
 ## Recently Accepted
