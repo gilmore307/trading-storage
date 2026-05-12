@@ -11,6 +11,7 @@ This repository exists to keep that responsibility explicit, testable, and separ
 ## In Scope
 
 - shared artifact storage layout contracts.
+- durable non-SQL saved data contracts for files, JSON/JSONL/CSV/parquet payloads, summaries, manifests, receipts, model bodies, archives, and object-like artifacts.
 - checked-in reusable templates and shared static files under `main/`.
 - artifact reference and path policy in coordination with trading-manager contracts.
 - retention, archive, rehydrate, backup, and restore expectations.
@@ -29,6 +30,19 @@ This repository exists to keep that responsibility explicit, testable, and separ
 - Defining global artifact, manifest, ready-signal, request, field, status, or type contracts outside `trading-manager`.
 - Storing generated data, artifacts, logs, notebooks, credentials, or secrets in Git.
 
+## Durable Non-SQL Data Rule
+
+Any durable, system-owned data that is not stored in SQL should be stored through `trading-storage` contracts and storage-owned locations. This includes durable files, JSON/JSONL/CSV/parquet payloads, manifests, receipts, model bodies, dashboard summaries, archives, tombstones, and restore manifests.
+
+This rule does not move semantic ownership: producing repositories still own the meaning and validation of their outputs. Storage owns physical placement, references, retention, backup, restore, archive, and lifecycle.
+
+Allowed exceptions:
+
+- source code, tests, docs, checked-in templates, reviewed shared static files, and registry exports that belong in Git;
+- secrets under approved secret storage outside repositories;
+- disposable caches, temporary files, and local development staging that are ignored, non-durable, and either reproducible or explicitly outside accepted system data;
+- database-resident SQL rows/tables/partitions, whose durable SQL contracts remain SQL/storage contract work rather than file placement.
+
 ## Owner Intent
 
 `trading-storage` should become a disciplined component repository with clear contracts, evidence-backed acceptance, and no hidden ownership drift.
@@ -42,6 +56,7 @@ The repository should prefer explicit interfaces, fixture-backed tests, and narr
 - Durable storage layout and retention belong in `trading-storage` unless this repository is defining that storage contract.
 - Scheduling, retries, cross-component lifecycle routing, and promotion decisions belong in the `trading-manager` control plane unless explicitly delegated by contract; storage may provide local maintenance helpers and installable scheduling templates.
 - Generated artifacts and runtime outputs are not source files.
+- Durable or system-owned non-SQL saved data belongs under storage-owned contracts/locations, not scattered as ad hoc saved files in component repositories.
 - Secrets and credentials must stay outside the repository.
 - Shared helpers, templates, fields, statuses, and type values discovered here must be recorded through `trading-manager` before cross-repository use.
 

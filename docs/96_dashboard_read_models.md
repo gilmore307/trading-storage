@@ -2,7 +2,7 @@
 
 ## Purpose
 
-`trading-storage` is the durable/materialized home for dashboard summary/read-model outputs consumed by `trading-dashboard`.
+`trading-storage` is the durable/materialized home for dashboard summary/read-model outputs consumed by `trading-dashboard`. This is a specific instance of the broader rule that durable system-owned non-SQL saved data belongs in storage.
 
 The dashboard is owner-facing and read-only. It should read compact summary outputs from storage instead of assembling pages directly from raw manager, model, data, execution, registry, daemon, receipt, or artifact internals.
 

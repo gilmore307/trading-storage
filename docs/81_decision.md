@@ -343,3 +343,29 @@ Semantic ownership stays with the upstream domain owner: `trading-manager` owns 
 - `docs/96_dashboard_read_models.md` owns the storage-side design boundary.
 - This decision does not create physical tables, object paths, refresh jobs, or lifecycle mutation.
 - Shared summary contract names must be registered through `trading-manager` before implementation depends on them across repositories.
+
+
+## D016 - Durable non-SQL saved data belongs in storage
+
+Date: 2026-05-12
+Status: Accepted
+
+### Context
+
+The trading system now produces multiple classes of saved data that are not naturally stored as live SQL rows: JSON/JSONL/CSV/parquet payloads, manifests, receipts, model bodies, dashboard summaries, archives, tombstones, restore manifests, and other object-like evidence. If these files remain scattered across component repositories, the platform will lose clear retention, backup, restore, lifecycle, and reference ownership.
+
+### Decision
+
+All durable, system-owned non-SQL saved data belongs under `trading-storage` contracts and storage-owned locations by default. Component repositories may still create disposable ignored local staging during development or execution, but accepted durable non-SQL outputs should be promoted/written/referenced through storage-owned paths or future object/SQL-backed storage contracts.
+
+This rule does not move semantic ownership. Producing repositories still own output meaning, validation, row/content semantics, and generation logic. `trading-storage` owns physical placement, references, retention, backup, restore, archive, lifecycle policy, tombstones, and restore evidence.
+
+Accepted exceptions are source code, tests, docs, checked-in templates, reviewed shared static files, registry exports, approved secret storage outside repositories, disposable caches, and explicitly non-durable local staging. SQL-resident rows/tables remain governed by SQL storage contracts rather than this non-SQL file/object rule.
+
+### Consequences
+
+- New durable file/object-style artifacts should not be normalized into component-local saved directories as their final home.
+- Future implementation slices must define concrete storage paths/object layouts, index entries, protected-set behavior, retention classes, and restore evidence before broad migration.
+- Dashboard summaries, completion receipts, model bodies, manifests, archives, tombstones, and restore manifests are storage-owned durable data unless a narrower accepted contract says otherwise.
+- Component-local runtime files remain acceptable only as disposable, ignored, reproducible, or not-yet-promoted staging.
+- Shared contract names and new durable artifact classes still route through `trading-manager` registry before cross-repository implementation depends on them.

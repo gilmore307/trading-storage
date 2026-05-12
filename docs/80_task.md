@@ -10,6 +10,7 @@ The initial storage-contract-and-lifecycle-helper phase is closed. Current histo
 ## Historical-Training Todo Status
 
 - Local generated artifacts remain ignored and storage-owned.
+- Durable/system-owned non-SQL saved data is now accepted as storage-owned by default; component-local saved files are only valid as disposable ignored staging unless a narrower exception is accepted.
 - Completion receipt payload storage is implemented through `src/trading_storage/artifact_store.py` and `scripts/artifacts/store_completion_receipt_payload.py`.
 - Local lifecycle maintenance is implemented through `src/trading_storage/lifecycle.py` and `scripts/lifecycle/maintain_local_storage.py`.
 - Maintenance systemd templates are checked in but intentionally not installed or enabled.
@@ -24,10 +25,12 @@ These items are intentionally outside the current no-broker historical-training 
 - development-to-durable promotion automation before a concrete consumer requires it;
 - production queue execution and storage-resident lifecycle mutation;
 - physical dashboard summary/read-model tables, object paths, refresh jobs, or dashboard read adapters before a controlled implementation slice is accepted;
+- broad migration of every existing local development artifact into storage before artifact index/protected-set/read-model implementation slices define concrete paths and acceptance gates;
 - host-level timer enablement without operator review.
 
 ## Recently Accepted
 
+- Accepted the durable non-SQL data rule: system-owned non-SQL saved data belongs in `trading-storage` by default, while semantic ownership stays with the producing component and disposable ignored staging remains allowed until promotion.
 - Accepted the V0.1 storage lifecycle system design in `docs/91_storage_lifecycle_policy.md` through `docs/95_lifecycle_receipts.md`, including lifecycle states, manager-unified lifecycle requests/task visibility, artifact index, reproducibility/retention/read-mode classes, protected-set builder, quarantine-before-delete, compression/archive/restore flows, lifecycle receipts, and tombstones. Implementation remains future controlled slices and is dry-run-first.
 - Closed the current storage-contract-and-lifecycle-helper phase in `docs/90_storage_closeout.md`: V1 handoff templates, reusable checked-in non-code assets, local generated-artifact boundary, storage-owned completion receipt payload helper, and local retention/archive/cleanup helper are accepted. No production object store, SQL partitioning, provider call, manager dispatch, model activation, or broker execution is enabled by this closeout.
 - Implemented local lifecycle maintenance: `src/trading_storage/lifecycle.py`, `scripts/lifecycle/maintain_local_storage.py`, tests, and systemd timer templates under `main/templates/maintenance/`. The helper dry-runs by default, retains `storage/artifacts/`, archives logs/runs/outputs before removal, deletes old `tmp/`, and prunes local archives after 180 days.
