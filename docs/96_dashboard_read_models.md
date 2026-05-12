@@ -38,7 +38,7 @@ component evidence -> semantic owner aggregation -> storage materialized summary
 
 ## Initial Dashboard Summary Families
 
-The following dashboard summary families are accepted as storage-bound design targets. Exact physical schema, table names, partitioning, and export formats remain future implementation details and must be registered through `trading-manager` before cross-repository use.
+The following dashboard summary families are accepted as storage-bound design targets. Shared contract names are registered through `trading-manager`; the initial file/object layout and validation boundary live in `docs/97_dashboard_summary_layout.md`.
 
 - `current_system_status_summary_v1`;
 - `alert_exception_summary_v1`;
@@ -92,7 +92,7 @@ Default lifecycle posture for future implementation:
 - never delete summaries that are the only remaining explanation for an unresolved alert;
 - preserve summary contract/version metadata for restore compatibility.
 
-Exact TTLs and archive rules are future policy details.
+Exact TTL values remain future retention-policy details; the initial latest/snapshot/schema/index layout is accepted in `docs/97_dashboard_summary_layout.md`.
 
 ## Dashboard Access Boundary
 
@@ -107,13 +107,13 @@ The dashboard may read storage-hosted summaries and issue-focused diagnostic ref
 
 ## Current Status
 
-This document is a design contract only. It does not create physical tables, object-store paths, SQL views, generation daemons, or lifecycle mutation.
+This document defines the storage-home boundary. `docs/97_dashboard_summary_layout.md` now defines the initial physical JSON layout, common envelope, and validation boundary.
 
-Implementation requires a later controlled slice that defines:
+Still not implemented:
 
-- physical SQL/object layout;
-- writer responsibility for each summary family;
-- refresh cadence;
-- registry entries in `trading-manager`;
+- summary writers;
+- concrete JSON Schema files;
+- refresh cadence/jobs;
 - fixture and restore tests;
-- dashboard read adapter acceptance.
+- dashboard read adapters;
+- lifecycle timers or mutation.

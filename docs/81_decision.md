@@ -341,7 +341,7 @@ Semantic ownership stays with the upstream domain owner: `trading-manager` owns 
 
 - Dashboard reads storage-hosted summaries instead of raw internal component tables.
 - `docs/96_dashboard_read_models.md` owns the storage-side design boundary.
-- This decision does not create physical tables, object paths, refresh jobs, or lifecycle mutation.
+- `docs/97_dashboard_summary_layout.md` defines the first accepted file/object path layout and validation boundary.
 - Shared summary contract names must be registered through `trading-manager` before implementation depends on them across repositories.
 
 
@@ -392,3 +392,33 @@ The accepted target roots are storage-owned equivalents such as `storage/tmp/`, 
 - Storage scheduled cleanup becomes the uniform path for disposable runtime files.
 - The first local helper implementation covers target `storage/tmp`, `storage/cache`, `storage/staging`, `storage/logs`, `storage/runs`, and `storage/outputs` roots while preserving legacy root cleanup during migration. Future slices still need concrete cross-repository migration expectations before broad movement of existing local staging files.
 - This does not authorize deletion beyond reviewed dry-run-first lifecycle helpers, protected-set rules, quarantine rules where applicable, and lifecycle receipts for durable-adjacent actions.
+
+
+## D018 - Dashboard summary layout and validation boundary accepted
+
+Date: 2026-05-12
+Status: Accepted
+
+### Context
+
+Dashboard read-model contracts are now accepted as storage-hosted summaries. The next blocker was ambiguity around physical placement, schema validation, and how the dashboard avoids raw internal coupling.
+
+### Decision
+
+Accept `docs/97_dashboard_summary_layout.md` as the first physical layout and validation-boundary contract for dashboard summaries. Dashboard summaries live under:
+
+```text
+storage/dashboard/read_models/<contract_type>/latest.json
+storage/dashboard/read_models/<contract_type>/snapshots/YYYY/MM/DD/<generated_at_utc_compact>.json
+storage/dashboard/schemas/<contract_type>.schema.json
+storage/dashboard/index/dashboard_read_model_index.jsonl
+```
+
+The common envelope requires contract metadata, generation freshness, source ownership, owner-facing status/summary, chart payload, profile refs, issue refs, issue-focused diagnostic refs, lineage refs, freshness details, and schema refs.
+
+### Consequences
+
+- `trading-dashboard` should read storage-hosted latest/snapshot summaries, not raw manager/model/data/execution/storage internals.
+- Summary writers, concrete JSON Schema files, refresh jobs, fixture/restore tests, and dashboard read adapters remain future controlled implementation slices.
+- Registry names and storage layout policy are registered through `trading-manager` before implementation depends on them.
+- This decision does not enable lifecycle timers, provider calls, model activation, broker execution, account mutation, or dashboard-originated workflow control.
