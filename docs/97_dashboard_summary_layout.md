@@ -133,4 +133,9 @@ It must not use this layout to create primary views over raw artifacts, raw rece
 
 ## Current Implementation Status
 
-This is a storage layout and validation-boundary contract. It does not yet create summary writers, schemas, refresh jobs, dashboard read adapters, or lifecycle timers.
+The first storage-side materialization helper is implemented:
+
+- `src/trading_storage/dashboard_read_models.py` validates the common dashboard read-model envelope, rejects unsafe contract paths, rejects future timestamps beyond accepted clock skew, scans for secret-like values, writes snapshots, atomically replaces `latest.json`, creates the common schema placeholder for the contract, and appends `dashboard_read_model_index.jsonl` rows with checksum and byte counts.
+- `scripts/dashboard/materialize_read_model.py` is the executable wrapper for validating and materializing one producer-supplied read-model JSON payload.
+
+Still not implemented: semantic summary producers, refresh cadence/jobs, dashboard read adapters, lifecycle timers, or dashboard UI/runtime pages.

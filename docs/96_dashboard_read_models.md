@@ -109,11 +109,16 @@ The dashboard may read storage-hosted summaries and issue-focused diagnostic ref
 
 This document defines the storage-home boundary. `docs/97_dashboard_summary_layout.md` now defines the initial physical JSON layout, common envelope, and validation boundary.
 
+Implemented storage-side support:
+
+- `src/trading_storage/dashboard_read_models.py` validates and materializes producer-supplied read-model JSON payloads into snapshot/latest/schema/index files under `storage/dashboard/`.
+- `scripts/dashboard/materialize_read_model.py` exposes the helper as a CLI for one payload at a time.
+- Tests cover envelope validation, path safety, future timestamp rejection, secret-like payload rejection, snapshot/latest/schema/index writes, and the CLI path.
+
 Still not implemented:
 
-- summary writers;
-- concrete JSON Schema files;
+- semantic summary producers;
 - refresh cadence/jobs;
-- fixture and restore tests;
 - dashboard read adapters;
-- lifecycle timers or mutation.
+- lifecycle timers or mutation;
+- dashboard UI/runtime pages.

@@ -2,6 +2,17 @@
 
 Executable storage maintenance and artifact helpers live here. Scripts may import `src/`; `src/` must not import scripts.
 
+## Dashboard helpers
+
+- `dashboard/materialize_read_model.py` validates a dashboard read-model common envelope and writes storage-owned snapshot/latest/schema/index files under `storage/dashboard/`.
+
+Example:
+
+```bash
+PYTHONPATH=src python3 scripts/dashboard/materialize_read_model.py summary.json \
+  --contract-type current_system_status_summary_v1
+```
+
 ## Lifecycle helpers
 
 - `lifecycle/maintain_local_storage.py` plans or applies conservative local retention rules for ignored runtime files.
