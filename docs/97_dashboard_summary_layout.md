@@ -141,3 +141,12 @@ The first storage-side materialization and refresh helpers are implemented:
 - `deploy/systemd/trading-storage-dashboard-read-model-refresh.service` and `.timer` provide the reviewed periodic-refresh template; the default cadence is 30 seconds for near-real-time public dashboard status, and installing/enabling the timer remains an operator deployment action.
 
 Still not implemented: dashboard read adapters, lifecycle timers for dashboard snapshots, or dashboard UI/runtime pages.
+
+### Public refresh batch
+
+`refresh_public_dashboard_read_models.py` refreshes the public dashboard set currently served to `trading-dashboard`:
+
+- `current_system_status_summary_v1` for Current Status infrastructure/server/API/service/read-model freshness posture;
+- `historical_task_progress_summary_v1` for Tasks / Historical Modeling progress.
+
+The systemd refresh service uses this batch entrypoint so public pages update from storage-hosted read models without the dashboard querying raw component internals.

@@ -123,3 +123,14 @@ Still not implemented:
 - dashboard read adapters;
 - lifecycle timers or mutation for dashboard snapshots;
 - dashboard UI/runtime pages.
+
+### Current system status producer
+
+`trading_storage.dashboard_system_status` produces `current_system_status_summary_v1` from read-only infrastructure observations: host resources, dashboard API route configuration, systemd service/timer state, dashboard read-model freshness, and refresh cadence. This contract is for the dashboard Current Status page only; model workflow progress remains in task-specific read models such as `historical_task_progress_summary_v1`.
+
+Refresh entrypoints:
+
+```bash
+PYTHONPATH=src python3 scripts/dashboard/refresh_current_system_status_read_model.py --storage-root storage
+PYTHONPATH=src python3 scripts/dashboard/refresh_public_dashboard_read_models.py --storage-root storage --trading-manager-root /root/projects/trading-manager
+```

@@ -49,3 +49,4 @@ These items are intentionally outside the current no-broker historical-training 
 - Recorded that data-production development outputs may stay in local ignored staging until accepted; storage responsibility begins with durable SQL destinations and durable task completion receipts once contracts are accepted.
 - Created initial `trading-storage` docs spine and repository boundary.
 - Added initial `.gitignore` for local environments, generated outputs, logs, and secrets.
+- Current Status infrastructure read model is implemented through `src/trading_storage/dashboard_system_status.py`, `scripts/dashboard/refresh_current_system_status_read_model.py`, and the public refresh batch `scripts/dashboard/refresh_public_dashboard_read_models.py`. The systemd refresh service now refreshes the public read-model set instead of only historical task progress.
