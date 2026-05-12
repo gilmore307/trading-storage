@@ -31,7 +31,7 @@ Requests are intent records. They do not prove a run completed; completion is re
 | `parameters` | Workflow parameters. Must not include secrets. |
 | `input_artifact_refs` | Input artifact refs if any. |
 | `expected_output_types` | Expected artifact/manifest/ready-signal types. |
-| `live_call_policy` | Provider/broker/network call policy. |
+| `manager_controls` | Bounded provider/network controls for autonomous historical acquisition; broker/account/order effects remain separately gated. |
 | `retry_policy` | Retry and backoff constraints. |
 | `cancellation_policy` | How cancellation/supersession is handled. |
 
@@ -62,8 +62,9 @@ Requests are intent records. They do not prove a run completed; completion is re
   "parameters": {"symbol": "ABC", "timeframe": "1Min"},
   "input_artifact_refs": ["art_..."],
   "expected_output_types": ["run_manifest_v1", "artifact_ref_v1", "ready_signal_v1"],
-  "live_call_policy": {
-    "allow_live_calls": false,
+  "manager_controls": {
+    "allow_live_provider_calls": false,
+    "autonomous_historical_provider_acquisition": false,
     "allowed_providers": [],
     "max_requests": 0
   },
@@ -77,8 +78,8 @@ Requests are intent records. They do not prove a run completed; completion is re
 
 ## Rules
 
-- `production_mode = production` must require explicit approval and reviewed live-call policy.
-- Live provider calls must be disabled by default unless the request explicitly permits them.
+- Historical provider calls may run autonomously only when bounded manager controls explicitly permit them.
+- Broker execution, account/order mutation, storage lifecycle mutation, and production model activation require separate reviewed gates.
 - Secrets must be passed as registry/config aliases only.
 - Duplicate idempotency keys must not create duplicate production effects.
 - A superseded request must not emit a new production ready signal unless a reviewed replacement request authorizes it.

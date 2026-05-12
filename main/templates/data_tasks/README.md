@@ -19,7 +19,7 @@ Legacy development-stage file outputs should target ignored local `trading-data/
 - `clean_spec.md` — normalization and validation preparation template.
 - `save_spec.md` — development-save and future durable-save template.
 - `completion_receipt.json` — draft task completion receipt shape.
-- `fixture_policy.md` — per-source fixture and live-call guardrail template.
+- `fixture_policy.md` — per-source fixture and provider-call guardrail template.
 
 ## Minimalism Rule
 

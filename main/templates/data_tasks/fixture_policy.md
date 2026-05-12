@@ -2,7 +2,7 @@
 
 ## Purpose
 
-Define safe fixture and live-call rules for this data-source source.
+Define safe fixture and provider-call rules for this data-source source.
 
 ## Default Tests
 
@@ -41,9 +41,9 @@ Before committing fixtures, confirm:
 - timestamp and timezone examples are preserved;
 - edge cases are intentionally represented.
 
-## Live Call Guardrail
+## Provider Call Guardrail
 
-Live calls require an explicit opt-in mechanism, such as an environment variable or separate manual command. Document:
+Provider calls require an explicit opt-in mechanism, such as manager-issued autonomous historical acquisition controls, an environment variable, or a separate manual command. Document:
 
 - required secret alias;
 - expected quota impact;
