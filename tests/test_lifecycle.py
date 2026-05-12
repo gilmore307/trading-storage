@@ -58,6 +58,46 @@ class LifecycleTests(unittest.TestCase):
             self.assertEqual(plan.items[0].path, "storage/artifacts/component_completion_receipt/receipt.json")
             self.assertTrue(artifact.exists())
 
+    def test_storage_owned_tmp_and_cache_are_deleted_after_ttl(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            scratch = root / "storage" / "tmp" / "scratch.json"
+            cache = root / "storage" / "cache" / "trading-data" / "memo.json"
+            self._touch_old(scratch, age_days=4)
+            self._touch_old(cache, age_days=4)
+
+            plan = plan_retention(root=root)
+            planned = sorted(item.path for item in plan.items if item.action == "delete")
+            self.assertEqual(planned, ["storage/cache/trading-data/memo.json", "storage/tmp/scratch.json"])
+
+            apply_retention_plan(plan)
+            self.assertFalse(scratch.exists())
+            self.assertFalse(cache.exists())
+            self.assertFalse((root / "storage" / "cache").exists())
+            self.assertFalse((root / "storage" / "tmp").exists())
+
+    def test_storage_owned_logs_and_staging_are_archived_under_storage_archive(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            log = root / "storage" / "logs" / "daily.log"
+            staged = root / "storage" / "staging" / "trading-model" / "draft.json"
+            self._touch_old(log, age_days=15, content="storage diagnostic")
+            self._touch_old(staged, age_days=31, content="staged output")
+
+            plan = plan_retention(root=root)
+            archives = {item.path: item.archive_path for item in plan.items if item.action == "archive"}
+            self.assertEqual(archives["storage/logs/daily.log"], "storage/archive/logs/daily.log")
+            self.assertEqual(archives["storage/staging/trading-model/draft.json"], "storage/archive/staging/trading-model/draft.json")
+
+            apply_retention_plan(plan)
+            self.assertFalse(log.exists())
+            self.assertFalse(staged.exists())
+            self.assertEqual((root / "storage/archive/logs/daily.log").read_text(encoding="utf-8"), "storage diagnostic")
+            self.assertEqual(
+                (root / "storage/archive/staging/trading-model/draft.json").read_text(encoding="utf-8"),
+                "staged output",
+            )
+
     def test_python_caches_are_disposable(self):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)

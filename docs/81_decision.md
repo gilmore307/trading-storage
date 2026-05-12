@@ -390,5 +390,5 @@ The accepted target roots are storage-owned equivalents such as `storage/tmp/`, 
 
 - New trading runtime scratch/staging/cache paths should not be invented ad hoc inside component repositories.
 - Storage scheduled cleanup becomes the uniform path for disposable runtime files.
-- Future implementation must define concrete root/path conventions, migration expectations, and lifecycle helper coverage before broad movement of existing local staging files.
+- The first local helper implementation covers target `storage/tmp`, `storage/cache`, `storage/staging`, `storage/logs`, `storage/runs`, and `storage/outputs` roots while preserving legacy root cleanup during migration. Future slices still need concrete cross-repository migration expectations before broad movement of existing local staging files.
 - This does not authorize deletion beyond reviewed dry-run-first lifecycle helpers, protected-set rules, quarantine rules where applicable, and lifecycle receipts for durable-adjacent actions.

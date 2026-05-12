@@ -5,7 +5,8 @@ The helpers in this module are deliberately conservative:
 - source-controlled files are never candidates;
 - durable local artifacts under ``storage/artifacts`` are reported, not deleted;
 - logs and development outputs are archived before active copies are removed;
-- temporary files are deleted only after a short TTL;
+- legacy component-local roots and storage-owned roots are both covered during migration;
+- temporary/cache files are deleted only after a short TTL;
 - every mutation is opt-in by calling ``apply_retention_plan``.
 """
 
@@ -83,28 +84,28 @@ class LifecyclePlan:
 DEFAULT_RETENTION_RULES: tuple[RetentionRule, ...] = (
     RetentionRule(
         name="temporary_files",
-        roots=("tmp",),
+        roots=("tmp", "storage/tmp", "storage/cache"),
         action="delete",
         ttl_days=3,
-        description="Scratch files are disposable after three days and are not archived.",
+        description="Scratch/cache files are disposable after three days and are not archived.",
     ),
     RetentionRule(
         name="diagnostic_logs",
-        roots=("logs",),
+        roots=("logs", "storage/logs"),
         action="archive_then_delete",
         ttl_days=14,
         description="Local logs are archived before active copies older than fourteen days are removed.",
     ),
     RetentionRule(
         name="development_runs",
-        roots=("runs",),
+        roots=("runs", "storage/runs"),
         action="archive_then_delete",
         ttl_days=30,
         description="Local run staging is archived before active copies older than thirty days are removed.",
     ),
     RetentionRule(
         name="development_outputs",
-        roots=("outputs",),
+        roots=("outputs", "storage/outputs", "storage/staging"),
         action="archive_then_delete",
         ttl_days=30,
         description="Disposable development outputs are archived before active copies older than thirty days are removed.",
@@ -168,6 +169,8 @@ def _iter_python_cache_files(root: Path) -> Iterable[Path]:
 
 def _archive_path(root: Path, archive_root: Path, path: Path) -> Path:
     relative = path.relative_to(root)
+    if len(relative.parts) >= 2 and relative.parts[0] == "storage" and relative.parts[1] in {"logs", "runs", "outputs", "staging"}:
+        relative = Path(*relative.parts[1:])
     candidate = archive_root / relative
     if not candidate.exists():
         return candidate
@@ -344,7 +347,21 @@ def apply_retention_plan(plan: LifecyclePlan) -> LifecyclePlan:
 
 
 def _remove_empty_local_dirs(root: Path) -> None:
-    for relative in ("tmp", "logs", "runs", "outputs", ".pytest_cache", ".mypy_cache", ".ruff_cache"):
+    for relative in (
+        "tmp",
+        "logs",
+        "runs",
+        "outputs",
+        "storage/tmp",
+        "storage/cache",
+        "storage/logs",
+        "storage/runs",
+        "storage/outputs",
+        "storage/staging",
+        ".pytest_cache",
+        ".mypy_cache",
+        ".ruff_cache",
+    ):
         base = root / relative
         if not base.exists() or not base.is_dir():
             continue
