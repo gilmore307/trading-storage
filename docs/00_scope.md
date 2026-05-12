@@ -16,6 +16,7 @@ This repository exists to keep that responsibility explicit, testable, and separ
 - artifact reference and path policy in coordination with trading-manager contracts.
 - retention, archive, rehydrate, backup, and restore expectations.
 - conservative local lifecycle maintenance for ignored runtime files.
+- storage-owned disposable cache/tmp/local-staging roots and scheduled cleanup policy for trading runtime outputs.
 - storage validation and compatibility checks.
 - storage-local tests for path/reference/retention helpers.
 
@@ -40,8 +41,10 @@ Allowed exceptions:
 
 - source code, tests, docs, checked-in templates, reviewed shared static files, and registry exports that belong in Git;
 - secrets under approved secret storage outside repositories;
-- disposable caches, temporary files, and local development staging that are ignored, non-durable, and either reproducible or explicitly outside accepted system data;
+- unavoidable tool-created source-adjacent caches such as `__pycache__/` or `.pytest_cache/`, which are never system data and remain disposable;
 - database-resident SQL rows/tables/partitions, whose durable SQL contracts remain SQL/storage contract work rather than file placement.
+
+Trading runtime disposable cache, temporary output, and local staging should also use storage-owned ignored roots and storage-owned cleanup policy. Component repositories should not create ad hoc durable-looking `tmp/`, `cache/`, `runs/`, `outputs/`, or `staging/` homes as final or semi-final runtime locations.
 
 ## Owner Intent
 
@@ -57,6 +60,7 @@ The repository should prefer explicit interfaces, fixture-backed tests, and narr
 - Scheduling, retries, cross-component lifecycle routing, and promotion decisions belong in the `trading-manager` control plane unless explicitly delegated by contract; storage may provide local maintenance helpers and installable scheduling templates.
 - Generated artifacts and runtime outputs are not source files.
 - Durable or system-owned non-SQL saved data belongs under storage-owned contracts/locations, not scattered as ad hoc saved files in component repositories.
+- Trading runtime disposable cache/tmp/local staging also belongs under storage-owned ignored roots so scheduled cleanup can be uniform.
 - Secrets and credentials must stay outside the repository.
 - Shared helpers, templates, fields, statuses, and type values discovered here must be recorded through `trading-manager` before cross-repository use.
 

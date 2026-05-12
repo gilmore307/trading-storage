@@ -360,12 +360,35 @@ All durable, system-owned non-SQL saved data belongs under `trading-storage` con
 
 This rule does not move semantic ownership. Producing repositories still own output meaning, validation, row/content semantics, and generation logic. `trading-storage` owns physical placement, references, retention, backup, restore, archive, lifecycle policy, tombstones, and restore evidence.
 
-Accepted exceptions are source code, tests, docs, checked-in templates, reviewed shared static files, registry exports, approved secret storage outside repositories, disposable caches, and explicitly non-durable local staging. SQL-resident rows/tables remain governed by SQL storage contracts rather than this non-SQL file/object rule.
+Accepted exceptions are source code, tests, docs, checked-in templates, reviewed shared static files, registry exports, approved secret storage outside repositories, and unavoidable tool-created source-adjacent caches that are never system data. SQL-resident rows/tables remain governed by SQL storage contracts rather than this non-SQL file/object rule. Trading runtime disposable cache/tmp/local staging is not a long-term exception; it should move under storage-owned ignored roots and scheduled cleanup.
 
 ### Consequences
 
 - New durable file/object-style artifacts should not be normalized into component-local saved directories as their final home.
 - Future implementation slices must define concrete storage paths/object layouts, index entries, protected-set behavior, retention classes, and restore evidence before broad migration.
 - Dashboard summaries, completion receipts, model bodies, manifests, archives, tombstones, and restore manifests are storage-owned durable data unless a narrower accepted contract says otherwise.
-- Component-local runtime files remain acceptable only as disposable, ignored, reproducible, or not-yet-promoted staging.
+- Component-local runtime files remain acceptable only as transitional disposable, ignored, reproducible, or not-yet-promoted staging until storage-owned staging/cache roots are implemented for that class.
 - Shared contract names and new durable artifact classes still route through `trading-manager` registry before cross-repository implementation depends on them.
+
+
+## D017 - Trading runtime scratch and staging use storage-owned cleanup
+
+Date: 2026-05-12
+Status: Accepted
+
+### Context
+
+After accepting storage ownership for durable non-SQL saved data, Chentong clarified that disposable cache, temporary files, and local staging should also be centralized under storage and cleaned by scheduled storage maintenance. If component repositories keep their own semi-permanent `tmp/`, `cache/`, `runs/`, `outputs/`, or `staging/` roots, cleanup policy will fragment and disposable files can quietly become undocumented state.
+
+### Decision
+
+Trading runtime disposable cache, temporary files, and local staging should use storage-owned ignored roots and storage-owned scheduled cleanup by default. Component-local runtime staging is transitional only until a storage-owned root/path contract exists for the output class.
+
+The accepted target roots are storage-owned equivalents such as `storage/tmp/`, `storage/cache/<component>/`, `storage/staging/<component>/`, `storage/runs/`, `storage/outputs/`, and `storage/logs/`, with TTL/archive/delete behavior governed by `trading-storage` lifecycle policy. Unavoidable tool byproducts such as `__pycache__/` and `.pytest_cache/` may remain source-adjacent because they are not trading runtime data and can be deleted at any time.
+
+### Consequences
+
+- New trading runtime scratch/staging/cache paths should not be invented ad hoc inside component repositories.
+- Storage scheduled cleanup becomes the uniform path for disposable runtime files.
+- Future implementation must define concrete root/path conventions, migration expectations, and lifecycle helper coverage before broad movement of existing local staging files.
+- This does not authorize deletion beyond reviewed dry-run-first lifecycle helpers, protected-set rules, quarantine rules where applicable, and lifecycle receipts for durable-adjacent actions.
