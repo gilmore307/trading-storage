@@ -51,7 +51,7 @@ Parked future contracts:
 - `trading_performance_summary_v1`
 - `storage_lifecycle_status_summary_v1`
 
-Shared contract names and the layout policy are registered in `trading-manager` registry migration `344_register_dashboard_read_model_contracts.sql`.
+Shared contract names and the layout policy are registered in `trading-manager` registry migration `344_register_dashboard_read_model_contracts.sql`. The first refreshable contract is `historical_task_progress_summary_v1`; its semantic producer is manager-owned and its storage refresh wrapper lives in this repository.
 
 ## Common Envelope
 
@@ -133,9 +133,11 @@ It must not use this layout to create primary views over raw artifacts, raw rece
 
 ## Current Implementation Status
 
-The first storage-side materialization helper is implemented:
+The first storage-side materialization and refresh helpers are implemented:
 
 - `src/trading_storage/dashboard_read_models.py` validates the common dashboard read-model envelope, rejects unsafe contract paths, rejects future timestamps beyond accepted clock skew, scans for secret-like values, writes snapshots, atomically replaces `latest.json`, creates the common schema placeholder for the contract, and appends `dashboard_read_model_index.jsonl` rows with checksum and byte counts.
 - `scripts/dashboard/materialize_read_model.py` is the executable wrapper for validating and materializing one producer-supplied read-model JSON payload.
+- `src/trading_storage/dashboard_refresh.py` and `scripts/dashboard/refresh_historical_task_progress_read_model.py` run the manager-owned `historical_task_progress_summary_v1` producer and materialize the validated output.
+- `deploy/systemd/trading-storage-dashboard-read-model-refresh.service` and `.timer` provide the reviewed periodic-refresh template; installing/enabling the timer remains an operator deployment action.
 
-Still not implemented: semantic summary producers, refresh cadence/jobs, dashboard read adapters, lifecycle timers, or dashboard UI/runtime pages.
+Still not implemented: dashboard read adapters, lifecycle timers for dashboard snapshots, or dashboard UI/runtime pages.

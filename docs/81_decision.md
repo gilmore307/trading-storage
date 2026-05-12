@@ -419,6 +419,6 @@ The common envelope requires contract metadata, generation freshness, source own
 ### Consequences
 
 - `trading-dashboard` should read storage-hosted latest/snapshot summaries, not raw manager/model/data/execution/storage internals.
-- Summary writers, concrete JSON Schema files, refresh jobs, fixture/restore tests, and dashboard read adapters remain future controlled implementation slices.
+- Additional summary writers, concrete contract-specific JSON Schema files, additional refresh jobs, fixture/restore tests, and dashboard read adapters remain future controlled implementation slices. The first historical progress producer/materializer refresh path is now implemented separately.
 - Registry names and storage layout policy are registered through `trading-manager` before implementation depends on them.
 - This decision does not enable lifecycle timers, provider calls, model activation, broker execution, account mutation, or dashboard-originated workflow control.

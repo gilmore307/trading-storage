@@ -16,7 +16,7 @@ src/         Importable storage helper package.
 tests/       First-party storage tests.
 ```
 
-The current implementation slices are storage-owned JSON artifact writing for completion receipt payloads and conservative local lifecycle maintenance for ignored runtime files. `src/` owns reusable code, `scripts/` owns executable entrypoints, and `tests/` owns verification; `scripts/` may import `src/`, but `src/` must not import `scripts/`.
+The current implementation slices are storage-owned JSON artifact writing for completion receipt payloads, conservative local lifecycle maintenance for ignored runtime files, dashboard read-model materialization, and the first dashboard read-model refresh wrapper. `src/` owns reusable code, `scripts/` owns executable entrypoints, and `tests/` owns verification; `scripts/` may import `src/`, but `src/` must not import `scripts/`.
 
 ## Docs Spine
 
@@ -36,9 +36,11 @@ docs/
   93_protected_set.md
   94_compression_archive.md
   95_lifecycle_receipts.md
+  96_dashboard_read_models.md
+  97_dashboard_summary_layout.md
 ```
 
-Layer-specific `02_`/`03_` docs record retained Layer 1/2 persistence workflows and acceptance gates. `04_storage_lifecycle.md` owns the existing local retention/archive/cleanup helper contract. `90_storage_closeout.md` records the previous storage-contract-and-lifecycle-helper phase closeout. `91_`-`95_` define the next storage lifecycle system: policy, artifact index, protected set, compression/archive/restore, and lifecycle receipts.
+Layer-specific `02_`/`03_` docs record retained Layer 1/2 persistence workflows and acceptance gates. `04_storage_lifecycle.md` owns the existing local retention/archive/cleanup helper contract. `90_storage_closeout.md` records the previous storage-contract-and-lifecycle-helper phase closeout. `91_`-`95_` define the next storage lifecycle system: policy, artifact index, protected set, compression/archive/restore, and lifecycle receipts. `96_`/`97_` own the storage-hosted dashboard read-model boundary, layout, materialization, and first refresh wrapper.
 
 ## Verification
 

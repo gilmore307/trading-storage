@@ -12,14 +12,15 @@ Storage owns:
 
 - durable location and layout for dashboard read-model outputs;
 - retention, backup, restore, archive, and lifecycle policy for those outputs;
-- materialized snapshot/version storage once implementation begins;
+- materialized snapshot/version storage;
+- refresh wrappers that run accepted semantic producers and write validated storage-owned dashboard snapshots;
 - profile/read freshness metadata needed by the dashboard;
 - storage lifecycle health summaries exposed to the dashboard.
 
 Storage does not own:
 
 - source semantics of model metrics, provider state, execution state, alerts, or task progress;
-- scheduling or orchestration of summary generation;
+- semantic interpretation or generation of component-owned summaries;
 - model promotion decisions;
 - provider calls;
 - broker execution;
@@ -107,18 +108,18 @@ The dashboard may read storage-hosted summaries and issue-focused diagnostic ref
 
 ## Current Status
 
-This document defines the storage-home boundary. `docs/97_dashboard_summary_layout.md` now defines the initial physical JSON layout, common envelope, and validation boundary.
+This document defines the storage-home boundary. `docs/97_dashboard_summary_layout.md` now defines the initial physical JSON layout, common envelope, validation boundary, and first refresh wrapper.
 
 Implemented storage-side support:
 
 - `src/trading_storage/dashboard_read_models.py` validates and materializes producer-supplied read-model JSON payloads into snapshot/latest/schema/index files under `storage/dashboard/`.
 - `scripts/dashboard/materialize_read_model.py` exposes the helper as a CLI for one payload at a time.
-- Tests cover envelope validation, path safety, future timestamp rejection, secret-like payload rejection, snapshot/latest/schema/index writes, and the CLI path.
+- `src/trading_storage/dashboard_refresh.py` and `scripts/dashboard/refresh_historical_task_progress_read_model.py` run the manager-owned `historical_task_progress_summary_v1` producer and materialize the validated result.
+- `deploy/systemd/trading-storage-dashboard-read-model-refresh.service` and `.timer` define the periodic refresh template; deployment/enabling remains operator-controlled.
+- Tests cover envelope validation, path safety, future timestamp rejection, secret-like payload rejection, snapshot/latest/schema/index writes, the CLI materializer path, and refresh orchestration side-effect flags.
 
 Still not implemented:
 
-- semantic summary producers;
-- refresh cadence/jobs;
 - dashboard read adapters;
-- lifecycle timers or mutation;
+- lifecycle timers or mutation for dashboard snapshots;
 - dashboard UI/runtime pages.

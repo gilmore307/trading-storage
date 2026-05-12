@@ -14,7 +14,8 @@ The initial storage-contract-and-lifecycle-helper phase is closed. Current histo
 - Completion receipt payload storage is implemented through `src/trading_storage/artifact_store.py` and `scripts/artifacts/store_completion_receipt_payload.py`.
 - Local lifecycle maintenance is implemented through `src/trading_storage/lifecycle.py` and `scripts/lifecycle/maintain_local_storage.py`; it now covers both legacy component-local roots and target storage-owned `storage/tmp`, `storage/cache`, `storage/staging`, `storage/logs`, `storage/runs`, and `storage/outputs` roots.
 - Dashboard read-model materialization is implemented through `src/trading_storage/dashboard_read_models.py` and `scripts/dashboard/materialize_read_model.py`: producer-supplied summary payloads are validated and written to storage-owned snapshot/latest/schema/index paths under `storage/dashboard/`.
-- Maintenance systemd templates are checked in but intentionally not installed or enabled.
+- Dashboard read-model refresh orchestration is implemented for `historical_task_progress_summary_v1` through `src/trading_storage/dashboard_refresh.py`, `scripts/dashboard/refresh_historical_task_progress_read_model.py`, and reviewed systemd service/timer templates. The refresh runs the manager-owned semantic producer, validates/materializes output, and performs no provider calls, model activation, broker execution, or account mutation.
+- Maintenance and dashboard refresh systemd templates are checked in but intentionally not installed or enabled.
 - V0.1 lifecycle design is documented in `docs/91_storage_lifecycle_policy.md` through `docs/95_lifecycle_receipts.md`: promoted model bodies are kept permanently, regenerable intermediate data may expire by TTL, source data is compressed before deletion unless disposable, SQL detail is archived through export/restore workflows, all lifecycle actions require manifest/receipt evidence, promotion may classify retention intent but not execute cleanup, and normal lifecycle maintenance enters through manager's unified request/task-summary surface before storage executes physical actions. `docs/96_dashboard_read_models.md` records that dashboard summary/read-model outputs belong in storage; `docs/97_dashboard_summary_layout.md` defines and now has the first helper for the accepted physical JSON layout and common validation boundary.
 
 ## Not Current Historical-Training Scope
@@ -25,13 +26,14 @@ These items are intentionally outside the current no-broker historical-training 
 - production lifecycle mutation before artifact index/protected-set/receipt support exists;
 - development-to-durable promotion automation before a concrete consumer requires it;
 - production queue execution and storage-resident lifecycle mutation;
-- semantic dashboard summary producers, refresh jobs, dashboard read adapters, or lifecycle timers before a controlled implementation slice is accepted;
+- additional semantic dashboard summary producers, dashboard read adapters, or lifecycle timers before a controlled implementation slice is accepted;
 - broad migration of every existing local development artifact into storage before artifact index/protected-set/read-model/staging-root implementation slices define concrete paths and acceptance gates;
 - host-level timer enablement without operator review.
 
 ## Recently Accepted
 
-- Implemented the first dashboard read-model materialization helper: storage validates a producer-supplied common envelope, writes timestamped snapshots and `latest.json`, creates common schema placeholders, and appends index rows with checksums. Semantic producers/adapters/jobs remain future work.
+- Implemented the first dashboard read-model refresh wrapper: storage runs the manager-owned `historical_task_progress_summary_v1` producer, validates/materializes the result, emits a refresh receipt, and includes systemd service/timer templates for periodic refresh without enabling host timers.
+- Implemented the first dashboard read-model materialization helper: storage validates a producer-supplied common envelope, writes timestamped snapshots and `latest.json`, creates common schema placeholders, and appends index rows with checksums. Additional semantic producers/adapters remain future work.
 - Accepted the first dashboard summary layout slice: storage-owned `storage/dashboard/read_models/<contract_type>/latest.json`, timestamped snapshots, schema refs, and index JSONL are now the accepted physical boundary.
 - Accepted and implemented the first local-helper slice for the durable non-SQL/runtime-staging rule: system-owned non-SQL saved data belongs in `trading-storage` by default, while semantic ownership stays with the producing component; trading runtime disposable cache/tmp/local staging belongs in storage-owned ignored roots with storage-owned scheduled cleanup; component-local staging is transitional only.
 - Accepted the V0.1 storage lifecycle system design in `docs/91_storage_lifecycle_policy.md` through `docs/95_lifecycle_receipts.md`, including lifecycle states, manager-unified lifecycle requests/task visibility, artifact index, reproducibility/retention/read-mode classes, protected-set builder, quarantine-before-delete, compression/archive/restore flows, lifecycle receipts, and tombstones. Implementation remains future controlled slices and is dry-run-first.

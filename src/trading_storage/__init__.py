@@ -12,6 +12,10 @@ from .dashboard_read_models import (
     materialize_dashboard_read_model,
     validate_dashboard_read_model,
 )
+from .dashboard_refresh import (
+    DashboardReadModelRefreshResult,
+    refresh_historical_task_progress_read_model,
+)
 from .lifecycle import (
     DEFAULT_RETENTION_RULES,
     LifecyclePlan,
@@ -24,6 +28,7 @@ from .lifecycle import (
 __all__ = [
     "DEFAULT_RETENTION_RULES",
     "DashboardReadModelError",
+    "DashboardReadModelRefreshResult",
     "LifecyclePlan",
     "LifecyclePlanItem",
     "MaterializedDashboardReadModel",
@@ -33,6 +38,7 @@ __all__ = [
     "canonical_json_bytes",
     "materialize_dashboard_read_model",
     "plan_retention",
+    "refresh_historical_task_progress_read_model",
     "store_completion_receipt_payload",
     "store_json_artifact",
     "validate_dashboard_read_model",

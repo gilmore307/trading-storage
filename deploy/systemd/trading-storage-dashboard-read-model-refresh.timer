@@ -1,0 +1,13 @@
+[Unit]
+Description=Periodic trading dashboard read-model refresh
+Documentation=/root/projects/trading-storage/docs/97_dashboard_summary_layout.md
+
+[Timer]
+OnBootSec=2min
+OnUnitActiveSec=5min
+AccuracySec=30s
+Persistent=true
+Unit=trading-storage-dashboard-read-model-refresh.service
+
+[Install]
+WantedBy=timers.target

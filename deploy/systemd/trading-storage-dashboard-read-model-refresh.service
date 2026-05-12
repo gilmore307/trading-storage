@@ -1,0 +1,16 @@
+[Unit]
+Description=Refresh trading dashboard read-model summaries
+Documentation=/root/projects/trading-storage/docs/97_dashboard_summary_layout.md
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+WorkingDirectory=/root/projects/trading-storage
+Environment=PYTHONPATH=/root/projects/trading-storage/src
+ExecStart=/usr/bin/env python3 /root/projects/trading-storage/scripts/dashboard/refresh_historical_task_progress_read_model.py --trading-manager-root /root/projects/trading-manager --storage-root /root/projects/trading-storage/storage
+NoNewPrivileges=true
+PrivateTmp=true
+
+[Install]
+WantedBy=multi-user.target
