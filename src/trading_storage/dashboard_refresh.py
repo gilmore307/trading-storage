@@ -47,6 +47,19 @@ def _producer_environment(*, producer_pythonpath: Path | None = None) -> dict[st
     return env
 
 
+def latest_stage_coverage_path(*, trading_manager_root: Path = DEFAULT_TRADING_MANAGER_ROOT) -> Path | None:
+    """Return the newest manager stage-coverage artifact, if one exists."""
+
+    coverage_root = Path(trading_manager_root) / "storage" / "runtime" / "stage_coverage"
+    try:
+        matches = [path for path in coverage_root.glob("*.json") if path.is_file()]
+    except OSError:
+        return None
+    if not matches:
+        return None
+    return max(matches, key=lambda path: path.stat().st_mtime)
+
+
 def build_historical_task_progress_producer_argv(
     *,
     trading_manager_root: Path = DEFAULT_TRADING_MANAGER_ROOT,
@@ -154,6 +167,7 @@ def refresh_historical_task_progress_read_model(
     """Refresh the first accepted historical task-progress dashboard read model."""
 
     trading_manager_root = Path(trading_manager_root)
+    stage_coverage_path = stage_coverage_path or latest_stage_coverage_path(trading_manager_root=trading_manager_root)
     producer_argv = build_historical_task_progress_producer_argv(
         trading_manager_root=trading_manager_root,
         stage_coverage_path=stage_coverage_path,
@@ -174,6 +188,7 @@ __all__ = [
     "REFRESH_RECEIPT_CONTRACT",
     "DashboardReadModelRefreshResult",
     "build_historical_task_progress_producer_argv",
+    "latest_stage_coverage_path",
     "refresh_dashboard_read_model_from_producer",
     "refresh_historical_task_progress_read_model",
     "run_dashboard_read_model_producer",

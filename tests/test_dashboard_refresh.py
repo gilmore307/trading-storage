@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import os
 import sys
 import tempfile
 import unittest
@@ -9,6 +10,7 @@ from pathlib import Path
 from trading_storage.dashboard_refresh import (
     HISTORICAL_TASK_PROGRESS_CONTRACT,
     build_historical_task_progress_producer_argv,
+    latest_stage_coverage_path,
     refresh_dashboard_read_model_from_producer,
 )
 
@@ -72,6 +74,20 @@ class DashboardRefreshTests(unittest.TestCase):
         self.assertIn("/example/manager/scripts/tasks/build_historical_task_progress_summary.py", argv[1])
         self.assertIn("--stage-coverage-path", argv)
         self.assertIn("coverage.json", argv)
+
+    def test_latest_stage_coverage_path_selects_newest_artifact(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            manager_root = Path(tmp) / "manager"
+            coverage_root = manager_root / "storage" / "runtime" / "stage_coverage"
+            coverage_root.mkdir(parents=True)
+            older = coverage_root / "older.json"
+            newer = coverage_root / "newer.json"
+            older.write_text("{}", encoding="utf-8")
+            newer.write_text("{}", encoding="utf-8")
+            os.utime(older, (1_700_000_000, 1_700_000_000))
+            os.utime(newer, (1_700_000_100, 1_700_000_100))
+
+            self.assertEqual(latest_stage_coverage_path(trading_manager_root=manager_root), newer)
 
 
 if __name__ == "__main__":
