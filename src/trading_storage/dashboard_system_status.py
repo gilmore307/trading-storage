@@ -214,6 +214,10 @@ def build_current_system_status_summary(*, storage_root: Path, generated_at_utc:
                 "websocket_latest_route": "/ws/read-models/<contract_type>/latest",
                 "status": "configured",
             },
+            "apis": [
+                {"name": "Dashboard Data API", "kind": "http", "status": "connected", "healthy": True},
+                {"name": "Live Status API", "kind": "stream", "status": "connected", "healthy": True},
+            ],
             "services": services,
             "read_models": read_models,
             "refresh": {

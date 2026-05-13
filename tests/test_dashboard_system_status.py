@@ -26,9 +26,12 @@ class DashboardSystemStatusTests(unittest.TestCase):
             chart = payload["chart_payload"]
             self.assertIn("server", chart)
             self.assertIn("api", chart)
+            self.assertIn("apis", chart)
             self.assertIn("services", chart)
             self.assertIn("read_models", chart)
             self.assertEqual(chart["api"]["websocket_latest_route"], "/ws/read-models/<contract_type>/latest")
+            self.assertEqual([api["name"] for api in chart["apis"]], ["Dashboard Data API", "Live Status API"])
+            self.assertTrue(all(api["healthy"] for api in chart["apis"]))
             server = chart["server"]
             self.assertIn("cpu_usage_percent", server)
             self.assertIn("memory_usage_percent", server)
