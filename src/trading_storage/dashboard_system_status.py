@@ -283,6 +283,9 @@ def _latest_matching_file(root: Path, pattern: str) -> Path | None:
 
 def _dashboard_source_outputs(*, trading_manager_root: Path, now_epoch: float) -> list[dict[str, Any]]:
     runtime_root = trading_manager_root / "storage" / "runtime"
+    # Keep this inventory synchronized with website/read-model slices that consume
+    # original source outputs. The dashboard JSON is only a sanitized cache; these
+    # rows preserve owner-facing freshness for the canonical source artifacts.
     output_specs: list[tuple[str, str, Path | None]] = [
         ("Historical Scheduler State", "manager_scheduler_state", runtime_root / "historical_scheduler_state.json"),
         ("Scheduler Decision Log", "manager_scheduler_decision_log", runtime_root / "historical_scheduler_decisions.jsonl"),
