@@ -2,8 +2,8 @@
 
 This module builds the storage-owned `current_system_status_summary` payload
 from read-only infrastructure observations: host resource posture, systemd
-service/timer state, dashboard read-model freshness, and public dashboard API
-route configuration.  It does not call providers, dispatch manager work,
+service/timer state, dashboard read-model freshness, and provider API local
+configuration/runtime status.  It does not call providers, dispatch manager work,
 activate models, submit broker orders, mutate accounts, or write storage by
 itself.
 """
@@ -34,6 +34,13 @@ SYSTEMD_UNITS = (
     "trading-storage-dashboard-read-model-refresh.timer",
     "trading-storage-dashboard-read-model-refresh.service",
 )
+PROVIDER_APIS = (
+    {"alias": "alpaca", "name": "Alpaca Market Data API", "kind": "market_data"},
+    {"alias": "okx", "name": "OKX Market Data API", "kind": "crypto_market_data"},
+    {"alias": "thetadata", "name": "ThetaData Options API", "kind": "options_data"},
+)
+THETADATA_TERMINAL_HOST = "127.0.0.1"
+THETADATA_TERMINAL_PORT = 25503
 
 
 def _read_cpu_totals() -> tuple[int, int] | None:
@@ -156,6 +163,48 @@ def _host_resources(storage_root: Path) -> dict[str, Any]:
     }
 
 
+def _secret_alias_configured(alias: str) -> bool:
+    secret_root = Path(os.environ.get("TRADING_SECRET_ROOT", "/root/secrets"))
+    if (secret_root / f"{alias}.json").exists():
+        return True
+    registry_path = secret_root / "registry.json"
+    try:
+        registry = json.loads(registry_path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        return False
+    return isinstance(registry, Mapping) and alias in registry
+
+
+def _local_port_open(host: str, port: int, *, timeout_seconds: float = 0.1) -> bool:
+    try:
+        with socket.create_connection((host, port), timeout=timeout_seconds):
+            return True
+    except OSError:
+        return False
+
+
+def _provider_api_statuses() -> list[dict[str, Any]]:
+    statuses: list[dict[str, Any]] = []
+    for provider in PROVIDER_APIS:
+        alias = str(provider["alias"])
+        configured = _secret_alias_configured(alias)
+        status = "configured" if configured else "not_configured"
+        healthy = configured
+        if alias == "thetadata" and configured:
+            terminal_online = _local_port_open(THETADATA_TERMINAL_HOST, THETADATA_TERMINAL_PORT)
+            status = "local_service_online" if terminal_online else "local_service_offline"
+            healthy = terminal_online
+        statuses.append(
+            {
+                "name": provider["name"],
+                "kind": provider["kind"],
+                "status": status,
+                "healthy": healthy,
+            }
+        )
+    return statuses
+
+
 def _read_model_freshness(storage_root: Path, contract_type: str, *, now_epoch: float) -> dict[str, Any]:
     latest_path = storage_root / "dashboard" / "read_models" / contract_type / "latest.json"
     if not latest_path.exists():
@@ -195,9 +244,9 @@ def build_current_system_status_summary(*, storage_root: Path, generated_at_utc:
     severity = "info" if not unhealthy_services and not stale_models else "medium"
     status = "healthy" if severity == "info" else "degraded"
     summary = (
-        "Infrastructure status is healthy; dashboard API, refresh timer, and observed services are available."
+        "Infrastructure status is healthy; refresh timer, provider API configuration, and observed services are available."
         if status == "healthy"
-        else "Infrastructure status is degraded; inspect service or read-model freshness details."
+        else "Infrastructure status is degraded; inspect service, provider API, or read-model freshness details."
     )
     return {
         "contract_type": CURRENT_SYSTEM_STATUS_CONTRACT,
@@ -214,10 +263,7 @@ def build_current_system_status_summary(*, storage_root: Path, generated_at_utc:
                 "websocket_latest_route": "/ws/read-models/<contract_type>/latest",
                 "status": "configured",
             },
-            "apis": [
-                {"name": "Dashboard Data API", "kind": "http", "status": "connected", "healthy": True},
-                {"name": "Live Status API", "kind": "stream", "status": "connected", "healthy": True},
-            ],
+            "apis": _provider_api_statuses(),
             "services": services,
             "read_models": read_models,
             "refresh": {

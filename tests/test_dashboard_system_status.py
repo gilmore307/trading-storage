@@ -30,8 +30,11 @@ class DashboardSystemStatusTests(unittest.TestCase):
             self.assertIn("services", chart)
             self.assertIn("read_models", chart)
             self.assertEqual(chart["api"]["websocket_latest_route"], "/ws/read-models/<contract_type>/latest")
-            self.assertEqual([api["name"] for api in chart["apis"]], ["Dashboard Data API", "Live Status API"])
-            self.assertTrue(all(api["healthy"] for api in chart["apis"]))
+            self.assertEqual(
+                [api["name"] for api in chart["apis"]],
+                ["Alpaca Market Data API", "OKX Market Data API", "ThetaData Options API"],
+            )
+            self.assertTrue(all("status" in api and "healthy" in api for api in chart["apis"]))
             server = chart["server"]
             self.assertIn("cpu_usage_percent", server)
             self.assertIn("memory_usage_percent", server)

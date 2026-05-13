@@ -126,7 +126,7 @@ Still not implemented:
 
 ### Current system status producer
 
-`trading_storage.dashboard_system_status` produces `current_system_status_summary` from read-only infrastructure observations: host resources, dashboard API route configuration, systemd service/timer state, dashboard read-model freshness, and refresh cadence. Host resources include CPU usage, memory usage, network download/upload rate, storage capacity, and uptime. The payload also includes a public-facing API connection list for dashboard data and live status connectivity; internal route paths remain implementation details and should not be rendered as primary UI labels. This contract is for the dashboard Current Status page only; model workflow progress remains in task-specific read models such as `historical_task_progress_summary`.
+`trading_storage.dashboard_system_status` produces `current_system_status_summary` from read-only infrastructure observations: host resources, dashboard API route configuration, systemd service/timer state, dashboard read-model freshness, and refresh cadence. Host resources include CPU usage, memory usage, network download/upload rate, storage capacity, and uptime. The payload also includes a public-facing provider API status list for Alpaca, OKX, and ThetaData. These rows report local configuration/runtime availability only; they must not perform provider calls or expose secret paths/values. This contract is for the dashboard Current Status page only; model workflow progress remains in task-specific read models such as `historical_task_progress_summary`.
 
 Refresh entrypoints:
 
