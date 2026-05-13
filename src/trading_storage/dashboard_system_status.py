@@ -2,7 +2,7 @@
 
 This module builds the storage-owned `current_system_status_summary` payload
 from read-only infrastructure observations: host resource posture, systemd
-service/timer state, dashboard read-model freshness, and provider API local
+service/timer state, source output file freshness, and provider API local
 configuration/runtime status.  It does not call providers, dispatch manager work,
 activate models, submit broker orders, mutate accounts, or write storage by
 itself.
@@ -28,6 +28,7 @@ CURRENT_SYSTEM_STATUS_CONTRACT = "current_system_status_summary"
 CURRENT_SYSTEM_STATUS_SCHEMA_REF = f"storage/dashboard/schemas/{CURRENT_SYSTEM_STATUS_CONTRACT}.schema.json"
 HISTORICAL_TASK_PROGRESS_CONTRACT = "historical_task_progress_summary"
 DEFAULT_STALE_AFTER_SECONDS = 120
+DEFAULT_TRADING_MANAGER_ROOT = Path(os.environ.get("TRADING_MANAGER_ROOT", "/root/projects/trading-manager"))
 
 SYSTEMD_UNITS = (
     "trading-manager-historical-scheduler.service",
@@ -205,46 +206,105 @@ def _provider_api_statuses() -> list[dict[str, Any]]:
     return statuses
 
 
-def _read_model_freshness(storage_root: Path, contract_type: str, *, now_epoch: float) -> dict[str, Any]:
-    latest_path = storage_root / "dashboard" / "read_models" / contract_type / "latest.json"
-    if not latest_path.exists():
+def _mtime_utc(path: Path) -> str:
+    return time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime(path.stat().st_mtime))
+
+
+def _latest_json_timestamp(payload: Mapping[str, Any]) -> str | None:
+    for key in ("updated_utc", "generated_utc", "generated_at_utc", "last_tick_completed_utc", "timestamp_utc"):
+        value = payload.get(key)
+        if isinstance(value, str) and value:
+            return value.replace("+00:00", "Z")
+    return None
+
+
+def _latest_jsonl_timestamp(path: Path) -> str | None:
+    try:
+        lines = [line for line in path.read_text(encoding="utf-8").splitlines() if line.strip()]
+    except OSError:
+        return None
+    for line in reversed(lines):
+        try:
+            payload = json.loads(line)
+        except json.JSONDecodeError:
+            continue
+        if isinstance(payload, Mapping):
+            return _latest_json_timestamp(payload)
+    return None
+
+
+def _source_output_status(path: Path, *, label: str, kind: str, now_epoch: float) -> dict[str, Any]:
+    if not path.exists():
         return {
-            "contract_type": contract_type,
-            "exists": False,
+            "label": label,
+            "kind": kind,
             "status": "missing",
+            "exists": False,
             "age_seconds": None,
-            "file_label": "latest.json",
             "latest_updated_at_utc": None,
         }
-    latest_stat = latest_path.stat()
-    age_seconds = round(now_epoch - latest_stat.st_mtime)
-    payload: Mapping[str, Any] = {}
-    try:
-        loaded = json.loads(latest_path.read_text(encoding="utf-8"))
-        if isinstance(loaded, Mapping):
-            payload = loaded
-    except (OSError, json.JSONDecodeError):
-        return {
-            "contract_type": contract_type,
-            "exists": True,
-            "status": "unreadable",
-            "age_seconds": age_seconds,
-            "file_label": "latest.json",
-            "latest_updated_at_utc": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime(latest_stat.st_mtime)),
-        }
-    stale_after = int((payload.get("freshness") or {}).get("stale_after_seconds") or DEFAULT_STALE_AFTER_SECONDS)
-    status = "fresh" if age_seconds <= stale_after else "stale"
+    age_seconds = round(now_epoch - path.stat().st_mtime)
+    latest_updated_at_utc = _mtime_utc(path)
+    if path.suffix.lower() == ".jsonl":
+        latest_updated_at_utc = _latest_jsonl_timestamp(path) or latest_updated_at_utc
+    elif path.suffix.lower() == ".json":
+        try:
+            payload = json.loads(path.read_text(encoding="utf-8"))
+        except (OSError, json.JSONDecodeError):
+            return {
+                "label": label,
+                "kind": kind,
+                "status": "unreadable",
+                "exists": True,
+                "age_seconds": age_seconds,
+                "latest_updated_at_utc": latest_updated_at_utc,
+            }
+        if isinstance(payload, Mapping):
+            latest_updated_at_utc = _latest_json_timestamp(payload) or latest_updated_at_utc
     return {
-        "contract_type": contract_type,
+        "label": label,
+        "kind": kind,
+        "status": "available",
         "exists": True,
-        "status": status,
         "age_seconds": age_seconds,
-        "file_label": "latest.json",
-        "latest_updated_at_utc": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime(latest_stat.st_mtime)),
-        "generated_at_utc": payload.get("generated_at_utc"),
-        "payload_status": payload.get("status"),
-        "stale_after_seconds": stale_after,
+        "latest_updated_at_utc": latest_updated_at_utc,
     }
+
+
+def _latest_matching_file(root: Path, pattern: str) -> Path | None:
+    try:
+        matches = [path for path in root.glob(pattern) if path.is_file()]
+    except OSError:
+        return None
+    if not matches:
+        return None
+    return max(matches, key=lambda path: path.stat().st_mtime)
+
+
+def _dashboard_source_outputs(*, trading_manager_root: Path, now_epoch: float) -> list[dict[str, Any]]:
+    runtime_root = trading_manager_root / "storage" / "runtime"
+    output_specs: list[tuple[str, str, Path | None]] = [
+        ("Historical Scheduler State", "manager_scheduler_state", runtime_root / "historical_scheduler_state.json"),
+        ("Scheduler Decision Log", "manager_scheduler_decision_log", runtime_root / "historical_scheduler_decisions.jsonl"),
+        ("Active Workflow State", "manager_workflow_state", runtime_root / "model_training_workflow_state.json"),
+        (
+            "Latest Stage Coverage Output",
+            "manager_stage_coverage",
+            _latest_matching_file(runtime_root / "stage_coverage", "*.json"),
+        ),
+        (
+            "Latest Stage Run Output",
+            "manager_stage_run_dashboard",
+            _latest_matching_file(runtime_root / "stage_run_dashboard", "*.json"),
+        ),
+    ]
+    outputs: list[dict[str, Any]] = []
+    for label, kind, path in output_specs:
+        if path is None:
+            outputs.append({"label": label, "kind": kind, "status": "missing", "exists": False, "age_seconds": None, "latest_updated_at_utc": None})
+            continue
+        outputs.append(_source_output_status(path, label=label, kind=kind, now_epoch=now_epoch))
+    return outputs
 
 
 def build_current_system_status_summary(*, storage_root: Path, generated_at_utc: str | None = None) -> dict[str, Any]:
@@ -252,18 +312,15 @@ def build_current_system_status_summary(*, storage_root: Path, generated_at_utc:
     now_epoch = time.time()
     host = _host_resources(storage_root)
     services = [_systemd_unit(unit) for unit in SYSTEMD_UNITS]
-    read_models = [
-        _read_model_freshness(storage_root, CURRENT_SYSTEM_STATUS_CONTRACT, now_epoch=now_epoch),
-        _read_model_freshness(storage_root, HISTORICAL_TASK_PROGRESS_CONTRACT, now_epoch=now_epoch),
-    ]
+    source_outputs = _dashboard_source_outputs(trading_manager_root=DEFAULT_TRADING_MANAGER_ROOT, now_epoch=now_epoch)
     unhealthy_services = [service["unit"] for service in services if not service["healthy"]]
-    stale_models = [model["contract_type"] for model in read_models if model["status"] not in {"fresh", "missing"}]
-    severity = "info" if not unhealthy_services and not stale_models else "medium"
+    missing_outputs = [output["label"] for output in source_outputs if output["status"] == "missing"]
+    severity = "info" if not unhealthy_services and not missing_outputs else "medium"
     status = "healthy" if severity == "info" else "degraded"
     summary = (
-        "Infrastructure status is healthy; refresh timer, provider API configuration, and observed services are available."
+        "Infrastructure status is healthy; refresh timer, provider API configuration, observed services, and dashboard source outputs are available."
         if status == "healthy"
-        else "Infrastructure status is degraded; inspect service, provider API, or read-model freshness details."
+        else "Infrastructure status is degraded; inspect service, provider API, or dashboard source output details."
     )
     return {
         "contract_type": CURRENT_SYSTEM_STATUS_CONTRACT,
@@ -282,7 +339,7 @@ def build_current_system_status_summary(*, storage_root: Path, generated_at_utc:
             },
             "apis": _provider_api_statuses(),
             "services": services,
-            "read_models": read_models,
+            "source_outputs": source_outputs,
             "refresh": {
                 "timer_unit": "trading-storage-dashboard-read-model-refresh.timer",
                 "cadence_seconds": 30,
@@ -298,12 +355,12 @@ def build_current_system_status_summary(*, storage_root: Path, generated_at_utc:
         ],
         "diagnostic_refs": [
             {"ref_type": "systemd_units", "count": len(services)},
-            {"ref_type": "dashboard_read_model_freshness", "count": len(read_models)},
+            {"ref_type": "dashboard_source_outputs", "count": len(source_outputs)},
         ],
         "lineage_refs": [
             {"contract_type": "systemd_unit_status", "included": True},
             {"contract_type": "host_resource_snapshot", "included": True},
-            {"contract_type": "dashboard_read_model_latest_files", "included": True},
+            {"contract_type": "dashboard_source_output_files", "included": True},
         ],
         "freshness": {"class": "infrastructure_status_snapshot", "status": "fresh", "stale_after_seconds": DEFAULT_STALE_AFTER_SECONDS},
         "schema_ref": CURRENT_SYSTEM_STATUS_SCHEMA_REF,

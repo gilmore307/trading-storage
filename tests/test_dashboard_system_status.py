@@ -28,7 +28,7 @@ class DashboardSystemStatusTests(unittest.TestCase):
             self.assertIn("api", chart)
             self.assertIn("apis", chart)
             self.assertIn("services", chart)
-            self.assertIn("read_models", chart)
+            self.assertIn("source_outputs", chart)
             self.assertEqual(chart["api"]["websocket_latest_route"], "/ws/read-models/<contract_type>/latest")
             self.assertEqual(
                 [api["name"] for api in chart["apis"]],
@@ -40,8 +40,17 @@ class DashboardSystemStatusTests(unittest.TestCase):
             self.assertIn("memory_usage_percent", server)
             self.assertIn("network_download_kbps", server)
             self.assertIn("network_upload_kbps", server)
-            self.assertEqual([model["file_label"] for model in chart["read_models"]], ["latest.json", "latest.json"])
-            self.assertTrue(all("latest_updated_at_utc" in model for model in chart["read_models"]))
+            self.assertEqual(
+                [output["label"] for output in chart["source_outputs"]],
+                [
+                    "Historical Scheduler State",
+                    "Scheduler Decision Log",
+                    "Active Workflow State",
+                    "Latest Stage Coverage Output",
+                    "Latest Stage Run Output",
+                ],
+            )
+            self.assertTrue(all("latest_updated_at_utc" in output for output in chart["source_outputs"]))
 
     def test_refresh_materializes_current_system_status_latest(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
