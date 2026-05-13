@@ -29,6 +29,11 @@ class DashboardSystemStatusTests(unittest.TestCase):
             self.assertIn("services", chart)
             self.assertIn("read_models", chart)
             self.assertEqual(chart["api"]["websocket_latest_route"], "/ws/read-models/<contract_type>/latest")
+            server = chart["server"]
+            self.assertIn("cpu_usage_percent", server)
+            self.assertIn("memory_usage_percent", server)
+            self.assertIn("network_download_kbps", server)
+            self.assertIn("network_upload_kbps", server)
 
     def test_refresh_materializes_current_system_status_latest(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:

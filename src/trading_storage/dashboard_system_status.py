@@ -36,6 +36,73 @@ SYSTEMD_UNITS = (
 )
 
 
+def _read_cpu_totals() -> tuple[int, int] | None:
+    """Return Linux aggregate CPU total and idle jiffies from /proc/stat."""
+
+    try:
+        first_line = Path("/proc/stat").read_text(encoding="utf-8").splitlines()[0]
+    except (OSError, IndexError):
+        return None
+    parts = first_line.split()
+    if not parts or parts[0] != "cpu":
+        return None
+    try:
+        values = [int(value) for value in parts[1:]]
+    except ValueError:
+        return None
+    if len(values) < 5:
+        return None
+    idle = values[3] + values[4]
+    total = sum(values)
+    return total, idle
+
+
+def _read_network_totals() -> tuple[int, int] | None:
+    """Return non-loopback receive/transmit byte counters from /proc/net/dev."""
+
+    try:
+        lines = Path("/proc/net/dev").read_text(encoding="utf-8").splitlines()[2:]
+    except OSError:
+        return None
+    receive_bytes = 0
+    transmit_bytes = 0
+    for line in lines:
+        if ":" not in line:
+            continue
+        iface, raw_values = line.split(":", 1)
+        if iface.strip() == "lo":
+            continue
+        fields = raw_values.split()
+        if len(fields) < 16:
+            continue
+        try:
+            receive_bytes += int(fields[0])
+            transmit_bytes += int(fields[8])
+        except ValueError:
+            continue
+    return receive_bytes, transmit_bytes
+
+
+def _sample_live_resource_usage(*, interval_seconds: float = 0.1) -> dict[str, float]:
+    cpu_before = _read_cpu_totals()
+    net_before = _read_network_totals()
+    time.sleep(interval_seconds)
+    cpu_after = _read_cpu_totals()
+    net_after = _read_network_totals()
+    usage: dict[str, float] = {}
+    if cpu_before and cpu_after:
+        total_delta = cpu_after[0] - cpu_before[0]
+        idle_delta = cpu_after[1] - cpu_before[1]
+        if total_delta > 0:
+            usage["cpu_usage_percent"] = round(max(0.0, min(100.0, (total_delta - idle_delta) / total_delta * 100)), 1)
+    if net_before and net_after and interval_seconds > 0:
+        download_delta = max(0, net_after[0] - net_before[0])
+        upload_delta = max(0, net_after[1] - net_before[1])
+        usage["network_download_kbps"] = round((download_delta / 1024) / interval_seconds, 1)
+        usage["network_upload_kbps"] = round((upload_delta / 1024) / interval_seconds, 1)
+    return usage
+
+
 def _run_text(argv: tuple[str, ...], *, timeout: float = 3.0) -> tuple[int, str]:
     try:
         completed = subprocess.run(argv, check=False, capture_output=True, text=True, timeout=timeout)
@@ -60,6 +127,7 @@ def _systemd_unit(unit: str) -> dict[str, Any]:
 def _host_resources(storage_root: Path) -> dict[str, Any]:
     stat = shutil.disk_usage(storage_root)
     load_average = os.getloadavg() if hasattr(os, "getloadavg") else (0.0, 0.0, 0.0)
+    live_usage = _sample_live_resource_usage()
     memory: dict[str, int] = {}
     try:
         for line in Path("/proc/meminfo").read_text(encoding="utf-8").splitlines():
@@ -68,14 +136,21 @@ def _host_resources(storage_root: Path) -> dict[str, Any]:
                 memory[key] = int(raw.strip().split()[0])
     except OSError:
         pass
+    memory_total_mb = round(memory.get("MemTotal", 0) / 1024)
+    memory_available_mb = round(memory.get("MemAvailable", 0) / 1024)
+    memory_usage_percent = round((memory_total_mb - memory_available_mb) / memory_total_mb * 100, 1) if memory_total_mb else 0.0
     return {
         "hostname": socket.gethostname(),
         "uptime_seconds": round(time.monotonic()),
         "load_average_1m": round(load_average[0], 2),
         "load_average_5m": round(load_average[1], 2),
         "load_average_15m": round(load_average[2], 2),
-        "memory_total_mb": round(memory.get("MemTotal", 0) / 1024),
-        "memory_available_mb": round(memory.get("MemAvailable", 0) / 1024),
+        "cpu_usage_percent": live_usage.get("cpu_usage_percent", 0.0),
+        "memory_usage_percent": memory_usage_percent,
+        "memory_total_mb": memory_total_mb,
+        "memory_available_mb": memory_available_mb,
+        "network_download_kbps": live_usage.get("network_download_kbps", 0.0),
+        "network_upload_kbps": live_usage.get("network_upload_kbps", 0.0),
         "storage_total_gb": round(stat.total / (1024**3), 2),
         "storage_available_gb": round(stat.free / (1024**3), 2),
     }
