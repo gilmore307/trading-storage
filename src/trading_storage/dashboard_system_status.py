@@ -208,15 +208,30 @@ def _provider_api_statuses() -> list[dict[str, Any]]:
 def _read_model_freshness(storage_root: Path, contract_type: str, *, now_epoch: float) -> dict[str, Any]:
     latest_path = storage_root / "dashboard" / "read_models" / contract_type / "latest.json"
     if not latest_path.exists():
-        return {"contract_type": contract_type, "exists": False, "status": "missing", "age_seconds": None}
-    age_seconds = round(now_epoch - latest_path.stat().st_mtime)
+        return {
+            "contract_type": contract_type,
+            "exists": False,
+            "status": "missing",
+            "age_seconds": None,
+            "file_label": "latest.json",
+            "latest_updated_at_utc": None,
+        }
+    latest_stat = latest_path.stat()
+    age_seconds = round(now_epoch - latest_stat.st_mtime)
     payload: Mapping[str, Any] = {}
     try:
         loaded = json.loads(latest_path.read_text(encoding="utf-8"))
         if isinstance(loaded, Mapping):
             payload = loaded
     except (OSError, json.JSONDecodeError):
-        return {"contract_type": contract_type, "exists": True, "status": "unreadable", "age_seconds": age_seconds}
+        return {
+            "contract_type": contract_type,
+            "exists": True,
+            "status": "unreadable",
+            "age_seconds": age_seconds,
+            "file_label": "latest.json",
+            "latest_updated_at_utc": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime(latest_stat.st_mtime)),
+        }
     stale_after = int((payload.get("freshness") or {}).get("stale_after_seconds") or DEFAULT_STALE_AFTER_SECONDS)
     status = "fresh" if age_seconds <= stale_after else "stale"
     return {
@@ -224,6 +239,8 @@ def _read_model_freshness(storage_root: Path, contract_type: str, *, now_epoch: 
         "exists": True,
         "status": status,
         "age_seconds": age_seconds,
+        "file_label": "latest.json",
+        "latest_updated_at_utc": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime(latest_stat.st_mtime)),
         "generated_at_utc": payload.get("generated_at_utc"),
         "payload_status": payload.get("status"),
         "stale_after_seconds": stale_after,

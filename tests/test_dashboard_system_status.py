@@ -40,6 +40,8 @@ class DashboardSystemStatusTests(unittest.TestCase):
             self.assertIn("memory_usage_percent", server)
             self.assertIn("network_download_kbps", server)
             self.assertIn("network_upload_kbps", server)
+            self.assertEqual([model["file_label"] for model in chart["read_models"]], ["latest.json", "latest.json"])
+            self.assertTrue(all("latest_updated_at_utc" in model for model in chart["read_models"]))
 
     def test_refresh_materializes_current_system_status_latest(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
