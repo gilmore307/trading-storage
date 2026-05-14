@@ -422,3 +422,33 @@ The common envelope requires contract metadata, generation freshness, source own
 - Additional summary writers, concrete contract-specific JSON Schema files, additional refresh jobs, fixture/restore tests, and dashboard read adapters remain future controlled implementation slices. The first historical progress producer/materializer refresh path is now implemented separately.
 - Registry names and storage layout policy are registered through `trading-manager` before implementation depends on them.
 - This decision does not enable lifecycle timers, provider calls, model activation, broker execution, account mutation, or dashboard-originated workflow control.
+
+## D014 - Single-asset crypto ETFs are target proxies, not Layer 1/2 context ETFs
+
+Date: 2026-05-14
+Status: Accepted
+
+### Context
+
+Crypto has two distinct roles in the model stack:
+
+- broad crypto market-state evidence;
+- target-specific listed ETF proxies used when studying an underlying crypto asset such as BTC, ETH, or SOL.
+
+The curated ETF universe previously included single-asset crypto ETFs (`IBIT`, `ETHA`, `FSOL`) as Layer 1 `crypto_beta` rows. That makes the Layer 1 state too target-specific and can leak a target's own proxy into upstream context when the studied target is BTC, ETH, or SOL.
+
+### Decision
+
+Keep broad crypto context in the Layer 1/2 universe only where it is not a single-asset target proxy:
+
+- `BITW` remains Layer 1 broad crypto-basket market-state evidence.
+- `BKCH` remains Layer 2 blockchain/crypto-related equity sector context.
+- `IBIT`, `ETHA`, and `FSOL` are removed from Layer 1/2 ETF universe and relative-strength combinations.
+
+Single-asset crypto ETFs should be referenced only as auxiliary target/proxy instruments for the corresponding crypto target, for example `BTC -> IBIT` when optionable ETF proxy data, option activity, or listed-market expression evidence is needed.
+
+### Consequences
+
+- Layer 1 crypto state no longer includes single-asset BTC/ETH/SOL ETF proxy rows.
+- Layer 2 crypto sector context remains `BKCH` unless a reviewed additional crypto sector ETF is added.
+- Crypto target studies may still use single-asset ETF proxies as target-specific auxiliary data, but those proxies are not broad Layer 1/2 context inputs by default.
