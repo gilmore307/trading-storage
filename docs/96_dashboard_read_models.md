@@ -115,7 +115,7 @@ Implemented storage-side support:
 - `src/trading_storage/dashboard_read_models.py` validates and materializes producer-supplied read-model JSON payloads into snapshot/latest/schema/index files under `storage/dashboard/`.
 - `scripts/dashboard/materialize_read_model.py` exposes the helper as a CLI for one payload at a time.
 - `src/trading_storage/dashboard_refresh.py` and `scripts/dashboard/refresh_historical_task_progress_read_model.py` run the manager-owned `historical_task_progress_summary` producer and materialize the validated result; when no explicit coverage path is supplied, the refresh wrapper attaches the newest manager stage-coverage artifact so the Historical Task Progress page can show coverage instead of a blank placeholder.
-- `deploy/systemd/trading-storage-dashboard-read-model-refresh.service` and `.timer` define the periodic refresh template; default cadence is 30 seconds for near-real-time public dashboard status, while deployment/enabling remains operator-controlled.
+- `deploy/systemd/trading-storage-dashboard-read-model-refresh.service` and `.timer` define the periodic refresh template; default cadence is 5 seconds for scheduler-aligned public dashboard status, while deployment/enabling remains operator-controlled.
 - Tests cover envelope validation, path safety, future timestamp rejection, secret-like payload rejection, snapshot/latest/schema/index writes, the CLI materializer path, and refresh orchestration side-effect flags.
 
 Still not implemented:
