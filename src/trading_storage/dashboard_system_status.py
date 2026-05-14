@@ -233,7 +233,15 @@ def _latest_jsonl_timestamp(path: Path) -> str | None:
     return None
 
 
-def _source_output_status(path: Path, *, label: str, kind: str, now_epoch: float) -> dict[str, Any]:
+def _source_output_status(
+    path: Path,
+    *,
+    label: str,
+    kind: str,
+    now_epoch: float,
+    freshness_class: str,
+    freshness_note: str,
+) -> dict[str, Any]:
     if not path.exists():
         return {
             "label": label,
@@ -242,6 +250,8 @@ def _source_output_status(path: Path, *, label: str, kind: str, now_epoch: float
             "exists": False,
             "age_seconds": None,
             "latest_updated_at_utc": None,
+            "freshness_class": freshness_class,
+            "freshness_note": freshness_note,
         }
     age_seconds = round(now_epoch - path.stat().st_mtime)
     latest_updated_at_utc = _mtime_utc(path)
@@ -258,6 +268,8 @@ def _source_output_status(path: Path, *, label: str, kind: str, now_epoch: float
                 "exists": True,
                 "age_seconds": age_seconds,
                 "latest_updated_at_utc": latest_updated_at_utc,
+                "freshness_class": freshness_class,
+                "freshness_note": freshness_note,
             }
         if isinstance(payload, Mapping):
             latest_updated_at_utc = _latest_json_timestamp(payload) or latest_updated_at_utc
@@ -268,6 +280,8 @@ def _source_output_status(path: Path, *, label: str, kind: str, now_epoch: float
         "exists": True,
         "age_seconds": age_seconds,
         "latest_updated_at_utc": latest_updated_at_utc,
+        "freshness_class": freshness_class,
+        "freshness_note": freshness_note,
     }
 
 
@@ -281,32 +295,73 @@ def _latest_matching_file(root: Path, pattern: str) -> Path | None:
     return max(matches, key=lambda path: path.stat().st_mtime)
 
 
+def _active_workflow_state_path(runtime_root: Path) -> Path | None:
+    scheduler_state_path = runtime_root / "historical_scheduler_state.json"
+    try:
+        scheduler_state = json.loads(scheduler_state_path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        scheduler_state = {}
+    if isinstance(scheduler_state, Mapping):
+        active_month = scheduler_state.get("start_month") or scheduler_state.get("current_month")
+        if isinstance(active_month, str) and active_month:
+            active_path = runtime_root / f"model_training_workflow_state_{active_month}.json"
+            if active_path.exists():
+                return active_path
+    return _latest_matching_file(runtime_root, "model_training_workflow_state_????-??.json") or runtime_root / "model_training_workflow_state.json"
+
+
 def _dashboard_source_outputs(*, trading_manager_root: Path, now_epoch: float) -> list[dict[str, Any]]:
     runtime_root = trading_manager_root / "storage" / "runtime"
+    heartbeat_note = "Expected to update on scheduler heartbeat; old timestamps can indicate daemon trouble."
+    event_note = "Event-driven artifact; timestamp changes only when the scheduler makes a decision or stage progress occurs."
     # Keep this inventory synchronized with website/read-model slices that consume
     # original source outputs. The dashboard JSON is only a sanitized cache; these
     # rows preserve owner-facing freshness for the canonical source artifacts.
-    output_specs: list[tuple[str, str, Path | None]] = [
-        ("Historical Scheduler State", "manager_scheduler_state", runtime_root / "historical_scheduler_state.json"),
-        ("Scheduler Decision Log", "manager_scheduler_decision_log", runtime_root / "historical_scheduler_decisions.jsonl"),
-        ("Active Workflow State", "manager_workflow_state", runtime_root / "model_training_workflow_state.json"),
+    output_specs: list[tuple[str, str, Path | None, str, str]] = [
+        ("Historical Scheduler State", "manager_scheduler_state", runtime_root / "historical_scheduler_state.json", "heartbeat", heartbeat_note),
+        ("Scheduler Decision Log", "manager_scheduler_decision_log", runtime_root / "historical_scheduler_decisions.jsonl", "event_driven", event_note),
+        ("Active Workflow State", "manager_workflow_state", _active_workflow_state_path(runtime_root), "event_driven", event_note),
         (
             "Latest Stage Coverage Output",
             "manager_stage_coverage",
             _latest_matching_file(runtime_root / "stage_coverage", "*.json"),
+            "event_driven",
+            event_note,
         ),
         (
             "Latest Stage Run Output",
             "manager_stage_run_dashboard",
             _latest_matching_file(runtime_root / "stage_run_dashboard", "*.json"),
+            "event_driven",
+            event_note,
         ),
     ]
     outputs: list[dict[str, Any]] = []
-    for label, kind, path in output_specs:
+    for label, kind, path, freshness_class, freshness_note in output_specs:
         if path is None:
-            outputs.append({"label": label, "kind": kind, "status": "missing", "exists": False, "age_seconds": None, "latest_updated_at_utc": None})
+            outputs.append(
+                {
+                    "label": label,
+                    "kind": kind,
+                    "status": "missing",
+                    "exists": False,
+                    "age_seconds": None,
+                    "latest_updated_at_utc": None,
+                    "freshness_class": freshness_class,
+                    "freshness_note": freshness_note,
+                }
+            )
             continue
-        outputs.append(_source_output_status(path, label=label, kind=kind, now_epoch=now_epoch))
+        outputs.append(
+            _source_output_status(
+                path,
+                label=label,
+                kind=kind,
+                now_epoch=now_epoch,
+                freshness_class=freshness_class,
+                freshness_note=freshness_note,
+            )
+        )
     return outputs
 
 

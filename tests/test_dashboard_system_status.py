@@ -7,6 +7,7 @@ from pathlib import Path
 
 from trading_storage.dashboard_system_status import (
     CURRENT_SYSTEM_STATUS_CONTRACT,
+    _dashboard_source_outputs,
     build_current_system_status_summary,
     refresh_current_system_status_read_model,
 )
@@ -51,6 +52,33 @@ class DashboardSystemStatusTests(unittest.TestCase):
                 ],
             )
             self.assertTrue(all("latest_updated_at_utc" in output for output in chart["source_outputs"]))
+            by_label = {output["label"]: output for output in chart["source_outputs"]}
+            self.assertEqual(by_label["Historical Scheduler State"]["freshness_class"], "heartbeat")
+            self.assertEqual(by_label["Scheduler Decision Log"]["freshness_class"], "event_driven")
+            self.assertEqual(by_label["Active Workflow State"]["freshness_class"], "event_driven")
+            self.assertTrue(all("freshness_note" in output for output in chart["source_outputs"]))
+
+    def test_source_outputs_use_active_month_workflow_state(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            manager_root = Path(tmp)
+            runtime = manager_root / "storage/runtime"
+            runtime.mkdir(parents=True)
+            (runtime / "historical_scheduler_state.json").write_text(
+                json.dumps({"start_month": "2020-01", "updated_utc": "2026-05-14T00:00:00Z"}),
+                encoding="utf-8",
+            )
+            (runtime / "model_training_workflow_state.json").write_text(
+                json.dumps({"updated_utc": "2026-05-10T00:00:00Z"}),
+                encoding="utf-8",
+            )
+            (runtime / "model_training_workflow_state_2020-01.json").write_text(
+                json.dumps({"updated_utc": "2026-05-14T00:01:00Z"}),
+                encoding="utf-8",
+            )
+            outputs = _dashboard_source_outputs(trading_manager_root=manager_root, now_epoch=0)
+            active_workflow = next(output for output in outputs if output["label"] == "Active Workflow State")
+            self.assertEqual(active_workflow["latest_updated_at_utc"], "2026-05-14T00:01:00Z")
+            self.assertEqual(active_workflow["freshness_class"], "event_driven")
 
     def test_refresh_materializes_current_system_status_latest(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
