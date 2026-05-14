@@ -452,3 +452,28 @@ Single-asset crypto ETFs should be referenced only as auxiliary target/proxy ins
 - Layer 1 crypto state no longer includes single-asset BTC/ETH/SOL ETF proxy rows.
 - Layer 2 crypto sector context remains `BKCH` unless a reviewed additional crypto sector ETF is added.
 - Crypto target studies may still use single-asset ETF proxies as target-specific auxiliary data, but those proxies are not broad Layer 1/2 context inputs by default.
+
+## D015 - Target Layer 2 context mapping owns crypto auxiliary proxy references
+
+Date: 2026-05-14
+Status: Accepted
+
+### Context
+
+Layer 3+ target studies need an explicit way to map targets back to Layer 2 context without polluting the Layer 1/2 ETF context universe. Crypto targets are the first concrete case: BTC, ETH, and SOL need crypto-sector context, but their single-asset ETF products are target-specific listed-market proxies rather than broad market or sector ETFs.
+
+### Decision
+
+Add `trading-storage/main/shared/target_layer2_context_mapping.csv` as the reviewed shared contract for target-to-Layer-2 context and auxiliary proxy references.
+
+The first accepted rows map:
+
+- `BTC -> BKCH` for Layer 2 crypto equity context, with `IBIT` as a target-specific listed/optionable proxy.
+- `ETH -> BKCH` for Layer 2 crypto equity context, with `ETHA` as a target-specific listed proxy candidate whose option use must be reviewed before option-specific provider tasks.
+- `SOL -> BKCH` for Layer 2 crypto equity context, with `FSOL` as a target-specific listed proxy candidate whose listing and option use must be reviewed before option-specific provider tasks.
+
+### Consequences
+
+- `target_layer2_context_mapping.csv` is a Layer 3+ target-study helper, not a Layer 1/2 universe extension.
+- A symbol appearing as `listed_proxy_symbol` or `optionable_proxy_symbol` does not imply it belongs in `market_regime_etf_universe.csv` or relative-strength combinations.
+- Option-specific tasks must respect `optionable_proxy_status`; `verify_before_option_use` is not approval to call option feeds.
