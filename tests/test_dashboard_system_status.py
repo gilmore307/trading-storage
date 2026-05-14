@@ -47,6 +47,10 @@ class DashboardSystemStatusTests(unittest.TestCase):
             self.assertGreaterEqual(parallelism["selected_worker_count"], 1)
             self.assertIn("next_request_limit", parallelism)
             self.assertIn("max_worker_count", parallelism)
+            self.assertTrue(parallelism["drain_ready_stages"])
+            self.assertEqual(parallelism["scheduler_interval_role"], "idle_backstop")
+            self.assertIn("drain_max_steps", parallelism)
+            self.assertIn("event_refresh_service_unit", parallelism)
             self.assertEqual(
                 [output["label"] for output in chart["source_outputs"]],
                 [

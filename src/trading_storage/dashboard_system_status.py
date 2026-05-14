@@ -160,6 +160,13 @@ def _env_int(values: Mapping[str, str], key: str, default: int) -> int:
         return default
 
 
+def _env_bool(values: Mapping[str, str], key: str, default: bool) -> bool:
+    raw = values.get(key)
+    if raw is None or not str(raw).strip():
+        return default
+    return str(raw).strip().lower() not in {"0", "false", "no", "off", "disabled"}
+
+
 def _historical_scheduler_parallelism(host: Mapping[str, Any], *, trading_manager_root: Path = DEFAULT_TRADING_MANAGER_ROOT) -> dict[str, Any]:
     repo_defaults = _read_env_file(trading_manager_root / "deploy/systemd/trading-manager-historical-scheduler.env")
     host_overrides = _read_env_file(DEFAULT_SCHEDULER_ENV_PATH)
@@ -167,6 +174,10 @@ def _historical_scheduler_parallelism(host: Mapping[str, Any], *, trading_manage
     next_limit = _env_int(values, "TRADING_MANAGER_PROVIDER_STAGE_NEXT_LIMIT", DEFAULT_PROVIDER_STAGE_NEXT_LIMIT)
     max_workers = _env_int(values, "TRADING_MANAGER_PROVIDER_STAGE_MAX_WORKERS", DEFAULT_PROVIDER_STAGE_MAX_WORKERS)
     interval_seconds = _env_int(values, "TRADING_MANAGER_HISTORICAL_INTERVAL_SECONDS", 60)
+    drain_max_steps = _env_int(values, "TRADING_MANAGER_DRAIN_MAX_STEPS", 50)
+    drain_max_seconds = _env_int(values, "TRADING_MANAGER_DRAIN_MAX_SECONDS", 300)
+    refresh_service_unit = values.get("TRADING_MANAGER_DASHBOARD_REFRESH_SERVICE_UNIT") or "trading-storage-dashboard-read-model-refresh.service"
+    drain_enabled = _env_bool(values, "TRADING_MANAGER_DRAIN_READY_STAGES", True)
     cpu_count = os.cpu_count() or 1
     load_1m = float(host.get("load_average_1m") or 0.0)
     memory_available_mb = int(host.get("memory_available_mb") or 0)
@@ -181,6 +192,12 @@ def _historical_scheduler_parallelism(host: Mapping[str, Any], *, trading_manage
         "max_worker_count": max_workers,
         "next_request_limit": next_limit,
         "scheduler_interval_seconds": interval_seconds,
+        "scheduler_interval_role": "idle_backstop" if drain_enabled else "primary_tick",
+        "drain_ready_stages": drain_enabled,
+        "drain_max_steps": drain_max_steps,
+        "drain_max_seconds": drain_max_seconds,
+        "event_refresh_enabled": True,
+        "event_refresh_service_unit": refresh_service_unit,
         "load_target_per_cpu": DEFAULT_PROVIDER_STAGE_LOAD_TARGET_PER_CPU,
         "load_1m": load_1m,
         "cpu_count": cpu_count,
