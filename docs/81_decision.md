@@ -178,7 +178,7 @@ Move those assets into `trading-storage/main/`.
 This includes:
 
 - `main/templates/` for reusable drafting and implementation templates.
-- `main/shared/` for reviewed shared static files such as `layer_1_2_market_context_etf_universe.csv`.
+- `main/shared/` for reviewed shared static files such as `layer_01_02_market_context_etf_universe.csv`.
 
 ### Consequences
 
@@ -464,7 +464,7 @@ Layer 3+ target studies need an explicit way to map targets back to Layer 2 cont
 
 ### Decision
 
-Add `trading-storage/main/shared/layer_2_target_context_mapping.csv` as the reviewed shared contract for target-to-Layer-2 context and auxiliary proxy references.
+Add `trading-storage/main/shared/layer_02_target_context_mapping.csv` as the reviewed shared contract for target-to-Layer-2 context and auxiliary proxy references.
 
 The first accepted rows map:
 
@@ -474,8 +474,8 @@ The first accepted rows map:
 
 ### Consequences
 
-- `layer_2_target_context_mapping.csv` is a Layer 3+ target-study helper, not a Layer 1/2 universe extension.
-- A symbol appearing as `listed_proxy_symbol` or `optionable_proxy_symbol` does not imply it belongs in `layer_1_2_market_context_etf_universe.csv` or relative-strength combinations.
+- `layer_02_target_context_mapping.csv` is a Layer 3+ target-study helper, not a Layer 1/2 universe extension.
+- A symbol appearing as `listed_proxy_symbol` or `optionable_proxy_symbol` does not imply it belongs in `layer_01_02_market_context_etf_universe.csv` or relative-strength combinations.
 - Option-specific tasks must respect `optionable_proxy_status`; `verify_before_option_use` is not approval to call option feeds.
 
 ## D019 - Shared Layer 1/2 context files use layer-prefixed names
@@ -491,9 +491,9 @@ The shared static files under `main/shared/` now carry model-layer semantics dir
 
 Rename shared market-context files with explicit layer prefixes:
 
-- `layer_1_2_market_context_etf_universe.csv` for the mixed Layer 1/Layer 2 ETF universe whose `model_layer` column remains authoritative.
-- `layer_1_2_market_context_relative_strength_combinations.csv` for mixed Layer 1/Layer 2 relative-strength combinations whose `model_layer` column remains authoritative.
-- `layer_2_target_context_mapping.csv` for target-to-Layer-2 context and auxiliary proxy mappings used by Layer 3+ target studies.
+- `layer_01_02_market_context_etf_universe.csv` for the mixed Layer 1/Layer 2 ETF universe whose `model_layer` column remains authoritative.
+- `layer_01_02_market_context_relative_strength_combinations.csv` for mixed Layer 1/Layer 2 relative-strength combinations whose `model_layer` column remains authoritative.
+- `layer_02_target_context_mapping.csv` for target-to-Layer-2 context and auxiliary proxy mappings used by Layer 3+ target studies.
 
 The rename is path clarity only. It does not split the mixed Layer 1/2 files, change row semantics, add proxy symbols back into context universes, authorize provider calls, or change model behavior.
 
