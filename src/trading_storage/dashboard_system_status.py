@@ -29,6 +29,12 @@ CURRENT_SYSTEM_STATUS_SCHEMA_REF = f"storage/dashboard/schemas/{CURRENT_SYSTEM_S
 HISTORICAL_TASK_PROGRESS_CONTRACT = "historical_task_progress_summary"
 DEFAULT_STALE_AFTER_SECONDS = 120
 DEFAULT_TRADING_MANAGER_ROOT = Path(os.environ.get("TRADING_MANAGER_ROOT", "/root/projects/trading-manager"))
+DEFAULT_SCHEDULER_ENV_PATH = Path("/etc/default/trading-manager-historical-scheduler")
+DEFAULT_PROVIDER_STAGE_NEXT_LIMIT = 12
+DEFAULT_PROVIDER_STAGE_MAX_WORKERS = 4
+DEFAULT_PROVIDER_STAGE_LOAD_TARGET_PER_CPU = 0.70
+DEFAULT_PROVIDER_STAGE_WORKER_MEMORY_MB = 512
+DEFAULT_PROVIDER_STAGE_RESERVED_MEMORY_MB = 2048
 
 SYSTEMD_UNITS = (
     "trading-manager-historical-scheduler.service",
@@ -129,6 +135,60 @@ def _systemd_unit(unit: str) -> dict[str, Any]:
         "enabled_state": enabled if enabled_rc == 0 else enabled or "unknown",
         "substate": substate if substate_rc == 0 else "unknown",
         "healthy": active == "active" or (unit.endswith(".service") and active in {"inactive", "activating"}),
+    }
+
+
+def _read_env_file(path: Path) -> dict[str, str]:
+    values: dict[str, str] = {}
+    try:
+        lines = path.read_text(encoding="utf-8").splitlines()
+    except OSError:
+        return values
+    for line in lines:
+        stripped = line.strip()
+        if not stripped or stripped.startswith("#") or "=" not in stripped:
+            continue
+        key, value = stripped.split("=", 1)
+        values[key.strip()] = value.strip().strip('"').strip("'")
+    return values
+
+
+def _env_int(values: Mapping[str, str], key: str, default: int) -> int:
+    try:
+        return int(values.get(key, "") or default)
+    except ValueError:
+        return default
+
+
+def _historical_scheduler_parallelism(host: Mapping[str, Any], *, trading_manager_root: Path = DEFAULT_TRADING_MANAGER_ROOT) -> dict[str, Any]:
+    repo_defaults = _read_env_file(trading_manager_root / "deploy/systemd/trading-manager-historical-scheduler.env")
+    host_overrides = _read_env_file(DEFAULT_SCHEDULER_ENV_PATH)
+    values = repo_defaults | host_overrides
+    next_limit = _env_int(values, "TRADING_MANAGER_PROVIDER_STAGE_NEXT_LIMIT", DEFAULT_PROVIDER_STAGE_NEXT_LIMIT)
+    max_workers = _env_int(values, "TRADING_MANAGER_PROVIDER_STAGE_MAX_WORKERS", DEFAULT_PROVIDER_STAGE_MAX_WORKERS)
+    interval_seconds = _env_int(values, "TRADING_MANAGER_HISTORICAL_INTERVAL_SECONDS", 60)
+    cpu_count = os.cpu_count() or 1
+    load_1m = float(host.get("load_average_1m") or 0.0)
+    memory_available_mb = int(host.get("memory_available_mb") or 0)
+    load_headroom = max(0.0, (cpu_count * DEFAULT_PROVIDER_STAGE_LOAD_TARGET_PER_CPU) - load_1m)
+    load_worker_capacity = max(1, int(load_headroom // 0.5) or 1)
+    memory_headroom = max(0, memory_available_mb - DEFAULT_PROVIDER_STAGE_RESERVED_MEMORY_MB)
+    memory_worker_capacity = max(1, memory_headroom // DEFAULT_PROVIDER_STAGE_WORKER_MEMORY_MB)
+    selected_workers = max(1, min(max_workers, next_limit, load_worker_capacity, memory_worker_capacity))
+    return {
+        "mode": "dynamic",
+        "selected_worker_count": selected_workers,
+        "max_worker_count": max_workers,
+        "next_request_limit": next_limit,
+        "scheduler_interval_seconds": interval_seconds,
+        "load_target_per_cpu": DEFAULT_PROVIDER_STAGE_LOAD_TARGET_PER_CPU,
+        "load_1m": load_1m,
+        "cpu_count": cpu_count,
+        "memory_available_mb": memory_available_mb,
+        "worker_memory_mb": DEFAULT_PROVIDER_STAGE_WORKER_MEMORY_MB,
+        "reserved_memory_mb": DEFAULT_PROVIDER_STAGE_RESERVED_MEMORY_MB,
+        "status": "active" if selected_workers > 1 else "single_worker",
+        "reason": "dynamic provider worker count selected from current load and available memory",
     }
 
 
@@ -369,6 +429,7 @@ def build_current_system_status_summary(*, storage_root: Path, generated_at_utc:
     generated_at_utc = generated_at_utc or now_utc()
     now_epoch = time.time()
     host = _host_resources(storage_root)
+    parallelism = _historical_scheduler_parallelism(host)
     services = [_systemd_unit(unit) for unit in SYSTEMD_UNITS]
     source_outputs = _dashboard_source_outputs(trading_manager_root=DEFAULT_TRADING_MANAGER_ROOT, now_epoch=now_epoch)
     unhealthy_services = [service["unit"] for service in services if not service["healthy"]]
@@ -390,6 +451,7 @@ def build_current_system_status_summary(*, storage_root: Path, generated_at_utc:
         "summary": summary,
         "chart_payload": {
             "server": host,
+            "parallelism": parallelism,
             "api": {
                 "http_latest_route": "/api/read-models/<contract_type>/latest",
                 "websocket_latest_route": "/ws/read-models/<contract_type>/latest",
@@ -413,11 +475,13 @@ def build_current_system_status_summary(*, storage_root: Path, generated_at_utc:
         ],
         "diagnostic_refs": [
             {"ref_type": "systemd_units", "count": len(services)},
+            {"ref_type": "scheduler_parallelism", "selected_worker_count": parallelism["selected_worker_count"]},
             {"ref_type": "dashboard_source_outputs", "count": len(source_outputs)},
         ],
         "lineage_refs": [
             {"contract_type": "systemd_unit_status", "included": True},
             {"contract_type": "host_resource_snapshot", "included": True},
+            {"contract_type": "scheduler_parallelism_status", "included": True},
             {"contract_type": "dashboard_source_output_files", "included": True},
         ],
         "freshness": {"class": "infrastructure_status_snapshot", "status": "fresh", "stale_after_seconds": DEFAULT_STALE_AFTER_SECONDS},

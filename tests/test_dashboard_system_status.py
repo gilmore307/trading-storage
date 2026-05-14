@@ -29,6 +29,7 @@ class DashboardSystemStatusTests(unittest.TestCase):
             self.assertIn("api", chart)
             self.assertIn("apis", chart)
             self.assertIn("services", chart)
+            self.assertIn("parallelism", chart)
             self.assertIn("source_outputs", chart)
             self.assertEqual(chart["api"]["websocket_latest_route"], "/ws/read-models/<contract_type>/latest")
             self.assertEqual(
@@ -41,6 +42,11 @@ class DashboardSystemStatusTests(unittest.TestCase):
             self.assertIn("memory_usage_percent", server)
             self.assertIn("network_download_kbps", server)
             self.assertIn("network_upload_kbps", server)
+            parallelism = chart["parallelism"]
+            self.assertEqual(parallelism["mode"], "dynamic")
+            self.assertGreaterEqual(parallelism["selected_worker_count"], 1)
+            self.assertIn("next_request_limit", parallelism)
+            self.assertIn("max_worker_count", parallelism)
             self.assertEqual(
                 [output["label"] for output in chart["source_outputs"]],
                 [
