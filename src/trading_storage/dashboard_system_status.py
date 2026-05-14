@@ -18,6 +18,7 @@ import socket
 import subprocess
 import sys
 import time
+from datetime import UTC, datetime, timedelta
 from pathlib import Path
 from typing import Any, Mapping, TextIO
 
@@ -32,6 +33,9 @@ DEFAULT_TRADING_MANAGER_ROOT = Path(os.environ.get("TRADING_MANAGER_ROOT", "/roo
 DEFAULT_SCHEDULER_ENV_PATH = Path("/etc/default/trading-manager-historical-scheduler")
 DEFAULT_PROVIDER_STAGE_NEXT_LIMIT = 12
 DEFAULT_PROVIDER_STAGE_MAX_WORKERS = 4
+DEFAULT_MONTH_INGEST_WORKERS = 3
+DEFAULT_MODEL_WORKERS = 1
+DEFAULT_THROUGHPUT_WINDOW_MINUTES = 15
 DEFAULT_PROVIDER_STAGE_LOAD_TARGET_PER_CPU = 0.70
 DEFAULT_PROVIDER_STAGE_WORKER_MEMORY_MB = 512
 DEFAULT_PROVIDER_STAGE_RESERVED_MEMORY_MB = 2048
@@ -165,6 +169,117 @@ def _env_bool(values: Mapping[str, str], key: str, default: bool) -> bool:
     if raw is None or not str(raw).strip():
         return default
     return str(raw).strip().lower() not in {"0", "false", "no", "off", "disabled"}
+
+
+def _parse_utc_timestamp(value: object) -> datetime | None:
+    if not isinstance(value, str) or not value.strip():
+        return None
+    text = value.strip()
+    if text.endswith("Z"):
+        text = text[:-1] + "+00:00"
+    try:
+        parsed = datetime.fromisoformat(text)
+    except ValueError:
+        return None
+    if parsed.tzinfo is None:
+        parsed = parsed.replace(tzinfo=UTC)
+    return parsed.astimezone(UTC)
+
+
+def _tail_jsonl(path: Path, *, max_bytes: int = 4 * 1024 * 1024) -> list[dict[str, Any]]:
+    try:
+        with path.open("rb") as handle:
+            handle.seek(0, os.SEEK_END)
+            size = handle.tell()
+            handle.seek(max(0, size - max_bytes))
+            raw = handle.read().decode("utf-8", errors="replace")
+    except OSError:
+        return []
+    lines = raw.splitlines()
+    if raw and not raw.startswith("{") and lines:
+        lines = lines[1:]
+    rows: list[dict[str, Any]] = []
+    for line in lines:
+        try:
+            payload = json.loads(line)
+        except json.JSONDecodeError:
+            continue
+        if isinstance(payload, dict):
+            rows.append(payload)
+    return rows
+
+
+def _historical_scheduler_runtime_throughput(
+    *,
+    values: Mapping[str, str],
+    trading_manager_root: Path = DEFAULT_TRADING_MANAGER_ROOT,
+    window_minutes: int = DEFAULT_THROUGHPUT_WINDOW_MINUTES,
+) -> dict[str, Any]:
+    month_workers = _env_int(values, "TRADING_MANAGER_MONTH_INGEST_WORKERS", DEFAULT_MONTH_INGEST_WORKERS)
+    model_workers = DEFAULT_MODEL_WORKERS
+    total_workers = max(1, month_workers) + model_workers
+    rows = _tail_jsonl(trading_manager_root / "storage/runtime/historical_scheduler_decisions.jsonl")
+    timed_rows: list[tuple[datetime, dict[str, Any]]] = []
+    for row in rows:
+        parsed = _parse_utc_timestamp(row.get("now_utc") or row.get("updated_utc") or row.get("generated_at_utc"))
+        if parsed is not None:
+            timed_rows.append((parsed, row))
+    if not timed_rows:
+        return {
+            "status": "no_decision_log",
+            "mode": "runtime_throughput",
+            "month_ingest_worker_count": month_workers,
+            "model_worker_count": model_workers,
+            "total_worker_count": total_workers,
+            "fold_month_count": 6,
+            "month_ingest_rounds_per_fold": 2 if month_workers == 3 else None,
+            "window_minutes": window_minutes,
+            "executed_decision_count": 0,
+            "decision_count": 0,
+            "completion_rate_per_minute": 0.0,
+            "max_completions_per_second": 0,
+            "multi_completion_second_count": 0,
+            "summary": f"Runtime topology is {month_workers} month-ingest workers plus {model_workers} model worker; no scheduler decision log is available yet.",
+        }
+    latest_at = max(ts for ts, _row in timed_rows)
+    window_start = latest_at - timedelta(minutes=max(1, window_minutes))
+    window_rows = [(ts, row) for ts, row in timed_rows if ts >= window_start]
+    executed_rows = [(ts, row) for ts, row in window_rows if row.get("decision_status") == "executed"]
+    second_counts: dict[str, int] = {}
+    for ts, _row in executed_rows:
+        key = ts.replace(microsecond=0).isoformat().replace("+00:00", "Z")
+        second_counts[key] = second_counts.get(key, 0) + 1
+    if len(executed_rows) >= 2:
+        span_seconds = max(1.0, (max(ts for ts, _ in executed_rows) - min(ts for ts, _ in executed_rows)).total_seconds())
+    else:
+        span_seconds = 60.0
+    completion_rate = (len(executed_rows) / span_seconds) * 60.0
+    max_per_second = max(second_counts.values()) if second_counts else 0
+    multi_second_count = sum(1 for count in second_counts.values() if count >= 2)
+    idle_decisions = sum(1 for _ts, row in window_rows if row.get("decision_status") not in {"executed", "ready"})
+    return {
+        "status": "active" if executed_rows else "observed_idle",
+        "mode": "runtime_throughput",
+        "month_ingest_worker_count": month_workers,
+        "model_worker_count": model_workers,
+        "total_worker_count": total_workers,
+        "fold_month_count": 6,
+        "month_ingest_rounds_per_fold": 2 if month_workers == 3 else None,
+        "window_minutes": window_minutes,
+        "window_start_utc": window_start.replace(microsecond=0).isoformat().replace("+00:00", "Z"),
+        "latest_decision_at_utc": latest_at.replace(microsecond=0).isoformat().replace("+00:00", "Z"),
+        "decision_count": len(window_rows),
+        "executed_decision_count": len(executed_rows),
+        "idle_or_blocked_decision_count": idle_decisions,
+        "completion_rate_per_minute": round(completion_rate, 2),
+        "max_completions_per_second": max_per_second,
+        "multi_completion_second_count": multi_second_count,
+        "active_worker_estimate": min(total_workers, max_per_second),
+        "summary": (
+            f"{month_workers} month-ingest workers plus {model_workers} model worker; "
+            f"latest window completed {len(executed_rows)} decisions at {round(completion_rate, 2)} completions/min."
+        ),
+    }
 
 
 def _historical_scheduler_parallelism(host: Mapping[str, Any], *, trading_manager_root: Path = DEFAULT_TRADING_MANAGER_ROOT) -> dict[str, Any]:
@@ -447,6 +562,8 @@ def build_current_system_status_summary(*, storage_root: Path, generated_at_utc:
     now_epoch = time.time()
     host = _host_resources(storage_root)
     parallelism = _historical_scheduler_parallelism(host)
+    runtime_values = _read_env_file(DEFAULT_TRADING_MANAGER_ROOT / "deploy/systemd/trading-manager-historical-scheduler.env") | _read_env_file(DEFAULT_SCHEDULER_ENV_PATH)
+    runtime_throughput = _historical_scheduler_runtime_throughput(values=runtime_values)
     services = [_systemd_unit(unit) for unit in SYSTEMD_UNITS]
     source_outputs = _dashboard_source_outputs(trading_manager_root=DEFAULT_TRADING_MANAGER_ROOT, now_epoch=now_epoch)
     unhealthy_services = [service["unit"] for service in services if not service["healthy"]]
@@ -469,6 +586,7 @@ def build_current_system_status_summary(*, storage_root: Path, generated_at_utc:
         "chart_payload": {
             "server": host,
             "parallelism": parallelism,
+            "runtime_throughput": runtime_throughput,
             "api": {
                 "http_latest_route": "/api/read-models/<contract_type>/latest",
                 "websocket_latest_route": "/ws/read-models/<contract_type>/latest",
@@ -493,12 +611,14 @@ def build_current_system_status_summary(*, storage_root: Path, generated_at_utc:
         "diagnostic_refs": [
             {"ref_type": "systemd_units", "count": len(services)},
             {"ref_type": "scheduler_parallelism", "selected_worker_count": parallelism["selected_worker_count"]},
+            {"ref_type": "scheduler_runtime_throughput", "executed_decision_count": runtime_throughput["executed_decision_count"]},
             {"ref_type": "dashboard_source_outputs", "count": len(source_outputs)},
         ],
         "lineage_refs": [
             {"contract_type": "systemd_unit_status", "included": True},
             {"contract_type": "host_resource_snapshot", "included": True},
             {"contract_type": "scheduler_parallelism_status", "included": True},
+            {"contract_type": "scheduler_runtime_throughput", "included": True},
             {"contract_type": "dashboard_source_output_files", "included": True},
         ],
         "freshness": {"class": "infrastructure_status_snapshot", "status": "fresh", "stale_after_seconds": DEFAULT_STALE_AFTER_SECONDS},

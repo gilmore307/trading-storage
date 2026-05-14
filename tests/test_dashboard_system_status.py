@@ -8,6 +8,7 @@ from pathlib import Path
 from trading_storage.dashboard_system_status import (
     CURRENT_SYSTEM_STATUS_CONTRACT,
     _dashboard_source_outputs,
+    _historical_scheduler_runtime_throughput,
     build_current_system_status_summary,
     refresh_current_system_status_read_model,
 )
@@ -30,6 +31,7 @@ class DashboardSystemStatusTests(unittest.TestCase):
             self.assertIn("apis", chart)
             self.assertIn("services", chart)
             self.assertIn("parallelism", chart)
+            self.assertIn("runtime_throughput", chart)
             self.assertIn("source_outputs", chart)
             self.assertEqual(chart["api"]["websocket_latest_route"], "/ws/read-models/<contract_type>/latest")
             self.assertEqual(
@@ -51,6 +53,11 @@ class DashboardSystemStatusTests(unittest.TestCase):
             self.assertEqual(parallelism["scheduler_interval_role"], "idle_backstop")
             self.assertIn("drain_max_steps", parallelism)
             self.assertIn("event_refresh_service_unit", parallelism)
+            runtime_throughput = chart["runtime_throughput"]
+            self.assertEqual(runtime_throughput["mode"], "runtime_throughput")
+            self.assertIn("month_ingest_worker_count", runtime_throughput)
+            self.assertEqual(runtime_throughput["model_worker_count"], 1)
+            self.assertIn("completion_rate_per_minute", runtime_throughput)
             self.assertEqual(
                 [output["label"] for output in chart["source_outputs"]],
                 [
@@ -67,6 +74,35 @@ class DashboardSystemStatusTests(unittest.TestCase):
             self.assertEqual(by_label["Scheduler Decision Log"]["freshness_class"], "event_driven")
             self.assertEqual(by_label["Active Workflow State"]["freshness_class"], "event_driven")
             self.assertTrue(all("freshness_note" in output for output in chart["source_outputs"]))
+
+    def test_runtime_throughput_summarizes_recent_decision_log(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            manager_root = Path(tmp)
+            runtime = manager_root / "storage/runtime"
+            runtime.mkdir(parents=True)
+            (runtime / "historical_scheduler_decisions.jsonl").write_text(
+                "\n".join(
+                    [
+                        json.dumps({"now_utc": "2026-05-14T12:00:00+00:00", "decision_status": "executed"}),
+                        json.dumps({"now_utc": "2026-05-14T12:00:00+00:00", "decision_status": "executed"}),
+                        json.dumps({"now_utc": "2026-05-14T12:01:00+00:00", "decision_status": "backoff"}),
+                    ]
+                )
+                + "\n",
+                encoding="utf-8",
+            )
+
+            throughput = _historical_scheduler_runtime_throughput(
+                values={"TRADING_MANAGER_MONTH_INGEST_WORKERS": "3"},
+                trading_manager_root=manager_root,
+            )
+
+        self.assertEqual(throughput["month_ingest_worker_count"], 3)
+        self.assertEqual(throughput["total_worker_count"], 4)
+        self.assertEqual(throughput["month_ingest_rounds_per_fold"], 2)
+        self.assertEqual(throughput["executed_decision_count"], 2)
+        self.assertEqual(throughput["max_completions_per_second"], 2)
+        self.assertEqual(throughput["multi_completion_second_count"], 1)
 
     def test_source_outputs_use_active_month_workflow_state(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
