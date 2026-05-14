@@ -10,9 +10,9 @@ SHARED_ROOT = Path(__file__).resolve().parents[1] / "main" / "shared"
 
 class SharedContractTests(unittest.TestCase):
     def test_target_layer2_context_mapping_keeps_crypto_proxies_out_of_layer_context(self):
-        mapping_path = SHARED_ROOT / "target_layer2_context_mapping.csv"
-        universe_path = SHARED_ROOT / "market_regime_etf_universe.csv"
-        combinations_path = SHARED_ROOT / "market_regime_relative_strength_combinations.csv"
+        mapping_path = SHARED_ROOT / "layer_2_target_context_mapping.csv"
+        universe_path = SHARED_ROOT / "layer_1_2_market_context_etf_universe.csv"
+        combinations_path = SHARED_ROOT / "layer_1_2_market_context_relative_strength_combinations.csv"
 
         with mapping_path.open(newline="") as csv_file:
             mapping_rows = list(csv.DictReader(csv_file))
