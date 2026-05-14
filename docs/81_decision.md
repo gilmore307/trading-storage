@@ -502,3 +502,29 @@ The rename is path clarity only. It does not split the mixed Layer 1/2 files, ch
 - Cross-repository code, docs, tests, and registry rows should use the layer-prefixed paths.
 - Old filenames should appear only in immutable registry migration history or other historical artifacts.
 - Future shared files with model-layer semantics should follow the same path-level layer-prefix convention.
+
+## D020 - Target context mappings may have multiple Layer 2 rows per target
+
+Date: 2026-05-14
+Status: Accepted
+
+### Context
+
+Crypto proxy mappings proved the target-to-Layer-2 context contract, but ordinary equity targets can also need reviewed business context when they are not selected directly from a single Layer 2 ETF holding universe row. AAOI is the first concrete example: it has AI infrastructure demand exposure, broad technology-sector context, semiconductor/optical supply-chain context, and weaker downstream communication/platform infrastructure demand context.
+
+### Decision
+
+Allow `layer_02_target_context_mapping.csv` to contain multiple rows for one `target_symbol` when each row represents a distinct reviewed Layer 2 context relationship. The first equity example maps `AAOI` to:
+
+- `AIQ` as primary AI/technology thematic business context;
+- `XLK` as secondary broad technology sector context;
+- `SMH` as semiconductor and optical component supply-chain context;
+- `XLC` as weak downstream demand-side communication/platform infrastructure context.
+
+For direct equity targets such as AAOI, auxiliary proxy fields may be empty and `optionable_proxy_status = not_applicable`; target-specific source/option/evidence tasks should use the target itself unless a later reviewed proxy row is added.
+
+### Consequences
+
+- `target_symbol` is not unique in the mapping CSV; consumers must group rows by target and preserve all reviewed context rows.
+- Multi-row business mappings do not add the target itself to Layer 1/2 ETF universes.
+- Mapping rows remain metadata/evidence boundaries and do not authorize provider calls, model activation, broker/account mutation, storage lifecycle mutation, or Layer 1/2 universe edits.

@@ -33,14 +33,30 @@ class SharedContractTests(unittest.TestCase):
                 "interpretation",
             ],
         )
-        by_target = {row["target_symbol"]: row for row in mapping_rows}
-        self.assertEqual(set(by_target), {"BTC", "ETH", "SOL"})
-        self.assertEqual(by_target["BTC"]["layer2_context_symbol"], "BKCH")
-        self.assertEqual(by_target["BTC"]["listed_proxy_symbol"], "IBIT")
-        self.assertEqual(by_target["BTC"]["optionable_proxy_status"], "accepted_optionable_proxy")
+        by_target: dict[str, list[dict[str, str]]] = {}
+        for row in mapping_rows:
+            by_target.setdefault(row["target_symbol"], []).append(row)
+        self.assertEqual(set(by_target), {"BTC", "ETH", "SOL", "AAOI"})
+        self.assertEqual(by_target["BTC"][0]["layer2_context_symbol"], "BKCH")
+        self.assertEqual(by_target["BTC"][0]["listed_proxy_symbol"], "IBIT")
+        self.assertEqual(by_target["BTC"][0]["optionable_proxy_status"], "accepted_optionable_proxy")
         self.assertTrue(
-            all(row["layer2_context_symbol"] == "BKCH" for row in mapping_rows)
+            all(row["layer2_context_symbol"] == "BKCH" for row in by_target["BTC"] + by_target["ETH"] + by_target["SOL"])
         )
+        self.assertEqual(
+            {row["layer2_context_symbol"] for row in by_target["AAOI"]},
+            {"AIQ", "XLK", "SMH", "XLC"},
+        )
+        self.assertEqual(
+            {row["layer2_mapping_method_type"] for row in by_target["AAOI"]},
+            {
+                "primary_business_context",
+                "secondary_sector_context",
+                "industry_chain_context",
+                "weak_demand_side_context",
+            },
+        )
+        self.assertTrue(all(row["optionable_proxy_status"] == "not_applicable" for row in by_target["AAOI"]))
 
         with universe_path.open(newline="") as csv_file:
             universe_symbols = {row["symbol"] for row in csv.DictReader(csv_file)}
