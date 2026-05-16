@@ -1,6 +1,6 @@
 # Storage Lifecycle Policy
 
-Status: V0.1 dry-run planner, quarantine/recheck evidence, execution scaffold, and narrow single-file compression executor available; destructive mutation executors remain deferred
+Status: V0.1 dry-run planner, quarantine/recheck evidence, execution scaffold, narrow single-file compression executor, and one-pass safe file-lifecycle closeout available; destructive mutation executors remain deferred
 
 ## Purpose
 
@@ -239,3 +239,17 @@ PYTHONPATH=src python3 scripts/lifecycle/compress_single_file_candidates.py --li
 ```
 
 This is the only current lifecycle executor allowed to write bytes, and those bytes are compressed copies under `storage/archive/compressed/`.
+
+## Current V0.1 one-pass file-lifecycle closeout
+
+`src/trading_storage/file_lifecycle_closeout.py` and `scripts/lifecycle/run_file_lifecycle_closeout.py` chain the reviewed file-lifecycle helpers into one safe pass:
+
+1. build/write filesystem artifact index;
+2. build/write protected set;
+3. build/write dry-run lifecycle plan;
+4. build/write quarantine/recheck evidence;
+5. build/write compression/archive/restore execution scaffold;
+6. optionally apply single-file compressed-copy creation for unprotected `compress_candidate` files;
+7. build/write dashboard snapshot prune plan in dry-run mode unless an explicit later deletion approval is provided.
+
+The closeout emits `storage_file_lifecycle_closeout_v1` plus `storage_file_lifecycle_closeout_summary_v1`. It preserves originals and performs no artifact-index mutation, quarantine move, SQL archive/export, SQL detach/drop, model activation, broker execution, account mutation, or dashboard snapshot deletion by default. The current operational run uses `--apply-compression` only; dashboard/model-run deletion remains held until event-risk-governor regeneration and downstream review close.

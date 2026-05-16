@@ -1,6 +1,6 @@
 # Compression, Archive, and Restore
 
-Status: V0.1 single-file compression executor available; deletion, SQL archive, SQL detach/drop, and daemon execution remain disabled until reviewed executors are approved
+Status: V0.1 single-file compression executor and one-pass safe file-lifecycle closeout available; deletion, SQL archive, SQL detach/drop, and daemon execution remain disabled until reviewed executors are approved
 
 ## Purpose
 
@@ -184,8 +184,9 @@ Restore verifier responsibilities:
 4. Dry-run quarantine/recheck evidence builder.
 5. Non-mutating compression/archive/restore manifest and receipt scaffold.
 6. Reviewed single-file compression executor that preserves originals.
-7. Reviewed SQL archive executor.
-8. Restore verifier.
-9. Lifecycle daemon / scheduled maintenance.
+7. One-pass safe file-lifecycle closeout that runs current evidence builders and optional compressed-copy creation together.
+8. Reviewed SQL archive executor.
+9. Restore verifier.
+10. Lifecycle daemon / scheduled maintenance.
 
 The daemon must remain dry-run by default until execution policies have been reviewed on the target host.
