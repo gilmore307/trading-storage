@@ -83,17 +83,19 @@ A summary row or document should generally include:
 
 ## Storage Lifecycle Treatment
 
-Dashboard summaries are small, owner-facing read models. They should normally be retained longer than regenerable intermediate artifacts but shorter than permanent promoted model bodies unless a later policy states otherwise.
+Dashboard summaries are owner-facing metadata caches. They are not canonical Layer 1/2 data and should not consume unbounded storage.
 
-Default lifecycle posture for future implementation:
+Default lifecycle posture:
 
-- keep latest hot snapshot for every summary family;
-- keep recent historical snapshots for trend charts;
-- compress/archive older snapshots if they remain useful for dashboard history;
+- keep `latest.json` hot for every summary family;
+- keep schemas and compact index metadata;
+- keep a short recent snapshot window for charts/debugging;
+- prune high-frequency snapshots after the model-run cycle closes or after the metadata TTL expires;
 - never delete summaries that are the only remaining explanation for an unresolved alert;
-- preserve summary contract/version metadata for restore compatibility.
+- preserve summary contract/version metadata for restore compatibility;
+- never use dashboard snapshot pruning to delete Layer 1/2 data, SQL data, schemas, index files, or `latest.json`.
 
-Exact TTL values remain future retention-policy details; the initial latest/snapshot/schema/index layout is accepted in `docs/97_dashboard_summary_layout.md`.
+The current V0.1 snapshot-prune helper defaults to keeping the latest 24 snapshots per contract and marking snapshots older than 24 hours as delete candidates. It is dry-run by default and requires `--apply` for deletion.
 
 ## Dashboard Access Boundary
 
@@ -113,6 +115,7 @@ This document defines the storage-home boundary. `docs/97_dashboard_summary_layo
 Implemented storage-side support:
 
 - `src/trading_storage/dashboard_read_models.py` validates and materializes producer-supplied read-model JSON payloads into snapshot/latest/schema/index files under `storage/dashboard/`.
+- `src/trading_storage/dashboard_snapshot_lifecycle.py` and `scripts/dashboard/prune_dashboard_snapshots.py` plan or apply bounded deletion for old dashboard snapshot metadata while preserving `latest.json`, schemas, index files, Layer 1/2 data, and SQL.
 - `scripts/dashboard/materialize_read_model.py` exposes the helper as a CLI for one payload at a time.
 - `src/trading_storage/dashboard_refresh.py` and `scripts/dashboard/refresh_historical_task_progress_read_model.py` run the manager-owned `historical_task_progress_summary` producer and materialize the validated result; when no explicit coverage path is supplied, the refresh wrapper attaches the newest manager stage-coverage artifact so the Historical Task Progress page can show coverage instead of a blank placeholder.
 - `deploy/systemd/trading-storage-dashboard-read-model-refresh.service` and `.timer` define the periodic refresh template; default cadence is 5 seconds for scheduler-aligned public dashboard status, while deployment/enabling remains operator-controlled.

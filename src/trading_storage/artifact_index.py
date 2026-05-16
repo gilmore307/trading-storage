@@ -278,6 +278,65 @@ def _dependency_refs(data: Mapping[str, Any] | None) -> tuple[str, ...]:
     return tuple(dict.fromkeys(refs))
 
 
+def _classification_text(
+    relative_path: Path,
+    *,
+    data: Mapping[str, Any] | None,
+    artifact_kind: str,
+    producer_component: str,
+) -> str:
+    fields: list[str] = [str(relative_path).replace("\\", "/"), artifact_kind, producer_component]
+    if data:
+        for key in ("contract_type", "model_layer", "layer", "workflow_id", "source_system", "schema_ref"):
+            value = data.get(key)
+            if value is not None:
+                fields.append(str(value))
+        fields.extend(_sequence_strings(data.get("lineage_refs")))
+        fields.extend(_sequence_strings(data.get("diagnostic_refs")))
+    return "\n".join(fields).lower()
+
+
+def _is_dashboard_snapshot(relative_path: Path) -> bool:
+    return (
+        len(relative_path.parts) >= 5
+        and relative_path.parts[:3] == ("storage", "dashboard", "read_models")
+        and relative_path.parts[4] == "snapshots"
+    )
+
+
+def _is_dashboard_latest(relative_path: Path) -> bool:
+    return len(relative_path.parts) >= 5 and relative_path.parts[:3] == ("storage", "dashboard", "read_models") and relative_path.name == "latest.json"
+
+
+def _retention_class(
+    relative_path: Path,
+    *,
+    data: Mapping[str, Any] | None,
+    artifact_kind: str,
+    producer_component: str,
+) -> str:
+    text = _classification_text(relative_path, data=data, artifact_kind=artifact_kind, producer_component=producer_component)
+    if _is_dashboard_latest(relative_path):
+        return "dashboard_latest_retained"
+    if _is_dashboard_snapshot(relative_path):
+        return "ttl_delete_allowed"
+    if any(token in text for token in ("layer_01", "layer_02", "model_01", "model_02", "feature_01", "feature_02")):
+        return "compress_and_retain"
+    if any(token in text for token in ("layer_03", "layer_04", "layer_05", "layer_06", "layer_07", "layer_08", "model_03", "model_04", "model_05", "model_06", "model_07", "model_08")) and any(
+        token in text for token in ("metadata", "summary", "diagnostic", "scratch", "intermediate", "runtime", "staging")
+    ):
+        return "ttl_delete_allowed"
+    return "manual_review_required"
+
+
+def _protected_reason_codes(retention_class: str) -> tuple[str, ...]:
+    if retention_class == "manual_review_required":
+        return ("unknown_metadata",)
+    if retention_class == "dashboard_latest_retained":
+        return ("dashboard_latest_snapshot",)
+    return ()
+
+
 def build_artifact_index(
     root: Path = Path("."),
     *,
@@ -296,13 +355,16 @@ def build_artifact_index(
         checksum = sha256_file(path)
         content_codec = _content_codec(path)
         artifact_id = _artifact_id(relative, data, checksum)
+        artifact_kind = _artifact_kind(relative, data)
+        producer_component = _producer_component(relative, data)
+        retention_class = _retention_class(relative, data=data, artifact_kind=artifact_kind, producer_component=producer_component)
         created_at = _iso_from_timestamp(stat.st_mtime)
         records.append(
             ArtifactIndexRecord(
                 artifact_id=artifact_id,
-                artifact_kind=_artifact_kind(relative, data),
+                artifact_kind=artifact_kind,
                 producer_repo=_producer_repo(relative, data),
-                producer_component=_producer_component(relative, data),
+                producer_component=producer_component,
                 producer_run_id=_producer_run_id(data),
                 artifact_uri="storage://trading-storage/" + str(relative).replace("\\", "/"),
                 physical_path=str(relative).replace("\\", "/"),
@@ -318,6 +380,8 @@ def build_artifact_index(
                 manifest_ref=_manifest_ref(data),
                 lineage_refs=_lineage_refs(data),
                 dependency_refs=_dependency_refs(data),
+                retention_class=retention_class,
+                protected_reason_codes=_protected_reason_codes(retention_class),
                 last_lifecycle_scan_at=scan_time,
             )
         )

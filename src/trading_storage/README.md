@@ -8,6 +8,7 @@ Importable storage helper implementation lives here.
 - `artifact_index.py` owns conservative filesystem artifact-index scanning and optional JSONL/summary output for lifecycle inventory.
 - `dashboard_read_models.py` owns storage-side validation and materialization of dashboard read-model snapshot/latest/schema/index files.
 - `dashboard_refresh.py` owns storage-side refresh orchestration that runs accepted semantic producers and materializes validated dashboard read models.
+- `dashboard_snapshot_lifecycle.py` owns bounded pruning of old dashboard read-model snapshot metadata; it preserves latest summaries, schemas, index files, Layer 1/2 data, and SQL.
 - `lifecycle.py` owns local retention planning and application for ignored runtime files.
 - `lifecycle_execution_scaffold.py` owns non-mutating compression/archive/restore manifest and receipt drafts for future lifecycle executors.
 - `lifecycle_planner.py` owns non-mutating durable-artifact lifecycle planning from artifact-index metadata, protected-set evidence, and reviewed policy rules.

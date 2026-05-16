@@ -67,6 +67,41 @@ class ArtifactIndexTests(unittest.TestCase):
             self.assertEqual(index.summary["artifact_kind_counts"], {"current_system_status_summary": 1})
             self.assertEqual(index.records[0].producer_component, "current_system_status_summary")
             self.assertEqual(index.records[0].schema_ref, "1")
+            self.assertEqual(index.records[0].retention_class, "dashboard_latest_retained")
+            self.assertEqual(index.records[0].protected_reason_codes, ("dashboard_latest_snapshot",))
+
+    def test_dashboard_snapshot_payload_is_ttl_delete_allowed_when_explicitly_indexed(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            snapshot = root / "storage" / "dashboard" / "read_models" / "historical_task_progress_summary" / "snapshots" / "2026" / "05" / "16" / "20260516T000000Z.json"
+            snapshot.parent.mkdir(parents=True, exist_ok=True)
+            snapshot.write_text(
+                json.dumps(
+                    {
+                        "contract_type": "historical_task_progress_summary",
+                        "schema_version": 1,
+                        "generated_at": "2026-05-16T00:00:00Z",
+                    }
+                ),
+                encoding="utf-8",
+            )
+
+            index = build_artifact_index(root=root, include_roots=("storage/dashboard/read_models/historical_task_progress_summary/snapshots/2026/05/16/20260516T000000Z.json",))
+
+            self.assertEqual(index.records[0].retention_class, "ttl_delete_allowed")
+            self.assertEqual(index.records[0].protected_reason_codes, ())
+
+    def test_layer_one_two_artifacts_are_compress_and_retain(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            artifact = root / "storage" / "artifacts" / "layer_01_market_regime" / "bars.csv"
+            artifact.parent.mkdir(parents=True, exist_ok=True)
+            artifact.write_text("date,symbol,close\n2016-01-04,SPY,200\n", encoding="utf-8")
+
+            index = build_artifact_index(root=root)
+
+            self.assertEqual(index.records[0].retention_class, "compress_and_retain")
+            self.assertEqual(index.records[0].protected_reason_codes, ())
 
     def test_compressed_artifact_requires_restore(self):
         with tempfile.TemporaryDirectory() as tmp:

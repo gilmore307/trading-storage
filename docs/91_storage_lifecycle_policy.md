@@ -11,6 +11,8 @@ The policy goal is not merely to free disk space. The goal is to make compressio
 Core rule:
 
 ```text
+Layer 1 and Layer 2 data are persistent source/feature foundations and must be retained, compressed, and protected from deletion by default.
+Later-layer model-run metadata and dashboard/cache snapshots may be deleted after the model run cycle closes, provided latest summaries, receipts, manifests, lineage refs, and unresolved-alert evidence remain.
 Promoted model bodies are preserved permanently.
 Regenerable intermediate training data may be deleted after TTL.
 Downloaded source data is compressed before deletion and deleted only when safely reproducible and unreferenced.
@@ -80,11 +82,17 @@ Includes promoted and old-promoted model artifacts, configs, schema/feature cont
 
 Policy: preserve permanently. Do not automatically delete old promoted model bodies.
 
-### Regenerable intermediate training data
+### Layer 1 and Layer 2 foundation data
 
-Includes temporary train matrices, scratch feature files, staging parquet/csv/jsonl, failed-run temp files, duplicated dry-run payloads, old stdout/stderr logs, and unpromoted candidate intermediates.
+Includes Layer 1 market-regime and Layer 2 sector-context source/feature foundations, plus lineage-required PIT inputs needed to rebuild downstream model runs.
 
-Policy: delete by TTL when reproducible from source data, manifests, and code version. Keep only summary/receipt evidence after the retention window.
+Policy: persist by default. Prefer compression and archive over deletion. Do not classify Layer 1/2 data as disposable metadata merely because a model run completed.
+
+### Later-layer model-run metadata
+
+Includes Layer 3+ diagnostic summaries, runtime metadata, dashboard snapshots, staging/intermediate files, scratch feature files, failed-run temp files, duplicated dry-run payloads, and old stdout/stderr logs that are not the only remaining receipt/manifest/lineage evidence.
+
+Policy: delete by TTL after the model run cycle closes and after latest summaries, receipts, manifests, lineage refs, and unresolved-alert evidence are preserved. Keep only compact summary/receipt evidence after the retention window.
 
 ### Downloaded source data
 
@@ -104,10 +112,15 @@ Policy: never compress PostgreSQL live data files directly. Archive through dump
 
 ## Retention defaults
 
+- Layer 1 market-regime data: persistent; compress/archive if needed, do not auto-delete;
+- Layer 2 sector-context data: persistent; compress/archive if needed, do not auto-delete;
 - promoted model bodies: permanent;
 - promotion/review/activation/deactivation receipts: permanent;
 - dataset snapshot/split manifests: permanent or lineage lifetime;
 - PIT/vintage/source history: compress and retain by default;
+- dashboard/read-model latest summaries: retained;
+- dashboard/read-model high-frequency snapshots: metadata TTL after model-run cycle close; current default prune plan keeps the latest 24 snapshots per contract and marks snapshots older than 24 hours as delete candidates;
+- Layer 3+ model-run metadata/intermediates: delete by TTL after run-cycle close when reproducible or no longer lineage-required;
 - failed/blocked run scratch: 7-14 days;
 - ordinary logs: 30 days, then delete or compress if important;
 - unpromoted candidate intermediates: 30-60 days;
