@@ -12,7 +12,7 @@ Core rule:
 
 ```text
 Layer 1 and Layer 2 data are persistent source/feature foundations and must be retained, compressed, and protected from deletion by default.
-Later-layer model-run metadata and dashboard/cache snapshots may be deleted after the model run cycle closes, provided latest summaries, receipts, manifests, lineage refs, and unresolved-alert evidence remain.
+Later-layer model-run metadata and dashboard/cache snapshots may be deleted only after the model run cycle closes, provided latest summaries, receipts, manifests, lineage refs, unresolved-alert evidence, and any needed regeneration/debug evidence remain. While the event model is being redesigned and downstream models must be regenerated, dashboard/model-run metadata pruning is on hold.
 Promoted model bodies are preserved permanently.
 Regenerable intermediate training data may be deleted after TTL.
 Downloaded source data is compressed before deletion and deleted only when safely reproducible and unreferenced.
@@ -119,7 +119,7 @@ Policy: never compress PostgreSQL live data files directly. Archive through dump
 - dataset snapshot/split manifests: permanent or lineage lifetime;
 - PIT/vintage/source history: compress and retain by default;
 - dashboard/read-model latest summaries: retained;
-- dashboard/read-model high-frequency snapshots: metadata TTL after model-run cycle close; current default prune plan keeps the latest 24 snapshots per contract and marks snapshots older than 24 hours as delete candidates;
+- dashboard/read-model high-frequency snapshots: metadata TTL after model-run cycle close; current default prune plan keeps the latest 24 snapshots per contract and marks snapshots older than 24 hours as delete candidates, but apply is currently on hold until the event-model redo and downstream model regeneration are complete/reviewed;
 - Layer 3+ model-run metadata/intermediates: delete by TTL after run-cycle close when reproducible or no longer lineage-required;
 - failed/blocked run scratch: 7-14 days;
 - ordinary logs: 30 days, then delete or compress if important;

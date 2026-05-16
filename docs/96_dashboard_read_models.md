@@ -97,6 +97,8 @@ Default lifecycle posture:
 
 The current V0.1 snapshot-prune helper defaults to keeping the latest 24 snapshots per contract and marking snapshots older than 24 hours as delete candidates. It is dry-run by default and requires `--apply` for deletion.
 
+Operational hold: do not apply dashboard snapshot deletion while the event model is being redesigned and downstream models must be regenerated. These metadata snapshots may still be needed for comparison, debugging, and regeneration evidence until that cycle is closed and reviewed.
+
 ## Dashboard Access Boundary
 
 The dashboard may read storage-hosted summaries and issue-focused diagnostic refs. It must not use this storage boundary to become:
