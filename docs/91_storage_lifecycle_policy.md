@@ -1,6 +1,6 @@
 # Storage Lifecycle Policy
 
-Status: accepted V0.1 design; implementation starts as dry-run planning only
+Status: V0.1 dry-run planner available; mutation executors remain deferred
 
 ## Purpose
 
@@ -133,3 +133,25 @@ delete_uncompressed_after_verify: true
 ```
 
 Scripts may implement the policy, but policy review must be possible without reading every code branch.
+
+## Current V0.1 dry-run planner
+
+The first durable-artifact lifecycle planner is conservative and non-mutating:
+
+- importable code: `src/trading_storage/lifecycle_planner.py`;
+- executable wrapper: `scripts/lifecycle/plan_storage_lifecycle.py`;
+- default input: a live bounded artifact-index scan plus a freshly built protected set;
+- optional inputs: existing artifact-index JSONL, existing protected-set JSON, and reviewed JSON policy rules;
+- default output behavior prints a summary only; `--write` writes `storage/lifecycle_plan/storage_lifecycle_plan.json` and `storage/lifecycle_plan/storage_lifecycle_plan_summary.json`;
+- all output records carry `dry_run=true` and `mutation_performed=false` in the summary;
+- protected artifacts become `retain_protected` regardless of matched lifecycle policy;
+- ambiguous manual-review artifacts remain retained until metadata is classified.
+
+CLI smoke:
+
+```bash
+PYTHONPATH=src python3 scripts/lifecycle/plan_storage_lifecycle.py
+PYTHONPATH=src python3 scripts/lifecycle/plan_storage_lifecycle.py --write
+```
+
+This planner prepares evidence for later compression/archive/quarantine executors; it does not perform lifecycle actions.
