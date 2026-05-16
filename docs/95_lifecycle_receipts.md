@@ -1,6 +1,6 @@
 # Lifecycle Receipts and Tombstones
 
-Status: accepted V0.1 design; concrete schemas remain minimal until the lifecycle planner/executor is implemented
+Status: accepted V0.1 design; quarantine/recheck evidence is implemented, while mutation receipt schemas remain minimal until executors are reviewed
 
 ## Purpose
 
@@ -49,6 +49,25 @@ Required content:
 - executor version;
 - timestamp;
 - status.
+
+### `quarantine_recheck_evidence`
+
+Emitted by the current report-only quarantine/recheck slice before any deletion executor exists.
+
+Required content:
+
+- evidence id or generated timestamp;
+- source lifecycle-plan timestamp/ref;
+- optional final protected-set timestamp/ref;
+- artifact ids, paths, and URIs;
+- lifecycle-plan action, policy id, and rule id;
+- initial protected-set status and reason codes;
+- quarantine candidate state;
+- final recheck status and reason codes when supplied;
+- explicit `deletion_allowed=false`;
+- explicit `mutation_performed=false`.
+
+This evidence is a gate input only. It is not a `deletion_receipt`, does not start a real quarantine waiting period, and does not authorize deletion.
 
 ### `deletion_receipt`
 

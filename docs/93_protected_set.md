@@ -1,6 +1,6 @@
 # Protected Set Policy
 
-Status: V0.1 conservative filesystem implementation available; production mutation still requires quarantine/recheck/receipts before deletion or SQL detach/drop
+Status: V0.1 conservative filesystem protected-set and dry-run quarantine/recheck evidence available; production mutation still requires reviewed executors and receipts before deletion or SQL detach/drop
 
 ## Purpose
 
@@ -23,6 +23,20 @@ The first implementation slice is conservative and filesystem/artifact-index bas
 - all artifacts with `unknown_metadata` remain protected, which is the default for ambiguous artifact-index rows.
 
 This builder only produces safety evidence. It does not compress, archive, delete, quarantine, detach SQL, or authorize production mutation by itself.
+
+## Current V0.1 quarantine/recheck evidence
+
+The first quarantine/recheck slice is also report-only:
+
+- importable code: `src/trading_storage/quarantine_recheck.py`;
+- executable wrapper: `scripts/lifecycle/build_quarantine_recheck_evidence.py`;
+- default input: a live dry-run lifecycle plan built from the bounded artifact index and protected set;
+- optional input: an existing lifecycle-plan JSON via `--lifecycle-plan-json`;
+- optional final recheck input: an existing protected-set JSON via `--final-protected-set-json`;
+- default output behavior prints the summary only; `--write` writes `storage/quarantine_recheck/quarantine_recheck_evidence.json` and `storage/quarantine_recheck/quarantine_recheck_summary.json`;
+- output records report whether each lifecycle-plan row is blocked by initial protection, not a quarantine candidate, pending final recheck, blocked by final recheck, or clear on final recheck.
+
+The evidence builder deliberately sets `deletion_allowed=false` and `mutation_performed=false` for every row. A final recheck clear result is necessary evidence for a future executor, not authorization to delete.
 
 ## Protected inputs
 
@@ -83,6 +97,8 @@ delete_candidate
 
 The quarantine record should include artifact ids, paths/URIs, policy id, reason codes, first check timestamp, quarantine expiry, and review/approval refs if any.
 
+The current V0.1 quarantine/recheck evidence does not create a real quarantine record, move bytes, or start a waiting period. It only records whether the dry-run lifecycle plan would need quarantine and whether a supplied final protected-set recheck is clear or blocked.
+
 If any protected reason appears during the final recheck, deletion is cancelled and the artifact returns to the appropriate protected lifecycle state.
 
 ## Compression safety
@@ -126,6 +142,8 @@ Live PostgreSQL data files must never be compressed directly.
 PYTHONPATH=src python3 scripts/lifecycle/build_protected_set.py
 PYTHONPATH=src python3 scripts/lifecycle/build_protected_set.py --candidate <artifact-id-or-path>
 PYTHONPATH=src python3 scripts/lifecycle/build_protected_set.py --write
+PYTHONPATH=src python3 scripts/lifecycle/build_quarantine_recheck_evidence.py
+PYTHONPATH=src python3 scripts/lifecycle/build_quarantine_recheck_evidence.py --write
 ```
 
 A candidate with any protected reason is blocked. A candidate with no protected reasons may be reported clear, but deletion/SQL detach-drop still requires the later quarantine/recheck/receipt implementation slices.

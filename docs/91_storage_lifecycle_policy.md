@@ -1,6 +1,6 @@
 # Storage Lifecycle Policy
 
-Status: V0.1 dry-run planner available; mutation executors remain deferred
+Status: V0.1 dry-run planner and quarantine/recheck evidence available; mutation executors remain deferred
 
 ## Purpose
 
@@ -155,3 +155,25 @@ PYTHONPATH=src python3 scripts/lifecycle/plan_storage_lifecycle.py --write
 ```
 
 This planner prepares evidence for later compression/archive/quarantine executors; it does not perform lifecycle actions.
+
+## Current V0.1 quarantine/recheck evidence
+
+The first quarantine-before-delete evidence builder is conservative and non-mutating:
+
+- importable code: `src/trading_storage/quarantine_recheck.py`;
+- executable wrapper: `scripts/lifecycle/build_quarantine_recheck_evidence.py`;
+- default input: a live dry-run lifecycle plan;
+- optional inputs: existing lifecycle-plan JSON plus optional final protected-set JSON;
+- default output behavior prints a summary only; `--write` writes `storage/quarantine_recheck/quarantine_recheck_evidence.json` and `storage/quarantine_recheck/quarantine_recheck_summary.json`;
+- every row has `mutation_performed=false` and `deletion_allowed=false`;
+- quarantine candidates without final protected-set evidence remain `dry_run_candidate_pending_recheck`;
+- a clear final recheck is recorded as `dry_run_recheck_clear`, but still does not authorize deletion without a reviewed executor and deletion receipt.
+
+CLI smoke:
+
+```bash
+PYTHONPATH=src python3 scripts/lifecycle/build_quarantine_recheck_evidence.py
+PYTHONPATH=src python3 scripts/lifecycle/build_quarantine_recheck_evidence.py --write
+```
+
+This evidence builder prepares the quarantine/recheck gate; it does not quarantine files or mutate storage state.

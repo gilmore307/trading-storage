@@ -1,6 +1,6 @@
 # Compression, Archive, and Restore
 
-Status: accepted V0.1 design; execution must remain dry-run until protected-set and receipt support exist
+Status: accepted V0.1 design; execution must remain dry-run until quarantine/recheck, executor, restore, and receipt support are reviewed
 
 ## Purpose
 
@@ -128,9 +128,10 @@ Restore verifier responsibilities:
 1. Docs + policy + registry names.
 2. Artifact index + protected-set builder.
 3. Dry-run lifecycle scanner/planner.
-4. File compression executor.
-5. SQL archive executor.
-6. Restore verifier.
-7. Lifecycle daemon / scheduled maintenance.
+4. Dry-run quarantine/recheck evidence builder.
+5. File compression executor.
+6. SQL archive executor.
+7. Restore verifier.
+8. Lifecycle daemon / scheduled maintenance.
 
 The daemon must remain dry-run by default until execution policies have been reviewed on the target host.
