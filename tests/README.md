@@ -11,6 +11,7 @@ First-party tests for storage implementation slices.
 - `test_lifecycle_planner.py` verifies durable-artifact dry-run lifecycle planning, protected retention, compression/quarantine/archive candidates, evidence retention, policy loading, and JSON output round trips.
 - `test_protected_set.py` verifies conservative protected-set blocking, manual pins, reason-code reference matching, clear-candidate reporting, and JSON output round trips.
 - `test_quarantine_recheck.py` verifies report-only quarantine/recheck evidence, initial/final protected-set blocking, pending recheck status, clear recheck evidence without deletion authorization, and JSON output round trips.
+- `test_single_file_compression.py` verifies dry-run and applied single-file zstd compressed-copy behavior, original preservation, restore checksum smoke, protected/quarantine skips, existing-output refusal, and JSON output round trips.
 - `test_dashboard_read_models.py` verifies common dashboard read-model envelope validation, unsafe payload rejection, and snapshot/latest/schema/index materialization.
 - `test_dashboard_refresh.py` verifies storage-owned refresh orchestration from semantic producer output into `storage/dashboard`, including no provider/model/broker/account side-effect flags.
 

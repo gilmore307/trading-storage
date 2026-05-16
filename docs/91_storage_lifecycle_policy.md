@@ -1,6 +1,6 @@
 # Storage Lifecycle Policy
 
-Status: V0.1 dry-run planner, quarantine/recheck evidence, and execution scaffold available; mutation executors remain deferred
+Status: V0.1 dry-run planner, quarantine/recheck evidence, execution scaffold, and narrow single-file compression executor available; destructive mutation executors remain deferred
 
 ## Purpose
 
@@ -199,3 +199,30 @@ PYTHONPATH=src python3 scripts/lifecycle/build_lifecycle_execution_scaffold.py -
 ```
 
 This scaffold defines the receipt/manifest shape for future executors. It does not write compressed bytes, export SQL, run restore smoke tests, update the artifact index, delete files, or detach/drop SQL.
+
+## Current V0.1 single-file compression executor
+
+The first mutating lifecycle executor is deliberately constrained:
+
+- importable code: `src/trading_storage/single_file_compression.py`;
+- executable wrapper: `scripts/lifecycle/compress_single_file_candidates.py`;
+- default mode is dry-run;
+- `--apply` only writes zstd compressed copies for unprotected `compress_candidate` regular files;
+- originals are always preserved;
+- existing compressed outputs are refused unless `--overwrite` is passed;
+- zstd decompression checksum smoke must pass before a successful receipt is emitted;
+- artifact index updates, original deletion, quarantine moves, SQL archive/export, SQL detach/drop, model activation, broker execution, and account mutation remain disabled.
+
+CLI smoke:
+
+```bash
+PYTHONPATH=src python3 scripts/lifecycle/compress_single_file_candidates.py
+```
+
+Reviewed apply shape:
+
+```bash
+PYTHONPATH=src python3 scripts/lifecycle/compress_single_file_candidates.py --lifecycle-plan-json <plan.json> --apply --write
+```
+
+This is the only current lifecycle executor allowed to write bytes, and those bytes are compressed copies under `storage/archive/compressed/`.

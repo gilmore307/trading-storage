@@ -6,6 +6,7 @@ Executable local storage lifecycle helpers live here.
 
 - `build_artifact_index.py` scans storage-owned filesystem artifacts/read models and emits conservative JSONL inventory metadata according to `docs/92_artifact_index.md`.
 - `build_protected_set.py` builds conservative protected-set safety evidence from artifact-index records and optional reason-code references/manual pins according to `docs/93_protected_set.md`.
+- `compress_single_file_candidates.py` safely compresses unprotected single-file `compress_candidate` rows to zstd copies, preserving originals and leaving SQL/artifact-index/delete paths untouched according to `docs/94_compression_archive.md`.
 - `maintain_local_storage.py` plans or applies conservative cleanup for ignored runtime files according to `docs/91_storage_lifecycle_policy.md`.
 - `plan_storage_lifecycle.py` emits non-mutating durable-artifact lifecycle plans from artifact-index/protected-set/policy evidence according to `docs/91_storage_lifecycle_policy.md`.
 - `build_lifecycle_execution_scaffold.py` emits non-mutating compression/archive/restore manifest and receipt drafts from lifecycle plans according to `docs/94_compression_archive.md` and `docs/95_lifecycle_receipts.md`.

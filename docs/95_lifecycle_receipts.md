@@ -1,6 +1,6 @@
 # Lifecycle Receipts and Tombstones
 
-Status: V0.1 quarantine/recheck evidence and non-mutating compression/archive/restore receipt drafts are implemented; real mutation receipts remain disabled until executors are reviewed
+Status: V0.1 compression receipt execution exists for single-file compressed-copy writes only; deletion, SQL archive, SQL detach/drop, and daemon receipts remain disabled
 
 ## Purpose
 
@@ -25,7 +25,7 @@ Draft receipts must use `status=planned_not_executed`, `dry_run=true`, and `muta
 
 ### `compression_receipt`
 
-Emitted after file/object compression completes and validation passes or fails. Current V0.1 implementation emits only `compression_receipt_draft_v1` before execution exists.
+Emitted after file/object compression completes and validation passes or fails. Current V0.1 execution support is limited to single-file zstd compressed-copy writes that preserve originals.
 
 Required content:
 
@@ -41,11 +41,27 @@ Required content:
 - restore-smoke result if required;
 - executor version;
 - timestamp;
-- status.
+- status;
+- whether the original file was preserved;
+- whether original deletion was performed;
+- whether the artifact index was updated;
+- whether SQL mutation was performed.
+
+### Current V0.1 single-file compression receipts
+
+The current executor emits:
+
+- wrapper: `storage_single_file_compression_result_v1`;
+- summary: `storage_single_file_compression_summary_v1`;
+- manifest: `compression_manifest_v1`;
+- receipt: `compression_receipt_v1`;
+- restore check: `restore_receipt_v1`.
+
+Allowed successful mutation is only writing `storage/archive/compressed/<artifact_id>/<original-name>.zst`. A successful receipt must still report `original_preserved=true`, `delete_original_performed=false`, `artifact_index_updated=false`, and `sql_mutation_performed=false`.
 
 ### `archive_receipt`
 
-Emitted after file or SQL archive creation. Current V0.1 implementation emits only `archive_receipt_draft_v1` before execution exists.
+Emitted after file or SQL archive creation. Current V0.1 implementation emits only `archive_receipt_draft_v1`; SQL archive execution does not exist yet.
 
 Required content:
 

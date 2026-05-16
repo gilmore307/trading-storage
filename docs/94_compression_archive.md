@@ -1,6 +1,6 @@
 # Compression, Archive, and Restore
 
-Status: V0.1 non-mutating compression/archive/restore execution scaffold available; real execution remains disabled until reviewed executors are approved
+Status: V0.1 single-file compression executor available; deletion, SQL archive, SQL detach/drop, and daemon execution remain disabled until reviewed executors are approved
 
 ## Purpose
 
@@ -73,6 +73,33 @@ CLI smoke:
 ```bash
 PYTHONPATH=src python3 scripts/lifecycle/build_lifecycle_execution_scaffold.py
 PYTHONPATH=src python3 scripts/lifecycle/build_lifecycle_execution_scaffold.py --write
+```
+
+## Current V0.1 single-file compression executor
+
+The first reviewed mutating slice is deliberately narrow:
+
+- importable code: `src/trading_storage/single_file_compression.py`;
+- executable wrapper: `scripts/lifecycle/compress_single_file_candidates.py`;
+- default mode is dry-run and writes no compressed bytes;
+- `--apply` is required before any compressed copy is written;
+- only unprotected `compress_candidate` rows are eligible;
+- eligible source must be a regular file under the selected repository/root, not a symlink or directory;
+- output path is `storage/archive/compressed/<artifact_id>/<original-name>.zst`;
+- existing compressed outputs are refused unless `--overwrite` is passed;
+- original files are always preserved;
+- artifact index is not mutated;
+- deletion/quarantine/SQL detach/drop are not performed;
+- zstd decompression checksum smoke verifies that decompressed bytes match the original checksum before a successful receipt is emitted.
+
+The executor emits `storage_single_file_compression_result_v1` with `compression_manifest_v1`, `compression_receipt_v1`, and `restore_receipt_v1`. In apply mode, `mutation_performed=true` means only that a compressed copy was written; `delete_original_performed=false`, `artifact_index_updated=false`, and `sql_mutation_performed=false` remain explicit.
+
+CLI smoke:
+
+```bash
+PYTHONPATH=src python3 scripts/lifecycle/compress_single_file_candidates.py
+# Apply only after reviewing the lifecycle plan and candidates:
+PYTHONPATH=src python3 scripts/lifecycle/compress_single_file_candidates.py --lifecycle-plan-json <plan.json> --apply --write
 ```
 
 ## Compression manifest shape
@@ -156,7 +183,7 @@ Restore verifier responsibilities:
 3. Dry-run lifecycle scanner/planner.
 4. Dry-run quarantine/recheck evidence builder.
 5. Non-mutating compression/archive/restore manifest and receipt scaffold.
-6. Reviewed file compression executor.
+6. Reviewed single-file compression executor that preserves originals.
 7. Reviewed SQL archive executor.
 8. Restore verifier.
 9. Lifecycle daemon / scheduled maintenance.

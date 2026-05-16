@@ -13,5 +13,6 @@ Importable storage helper implementation lives here.
 - `lifecycle_planner.py` owns non-mutating durable-artifact lifecycle planning from artifact-index metadata, protected-set evidence, and reviewed policy rules.
 - `protected_set.py` owns conservative protected-set construction from artifact-index records and optional reason-code references/manual pins.
 - `quarantine_recheck.py` owns report-only quarantine/recheck evidence for dry-run lifecycle candidates; it never authorizes deletion or mutates storage state.
+- `single_file_compression.py` owns the narrow single-file zstd compressed-copy executor for unprotected `compress_candidate` rows; it preserves originals and does not update the artifact index or touch SQL.
 
 This package must not import from `scripts/`; executable wrappers belong under `scripts/`.
