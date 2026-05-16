@@ -53,6 +53,11 @@ class LifecyclePlanRecord:
     protected_reason_codes: tuple[str, ...]
     dry_run: bool
     reason: str
+    artifact_size_bytes: int | None = None
+    checksum_sha256: str | None = None
+    content_codec: str | None = None
+    content_format: str | None = None
+    read_mode: str | None = None
 
     def to_dict(self) -> dict[str, Any]:
         return asdict(self)
@@ -217,6 +222,11 @@ def plan_storage_lifecycle(
                 protected_reason_codes=protected_reason_codes,
                 dry_run=True,
                 reason=reason,
+                artifact_size_bytes=record.artifact_size_bytes,
+                checksum_sha256=record.checksum_sha256,
+                content_codec=record.content_codec,
+                content_format=record.content_format,
+                read_mode=record.read_mode,
             )
         )
 

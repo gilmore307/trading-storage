@@ -16,7 +16,7 @@ This directory is the authoritative documentation spine for `trading-storage`.
 - `91_storage_lifecycle_policy.md` — V0.1 lifecycle state machine, retention classes, source/model/SQL policy, and declarative policy shape.
 - `92_artifact_index.md` — artifact index and dependency graph design for lifecycle safety.
 - `93_protected_set.md` — protected-set rules and quarantine-before-delete policy.
-- `94_compression_archive.md` — file compression, SQL archive, summarize-then-archive, and restore-verifier policy.
+- `94_compression_archive.md` — file compression, SQL archive, summarize-then-archive, restore-verifier policy, and current non-mutating execution scaffold.
 - `95_lifecycle_receipts.md` — compression/archive/deletion/restore receipt and tombstone contracts.
 - `96_dashboard_read_models.md` — storage-home boundary for dashboard summary/read-model outputs.
 - `97_dashboard_summary_layout.md` — physical path convention, common envelope, schema-validation boundary, and lifecycle posture for dashboard summaries.

@@ -1,6 +1,6 @@
 # Storage Lifecycle Policy
 
-Status: V0.1 dry-run planner and quarantine/recheck evidence available; mutation executors remain deferred
+Status: V0.1 dry-run planner, quarantine/recheck evidence, and execution scaffold available; mutation executors remain deferred
 
 ## Purpose
 
@@ -177,3 +177,25 @@ PYTHONPATH=src python3 scripts/lifecycle/build_quarantine_recheck_evidence.py --
 ```
 
 This evidence builder prepares the quarantine/recheck gate; it does not quarantine files or mutate storage state.
+
+## Current V0.1 lifecycle execution scaffold
+
+The first compression/archive/restore execution slice is a non-mutating scaffold:
+
+- importable code: `src/trading_storage/lifecycle_execution_scaffold.py`;
+- executable wrapper: `scripts/lifecycle/build_lifecycle_execution_scaffold.py`;
+- default input: a live dry-run lifecycle plan;
+- optional input: an existing lifecycle-plan JSON;
+- compression candidates produce compression manifest/receipt drafts and restore receipt drafts;
+- archive candidates produce archive manifest/receipt drafts and restore receipt drafts;
+- quarantine/delete candidates intentionally produce no deletion receipts;
+- every draft carries `dry_run=true`, `mutation_performed=false`, and `status=planned_not_executed` where status applies.
+
+CLI smoke:
+
+```bash
+PYTHONPATH=src python3 scripts/lifecycle/build_lifecycle_execution_scaffold.py
+PYTHONPATH=src python3 scripts/lifecycle/build_lifecycle_execution_scaffold.py --write
+```
+
+This scaffold defines the receipt/manifest shape for future executors. It does not write compressed bytes, export SQL, run restore smoke tests, update the artifact index, delete files, or detach/drop SQL.

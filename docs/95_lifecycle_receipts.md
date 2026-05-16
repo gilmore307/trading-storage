@@ -1,6 +1,6 @@
 # Lifecycle Receipts and Tombstones
 
-Status: accepted V0.1 design; quarantine/recheck evidence is implemented, while mutation receipt schemas remain minimal until executors are reviewed
+Status: V0.1 quarantine/recheck evidence and non-mutating compression/archive/restore receipt drafts are implemented; real mutation receipts remain disabled until executors are reviewed
 
 ## Purpose
 
@@ -10,9 +10,22 @@ Receipt records are control evidence. They do not embed large payloads.
 
 ## Receipt families
 
+### Current V0.1 receipt draft scaffold
+
+The first receipt implementation slice is non-mutating and emits drafts only:
+
+- `compression_manifest_draft_v1`;
+- `compression_receipt_draft_v1`;
+- `sql_archive_manifest_draft_v1`;
+- `archive_receipt_draft_v1`;
+- `restore_receipt_draft_v1`;
+- wrapper contract `storage_lifecycle_execution_scaffold_v1`.
+
+Draft receipts must use `status=planned_not_executed`, `dry_run=true`, and `mutation_performed=false`. They may record paths, checksums from the artifact index, planned archive/compression destinations, restore commands, and protected-set check status, but they must not claim successful compression/archive/restore/deletion.
+
 ### `compression_receipt`
 
-Emitted after file/object compression completes and validation passes or fails.
+Emitted after file/object compression completes and validation passes or fails. Current V0.1 implementation emits only `compression_receipt_draft_v1` before execution exists.
 
 Required content:
 
@@ -32,7 +45,7 @@ Required content:
 
 ### `archive_receipt`
 
-Emitted after file or SQL archive creation.
+Emitted after file or SQL archive creation. Current V0.1 implementation emits only `archive_receipt_draft_v1` before execution exists.
 
 Required content:
 
@@ -90,7 +103,7 @@ Required content:
 
 ### `restore_receipt`
 
-Emitted after restore verification or actual restore.
+Emitted after restore verification or actual restore. Current V0.1 implementation emits only `restore_receipt_draft_v1` with `status=planned_not_executed` before restore execution exists.
 
 Required content:
 

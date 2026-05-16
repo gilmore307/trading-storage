@@ -1,6 +1,6 @@
 # Compression, Archive, and Restore
 
-Status: accepted V0.1 design; execution must remain dry-run until quarantine/recheck, executor, restore, and receipt support are reviewed
+Status: V0.1 non-mutating compression/archive/restore execution scaffold available; real execution remains disabled until reviewed executors are approved
 
 ## Purpose
 
@@ -50,6 +50,32 @@ identify candidate
   -> update artifact index
   -> remove uncompressed copy only if policy allows
 ```
+
+## Current V0.1 execution scaffold
+
+The first compression/archive/restore implementation slice is a non-mutating scaffold:
+
+- importable code: `src/trading_storage/lifecycle_execution_scaffold.py`;
+- executable wrapper: `scripts/lifecycle/build_lifecycle_execution_scaffold.py`;
+- default input: a live dry-run lifecycle plan;
+- optional input: existing lifecycle-plan JSON via `--lifecycle-plan-json`;
+- output contracts: `compression_manifest_draft_v1`, `compression_receipt_draft_v1`, `sql_archive_manifest_draft_v1`, `archive_receipt_draft_v1`, and `restore_receipt_draft_v1` inside `storage_lifecycle_execution_scaffold_v1`;
+- default output behavior prints a summary only; `--write` writes `storage/lifecycle_execution/lifecycle_execution_scaffold.json` and `storage/lifecycle_execution/lifecycle_execution_scaffold_summary.json`;
+- protected lifecycle-plan rows are skipped;
+- `compress_candidate` rows produce compression manifest/receipt drafts plus a restore verification receipt draft;
+- `archive_candidate` rows produce archive manifest/receipt drafts plus a restore verification receipt draft;
+- `quarantine_candidate` rows do not produce deletion receipts; deletion remains gated by quarantine/recheck and a future reviewed delete executor.
+
+Every draft has `dry_run=true` and `mutation_performed=false`; status is `planned_not_executed`. No compressed bytes, SQL exports, restore materializations, artifact-index mutations, SQL detach/drop, or deletion are performed.
+
+CLI smoke:
+
+```bash
+PYTHONPATH=src python3 scripts/lifecycle/build_lifecycle_execution_scaffold.py
+PYTHONPATH=src python3 scripts/lifecycle/build_lifecycle_execution_scaffold.py --write
+```
+
+## Compression manifest shape
 
 Compression manifest fields:
 
@@ -129,9 +155,10 @@ Restore verifier responsibilities:
 2. Artifact index + protected-set builder.
 3. Dry-run lifecycle scanner/planner.
 4. Dry-run quarantine/recheck evidence builder.
-5. File compression executor.
-6. SQL archive executor.
-7. Restore verifier.
-8. Lifecycle daemon / scheduled maintenance.
+5. Non-mutating compression/archive/restore manifest and receipt scaffold.
+6. Reviewed file compression executor.
+7. Reviewed SQL archive executor.
+8. Restore verifier.
+9. Lifecycle daemon / scheduled maintenance.
 
 The daemon must remain dry-run by default until execution policies have been reviewed on the target host.
