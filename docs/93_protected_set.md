@@ -1,12 +1,28 @@
 # Protected Set Policy
 
-Status: accepted V0.1 design; production execution requires this builder before deletion/archive mutation
+Status: V0.1 conservative filesystem implementation available; production mutation still requires quarantine/recheck/receipts before deletion or SQL detach/drop
 
 ## Purpose
 
 The protected set is the storage-owned safety boundary for lifecycle work. Before compression, archive, SQL detach/drop, quarantine, or deletion, storage must determine which artifacts and SQL partitions are currently protected by model lineage, active tasks, review evidence, downstream chains, or control-plane records.
 
 A cleanup tool that cannot build a protected set may produce a report, but it must not delete or detach durable artifacts.
+
+## Current V0.1 implementation
+
+The first implementation slice is conservative and filesystem/artifact-index based:
+
+- importable code: `src/trading_storage/protected_set.py`;
+- executable wrapper: `scripts/lifecycle/build_protected_set.py`;
+- default input: a live bounded artifact-index scan using `storage/artifacts/`;
+- optional input: existing artifact-index JSONL via `--index-jsonl`;
+- optional protected-reference input: JSON object keyed by protected reason code via `--reference-file`;
+- optional manual pins: repeated `--manual-pin <artifact-id-or-ref>`;
+- optional mutation candidates: repeated `--candidate <artifact-id-or-ref>`;
+- default output behavior prints the summary only; `--write` writes `storage/protected_set/protected_set.json` and `storage/protected_set/protected_set_summary.json`;
+- all artifacts with `unknown_metadata` remain protected, which is the default for ambiguous artifact-index rows.
+
+This builder only produces safety evidence. It does not compress, archive, delete, quarantine, detach SQL, or authorize production mutation by itself.
 
 ## Protected inputs
 
@@ -103,3 +119,13 @@ closed partition/table
 ```
 
 Live PostgreSQL data files must never be compressed directly.
+
+## CLI smoke
+
+```bash
+PYTHONPATH=src python3 scripts/lifecycle/build_protected_set.py
+PYTHONPATH=src python3 scripts/lifecycle/build_protected_set.py --candidate <artifact-id-or-path>
+PYTHONPATH=src python3 scripts/lifecycle/build_protected_set.py --write
+```
+
+A candidate with any protected reason is blocked. A candidate with no protected reasons may be reported clear, but deletion/SQL detach-drop still requires the later quarantine/recheck/receipt implementation slices.
