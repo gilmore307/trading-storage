@@ -2,8 +2,8 @@
 
 ## Active Tasks
 
-- Implement the next storage lifecycle phase in controlled slices: artifact index, protected-set builder, dry-run lifecycle planner, file compression executor, SQL archive executor, restore verifier, and finally a daemon/scheduled maintenance wrapper.
-- Keep lifecycle execution dry-run-only until artifact index, protected-set checks, quarantine-before-delete, and lifecycle receipts are implemented and reviewed.
+- Implement the next storage lifecycle phase in controlled slices: protected-set builder, dry-run lifecycle planner, file compression executor, SQL archive executor, restore verifier, and finally a daemon/scheduled maintenance wrapper.
+- Keep lifecycle execution dry-run-only until protected-set checks, quarantine-before-delete, and lifecycle receipts are implemented and reviewed. The V0.1 filesystem artifact index is implemented for inventory only; it does not authorize production mutation.
 
 The initial storage-contract-and-lifecycle-helper phase is closed. Current historical training can use local receipt payload persistence, artifact refs, manager summary rows, and dry-run-first local lifecycle maintenance. The new V0.1 lifecycle policy is accepted as the next shape but does not authorize production deletion, SQL detach/drop, or daemon execution yet.
 
@@ -16,7 +16,7 @@ The initial storage-contract-and-lifecycle-helper phase is closed. Current histo
 - Dashboard read-model materialization is implemented through `src/trading_storage/dashboard_read_models.py` and `scripts/dashboard/materialize_read_model.py`: producer-supplied summary payloads are validated and written to storage-owned snapshot/latest/schema/index paths under `storage/dashboard/`.
 - Dashboard read-model refresh orchestration is implemented for `historical_task_progress_summary` through `src/trading_storage/dashboard_refresh.py`, `scripts/dashboard/refresh_historical_task_progress_read_model.py`, and reviewed systemd service/timer templates. The refresh runs the manager-owned semantic producer, validates/materializes output, and performs no provider calls, model activation, broker execution, or account mutation.
 - Maintenance and dashboard refresh systemd templates are checked in but intentionally not installed or enabled.
-- V0.1 lifecycle design is documented in `docs/91_storage_lifecycle_policy.md` through `docs/95_lifecycle_receipts.md`: promoted model bodies are kept permanently, regenerable intermediate data may expire by TTL, source data is compressed before deletion unless disposable, SQL detail is archived through export/restore workflows, all lifecycle actions require manifest/receipt evidence, promotion may classify retention intent but not execute cleanup, and normal lifecycle maintenance enters through manager's unified request/task-summary surface before storage executes physical actions. `docs/96_dashboard_read_models.md` records that dashboard summary/read-model outputs belong in storage; `docs/97_dashboard_summary_layout.md` defines and now has the first helper for the accepted physical JSON layout and common validation boundary.
+- V0.1 lifecycle design is documented in `docs/91_storage_lifecycle_policy.md` through `docs/95_lifecycle_receipts.md`: promoted model bodies are kept permanently, regenerable intermediate data may expire by TTL, source data is compressed before deletion unless disposable, SQL detail is archived through export/restore workflows, all lifecycle actions require manifest/receipt evidence, promotion may classify retention intent but not execute cleanup, and normal lifecycle maintenance enters through manager's unified request/task-summary surface before storage executes physical actions. `docs/92_artifact_index.md` now has the first filesystem JSONL artifact-index builder for dry-run inventory. `docs/96_dashboard_read_models.md` records that dashboard summary/read-model outputs belong in storage; `docs/97_dashboard_summary_layout.md` defines and now has the first helper for the accepted physical JSON layout and common validation boundary.
 
 ## Not Current Historical-Training Scope
 
@@ -32,6 +32,7 @@ These items are intentionally outside the current no-broker historical-training 
 
 ## Recently Accepted
 
+- Implemented the first artifact-index builder: `src/trading_storage/artifact_index.py` and `scripts/lifecycle/build_artifact_index.py` scan storage-owned filesystem artifacts/read models, emit conservative JSONL metadata, and classify ambiguous rows as manual-review/unknown-metadata protected without mutating payloads.
 - Implemented the first dashboard read-model refresh wrapper: storage runs the manager-owned `historical_task_progress_summary` producer, validates/materializes the result, emits a refresh receipt, and includes systemd service/timer templates for periodic refresh without enabling host timers.
 - Implemented the first dashboard read-model materialization helper: storage validates a producer-supplied common envelope, writes timestamped snapshots and `latest.json`, creates common schema placeholders, and appends index rows with checksums. Additional semantic producers/adapters remain future work.
 - Accepted the first dashboard summary layout slice: storage-owned `storage/dashboard/read_models/<contract_type>/latest.json`, timestamped snapshots, schema refs, and index JSONL are now the accepted physical boundary.

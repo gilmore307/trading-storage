@@ -1,12 +1,26 @@
 # Artifact Index and Dependency Graph
 
-Status: accepted V0.1 design; physical SQL/file implementation deferred until dry-run lifecycle planning begins
+Status: V0.1 filesystem JSONL implementation available; SQL-backed dependency graph remains deferred until dry-run lifecycle planning requires it
 
 ## Purpose
 
 The artifact index is the storage-owned inventory that lets lifecycle tools reason about artifacts by dependency and policy rather than by path alone.
 
 A file scanner without an artifact index can report disk usage. It cannot safely decide whether a file is reusable source data, current promotion evidence, a model rollback artifact, or disposable scratch. The artifact index is therefore required before production cleanup execution.
+
+## Current V0.1 implementation
+
+The first implementation slice is conservative and filesystem-only:
+
+- importable code: `src/trading_storage/artifact_index.py`;
+- executable wrapper: `scripts/lifecycle/build_artifact_index.py`;
+- default scanned root: `storage/artifacts/`; specific dashboard read-model latest files or bounded roots can be added with repeated `--include-root` arguments;
+- default optional outputs: `storage/artifact_index/artifact_index.jsonl` and `storage/artifact_index/artifact_index_summary.json`;
+- default CLI behavior prints the summary only; `--write` is required to write index files;
+- indexed payloads are never mutated;
+- ambiguous artifacts default to `reproducibility_class=unknown`, `retention_class=manual_review_required`, and `protected_reason_codes=[unknown_metadata]`.
+
+This is enough for dry-run inventory and protected-set preparation. It is not a production deletion authorization surface. Do not point a routine scan at an unbounded snapshot-heavy read-model tree unless the caller deliberately wants that full inventory cost.
 
 ## Minimal artifact index fields
 
@@ -95,3 +109,12 @@ The dependency graph decides what is protected, what can be compressed, what can
 `trading-model` artifacts should include model id, model version, dataset snapshot/split refs, feature contract refs, source refs, code version refs, promotion decision refs, and activation refs where relevant.
 
 Without sufficient metadata, lifecycle tooling must classify the artifact as `unknown` and `manual_review_required`.
+
+## CLI smoke
+
+```bash
+PYTHONPATH=src python3 scripts/lifecycle/build_artifact_index.py
+PYTHONPATH=src python3 scripts/lifecycle/build_artifact_index.py --write
+```
+
+The first command prints only a summary. The second writes the JSONL index and summary under ignored local storage.

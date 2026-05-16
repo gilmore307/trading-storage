@@ -4,6 +4,7 @@ Executable local storage lifecycle helpers live here.
 
 ## Current entrypoints
 
-- `maintain_local_storage.py` plans or applies conservative cleanup for ignored runtime files according to `docs/04_storage_lifecycle.md`.
+- `build_artifact_index.py` scans storage-owned filesystem artifacts/read models and emits conservative JSONL inventory metadata according to `docs/92_artifact_index.md`.
+- `maintain_local_storage.py` plans or applies conservative cleanup for ignored runtime files according to `docs/91_storage_lifecycle_policy.md`.
 
 Scripts in this directory may import `src/trading_storage`; reusable lifecycle logic belongs in `src/`, not here.
