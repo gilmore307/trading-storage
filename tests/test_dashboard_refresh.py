@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 import os
+import subprocess
 import sys
 import tempfile
 import unittest
@@ -88,6 +89,35 @@ class DashboardRefreshTests(unittest.TestCase):
             os.utime(newer, (1_700_000_100, 1_700_000_100))
 
             self.assertEqual(latest_stage_coverage_path(trading_manager_root=manager_root), newer)
+
+    def test_public_refresh_batch_degrades_when_manager_producer_missing(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            storage_root = Path(tmp) / "storage"
+            missing_manager = Path(tmp) / "missing-manager"
+
+            completed = subprocess.run(
+                [
+                    sys.executable,
+                    "scripts/dashboard/refresh_public_dashboard_read_models.py",
+                    "--storage-root",
+                    str(storage_root),
+                    "--trading-manager-root",
+                    str(missing_manager),
+                ],
+                cwd=Path(__file__).resolve().parents[1],
+                env={**os.environ, "PYTHONPATH": "src"},
+                text=True,
+                capture_output=True,
+                check=False,
+            )
+
+            self.assertEqual(completed.returncode, 0, completed.stderr)
+            receipt = json.loads(completed.stdout)
+            self.assertEqual(receipt["status"], "degraded")
+            by_contract = {row["refreshed_contract_type"]: row for row in receipt["results"]}
+            self.assertEqual(by_contract["current_system_status_summary"]["status"], "succeeded")
+            self.assertEqual(by_contract[HISTORICAL_TASK_PROGRESS_CONTRACT]["status"], "failed")
+            self.assertTrue((storage_root / "dashboard/read_models/current_system_status_summary/latest.json").exists())
 
 
 if __name__ == "__main__":

@@ -14,6 +14,8 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Mapping
 
+from trading_storage.io import write_bytes_atomic
+
 DEFAULT_STORAGE_ROOT = Path("storage")
 DEFAULT_RETENTION_POLICY = "development_retained_until_promoted"
 
@@ -92,7 +94,7 @@ def store_json_artifact(
             raise StorageArtifactError(f"artifact already exists with different content: {path}")
     else:
         path.parent.mkdir(parents=True, exist_ok=True)
-        path.write_bytes(content)
+        write_bytes_atomic(path, content)
     uri = "storage://trading-storage/" + str(path.relative_to(storage_root)).replace("\\", "/")
     timestamp = produced_at or now_utc()
     artifact_ref = {

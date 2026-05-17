@@ -80,6 +80,16 @@ class FileLifecycleAcceptanceTests(unittest.TestCase):
             self.assertEqual(protected.records[0].protected_reason_codes, ("dashboard_latest_snapshot",))
             self.assertTrue(protected.records[0].protected)
 
+    def test_dashboard_prune_apply_requires_approval_ref(self) -> None:
+        with tempfile.TemporaryDirectory() as raw_tmp:
+            root = Path(raw_tmp)
+            artifact_dir = root / "storage" / "artifacts"
+            artifact_dir.mkdir(parents=True)
+            (artifact_dir / "payload.json").write_text('{"contract_type":"unknown"}\n', encoding="utf-8")
+
+            with self.assertRaisesRegex(ValueError, "approval_ref is required"):
+                build_file_lifecycle_acceptance(root=root, apply_dashboard_prune=True)
+
 
 if __name__ == "__main__":
     unittest.main()

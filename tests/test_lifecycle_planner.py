@@ -156,6 +156,37 @@ class LifecyclePlannerTests(unittest.TestCase):
 
             self.assertEqual(plan.summary["protected_block_count"], 1)
 
+    def test_manual_pin_by_physical_path_survives_duplicate_legacy_artifact_ids(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            first = root / "storage" / "artifacts" / "a" / "same.json"
+            second = root / "storage" / "artifacts" / "b" / "same.json"
+            first.parent.mkdir(parents=True, exist_ok=True)
+            second.parent.mkdir(parents=True, exist_ok=True)
+            first.write_text(json.dumps({"contract_type": "scratch_payload"}), encoding="utf-8")
+            second.write_text(json.dumps({"contract_type": "scratch_payload"}), encoding="utf-8")
+            index = build_artifact_index(root=root)
+            legacy_records = tuple(
+                record.__class__(
+                    **{
+                        **record.to_dict(),
+                        "artifact_id": "same",
+                        "protected_reason_codes": (),
+                        "retention_class": "ttl_delete_allowed",
+                    }
+                )
+                for record in index.records
+            )
+            protected_set = build_protected_set(legacy_records, manual_pins=("storage/artifacts/a/same.json",))
+
+            plan = plan_storage_lifecycle(legacy_records, protected_set=protected_set)
+
+            by_path = {record.physical_path: record for record in plan.records}
+            self.assertTrue(by_path["storage/artifacts/a/same.json"].protected)
+            self.assertEqual(by_path["storage/artifacts/a/same.json"].action, "retain_protected")
+            self.assertFalse(by_path["storage/artifacts/b/same.json"].protected)
+            self.assertEqual(by_path["storage/artifacts/b/same.json"].action, "quarantine_candidate")
+
 
 if __name__ == "__main__":
     unittest.main()

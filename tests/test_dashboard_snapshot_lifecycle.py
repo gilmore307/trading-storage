@@ -71,6 +71,7 @@ class DashboardSnapshotLifecycleTests(unittest.TestCase):
                 keep_latest_per_contract=1,
                 apply=True,
                 now=NOW,
+                approval_ref="accepted_storage_lifecycle_decision_ref:test",
             )
 
             self.assertFalse(old.exists())
@@ -97,6 +98,20 @@ class DashboardSnapshotLifecycleTests(unittest.TestCase):
             summary = json.loads((storage_root / "dashboard" / "lifecycle" / "summary.json").read_text(encoding="utf-8"))
             self.assertEqual(payload["contract_type"], "dashboard_snapshot_prune_plan_v1")
             self.assertEqual(summary["contract_type"], "dashboard_snapshot_prune_summary_v1")
+
+    def test_apply_requires_approval_ref(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            storage_root = Path(tmp) / "storage"
+            _write_snapshot(storage_root, "historical_task_progress_summary", "20260514T000000Z")
+
+            with self.assertRaisesRegex(ValueError, "approval_ref is required"):
+                build_dashboard_snapshot_lifecycle_plan(
+                    storage_root=storage_root,
+                    max_age_hours=24,
+                    keep_latest_per_contract=1,
+                    apply=True,
+                    now=NOW,
+                )
 
 
 if __name__ == "__main__":

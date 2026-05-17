@@ -9,7 +9,8 @@ A ready signal is narrower than a manifest: it is not a full run log and it does
 ## Contract Type
 
 - **Type name:** `ready_signal`
-- **Owning repository:** `trading-storage`
+- **Semantic owner:** `trading-manager`
+- **Physical persistence/layout owner:** `trading-storage`
 - **Registered through:** `trading-manager/scripts/registry/`
 - **Status:** Accepted template contract; production emission still requires manager/storage implementation.
 

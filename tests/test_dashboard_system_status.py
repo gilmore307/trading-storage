@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import os
 import tempfile
 import unittest
 from pathlib import Path
@@ -51,6 +52,7 @@ class DashboardSystemStatusTests(unittest.TestCase):
             self.assertIn("max_worker_count", parallelism)
             self.assertTrue(parallelism["drain_ready_stages"])
             self.assertEqual(parallelism["scheduler_interval_role"], "idle_backstop")
+            self.assertEqual(chart["refresh"]["cadence_seconds"], 5)
             self.assertIn("drain_max_steps", parallelism)
             self.assertIn("event_refresh_service_unit", parallelism)
             runtime_throughput = chart["runtime_throughput"]
@@ -135,6 +137,27 @@ class DashboardSystemStatusTests(unittest.TestCase):
             self.assertTrue(latest_path.exists())
             latest = json.loads(latest_path.read_text())
             self.assertEqual(latest["contract_type"], CURRENT_SYSTEM_STATUS_CONTRACT)
+
+    def test_refresh_creates_missing_storage_root(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            storage_root = Path(tmp) / "missing-storage-root"
+            receipt = refresh_current_system_status_read_model(storage_root=storage_root)
+            self.assertTrue(storage_root.exists())
+            self.assertEqual(receipt["refreshed_contract_type"], CURRENT_SYSTEM_STATUS_CONTRACT)
+
+    def test_refresh_cadence_uses_environment_override(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            storage_root = Path(tmp)
+            old_value = os.environ.get("TRADING_STORAGE_REFRESH_CADENCE_SECONDS")
+            os.environ["TRADING_STORAGE_REFRESH_CADENCE_SECONDS"] = "17"
+            try:
+                payload = build_current_system_status_summary(storage_root=storage_root)
+            finally:
+                if old_value is None:
+                    os.environ.pop("TRADING_STORAGE_REFRESH_CADENCE_SECONDS", None)
+                else:
+                    os.environ["TRADING_STORAGE_REFRESH_CADENCE_SECONDS"] = old_value
+            self.assertEqual(payload["chart_payload"]["refresh"]["cadence_seconds"], 17)
 
 
 if __name__ == "__main__":

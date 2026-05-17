@@ -38,10 +38,11 @@ class ProtectedSetTests(unittest.TestCase):
             artifact.write_text(json.dumps({"contract_type": "example_payload"}), encoding="utf-8")
             index = build_artifact_index(root=root)
 
+            record = index.records[0]
             protected_set = build_protected_set(
                 index,
-                manual_pins=("payload",),
-                candidate_refs=("payload",),
+                manual_pins=(record.physical_path,),
+                candidate_refs=(record.artifact_id,),
             )
 
             self.assertTrue(protected_set.records[0].candidate_requested)
@@ -92,7 +93,7 @@ class ProtectedSetTests(unittest.TestCase):
                 }
             )
 
-            protected_set = build_protected_set((clear_record,), candidate_refs=("payload",))
+            protected_set = build_protected_set((clear_record,), candidate_refs=(clear_record.artifact_id,))
 
             self.assertEqual(protected_set.summary["candidate_clear_count"], 1)
             self.assertTrue(protected_set.summary["candidate_mutation_allowed"])

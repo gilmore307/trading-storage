@@ -33,7 +33,7 @@ class ArtifactIndexTests(unittest.TestCase):
 
             self.assertEqual(index.summary["record_count"], 1)
             record = index.records[0]
-            self.assertEqual(record.artifact_id, "receipt-1")
+            self.assertTrue(record.artifact_id.startswith("art_idx_"))
             self.assertEqual(record.artifact_kind, "component_completion_receipt_payload")
             self.assertEqual(record.producer_repo, "trading-data")
             self.assertEqual(record.producer_component, "alpaca_bars")
@@ -66,7 +66,8 @@ class ArtifactIndexTests(unittest.TestCase):
 
             self.assertEqual(index.summary["artifact_kind_counts"], {"current_system_status_summary": 1})
             self.assertEqual(index.records[0].producer_component, "current_system_status_summary")
-            self.assertEqual(index.records[0].schema_ref, "1")
+            self.assertEqual(index.records[0].schema_ref, "storage/dashboard/schemas/current_system_status_summary.schema.json")
+            self.assertEqual(index.records[0].schema_version, "1")
             self.assertEqual(index.records[0].retention_class, "dashboard_latest_retained")
             self.assertEqual(index.records[0].protected_reason_codes, ("dashboard_latest_snapshot",))
 
@@ -140,6 +141,55 @@ class ArtifactIndexTests(unittest.TestCase):
             self.assertEqual(rows[0]["artifact_kind"], "example")
             self.assertEqual(summary["record_count"], 1)
             self.assertEqual(summary["contract_type"], "storage_artifact_index_summary_v1")
+
+    def test_duplicate_explicit_artifact_ids_are_rejected(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            first = root / "storage" / "artifacts" / "a" / "one.json"
+            second = root / "storage" / "artifacts" / "b" / "two.json"
+            first.parent.mkdir(parents=True, exist_ok=True)
+            second.parent.mkdir(parents=True, exist_ok=True)
+            first.write_text(json.dumps({"artifact_id": "duplicate", "contract_type": "example_payload"}), encoding="utf-8")
+            second.write_text(json.dumps({"artifact_id": "duplicate", "contract_type": "example_payload"}), encoding="utf-8")
+
+            with self.assertRaisesRegex(ValueError, "duplicate explicit artifact_id"):
+                build_artifact_index(root=root)
+
+    def test_implicit_artifact_ids_include_path_and_checksum_identity(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            first = root / "storage" / "artifacts" / "a" / "same.json"
+            second = root / "storage" / "artifacts" / "b" / "same.json"
+            first.parent.mkdir(parents=True, exist_ok=True)
+            second.parent.mkdir(parents=True, exist_ok=True)
+            payload = json.dumps({"contract_type": "example_payload"}, sort_keys=True)
+            first.write_text(payload, encoding="utf-8")
+            second.write_text(payload, encoding="utf-8")
+
+            index = build_artifact_index(root=root)
+
+            self.assertEqual(len({record.artifact_id for record in index.records}), 2)
+            self.assertTrue(all(record.artifact_id.startswith("art_idx_") for record in index.records))
+
+    def test_layer_nine_runtime_metadata_is_ttl_delete_allowed(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            artifact = root / "storage" / "artifacts" / "model_09_event_risk_governor" / "runtime_summary.json"
+            artifact.parent.mkdir(parents=True, exist_ok=True)
+            artifact.write_text(
+                json.dumps(
+                    {
+                        "contract_type": "model_09_event_risk_governor_runtime_summary",
+                        "model_layer": "layer_09_event_risk_governor",
+                    }
+                ),
+                encoding="utf-8",
+            )
+
+            index = build_artifact_index(root=root)
+
+            self.assertEqual(index.records[0].retention_class, "ttl_delete_allowed")
+            self.assertEqual(index.records[0].protected_reason_codes, ())
 
 
 if __name__ == "__main__":

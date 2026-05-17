@@ -9,7 +9,8 @@ A manifest explains what happened. It does not by itself authorize downstream co
 ## Contract Type
 
 - **Type name:** `run_manifest`
-- **Owning repository:** `trading-storage`
+- **Semantic owner:** `trading-manager`
+- **Physical persistence/layout owner:** `trading-storage`
 - **Registered through:** `trading-manager/scripts/registry/`
 - **Status:** Accepted template contract; production persistence still requires manager/storage implementation.
 

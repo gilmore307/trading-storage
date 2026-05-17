@@ -15,6 +15,7 @@ from pathlib import Path
 from typing import Any, Mapping, Sequence
 
 from trading_storage.artifact_index import ArtifactIndex, ArtifactIndexRecord, build_artifact_index, now_utc
+from trading_storage.io import write_text_atomic
 
 DEFAULT_PROTECTED_SET_OUTPUT = Path("storage/protected_set/protected_set.json")
 DEFAULT_PROTECTED_SET_SUMMARY_OUTPUT = Path("storage/protected_set/protected_set_summary.json")
@@ -270,10 +271,10 @@ def write_protected_set(protected_set: ProtectedSet, *, output_path: Path, summa
 
     output = output_path
     output.parent.mkdir(parents=True, exist_ok=True)
-    output.write_text(protected_set.to_json(), encoding="utf-8")
+    write_text_atomic(output, protected_set.to_json())
     if summary_path is not None:
         summary_path.parent.mkdir(parents=True, exist_ok=True)
-        summary_path.write_text(protected_set.summary_json(), encoding="utf-8")
+        write_text_atomic(summary_path, protected_set.summary_json())
 
 
 def _resolve_output_path(root: Path, path: Path) -> Path:

@@ -9,7 +9,8 @@ Artifacts are not readiness by themselves. A consumer may use an artifact only w
 ## Contract Type
 
 - **Type name:** `artifact_ref`
-- **Owning repository:** `trading-storage`
+- **Semantic owner:** `trading-storage` for immutable physical artifact-reference semantics; producing repositories own payload-specific meaning.
+- **Physical persistence/layout owner:** `trading-storage`
 - **Registered through:** `trading-manager/scripts/registry/`
 - **Status:** Accepted template contract; production instances still require manager/storage implementation.
 

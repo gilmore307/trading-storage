@@ -14,6 +14,7 @@ from pathlib import Path
 from typing import Any, Mapping, Sequence
 
 from trading_storage.artifact_index import ArtifactIndex, ArtifactIndexRecord, build_artifact_index, now_utc
+from trading_storage.io import write_text_atomic
 from trading_storage.protected_set import (
     ProtectedSet,
     build_protected_set,
@@ -167,8 +168,12 @@ def _first_matching_rule(record: ArtifactIndexRecord, rules: Sequence[LifecycleP
     return None
 
 
-def _protected_by_id(protected_set: ProtectedSet) -> dict[str, Any]:
-    return {record.artifact_id: record for record in protected_set.records}
+def _artifact_identity_key(record: Any) -> tuple[str, str, str]:
+    return (str(record.artifact_id), str(record.artifact_uri), str(record.physical_path))
+
+
+def _protected_by_identity(protected_set: ProtectedSet) -> dict[tuple[str, str, str], Any]:
+    return {_artifact_identity_key(record): record for record in protected_set.records}
 
 
 def plan_storage_lifecycle(
@@ -182,12 +187,12 @@ def plan_storage_lifecycle(
 
     records = index.records if isinstance(index, ArtifactIndex) else tuple(index)
     protected = protected_set or build_protected_set(index)
-    protected_lookup = _protected_by_id(protected)
+    protected_lookup = _protected_by_identity(protected)
     generated = generated_at or now_utc()
     plan_records: list[LifecyclePlanRecord] = []
 
     for record in records:
-        protected_record = protected_lookup.get(record.artifact_id)
+        protected_record = protected_lookup.get(_artifact_identity_key(record))
         protected_reason_codes = tuple(protected_record.protected_reason_codes) if protected_record else tuple(record.protected_reason_codes)
         is_protected = bool(protected_reason_codes)
         rule = _first_matching_rule(record, rules)
@@ -290,10 +295,10 @@ def write_storage_lifecycle_plan(plan: StorageLifecyclePlan, *, output_path: Pat
     """Write dry-run lifecycle plan JSON and optional summary JSON."""
 
     output_path.parent.mkdir(parents=True, exist_ok=True)
-    output_path.write_text(plan.to_json(), encoding="utf-8")
+    write_text_atomic(output_path, plan.to_json())
     if summary_path is not None:
         summary_path.parent.mkdir(parents=True, exist_ok=True)
-        summary_path.write_text(plan.summary_json(), encoding="utf-8")
+        write_text_atomic(summary_path, plan.summary_json())
 
 
 def _resolve_path(root: Path, path: Path) -> Path:

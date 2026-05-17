@@ -9,7 +9,8 @@ Requests are intent records. They do not prove a run completed; completion is re
 ## Contract Type
 
 - **Type name:** `manager_request`
-- **Owning repository:** `trading-storage`
+- **Semantic owner:** `trading-manager`
+- **Physical persistence/layout owner:** `trading-storage`
 - **Registered through:** `trading-manager/scripts/registry/`
 - **Status:** Accepted template contract; production queue/storage implementation still requires manager/storage work.
 

@@ -20,6 +20,7 @@ from pathlib import Path
 from typing import Any, Mapping
 
 from trading_storage.artifact_store import canonical_json_bytes, now_utc
+from trading_storage.io import append_text_locked
 
 DEFAULT_STORAGE_ROOT = Path("storage")
 DASHBOARD_ROOT = Path("dashboard")
@@ -307,9 +308,7 @@ def materialize_dashboard_read_model(
         "status": payload["status"],
         "severity": payload.get("severity"),
     }
-    index_path.parent.mkdir(parents=True, exist_ok=True)
-    with index_path.open("a", encoding="utf-8") as handle:
-        handle.write(json.dumps(index_row, sort_keys=True) + "\n")
+    append_text_locked(index_path, json.dumps(index_row, sort_keys=True) + "\n")
 
     return MaterializedDashboardReadModel(
         contract_type=contract_type,

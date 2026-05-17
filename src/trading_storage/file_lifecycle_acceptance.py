@@ -14,6 +14,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Sequence
 
+from trading_storage.io import write_text_atomic
 from trading_storage.artifact_index import (
     DEFAULT_INDEX_OUTPUT,
     DEFAULT_INDEX_ROOTS,
@@ -195,6 +196,7 @@ def build_file_lifecycle_acceptance(
     apply_compression: bool = False,
     overwrite_compression: bool = False,
     apply_dashboard_prune: bool = False,
+    dashboard_prune_approval_ref: str | None = None,
     dashboard_max_age_hours: int = DEFAULT_MAX_AGE_HOURS,
     dashboard_keep_latest_per_contract: int = DEFAULT_KEEP_LATEST_PER_CONTRACT,
     generated_at: str | None = None,
@@ -223,6 +225,7 @@ def build_file_lifecycle_acceptance(
         keep_latest_per_contract=dashboard_keep_latest_per_contract,
         apply=apply_dashboard_prune,
         generated_at=generated,
+        approval_ref=dashboard_prune_approval_ref,
     )
 
     write_artifact_index(index, index_path=_resolve(root, DEFAULT_INDEX_OUTPUT), summary_path=_resolve(root, DEFAULT_INDEX_SUMMARY_OUTPUT))
@@ -270,8 +273,8 @@ def build_file_lifecycle_acceptance(
         ),
     )
     _resolve(root, DEFAULT_FILE_LIFECYCLE_ACCEPTANCE_OUTPUT).parent.mkdir(parents=True, exist_ok=True)
-    _resolve(root, DEFAULT_FILE_LIFECYCLE_ACCEPTANCE_OUTPUT).write_text(acceptance.to_json(), encoding="utf-8")
-    _resolve(root, DEFAULT_FILE_LIFECYCLE_ACCEPTANCE_SUMMARY_OUTPUT).write_text(acceptance.summary_json(), encoding="utf-8")
+    write_text_atomic(_resolve(root, DEFAULT_FILE_LIFECYCLE_ACCEPTANCE_OUTPUT), acceptance.to_json())
+    write_text_atomic(_resolve(root, DEFAULT_FILE_LIFECYCLE_ACCEPTANCE_SUMMARY_OUTPUT), acceptance.summary_json())
     return acceptance
 
 
@@ -282,6 +285,7 @@ def _parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--apply-compression", action="store_true", help="Write zstd compressed copies for eligible unprotected compress_candidate rows. Originals are preserved.")
     parser.add_argument("--overwrite-compression", action="store_true", help="Allow replacing existing compressed copies for eligible compression rows.")
     parser.add_argument("--apply-dashboard-prune", action="store_true", help="Delete eligible dashboard snapshot metadata. Use only after event regeneration review and explicit approval.")
+    parser.add_argument("--dashboard-prune-approval-ref", help="Required reviewed approval/reference when --apply-dashboard-prune is used.")
     parser.add_argument("--dashboard-max-age-hours", type=int, default=DEFAULT_MAX_AGE_HOURS)
     parser.add_argument("--dashboard-keep-latest-per-contract", type=int, default=DEFAULT_KEEP_LATEST_PER_CONTRACT)
     parser.add_argument("--json", action="store_true", help="Print full acceptance JSON instead of summary JSON.")
@@ -296,6 +300,7 @@ def main(argv: Sequence[str] | None = None) -> int:
         apply_compression=args.apply_compression,
         overwrite_compression=args.overwrite_compression,
         apply_dashboard_prune=args.apply_dashboard_prune,
+        dashboard_prune_approval_ref=args.dashboard_prune_approval_ref,
         dashboard_max_age_hours=args.dashboard_max_age_hours,
         dashboard_keep_latest_per_contract=args.dashboard_keep_latest_per_contract,
     )

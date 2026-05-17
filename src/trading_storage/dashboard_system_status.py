@@ -31,6 +31,8 @@ HISTORICAL_TASK_PROGRESS_CONTRACT = "historical_task_progress_summary"
 DEFAULT_STALE_AFTER_SECONDS = 120
 DEFAULT_TRADING_MANAGER_ROOT = Path(os.environ.get("TRADING_MANAGER_ROOT", "/root/projects/trading-manager"))
 DEFAULT_SCHEDULER_ENV_PATH = Path("/etc/default/trading-manager-historical-scheduler")
+DEFAULT_STORAGE_REFRESH_ENV_PATH = Path(os.environ.get("TRADING_STORAGE_REFRESH_ENV_PATH", "/etc/default/trading-storage-dashboard-read-model-refresh"))
+DEFAULT_REFRESH_CADENCE_SECONDS = 5
 DEFAULT_PROVIDER_STAGE_NEXT_LIMIT = 12
 DEFAULT_PROVIDER_STAGE_MAX_WORKERS = 4
 DEFAULT_MONTH_INGEST_WORKERS = 3
@@ -324,7 +326,15 @@ def _historical_scheduler_parallelism(host: Mapping[str, Any], *, trading_manage
     }
 
 
+def _storage_refresh_cadence_seconds() -> int:
+    values = _read_env_file(DEFAULT_STORAGE_REFRESH_ENV_PATH)
+    if os.environ.get("TRADING_STORAGE_REFRESH_CADENCE_SECONDS"):
+        values = values | {"TRADING_STORAGE_REFRESH_CADENCE_SECONDS": os.environ["TRADING_STORAGE_REFRESH_CADENCE_SECONDS"]}
+    return _env_int(values, "TRADING_STORAGE_REFRESH_CADENCE_SECONDS", DEFAULT_REFRESH_CADENCE_SECONDS)
+
+
 def _host_resources(storage_root: Path) -> dict[str, Any]:
+    storage_root.mkdir(parents=True, exist_ok=True)
     stat = shutil.disk_usage(storage_root)
     load_average = os.getloadavg() if hasattr(os, "getloadavg") else (0.0, 0.0, 0.0)
     live_usage = _sample_live_resource_usage()
@@ -597,7 +607,7 @@ def build_current_system_status_summary(*, storage_root: Path, generated_at_utc:
             "source_outputs": source_outputs,
             "refresh": {
                 "timer_unit": "trading-storage-dashboard-read-model-refresh.timer",
-                "cadence_seconds": 30,
+                "cadence_seconds": _storage_refresh_cadence_seconds(),
                 "status": next((service["active_state"] for service in services if service["unit"].endswith(".timer")), "unknown"),
             },
         },
@@ -627,6 +637,7 @@ def build_current_system_status_summary(*, storage_root: Path, generated_at_utc:
 
 
 def refresh_current_system_status_read_model(*, storage_root: Path = Path("storage")) -> dict[str, Any]:
+    storage_root.mkdir(parents=True, exist_ok=True)
     payload = build_current_system_status_summary(storage_root=storage_root)
     materialized = materialize_dashboard_read_model(payload, storage_root=storage_root, expected_contract_type=CURRENT_SYSTEM_STATUS_CONTRACT)
     return {
@@ -667,4 +678,5 @@ __all__ = [
     "build_current_system_status_summary",
     "refresh_current_system_status_read_model",
     "write_current_system_status_summary",
+    "_storage_refresh_cadence_seconds",
 ]

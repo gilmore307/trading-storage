@@ -16,6 +16,7 @@ from pathlib import Path
 from typing import Any, Mapping, Sequence
 
 from trading_storage.artifact_index import ArtifactIndex, ArtifactIndexRecord, build_artifact_index, now_utc
+from trading_storage.io import write_text_atomic
 from trading_storage.lifecycle_planner import (
     DEFAULT_POLICY_RULES,
     LifecyclePlanRecord,
@@ -479,10 +480,10 @@ def write_lifecycle_execution_scaffold(
     """Write scaffold JSON and optional summary JSON."""
 
     output_path.parent.mkdir(parents=True, exist_ok=True)
-    output_path.write_text(scaffold.to_json(), encoding="utf-8")
+    write_text_atomic(output_path, scaffold.to_json())
     if summary_path is not None:
         summary_path.parent.mkdir(parents=True, exist_ok=True)
-        summary_path.write_text(scaffold.summary_json(), encoding="utf-8")
+        write_text_atomic(summary_path, scaffold.summary_json())
 
 
 def _resolve_path(root: Path, path: Path) -> Path:

@@ -8,7 +8,7 @@ This acceptance covers the storage-owned surfaces needed by the current data/mod
 
 - repository boundary and docs spine;
 - reusable checked-in non-code assets under `main/`;
-- V1 handoff templates for `manager_request`, `run_manifest`, `artifact_ref`, and `ready_signal`;
+- V1 handoff templates for `manager_request`, `run_manifest`, `artifact_ref`, and `ready_signal`, with semantic ownership separated from physical persistence/layout ownership;
 - storage-owned completion receipt payload helper;
 - local ignored `storage/` development artifact boundary;
 - local retention/archive/cleanup helper and scheduling templates;
@@ -16,7 +16,7 @@ This acceptance covers the storage-owned surfaces needed by the current data/mod
 
 ## Accepted Storage-Owned Shape
 
-`trading-storage` owns persistence contracts and payload durability boundaries, not component semantics and not manager orchestration.
+`trading-storage` owns physical persistence contracts, storage URI policy, retention/archive/restore behavior, and payload durability boundaries. It does not own component semantics or manager orchestration. `trading-manager` owns semantic lifecycle/routing/readiness behavior for `manager_request`, `run_manifest`, and `ready_signal`; `artifact_ref` has the strongest storage-owned physical contract surface while remaining registered through the manager registry.
 
 The accepted current shape is:
 

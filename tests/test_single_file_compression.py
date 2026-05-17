@@ -132,6 +132,35 @@ class SingleFileCompressionTests(unittest.TestCase):
             self.assertEqual(payload["source_lifecycle_plan_generated_at"], "2026-05-16T00:00:00Z")
             self.assertEqual(summary["contract_type"], "storage_single_file_compression_summary_v1")
 
+    def test_compressed_output_paths_use_full_artifact_identity(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            first = root / "storage" / "artifacts" / "pit_source_data" / "a" / "same.csv"
+            second = root / "storage" / "artifacts" / "pit_source_data" / "b" / "same.csv"
+            first.parent.mkdir(parents=True, exist_ok=True)
+            second.parent.mkdir(parents=True, exist_ok=True)
+            first.write_text("a,b\n1,2\n", encoding="utf-8")
+            second.write_text("a,b\n1,2\n", encoding="utf-8")
+            index = build_artifact_index(root=root)
+            clear_records = tuple(
+                record.__class__(
+                    **{
+                        **record.to_dict(),
+                        "artifact_id": "same",
+                        "protected_reason_codes": (),
+                        "retention_class": "compress_and_retain",
+                    }
+                )
+                for record in index.records
+            )
+            plan = plan_storage_lifecycle(clear_records)
+
+            result = execute_single_file_compression(plan, root=root, apply=False)
+
+            compressed_paths = {manifest.compressed_path for manifest in result.manifests}
+            self.assertEqual(len(compressed_paths), 2)
+            self.assertTrue(all(path.endswith("same.csv.zst") for path in compressed_paths))
+
 
 if __name__ == "__main__":
     unittest.main()

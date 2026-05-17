@@ -16,6 +16,8 @@ from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from typing import Any, Sequence
 
+from trading_storage.io import write_text_atomic
+
 from trading_storage.artifact_index import now_utc
 
 DEFAULT_STORAGE_ROOT = Path("storage")
@@ -52,6 +54,7 @@ class DashboardSnapshotLifecyclePlan:
     keep_latest_per_contract: int
     apply: bool
     records: tuple[DashboardSnapshotLifecycleRecord, ...]
+    approval_ref: str | None = None
 
     @property
     def summary(self) -> dict[str, Any]:
@@ -74,6 +77,7 @@ class DashboardSnapshotLifecyclePlan:
             "max_age_hours": self.max_age_hours,
             "keep_latest_per_contract": self.keep_latest_per_contract,
             "apply": self.apply,
+            "approval_ref": self.approval_ref,
             "record_count": len(self.records),
             "action_counts": dict(sorted(action_counts.items())),
             "candidate_delete_bytes": candidate_bytes,
@@ -97,6 +101,7 @@ class DashboardSnapshotLifecyclePlan:
             "keep_latest_per_contract": self.keep_latest_per_contract,
             "apply": self.apply,
             "summary": self.summary,
+            "approval_ref": self.approval_ref,
             "records": [record.to_dict() for record in self.records],
         }
 
@@ -153,6 +158,7 @@ def build_dashboard_snapshot_lifecycle_plan(
     apply: bool = False,
     generated_at: str | None = None,
     now: datetime | None = None,
+    approval_ref: str | None = None,
 ) -> DashboardSnapshotLifecyclePlan:
     """Plan or apply bounded dashboard snapshot pruning."""
 
@@ -160,6 +166,8 @@ def build_dashboard_snapshot_lifecycle_plan(
         raise ValueError("max_age_hours must be >= 0")
     if keep_latest_per_contract < 1:
         raise ValueError("keep_latest_per_contract must be >= 1")
+    if apply and not (approval_ref or "").strip():
+        raise ValueError("approval_ref is required when applying dashboard snapshot pruning")
     storage_root = Path(storage_root).resolve()
     current_time = (now or datetime.now(timezone.utc)).astimezone(timezone.utc)
     cutoff = current_time - timedelta(hours=max_age_hours)
@@ -230,6 +238,7 @@ def build_dashboard_snapshot_lifecycle_plan(
         keep_latest_per_contract=keep_latest_per_contract,
         apply=apply,
         records=tuple(records),
+        approval_ref=approval_ref,
     )
 
 
@@ -242,11 +251,11 @@ def write_dashboard_snapshot_lifecycle_plan(
     root = Path(plan.storage_root)
     output = output_path if output_path.is_absolute() else root.parent / output_path if output_path.parts[:1] == ("storage",) else root / output_path
     output.parent.mkdir(parents=True, exist_ok=True)
-    output.write_text(plan.to_json(), encoding="utf-8")
+    write_text_atomic(output, plan.to_json())
     if summary_path is not None:
         summary = summary_path if summary_path.is_absolute() else root.parent / summary_path if summary_path.parts[:1] == ("storage",) else root / summary_path
         summary.parent.mkdir(parents=True, exist_ok=True)
-        summary.write_text(plan.summary_json(), encoding="utf-8")
+        write_text_atomic(summary, plan.summary_json())
 
 
 def _parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
@@ -255,6 +264,7 @@ def _parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--max-age-hours", type=int, default=DEFAULT_MAX_AGE_HOURS, help="Delete-candidate threshold for snapshots outside the hot keep window.")
     parser.add_argument("--keep-latest-per-contract", type=int, default=DEFAULT_KEEP_LATEST_PER_CONTRACT, help="Minimum recent snapshots to keep per contract.")
     parser.add_argument("--apply", action="store_true", help="Delete eligible dashboard snapshot files. Default is dry-run only.")
+    parser.add_argument("--approval-ref", help="Required reviewed approval/reference when --apply is used.")
     parser.add_argument("--write", action="store_true", help="Write plan/receipt JSON and summary files. Default prints summary only.")
     parser.add_argument("--output-path", default=str(DEFAULT_OUTPUT), help="Plan/receipt output path.")
     parser.add_argument("--summary-path", default=str(DEFAULT_SUMMARY_OUTPUT), help="Summary output path.")
@@ -269,6 +279,7 @@ def main(argv: Sequence[str] | None = None) -> int:
         max_age_hours=args.max_age_hours,
         keep_latest_per_contract=args.keep_latest_per_contract,
         apply=args.apply,
+        approval_ref=args.approval_ref,
     )
     if args.write:
         write_dashboard_snapshot_lifecycle_plan(plan, output_path=Path(args.output_path), summary_path=Path(args.summary_path))

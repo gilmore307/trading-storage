@@ -16,6 +16,8 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Iterable, Mapping, Sequence
 
+from trading_storage.io import write_text_atomic
+
 DEFAULT_INDEX_ROOTS = ("storage/artifacts",)
 DEFAULT_INDEX_OUTPUT = Path("storage/artifact_index/artifact_index.jsonl")
 DEFAULT_SUMMARY_OUTPUT = Path("storage/artifact_index/artifact_index_summary.json")
@@ -75,6 +77,7 @@ class ArtifactIndexRecord:
     read_mode: str
     schema_ref: str | None
     manifest_ref: str | None
+    schema_version: str | None = None
     lineage_refs: tuple[str, ...] = field(default_factory=tuple)
     dependency_refs: tuple[str, ...] = field(default_factory=tuple)
     reproducibility_class: str = "unknown"
@@ -173,14 +176,18 @@ def _read_mode(content_codec: str) -> str:
     return "restore_required"
 
 
-def _artifact_id(relative_path: Path, data: Mapping[str, Any] | None, checksum: str) -> str:
+def _explicit_artifact_id(data: Mapping[str, Any] | None) -> str | None:
     if data and data.get("artifact_id"):
         return str(data["artifact_id"])
-    if len(relative_path.parts) >= 4 and relative_path.parts[:2] == ("storage", "artifacts"):
-        return relative_path.stem
-    return "art_idx_" + hashlib.sha256(
-        (str(relative_path).replace("\\", "/") + "\0" + checksum).encode("utf-8")
-    ).hexdigest()[:24]
+    return None
+
+
+def _artifact_id(relative_path: Path, data: Mapping[str, Any] | None, checksum: str) -> str:
+    explicit = _explicit_artifact_id(data)
+    if explicit:
+        return explicit
+    normalized_path = str(relative_path).replace("\\", "/")
+    return "art_idx_" + hashlib.sha256((normalized_path + "\0" + checksum).encode("utf-8")).hexdigest()[:24]
 
 
 def _artifact_kind(relative_path: Path, data: Mapping[str, Any] | None) -> str:
@@ -235,11 +242,20 @@ def _producer_run_id(data: Mapping[str, Any] | None) -> str | None:
 def _schema_ref(data: Mapping[str, Any] | None) -> str | None:
     if not data:
         return None
-    for key in ("schema_ref", "schema_version", "contract_type"):
+    for key in ("schema_ref", "schema_uri"):
         value = data.get(key)
         if value is not None:
             return str(value)
+    contract_type = data.get("contract_type")
+    if contract_type:
+        return f"storage/dashboard/schemas/{contract_type}.schema.json"
     return None
+
+
+def _schema_version(data: Mapping[str, Any] | None) -> str | None:
+    if not data or data.get("schema_version") is None:
+        return None
+    return str(data["schema_version"])
 
 
 def _manifest_ref(data: Mapping[str, Any] | None) -> str | None:
@@ -322,9 +338,28 @@ def _retention_class(
         return "ttl_delete_allowed"
     if any(token in text for token in ("layer_01", "layer_02", "model_01", "model_02", "feature_01", "feature_02")):
         return "compress_and_retain"
-    if any(token in text for token in ("layer_03", "layer_04", "layer_05", "layer_06", "layer_07", "layer_08", "model_03", "model_04", "model_05", "model_06", "model_07", "model_08")) and any(
-        token in text for token in ("metadata", "summary", "diagnostic", "scratch", "intermediate", "runtime", "staging")
-    ):
+    if any(
+        token in text
+        for token in (
+            "layer_03",
+            "layer_04",
+            "layer_05",
+            "layer_06",
+            "layer_07",
+            "layer_08",
+            "layer_09",
+            "model_03",
+            "model_04",
+            "model_05",
+            "model_06",
+            "model_07",
+            "model_08",
+            "model_09",
+            "feature_09",
+            "source_09",
+            "event_risk_governor",
+        )
+    ) and any(token in text for token in ("metadata", "summary", "diagnostic", "scratch", "intermediate", "runtime", "staging")):
         return "ttl_delete_allowed"
     return "manual_review_required"
 
@@ -348,13 +383,23 @@ def build_artifact_index(
     root = root.resolve()
     scan_time = generated_at or now_utc()
     records: list[ArtifactIndexRecord] = []
+    explicit_artifact_paths: dict[str, Path] = {}
     for path in _iter_indexable_files(root, include_roots):
         relative = path.relative_to(root)
         data = _load_json_object(path)
         stat = path.stat()
         checksum = sha256_file(path)
         content_codec = _content_codec(path)
+        explicit_id = _explicit_artifact_id(data)
         artifact_id = _artifact_id(relative, data, checksum)
+        if explicit_id:
+            previous = explicit_artifact_paths.get(explicit_id)
+            if previous is not None:
+                raise ValueError(
+                    "duplicate explicit artifact_id "
+                    f"{explicit_id!r} for {previous.as_posix()} and {relative.as_posix()}"
+                )
+            explicit_artifact_paths[explicit_id] = relative
         artifact_kind = _artifact_kind(relative, data)
         producer_component = _producer_component(relative, data)
         retention_class = _retention_class(relative, data=data, artifact_kind=artifact_kind, producer_component=producer_component)
@@ -378,6 +423,7 @@ def build_artifact_index(
                 read_mode=_read_mode(content_codec),
                 schema_ref=_schema_ref(data),
                 manifest_ref=_manifest_ref(data),
+                schema_version=_schema_version(data),
                 lineage_refs=_lineage_refs(data),
                 dependency_refs=_dependency_refs(data),
                 retention_class=retention_class,
@@ -399,11 +445,11 @@ def write_artifact_index(index: ArtifactIndex, *, index_path: Path, summary_path
     root = Path(index.root)
     output = index_path if index_path.is_absolute() else root / index_path
     output.parent.mkdir(parents=True, exist_ok=True)
-    output.write_text(index.to_jsonl(), encoding="utf-8")
+    write_text_atomic(output, index.to_jsonl())
     if summary_path is not None:
         summary = summary_path if summary_path.is_absolute() else root / summary_path
         summary.parent.mkdir(parents=True, exist_ok=True)
-        summary.write_text(index.summary_json(), encoding="utf-8")
+        write_text_atomic(summary, index.summary_json())
 
 
 def _parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:

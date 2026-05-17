@@ -20,6 +20,7 @@ from pathlib import Path
 from typing import Any, Sequence
 
 from trading_storage.artifact_index import ArtifactIndex, ArtifactIndexRecord, build_artifact_index, now_utc, sha256_file
+from trading_storage.io import write_text_atomic
 from trading_storage.lifecycle_planner import (
     DEFAULT_POLICY_RULES,
     LifecyclePlanRecord,
@@ -196,8 +197,14 @@ def _stable_ref(prefix: str, *parts: object) -> str:
     return f"{prefix}_{digest}"
 
 
+def _artifact_identity_hash(record: LifecyclePlanRecord) -> str:
+    return hashlib.sha256(
+        "\0".join((record.artifact_id, record.artifact_uri, record.physical_path, record.checksum_sha256 or "")).encode("utf-8")
+    ).hexdigest()[:20]
+
+
 def _compressed_relative_path(record: LifecyclePlanRecord) -> Path:
-    return Path("storage") / "archive" / "compressed" / record.artifact_id / (Path(record.physical_path).name + ".zst")
+    return Path("storage") / "archive" / "compressed" / _artifact_identity_hash(record) / (Path(record.physical_path).name + ".zst")
 
 
 def _compressed_uri(record: LifecyclePlanRecord) -> str:
@@ -255,7 +262,7 @@ def _manifest_for_record(
     compressed_size_bytes: int | None,
     compressed_checksum_sha256: str | None,
 ) -> CompressionManifest:
-    manifest_ref = _stable_ref("compression_manifest", record.artifact_id, record.physical_path, record.rule_id)
+    manifest_ref = _stable_ref("compression_manifest", record.artifact_id, record.artifact_uri, record.physical_path, record.rule_id)
     compressed_relative = _compressed_relative_path(record)
     return CompressionManifest(
         contract_type="compression_manifest_v1",
@@ -300,7 +307,7 @@ def _receipt_for_record(
 ) -> CompressionReceipt:
     return CompressionReceipt(
         contract_type="compression_receipt_v1",
-        receipt_ref=_stable_ref("compression_receipt", manifest_ref or "no_manifest", record.artifact_id, status),
+        receipt_ref=_stable_ref("compression_receipt", manifest_ref or "no_manifest", record.artifact_id, record.artifact_uri, record.physical_path, status),
         manifest_ref=manifest_ref,
         artifact_id=record.artifact_id,
         policy_id=record.policy_id,
@@ -341,11 +348,11 @@ def _restore_receipt(
 ) -> RestoreVerificationReceipt:
     return RestoreVerificationReceipt(
         contract_type="restore_receipt_v1",
-        receipt_ref=_stable_ref("restore_receipt", manifest_ref, record.artifact_id, checksum_status),
+        receipt_ref=_stable_ref("restore_receipt", manifest_ref, record.artifact_id, record.artifact_uri, record.physical_path, checksum_status),
         source_manifest_ref=manifest_ref,
         source_artifact_id=record.artifact_id,
         restore_mode="verification_only",
-        restore_destination=f"storage/restore_smoke/compression/{record.artifact_id}",
+        restore_destination=f"storage/restore_smoke/compression/{_artifact_identity_hash(record)}",
         checksum_status=checksum_status,
         schema_check_status="not_applicable",
         row_count_check_status="not_applicable",
@@ -411,7 +418,7 @@ def execute_single_file_compression(
             skipped_records.append(_skip(record, "source_checksum_mismatch"))
             continue
 
-        manifest_ref = _stable_ref("compression_manifest", record.artifact_id, record.physical_path, record.rule_id)
+        manifest_ref = _stable_ref("compression_manifest", record.artifact_id, record.artifact_uri, record.physical_path, record.rule_id)
         if not apply:
             manifest = _manifest_for_record(
                 record,
@@ -529,10 +536,10 @@ def write_single_file_compression_result(
     """Write compression result JSON and optional summary JSON."""
 
     output_path.parent.mkdir(parents=True, exist_ok=True)
-    output_path.write_text(result.to_json(), encoding="utf-8")
+    write_text_atomic(output_path, result.to_json())
     if summary_path is not None:
         summary_path.parent.mkdir(parents=True, exist_ok=True)
-        summary_path.write_text(result.summary_json(), encoding="utf-8")
+        write_text_atomic(summary_path, result.summary_json())
 
 
 def _resolve_path(root: Path, path: Path) -> Path:

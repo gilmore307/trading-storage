@@ -6,9 +6,36 @@ from __future__ import annotations
 import argparse
 import json
 from pathlib import Path
+from typing import Any, Callable
 
-from trading_storage.dashboard_refresh import DEFAULT_TRADING_MANAGER_ROOT, refresh_historical_task_progress_read_model
-from trading_storage.dashboard_system_status import refresh_current_system_status_read_model
+from trading_storage.artifact_store import now_utc
+from trading_storage.dashboard_refresh import DEFAULT_TRADING_MANAGER_ROOT, HISTORICAL_TASK_PROGRESS_CONTRACT, refresh_historical_task_progress_read_model
+from trading_storage.dashboard_system_status import CURRENT_SYSTEM_STATUS_CONTRACT, refresh_current_system_status_read_model
+
+
+def _failure_receipt(*, contract_type: str, exc: BaseException) -> dict[str, Any]:
+    return {
+        "contract_type": "dashboard_read_model_refresh_receipt",
+        "generated_at_utc": now_utc(),
+        "refreshed_contract_type": contract_type,
+        "status": "failed",
+        "failure": {"error_type": exc.__class__.__name__, "message": str(exc)},
+        "side_effects": {
+            "provider_calls": False,
+            "model_activation": False,
+            "broker_execution": False,
+            "account_mutation": False,
+            "storage_dashboard_write": False,
+        },
+    }
+
+
+def _run_one(contract_type: str, refresh: Callable[[], dict[str, Any]]) -> dict[str, Any]:
+    try:
+        receipt = refresh()
+    except Exception as exc:  # noqa: BLE001 - batch receipts must degrade instead of tracebacking
+        return _failure_receipt(contract_type=contract_type, exc=exc)
+    return {"status": "succeeded", **receipt}
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -16,15 +43,29 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--storage-root", type=Path, default=Path("storage"))
     parser.add_argument("--trading-manager-root", type=Path, default=DEFAULT_TRADING_MANAGER_ROOT)
     args = parser.parse_args(argv)
+    args.storage_root.mkdir(parents=True, exist_ok=True)
     results = [
-        refresh_current_system_status_read_model(storage_root=args.storage_root),
-        refresh_historical_task_progress_read_model(
-            trading_manager_root=args.trading_manager_root,
-            storage_root=args.storage_root,
-        ).receipt,
+        _run_one(
+            CURRENT_SYSTEM_STATUS_CONTRACT,
+            lambda: refresh_current_system_status_read_model(storage_root=args.storage_root),
+        ),
+        _run_one(
+            HISTORICAL_TASK_PROGRESS_CONTRACT,
+            lambda: refresh_historical_task_progress_read_model(
+                trading_manager_root=args.trading_manager_root,
+                storage_root=args.storage_root,
+            ).receipt,
+        ),
     ]
-    print(json.dumps({"contract_type": "dashboard_read_model_refresh_batch_receipt", "results": results}, indent=2, sort_keys=True))
-    return 0
+    status = "succeeded" if all(row.get("status") == "succeeded" for row in results) else "degraded"
+    print(
+        json.dumps(
+            {"contract_type": "dashboard_read_model_refresh_batch_receipt", "status": status, "results": results},
+            indent=2,
+            sort_keys=True,
+        )
+    )
+    return 0 if any(row.get("status") == "succeeded" for row in results) else 1
 
 
 if __name__ == "__main__":

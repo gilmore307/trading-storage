@@ -22,7 +22,7 @@ from .dashboard_read_models import MaterializedDashboardReadModel, materialize_d
 
 HISTORICAL_TASK_PROGRESS_CONTRACT = "historical_task_progress_summary"
 REFRESH_RECEIPT_CONTRACT = "dashboard_read_model_refresh_receipt"
-DEFAULT_TRADING_MANAGER_ROOT = Path("/root/projects/trading-manager")
+DEFAULT_TRADING_MANAGER_ROOT = Path(os.environ.get("TRADING_MANAGER_ROOT", "/root/projects/trading-manager"))
 DEFAULT_PRODUCER_TIMEOUT_SECONDS = 30.0
 
 

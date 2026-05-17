@@ -2,7 +2,13 @@
 
 This directory stores the accepted V1 template contracts for cross-repository trading handoffs.
 
-Templates live here because `trading-storage` owns durable artifact/storage semantics. `trading-manager` registers stable type names and orchestrates when these contracts are emitted or consumed.
+Templates live here because `trading-storage` owns durable physical persistence/layout support for cross-repository handoffs. `trading-manager` owns the semantic lifecycle for request, run, artifact, and ready-signal control-plane records; it also registers stable type names and orchestrates when these contracts are emitted or consumed.
+
+Ownership convention:
+
+- `trading-manager`: semantic owner for `manager_request`, `run_manifest`, and `ready_signal` lifecycle/routing/readiness behavior.
+- `trading-storage`: physical persistence/layout owner for durable contract payloads, storage URI policy, retention, archive, and restore behavior.
+- `artifact_ref`: storage has the strongest physical-contract ownership, while stable names and control-plane rows remain registered through the manager registry.
 
 Current contracts:
 
