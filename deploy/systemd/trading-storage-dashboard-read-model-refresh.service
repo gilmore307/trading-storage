@@ -1,6 +1,6 @@
 [Unit]
 Description=Refresh trading dashboard read-model summaries
-Documentation=/root/projects/trading-storage/docs/41_dashboard_summary_layout.md
+Documentation=file:/root/projects/trading-storage/docs/41_dashboard_summary_layout.md
 After=network-online.target
 Wants=network-online.target
 
