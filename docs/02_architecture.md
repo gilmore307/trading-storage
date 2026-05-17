@@ -1,4 +1,13 @@
-# Storage Lifecycle
+# Architecture
+
+## Module Map
+
+| Docs band | Implementation surface | Purpose |
+|---|---|---|
+| `10_*` | layer-specific storage docs | Storage boundaries for model/data layer artifacts. |
+| `20_*` | `scripts/lifecycle/` | Storage lifecycle policy and lifecycle receipts. |
+| `30_*` | `scripts/artifacts/`, storage artifact layouts | Artifact index, protected set, compression, and archive rules. |
+| `40_*` | `scripts/dashboard/` | Dashboard read models and summary layouts. |
 
 ## Purpose
 

@@ -1,4 +1,4 @@
-# Decision
+# Decisions
 
 
 ## D001 - Storage owns persistence policy, not artifact semantics
@@ -256,7 +256,7 @@ Status: Accepted
 
 ### Decision
 
-Close the initial storage-contract-and-first-helper phase. `docs/05_storage_acceptance.md` was the authoritative closeout receipt for that slice; D013 extends the closeout with local lifecycle maintenance.
+Close the initial storage-contract-and-first-helper phase. `docs/03_contracts.md` was the authoritative closeout receipt for that slice; D013 extends the closeout with local lifecycle maintenance.
 
 At that point, no active storage-phase tasks remained. Future production storage work was deferred until a concrete manager/component consumer required it: production object-store backend policy, durable SQL partitioning, development-to-durable promotion automation, storage-resident lifecycle mutation, or high-volume artifact retention/backup/restore mechanics.
 
@@ -277,7 +277,7 @@ The repository had clean Git boundaries, but local runtime files still relied on
 
 ### Decision
 
-Accept `docs/04_storage_lifecycle.md` as the local lifecycle contract and add the first storage-owned lifecycle helper:
+Accept `docs/02_architecture.md` as the local lifecycle contract and add the first storage-owned lifecycle helper:
 
 - `src/trading_storage/lifecycle.py`
 - `scripts/lifecycle/maintain_local_storage.py`
@@ -340,8 +340,8 @@ Semantic ownership stays with the upstream domain owner: `trading-manager` owns 
 ### Consequences
 
 - Dashboard reads storage-hosted summaries instead of raw internal component tables.
-- `docs/11_dashboard_read_models.md` owns the storage-side design boundary.
-- `docs/12_dashboard_summary_layout.md` defines the first accepted file/object path layout and validation boundary.
+- `docs/40_dashboard_read_models.md` owns the storage-side design boundary.
+- `docs/41_dashboard_summary_layout.md` defines the first accepted file/object path layout and validation boundary.
 - Shared summary contract names must be registered through `trading-manager` before implementation depends on them across repositories.
 
 
@@ -405,7 +405,7 @@ Dashboard read-model contracts are now accepted as storage-hosted summaries. The
 
 ### Decision
 
-Accept `docs/12_dashboard_summary_layout.md` as the first physical layout and validation-boundary contract for dashboard summaries. Dashboard summaries live under:
+Accept `docs/41_dashboard_summary_layout.md` as the first physical layout and validation-boundary contract for dashboard summaries. Dashboard summaries live under:
 
 ```text
 storage/dashboard/read_models/<contract_type>/latest.json

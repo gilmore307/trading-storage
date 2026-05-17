@@ -4,7 +4,7 @@
 
 Templates should remain reusable across repositories unless explicitly labeled as component-specific.
 
-See `trading-manager/docs/13_templates.md` for the docs-level template operating guide and registry-routing rules.
+See `trading-manager/docs/11_templates.md` for the docs-level template operating guide and registry-routing rules.
 
 ## Template Sets
 

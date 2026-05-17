@@ -1,6 +1,6 @@
 [Unit]
 Description=Apply trading-storage local retention policy
-Documentation=file:/root/projects/trading-storage/docs/04_storage_lifecycle.md
+Documentation=file:/root/projects/trading-storage/docs/02_architecture.md
 
 [Service]
 Type=oneshot

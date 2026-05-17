@@ -44,9 +44,9 @@ The shared Python environment is anchored by `trading-manager` at:
 
 Current system-level dependencies:
 
-- `trading-manager/docs/11_helpers.md` for shared helper policy;
-- `trading-manager/docs/12_registry.md` for registry operating rules;
-- `trading-manager/docs/13_templates.md` for reusable template operating rules;
+- `trading-manager/docs/30_helpers.md` for shared helper policy;
+- `trading-manager/docs/10_registry.md` for registry operating rules;
+- `trading-manager/docs/11_templates.md` for reusable template operating rules;
 - `trading-storage/main/templates/` for reusable drafting surfaces;
 - `trading-manager/requirements.txt` for reviewed shared Python dependencies;
 - related component repositories through accepted contracts, not internal implementation details.
@@ -62,5 +62,5 @@ This includes shared fields, artifact types, manifest types, ready-signal types,
 - Do not store generated artifacts, logs, notebooks, credentials, or secrets in Git.
 - Keep component-local implementation inside this repository's boundary.
 - Use manifests, ready signals, artifact references, and requests for cross-repository handoffs once contracts are accepted.
-- Use `docs/04_storage_lifecycle.md` for local cleanup/retention behavior; do not let ignored local files become the system of record.
+- Use `docs/02_architecture.md` for local cleanup/retention behavior; do not let ignored local files become the system of record.
 - Do not depend on another component's internal implementation details.
