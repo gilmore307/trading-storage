@@ -6,13 +6,13 @@ import tempfile
 import unittest
 from pathlib import Path
 
-from trading_storage.file_lifecycle_closeout import build_file_lifecycle_closeout
+from trading_storage.file_lifecycle_acceptance import build_file_lifecycle_acceptance
 from trading_storage.protected_set import build_protected_set
 from trading_storage.artifact_index import build_artifact_index
 
 
-class FileLifecycleCloseoutTests(unittest.TestCase):
-    def test_closeout_writes_evidence_and_compresses_only_copies(self) -> None:
+class FileLifecycleAcceptanceTests(unittest.TestCase):
+    def test_acceptance_writes_evidence_and_compresses_only_copies(self) -> None:
         with tempfile.TemporaryDirectory() as raw_tmp:
             root = Path(raw_tmp)
             source_dir = root / "storage" / "artifacts" / "layer_01_market_regime"
@@ -23,14 +23,14 @@ class FileLifecycleCloseoutTests(unittest.TestCase):
             snapshot_dir.mkdir(parents=True)
             (snapshot_dir / "20260501T000000Z.json").write_text('{"contract_type":"current_status"}\n', encoding="utf-8")
 
-            closeout = build_file_lifecycle_closeout(
+            acceptance = build_file_lifecycle_acceptance(
                 root=root,
                 apply_compression=True,
                 generated_at="2026-05-16T10:00:00Z",
             )
-            summary = closeout.summary
+            summary = acceptance.summary
 
-            self.assertEqual(summary["contract_type"], "storage_file_lifecycle_closeout_summary_v1")
+            self.assertEqual(summary["contract_type"], "storage_file_lifecycle_acceptance_summary_v1")
             self.assertEqual(summary["artifact_record_count"], 1)
             self.assertEqual(summary["lifecycle_action_counts"], {"compress_candidate": 1})
             self.assertEqual(summary["compression_status_counts"], {"succeeded": 1})
@@ -43,11 +43,11 @@ class FileLifecycleCloseoutTests(unittest.TestCase):
             self.assertTrue(source.exists())
             compressed = list((root / "storage" / "archive" / "compressed").rglob("*.zst"))
             self.assertEqual(len(compressed), 1)
-            self.assertTrue((root / "storage" / "lifecycle_execution" / "file_lifecycle_closeout_summary.json").exists())
-            saved = json.loads((root / "storage" / "lifecycle_execution" / "file_lifecycle_closeout_summary.json").read_text(encoding="utf-8"))
+            self.assertTrue((root / "storage" / "lifecycle_execution" / "file_lifecycle_acceptance_summary.json").exists())
+            saved = json.loads((root / "storage" / "lifecycle_execution" / "file_lifecycle_acceptance_summary.json").read_text(encoding="utf-8"))
             self.assertEqual(saved["compression_status_counts"], {"succeeded": 1})
 
-    def test_closeout_resolves_dashboard_outputs_under_explicit_root(self) -> None:
+    def test_acceptance_resolves_dashboard_outputs_under_explicit_root(self) -> None:
         with tempfile.TemporaryDirectory() as raw_root, tempfile.TemporaryDirectory() as raw_cwd:
             root = Path(raw_root)
             cwd = Path(raw_cwd)
@@ -58,7 +58,7 @@ class FileLifecycleCloseoutTests(unittest.TestCase):
             previous_cwd = Path.cwd()
             try:
                 os.chdir(cwd)
-                build_file_lifecycle_closeout(root=root, generated_at="2026-05-16T10:00:00Z")
+                build_file_lifecycle_acceptance(root=root, generated_at="2026-05-16T10:00:00Z")
             finally:
                 os.chdir(previous_cwd)
 

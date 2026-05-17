@@ -256,14 +256,14 @@ Status: Accepted
 
 ### Decision
 
-Close the initial storage-contract-and-first-helper phase. `docs/03_contracts.md` was the authoritative closeout receipt for that slice; D013 extends the closeout with local lifecycle maintenance.
+Close the initial storage-contract-and-first-helper phase. `docs/03_contracts.md` was the authoritative acceptance receipt for that slice; D013 extends the acceptance with local lifecycle maintenance.
 
 At that point, no active storage-phase tasks remained. Future production storage work was deferred until a concrete manager/component consumer required it: production object-store backend policy, durable SQL partitioning, development-to-durable promotion automation, storage-resident lifecycle mutation, or high-volume artifact retention/backup/restore mechanics.
 
 ### Consequences
 
 - `trading-storage` remains the persistence contract and payload-durability owner.
-- This closeout does not enable provider calls, manager dispatch, model activation, broker execution, production object-store infrastructure, or universal SQL partitioning.
+- This acceptance does not enable provider calls, manager dispatch, model activation, broker execution, production object-store infrastructure, or universal SQL partitioning.
 - New storage implementation should start from the accepted V1 handoff contracts and a specific consumer acceptance gate.
 
 ## D013 - Local storage lifecycle is conservative and reviewable

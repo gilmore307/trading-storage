@@ -1,6 +1,6 @@
-"""One-pass safe file lifecycle closeout for storage-owned filesystem artifacts.
+"""One-pass safe file lifecycle acceptance for storage-owned filesystem artifacts.
 
-The closeout chains the current reviewed file lifecycle helpers:
+The acceptance chains the current reviewed file lifecycle helpers:
 artifact index -> protected set -> lifecycle plan -> quarantine/recheck evidence ->
 execution scaffold -> optional compressed-copy execution -> dashboard snapshot prune
 plan. It deliberately does not delete originals, move quarantine files, mutate SQL,
@@ -62,12 +62,12 @@ from trading_storage.single_file_compression import (
     write_single_file_compression_result,
 )
 
-DEFAULT_FILE_LIFECYCLE_CLOSEOUT_OUTPUT = Path("storage/lifecycle_execution/file_lifecycle_closeout.json")
-DEFAULT_FILE_LIFECYCLE_CLOSEOUT_SUMMARY_OUTPUT = Path("storage/lifecycle_execution/file_lifecycle_closeout_summary.json")
+DEFAULT_FILE_LIFECYCLE_ACCEPTANCE_OUTPUT = Path("storage/lifecycle_execution/file_lifecycle_acceptance.json")
+DEFAULT_FILE_LIFECYCLE_ACCEPTANCE_SUMMARY_OUTPUT = Path("storage/lifecycle_execution/file_lifecycle_acceptance_summary.json")
 
 
 @dataclass(frozen=True)
-class FileLifecycleCloseout:
+class FileLifecycleAcceptance:
     """Summary envelope for a complete safe file-lifecycle pass."""
 
     contract_type: str
@@ -128,7 +128,7 @@ class FileLifecycleCloseout:
     @property
     def summary(self) -> dict[str, Any]:
         return {
-            "contract_type": "storage_file_lifecycle_closeout_summary_v1",
+            "contract_type": "storage_file_lifecycle_acceptance_summary_v1",
             "generated_at": self.generated_at,
             "root": self.root,
             "include_roots": list(self.include_roots),
@@ -182,13 +182,13 @@ def _output_map(root: Path) -> dict[str, str]:
         "single_file_compression_summary": DEFAULT_SINGLE_FILE_COMPRESSION_SUMMARY_OUTPUT,
         "dashboard_snapshot_prune": DEFAULT_DASHBOARD_PRUNE_OUTPUT,
         "dashboard_snapshot_prune_summary": DEFAULT_DASHBOARD_PRUNE_SUMMARY_OUTPUT,
-        "file_lifecycle_closeout": DEFAULT_FILE_LIFECYCLE_CLOSEOUT_OUTPUT,
-        "file_lifecycle_closeout_summary": DEFAULT_FILE_LIFECYCLE_CLOSEOUT_SUMMARY_OUTPUT,
+        "file_lifecycle_acceptance": DEFAULT_FILE_LIFECYCLE_ACCEPTANCE_OUTPUT,
+        "file_lifecycle_acceptance_summary": DEFAULT_FILE_LIFECYCLE_ACCEPTANCE_SUMMARY_OUTPUT,
     }
     return {key: str(_resolve(root, value)) for key, value in paths.items()}
 
 
-def build_file_lifecycle_closeout(
+def build_file_lifecycle_acceptance(
     *,
     root: Path = Path("."),
     include_roots: Sequence[str] = DEFAULT_INDEX_ROOTS,
@@ -198,7 +198,7 @@ def build_file_lifecycle_closeout(
     dashboard_max_age_hours: int = DEFAULT_MAX_AGE_HOURS,
     dashboard_keep_latest_per_contract: int = DEFAULT_KEEP_LATEST_PER_CONTRACT,
     generated_at: str | None = None,
-) -> FileLifecycleCloseout:
+) -> FileLifecycleAcceptance:
     """Run the complete safe file-lifecycle pass and write all evidence outputs."""
 
     root = root.resolve()
@@ -239,8 +239,8 @@ def build_file_lifecycle_closeout(
 
     compressed_copy_mutation = bool(compression.summary.get("mutation_performed"))
     dashboard_delete_mutation = bool(dashboard_prune.summary.get("mutation_performed"))
-    closeout = FileLifecycleCloseout(
-        contract_type="storage_file_lifecycle_closeout_v1",
+    acceptance = FileLifecycleAcceptance(
+        contract_type="storage_file_lifecycle_acceptance_v1",
         generated_at=generated,
         root=str(root),
         include_roots=include_roots,
@@ -266,17 +266,17 @@ def build_file_lifecycle_closeout(
         account_mutation_performed=False,
         storage_cleanup_hold_reason=(
             "Dashboard/model-run deletion remains dry-run-only until event-risk-governor regeneration and downstream review close; "
-            "this closeout may write compressed copies for approved compress_candidate files only."
+            "this acceptance may write compressed copies for approved compress_candidate files only."
         ),
     )
-    _resolve(root, DEFAULT_FILE_LIFECYCLE_CLOSEOUT_OUTPUT).parent.mkdir(parents=True, exist_ok=True)
-    _resolve(root, DEFAULT_FILE_LIFECYCLE_CLOSEOUT_OUTPUT).write_text(closeout.to_json(), encoding="utf-8")
-    _resolve(root, DEFAULT_FILE_LIFECYCLE_CLOSEOUT_SUMMARY_OUTPUT).write_text(closeout.summary_json(), encoding="utf-8")
-    return closeout
+    _resolve(root, DEFAULT_FILE_LIFECYCLE_ACCEPTANCE_OUTPUT).parent.mkdir(parents=True, exist_ok=True)
+    _resolve(root, DEFAULT_FILE_LIFECYCLE_ACCEPTANCE_OUTPUT).write_text(acceptance.to_json(), encoding="utf-8")
+    _resolve(root, DEFAULT_FILE_LIFECYCLE_ACCEPTANCE_SUMMARY_OUTPUT).write_text(acceptance.summary_json(), encoding="utf-8")
+    return acceptance
 
 
 def _parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
-    parser = argparse.ArgumentParser(description="Run the complete safe storage file-lifecycle closeout pass.")
+    parser = argparse.ArgumentParser(description="Run the complete safe storage file-lifecycle acceptance pass.")
     parser.add_argument("--root", default=".", help="Repository/root directory for relative inputs and outputs.")
     parser.add_argument("--include-root", action="append", dest="include_roots", help="Relative root/file to include in the durable artifact index. Defaults to storage/artifacts.")
     parser.add_argument("--apply-compression", action="store_true", help="Write zstd compressed copies for eligible unprotected compress_candidate rows. Originals are preserved.")
@@ -284,13 +284,13 @@ def _parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--apply-dashboard-prune", action="store_true", help="Delete eligible dashboard snapshot metadata. Use only after event regeneration review and explicit approval.")
     parser.add_argument("--dashboard-max-age-hours", type=int, default=DEFAULT_MAX_AGE_HOURS)
     parser.add_argument("--dashboard-keep-latest-per-contract", type=int, default=DEFAULT_KEEP_LATEST_PER_CONTRACT)
-    parser.add_argument("--json", action="store_true", help="Print full closeout JSON instead of summary JSON.")
+    parser.add_argument("--json", action="store_true", help="Print full acceptance JSON instead of summary JSON.")
     return parser.parse_args(argv)
 
 
 def main(argv: Sequence[str] | None = None) -> int:
     args = _parse_args(argv)
-    closeout = build_file_lifecycle_closeout(
+    acceptance = build_file_lifecycle_acceptance(
         root=Path(args.root),
         include_roots=tuple(args.include_roots or DEFAULT_INDEX_ROOTS),
         apply_compression=args.apply_compression,
@@ -299,13 +299,13 @@ def main(argv: Sequence[str] | None = None) -> int:
         dashboard_max_age_hours=args.dashboard_max_age_hours,
         dashboard_keep_latest_per_contract=args.dashboard_keep_latest_per_contract,
     )
-    print(closeout.to_json() if args.json else closeout.summary_json(), end="")
+    print(acceptance.to_json() if args.json else acceptance.summary_json(), end="")
     return 0
 
 
 __all__ = [
-    "FileLifecycleCloseout",
-    "build_file_lifecycle_closeout",
+    "FileLifecycleAcceptance",
+    "build_file_lifecycle_acceptance",
 ]
 
 

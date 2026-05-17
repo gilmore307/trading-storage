@@ -1,6 +1,6 @@
-# Lifecycle Receipts and Tombstones
+# Lifecycle Receipts
 
-Status: V0.1 compression receipt execution exists for single-file compressed-copy writes only; one-pass file-lifecycle closeout summary exists; deletion, SQL archive, SQL detach/drop, and daemon receipts remain disabled
+Status: V0.1 compression receipt execution exists for single-file compressed-copy writes only; one-pass file-lifecycle acceptance summary exists; deletion, SQL archive, SQL detach/drop, and daemon receipts remain disabled
 
 ## Purpose
 
@@ -59,9 +59,9 @@ The current executor emits:
 
 Allowed successful mutation is only writing `storage/archive/compressed/<artifact_id>/<original-name>.zst`. A successful receipt must still report `original_preserved=true`, `delete_original_performed=false`, `artifact_index_updated=false`, and `sql_mutation_performed=false`.
 
-### Current V0.1 file-lifecycle closeout receipts
+### Current V0.1 file-lifecycle acceptance receipts
 
-The one-pass closeout emits `storage_file_lifecycle_closeout_v1` and `storage_file_lifecycle_closeout_summary_v1` after chaining the current index/protected-set/plan/quarantine/scaffold/compression/dashboard-prune helpers. Its summary is an operator receipt for the pass, not a deletion receipt. It must explicitly report `delete_original_performed=false`, `artifact_index_updated=false`, `quarantine_move_performed=false`, `sql_mutation_performed=false`, `model_activation_performed=false`, `broker_execution_performed=false`, and `account_mutation_performed=false`.
+The one-pass acceptance emits `storage_file_lifecycle_acceptance_v1` and `storage_file_lifecycle_acceptance_summary_v1` after chaining the current index/protected-set/plan/quarantine/scaffold/compression/dashboard-prune helpers. Its summary is an operator receipt for the pass, not a deletion receipt. It must explicitly report `delete_original_performed=false`, `artifact_index_updated=false`, `quarantine_move_performed=false`, `sql_mutation_performed=false`, `model_activation_performed=false`, `broker_execution_performed=false`, and `account_mutation_performed=false`.
 
 ### `archive_receipt`
 

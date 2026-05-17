@@ -4,7 +4,7 @@
 
 The current `trading-storage` storage-contract-and-lifecycle-helper phase is closed.
 
-This closeout covers the storage-owned surfaces needed by the current data/model/manager phase:
+This acceptance covers the storage-owned surfaces needed by the current data/model/manager phase:
 
 - repository boundary and docs spine;
 - reusable checked-in non-code assets under `main/`;
@@ -44,7 +44,7 @@ scripts/lifecycle/maintain_local_storage.py
 
 ## Boundaries Preserved
 
-This closeout does not enable or claim:
+This acceptance does not enable or claim:
 
 - production object-store infrastructure;
 - production SQL partitioning for every output family;
@@ -72,7 +72,7 @@ These are not blockers for current historical training.
 
 ## Acceptance Evidence
 
-The closeout is acceptable only while these gates pass:
+The acceptance is acceptable only while these gates pass:
 
 ```bash
 PYTHONPATH=src python3 -m unittest discover -s tests
@@ -81,4 +81,4 @@ PYTHONPATH=src python3 scripts/lifecycle/maintain_local_storage.py --root .
 git diff --check
 ```
 
-No command in this closeout performs provider calls, manager dispatch, model activation, broker execution, or production storage mutation.
+No command in this acceptance performs provider calls, manager dispatch, model activation, broker execution, or production storage mutation.

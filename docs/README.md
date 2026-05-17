@@ -1,26 +1,24 @@
 # Docs
 
-This directory is the authoritative documentation spine for `trading-storage`.
+This directory contains the current documentation spine for `trading-storage`.
 
 ## Files
 
-- `00_scope.md` — repository boundary, in-scope work, out-of-scope work, and owner intent.
-- `01_context.md` — why the repository exists, related systems, environment assumptions, and dependencies.
-- `02_layer_01_market_regime.md` — Layer 1 storage workflow, artifact boundary, and acceptance gates.
-- `03_layer_02_sector_context.md` — Layer 2 storage workflow, artifact boundary, and acceptance gates.
-- `04_storage_lifecycle.md` — local retention, archive, cleanup, scheduling template, and production boundary.
-- `80_task.md` — current task state, queued work, blockers, and recently accepted work.
-- `81_decision.md` — ratified repository decisions.
-- `82_memory.md` — durable local continuity that does not fit narrower docs.
-- `90_storage_closeout.md` — storage-contract-and-lifecycle-helper phase closeout receipt.
-- `91_storage_lifecycle_policy.md` — V0.1 lifecycle state machine, retention classes, source/model/SQL policy, and declarative policy shape.
-- `92_artifact_index.md` — artifact index and dependency graph design for lifecycle safety.
-- `93_protected_set.md` — protected-set rules and quarantine-before-delete policy.
-- `94_compression_archive.md` — file compression, SQL archive, summarize-then-archive, restore-verifier policy, and current non-mutating execution scaffold.
-- `95_lifecycle_receipts.md` — compression/archive/deletion/restore receipt and tombstone contracts.
-- `96_dashboard_read_models.md` — storage-home boundary for dashboard summary/read-model outputs.
-- `97_dashboard_summary_layout.md` — physical path convention, common envelope, schema-validation boundary, and lifecycle posture for dashboard summaries.
+- `00_scope.md` — Scope.
+- `01_context.md` — Context.
+- `02_architecture.md` — Architecture.
+- `03_contracts.md` — Contracts.
+- `04_task.md` — Tasks.
+- `05_decision.md` — Decisions.
+- `06_memory.md` — Memory.
+- `10_layer_01_market_regime.md` — Layer 01 - Market Regime Storage.
+- `11_layer_02_sector_context.md` — Layer 02 - Sector Context Storage.
+- `20_storage_lifecycle_policy.md` — Storage Lifecycle Policy.
+- `21_lifecycle_receipts.md` — Lifecycle Receipts.
+- `30_artifact_index.md` — Artifact Index and Dependency Graph.
+- `31_protected_set.md` — Protected Set Policy.
+- `32_compression_archive.md` — Compression and Archive.
+- `40_dashboard_read_models.md` — Dashboard Read-Model Storage.
+- `41_dashboard_summary_layout.md` — Dashboard Summary Layout.
 
-Layer workflow and acceptance live in the numbered layer files. Existing local helper behavior lives in `04_storage_lifecycle.md`; the production-oriented lifecycle/dashboard-storage design lives in `91_`-`97_`. Add future layer-specific docs as `05_layer_03_...`, `06_layer_04_...`, and so on before adding broad workflow prose.
-
-Do not place generated data, artifacts, notebooks, logs, credentials, or implementation outputs in this directory.
+Keep generated data, artifacts, notebooks, logs, credentials, and runtime outputs out of this directory.
