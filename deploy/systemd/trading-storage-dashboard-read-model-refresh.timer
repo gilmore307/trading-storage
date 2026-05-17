@@ -1,6 +1,6 @@
 [Unit]
 Description=Periodic trading dashboard read-model refresh
-Documentation=/root/projects/trading-storage/docs/97_dashboard_summary_layout.md
+Documentation=/root/projects/trading-storage/docs/12_dashboard_summary_layout.md
 
 [Timer]
 OnBootSec=2min

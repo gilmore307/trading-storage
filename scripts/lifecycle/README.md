@@ -4,13 +4,13 @@ Executable local storage lifecycle helpers live here.
 
 ## Current entrypoints
 
-- `build_artifact_index.py` scans storage-owned filesystem artifacts/read models and emits conservative JSONL inventory metadata according to `docs/92_artifact_index.md`.
-- `build_protected_set.py` builds conservative protected-set safety evidence from artifact-index records and optional reason-code references/manual pins according to `docs/93_protected_set.md`.
+- `build_artifact_index.py` scans storage-owned filesystem artifacts/read models and emits conservative JSONL inventory metadata according to `docs/07_artifact_index.md`.
+- `build_protected_set.py` builds conservative protected-set safety evidence from artifact-index records and optional reason-code references/manual pins according to `docs/08_protected_set.md`.
 - `run_file_lifecycle_closeout.py` runs the complete safe file-lifecycle pass: index, protected set, dry-run plan, quarantine/recheck evidence, execution scaffold, optional compressed-copy creation, and dashboard snapshot prune dry-run.
-- `compress_single_file_candidates.py` safely compresses unprotected single-file `compress_candidate` rows to zstd copies, preserving originals and leaving SQL/artifact-index/delete paths untouched according to `docs/94_compression_archive.md`.
-- `maintain_local_storage.py` plans or applies conservative cleanup for ignored runtime files according to `docs/91_storage_lifecycle_policy.md`.
-- `plan_storage_lifecycle.py` emits non-mutating durable-artifact lifecycle plans from artifact-index/protected-set/policy evidence according to `docs/91_storage_lifecycle_policy.md`.
-- `build_lifecycle_execution_scaffold.py` emits non-mutating compression/archive/restore manifest and receipt drafts from lifecycle plans according to `docs/94_compression_archive.md` and `docs/95_lifecycle_receipts.md`.
-- `build_quarantine_recheck_evidence.py` emits report-only quarantine/recheck gate evidence from lifecycle plans and optional final protected-set evidence according to `docs/93_protected_set.md`.
+- `compress_single_file_candidates.py` safely compresses unprotected single-file `compress_candidate` rows to zstd copies, preserving originals and leaving SQL/artifact-index/delete paths untouched according to `docs/09_compression_archive.md`.
+- `maintain_local_storage.py` plans or applies conservative cleanup for ignored runtime files according to `docs/06_storage_lifecycle_policy.md`.
+- `plan_storage_lifecycle.py` emits non-mutating durable-artifact lifecycle plans from artifact-index/protected-set/policy evidence according to `docs/06_storage_lifecycle_policy.md`.
+- `build_lifecycle_execution_scaffold.py` emits non-mutating compression/archive/restore manifest and receipt drafts from lifecycle plans according to `docs/09_compression_archive.md` and `docs/10_lifecycle_receipts.md`.
+- `build_quarantine_recheck_evidence.py` emits report-only quarantine/recheck gate evidence from lifecycle plans and optional final protected-set evidence according to `docs/08_protected_set.md`.
 
 Scripts in this directory may import `src/trading_storage`; reusable lifecycle logic belongs in `src/`, not here.

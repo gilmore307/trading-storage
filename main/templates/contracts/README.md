@@ -29,4 +29,4 @@ Acceptance rules:
 
 When a type name becomes stable, register it in `trading-manager/scripts/registry/` through SQL migrations and regenerate `trading-manager/scripts/registry/current.csv`.
 
-See `trading-manager/docs/92_templates.md` for template promotion rules.
+See `trading-manager/docs/13_templates.md` for template promotion rules.

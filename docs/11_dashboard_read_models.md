@@ -39,7 +39,7 @@ component evidence -> semantic owner aggregation -> storage materialized summary
 
 ## Initial Dashboard Summary Families
 
-The following dashboard summary families are accepted as storage-bound design targets. Shared contract names are registered through `trading-manager`; the initial file/object layout and validation boundary live in `docs/97_dashboard_summary_layout.md`.
+The following dashboard summary families are accepted as storage-bound design targets. Shared contract names are registered through `trading-manager`; the initial file/object layout and validation boundary live in `docs/12_dashboard_summary_layout.md`.
 
 - `current_system_status_summary`;
 - `alert_exception_summary`;
@@ -112,7 +112,7 @@ The dashboard may read storage-hosted summaries and issue-focused diagnostic ref
 
 ## Current Status
 
-This document defines the storage-home boundary. `docs/97_dashboard_summary_layout.md` now defines the initial physical JSON layout, common envelope, validation boundary, and first refresh wrapper.
+This document defines the storage-home boundary. `docs/12_dashboard_summary_layout.md` now defines the initial physical JSON layout, common envelope, validation boundary, and first refresh wrapper.
 
 Implemented storage-side support:
 
