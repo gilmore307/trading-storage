@@ -9,7 +9,7 @@ Type=oneshot
 Environment=TRADING_STORAGE_ROOT=/root/projects/trading-storage
 Environment=TRADING_STORAGE_DATA_ROOT=/root/projects/trading-storage/storage
 Environment=TRADING_MANAGER_ROOT=/root/projects/trading-manager
-Environment=TRADING_STORAGE_REFRESH_CADENCE_SECONDS=5
+Environment=TRADING_STORAGE_REFRESH_CADENCE_SECONDS=60
 EnvironmentFile=-/etc/default/trading-storage-dashboard-read-model-refresh
 WorkingDirectory=/root/projects/trading-storage
 ExecStart=/usr/bin/env PYTHONPATH=${TRADING_STORAGE_ROOT}/src python3 ${TRADING_STORAGE_ROOT}/scripts/dashboard/refresh_public_dashboard_read_models.py --trading-manager-root ${TRADING_MANAGER_ROOT} --storage-root ${TRADING_STORAGE_DATA_ROOT}

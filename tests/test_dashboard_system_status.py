@@ -54,7 +54,7 @@ class DashboardSystemStatusTests(unittest.TestCase):
             self.assertIn("max_worker_count", parallelism)
             self.assertTrue(parallelism["drain_ready_stages"])
             self.assertEqual(parallelism["scheduler_interval_role"], "idle_backstop")
-            self.assertEqual(chart["refresh"]["cadence_seconds"], 5)
+            self.assertEqual(chart["refresh"]["cadence_seconds"], 60)
             self.assertIn("drain_max_steps", parallelism)
             self.assertIn("event_refresh_service_unit", parallelism)
             runtime_throughput = chart["runtime_throughput"]
