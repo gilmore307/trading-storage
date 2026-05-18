@@ -10,6 +10,7 @@ from trading_storage.dashboard_system_status import (
     CURRENT_SYSTEM_STATUS_CONTRACT,
     _dashboard_source_outputs,
     _historical_scheduler_runtime_throughput,
+    _mark_missing_event_outputs_waiting,
     _mark_source_outputs_not_started,
     build_current_system_status_summary,
     refresh_current_system_status_read_model,
@@ -147,6 +148,36 @@ class DashboardSystemStatusTests(unittest.TestCase):
 
         self.assertEqual(outputs[0]["status"], "not_started")
         self.assertIn("Historical training is stopped", outputs[0]["freshness_note"])
+
+    def test_missing_event_driven_outputs_are_not_failures_while_scheduler_runs(self) -> None:
+        outputs = _mark_missing_event_outputs_waiting(
+            [
+                {
+                    "label": "Latest Stage Run Output",
+                    "kind": "manager_stage_run_dashboard",
+                    "status": "missing",
+                    "exists": False,
+                    "age_seconds": None,
+                    "latest_updated_at_utc": None,
+                    "freshness_class": "event_driven",
+                    "freshness_note": "old note",
+                },
+                {
+                    "label": "Historical Scheduler State",
+                    "kind": "manager_scheduler_state",
+                    "status": "missing",
+                    "exists": False,
+                    "age_seconds": None,
+                    "latest_updated_at_utc": None,
+                    "freshness_class": "heartbeat",
+                    "freshness_note": "old note",
+                },
+            ]
+        )
+
+        self.assertEqual(outputs[0]["status"], "not_recorded_yet")
+        self.assertIn("Event-driven source output", outputs[0]["freshness_note"])
+        self.assertEqual(outputs[1]["status"], "missing")
 
     def test_refresh_materializes_current_system_status_latest(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:

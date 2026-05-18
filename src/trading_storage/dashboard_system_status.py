@@ -168,6 +168,19 @@ def _mark_source_outputs_not_started(source_outputs: list[dict[str, Any]]) -> li
     return marked
 
 
+def _mark_missing_event_outputs_waiting(source_outputs: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    marked: list[dict[str, Any]] = []
+    for output in source_outputs:
+        updated = dict(output)
+        if updated.get("status") == "missing" and not updated.get("exists") and updated.get("freshness_class") == "event_driven":
+            updated["status"] = "not_recorded_yet"
+            updated["freshness_note"] = (
+                "Event-driven source output has not been recorded yet; it appears only after the relevant scheduler decision or stage output exists."
+            )
+        marked.append(updated)
+    return marked
+
+
 def _read_env_file(path: Path) -> dict[str, str]:
     values: dict[str, str] = {}
     try:
@@ -603,11 +616,13 @@ def build_current_system_status_summary(*, storage_root: Path, generated_at_utc:
     scheduler_active = _historical_scheduler_is_active(services)
     if not scheduler_active:
         source_outputs = _mark_source_outputs_not_started(source_outputs)
+    else:
+        source_outputs = _mark_missing_event_outputs_waiting(source_outputs)
     unhealthy_services = [service["unit"] for service in services if not service["healthy"]]
     missing_outputs = [
         output["label"]
         for output in source_outputs
-        if output["status"] == "missing" and scheduler_active
+        if output["status"] == "missing"
     ]
     severity = "info" if not unhealthy_services and not missing_outputs else "medium"
     status = "healthy" if severity == "info" else "degraded"
