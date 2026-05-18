@@ -1,6 +1,6 @@
 # Storage Lifecycle Policy
 
-Status: V0.1 dry-run planner, quarantine/recheck evidence, execution scaffold, narrow single-file compression executor, and one-pass safe file-lifecycle acceptance available; destructive mutation executors remain deferred
+Status: V0.1 dry-run planner, quarantine/recheck evidence, execution scaffold, narrow single-file compression executor, reviewed file-backed SQL archive executor, archive restore verifier, no-mutation quarantine/delete receipt builder, and one-pass safe file-lifecycle acceptance available; destructive mutation executors remain deferred
 
 ## Purpose
 
@@ -238,7 +238,45 @@ Reviewed apply shape:
 PYTHONPATH=src python3 scripts/lifecycle/compress_single_file_candidates.py --lifecycle-plan-json <plan.json> --apply --write
 ```
 
-This is the only current lifecycle executor allowed to write bytes, and those bytes are compressed copies under `storage/archive/compressed/`.
+This executor is allowed to write compressed copies under `storage/archive/compressed/`; it does not delete originals or mutate SQL/index state.
+
+## Current V0.1 reviewed file-backed SQL archive executor
+
+`src/trading_storage/sql_archive.py` and `scripts/lifecycle/execute_sql_archive.py` implement the first SQL-archive execution surface with a deliberately narrow boundary:
+
+- default mode is dry-run;
+- `--apply-reviewed-archive` writes gzip archive copies only for unprotected `archive_candidate` records;
+- input is an already-materialized reviewed export file selected by the lifecycle plan;
+- the executor verifies the source checksum before archive creation and verifies archive decompression checksum after creation;
+- source files are preserved;
+- there are no database connections, live SQL exports, SQL detach/drop actions, artifact-index mutations, quarantine moves, source deletions, model activation, broker execution, or account mutation.
+
+CLI smoke:
+
+```bash
+PYTHONPATH=src python3 scripts/lifecycle/execute_sql_archive.py
+PYTHONPATH=src python3 scripts/lifecycle/execute_sql_archive.py --lifecycle-plan-json <plan.json> --apply-reviewed-archive --write
+```
+
+## Current V0.1 archive restore verifier
+
+`src/trading_storage/sql_archive.py` and `scripts/lifecycle/verify_sql_archive_restore.py` verify reviewed file-backed SQL archive copies by gzip decompression and checksum comparison. The verifier is `verification_only`; it does not materialize a database restore, attach SQL, detach/drop SQL, or mutate payloads.
+
+CLI smoke:
+
+```bash
+PYTHONPATH=src python3 scripts/lifecycle/verify_sql_archive_restore.py --archive-result-json storage/lifecycle_execution/sql_archive_result.json
+```
+
+## Current V0.1 no-mutation quarantine/delete receipt builder
+
+`src/trading_storage/quarantine_delete_executor.py` and `scripts/lifecycle/build_quarantine_delete_result.py` consume quarantine/recheck evidence and emit explicit quarantine/deletion/tombstone draft receipts. Gate-clear records are still `planned_not_executed`; physical quarantine moves and deletion remain disabled until a separate destructive executor is reviewed and approved.
+
+CLI smoke:
+
+```bash
+PYTHONPATH=src python3 scripts/lifecycle/build_quarantine_delete_result.py --quarantine-recheck-json storage/quarantine_recheck/quarantine_recheck_evidence.json
+```
 
 ## Current V0.1 one-pass file-lifecycle acceptance
 

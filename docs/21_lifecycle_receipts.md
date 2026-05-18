@@ -1,6 +1,6 @@
 # Lifecycle Receipts
 
-Status: V0.1 compression receipt execution exists for single-file compressed-copy writes only; one-pass file-lifecycle acceptance summary exists; deletion, SQL archive, SQL detach/drop, and daemon receipts remain disabled
+Status: V0.1 compression receipt execution exists for single-file compressed-copy writes; reviewed file-backed SQL archive and restore verification receipts exist; no-mutation quarantine/delete draft receipts exist; physical deletion, SQL detach/drop, and daemon receipts remain disabled
 
 ## Purpose
 
@@ -65,7 +65,7 @@ The one-pass acceptance emits `storage_file_lifecycle_acceptance_v1` and `storag
 
 ### `archive_receipt`
 
-Emitted after file or SQL archive creation. Current V0.1 implementation emits only `archive_receipt_draft_v1`; SQL archive execution does not exist yet.
+Emitted after file or SQL archive creation. Current V0.1 execution support is limited to reviewed file-backed gzip archive copies from already-materialized export artifacts selected as unprotected `archive_candidate` rows. It does not connect to a database, export live SQL, detach/drop SQL, mutate artifact indexes, quarantine sources, or delete sources. Non-executed archive plans still emit `archive_receipt_draft_v1`.
 
 Required content:
 
@@ -102,9 +102,13 @@ Required content:
 
 This evidence is a gate input only. It is not a `deletion_receipt`, does not start a real quarantine waiting period, and does not authorize deletion.
 
+### Current V0.1 no-mutation quarantine/delete draft receipts
+
+The current quarantine/delete executor emits quarantine and deletion draft receipts only. Gate-clear rows are recorded as `planned_not_executed`, and blocked rows explain whether the initial check or final recheck blocked deletion. Physical quarantine moves, physical deletion, SQL detach/drop, and artifact-index mutation are still disabled.
+
 ### `deletion_receipt`
 
-Emitted only after quarantine and final protected-set recheck pass.
+Emitted only after quarantine and final protected-set recheck pass, and only by a separately reviewed destructive executor. Current V0.1 support emits `deletion_receipt_draft_v1`; it must report `delete_performed=false`, `mutation_performed=false`, `artifact_index_updated=false`, and `sql_mutation_performed=false`.
 
 Required content:
 
@@ -123,7 +127,7 @@ Required content:
 
 ### `restore_receipt`
 
-Emitted after restore verification or actual restore. Current V0.1 implementation emits only `restore_receipt_draft_v1` with `status=planned_not_executed` before restore execution exists.
+Emitted after restore verification or actual restore. Current V0.1 support verifies single-file compression restores and reviewed file-backed SQL archive gzip restores by checksum only. It does not materialize database restores or mutate online SQL state. Non-executed restore plans still emit `restore_receipt_draft_v1` with `status=planned_not_executed`.
 
 Required content:
 
