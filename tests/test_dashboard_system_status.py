@@ -10,6 +10,7 @@ from trading_storage.dashboard_system_status import (
     CURRENT_SYSTEM_STATUS_CONTRACT,
     _dashboard_source_outputs,
     _historical_scheduler_runtime_throughput,
+    _mark_source_outputs_not_started,
     build_current_system_status_summary,
     refresh_current_system_status_read_model,
 )
@@ -127,6 +128,25 @@ class DashboardSystemStatusTests(unittest.TestCase):
             active_workflow = next(output for output in outputs if output["label"] == "Active Workflow State")
             self.assertEqual(active_workflow["latest_updated_at_utc"], "2026-05-14T00:01:00Z")
             self.assertEqual(active_workflow["freshness_class"], "event_driven")
+
+    def test_missing_runtime_outputs_are_not_started_when_scheduler_is_stopped(self) -> None:
+        outputs = _mark_source_outputs_not_started(
+            [
+                {
+                    "label": "Historical Scheduler State",
+                    "kind": "manager_scheduler_state",
+                    "status": "missing",
+                    "exists": False,
+                    "age_seconds": None,
+                    "latest_updated_at_utc": None,
+                    "freshness_class": "heartbeat",
+                    "freshness_note": "old note",
+                }
+            ]
+        )
+
+        self.assertEqual(outputs[0]["status"], "not_started")
+        self.assertIn("Historical training is stopped", outputs[0]["freshness_note"])
 
     def test_refresh_materializes_current_system_status_latest(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:

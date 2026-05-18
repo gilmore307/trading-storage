@@ -135,13 +135,37 @@ def _systemd_unit(unit: str) -> dict[str, Any]:
     active_rc, active = _run_text(("systemctl", "is-active", unit))
     enabled_rc, enabled = _run_text(("systemctl", "is-enabled", unit))
     substate_rc, substate = _run_text(("systemctl", "show", unit, "-p", "SubState", "--value"))
+    result_rc, result = _run_text(("systemctl", "show", unit, "-p", "Result", "--value"))
+    active_state = active if active_rc == 0 else active or "unknown"
     return {
         "unit": unit,
-        "active_state": active if active_rc == 0 else active or "unknown",
+        "active_state": active_state,
         "enabled_state": enabled if enabled_rc == 0 else enabled or "unknown",
         "substate": substate if substate_rc == 0 else "unknown",
-        "healthy": active == "active" or (unit.endswith(".service") and active in {"inactive", "activating"}),
+        "result": result if result_rc == 0 else "unknown",
+        "healthy": active_state != "failed" and (result if result_rc == 0 else "") not in {"failed", "timeout"},
     }
+
+
+def _historical_scheduler_is_active(services: list[Mapping[str, Any]]) -> bool:
+    return any(
+        service.get("unit") == "trading-manager-historical-scheduler.service"
+        and service.get("active_state") == "active"
+        for service in services
+    )
+
+
+def _mark_source_outputs_not_started(source_outputs: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    marked: list[dict[str, Any]] = []
+    for output in source_outputs:
+        updated = dict(output)
+        if updated.get("status") == "missing" and not updated.get("exists"):
+            updated["status"] = "not_started"
+            updated["freshness_note"] = (
+                "Historical training is stopped; this source output appears after the scheduler starts and records work."
+            )
+        marked.append(updated)
+    return marked
 
 
 def _read_env_file(path: Path) -> dict[str, str]:
@@ -576,12 +600,21 @@ def build_current_system_status_summary(*, storage_root: Path, generated_at_utc:
     runtime_throughput = _historical_scheduler_runtime_throughput(values=runtime_values)
     services = [_systemd_unit(unit) for unit in SYSTEMD_UNITS]
     source_outputs = _dashboard_source_outputs(trading_manager_root=DEFAULT_TRADING_MANAGER_ROOT, now_epoch=now_epoch)
+    scheduler_active = _historical_scheduler_is_active(services)
+    if not scheduler_active:
+        source_outputs = _mark_source_outputs_not_started(source_outputs)
     unhealthy_services = [service["unit"] for service in services if not service["healthy"]]
-    missing_outputs = [output["label"] for output in source_outputs if output["status"] == "missing"]
+    missing_outputs = [
+        output["label"]
+        for output in source_outputs
+        if output["status"] == "missing" and scheduler_active
+    ]
     severity = "info" if not unhealthy_services and not missing_outputs else "medium"
     status = "healthy" if severity == "info" else "degraded"
     summary = (
         "Infrastructure status is healthy; refresh timer, provider API configuration, observed services, and dashboard source outputs are available."
+        if status == "healthy" and scheduler_active
+        else "Infrastructure is healthy and historical training is stopped; runtime source outputs will appear after the scheduler starts."
         if status == "healthy"
         else "Infrastructure status is degraded; inspect service, provider API, or dashboard source output details."
     )
