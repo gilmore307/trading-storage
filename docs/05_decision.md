@@ -540,12 +540,12 @@ Backup and deletion actions should not be scattered across manager, model, data,
 
 ### Decision
 
-Accept `trading-storage-maintenance.service` / `.timer` as the storage-owned scheduled maintenance boundary. The current runner executes local retention for storage-owned runtime roots, including timed log archive/delete behavior. Manager may plan or request lifecycle work, but storage owns physical backup/archive/delete execution and receipts.
+Accept `trading-storage-maintenance.service` / `.timer` as the storage-owned scheduled maintenance boundary. The current runner executes local retention for storage-owned runtime roots, including timed log archive/delete behavior, and monitors manager fold-state files for completed model-worker folds. Manager owns fold-progress state only; storage owns backup/archive/delete planning, execution, and receipts.
 
-Fold SQL backup execution is not yet configured in this runner. It must be added as a storage-owned phase that consumes reviewed manager fold-backup plans, performs `pg_dump -Fc` and restore-smoke/checksum evidence, then gates deletion/lifecycle execution.
+When storage detects a completed fold, it may create a storage-owned SQL backup candidate directly from the fold state. The backup executor phase must perform `pg_dump -Fc`, checksum, and restore-smoke evidence before any cleanup/lifecycle execution.
 
 ### Consequences
 
-- Manager must not directly run data backup or deletion; it may create plans and route requests.
+- Manager must not directly run data backup or deletion and does not need to create backup/cleanup plans; it exposes fold progress state.
 - Storage maintenance may include logs, tmp/cache, runs, outputs, staging, archive pruning, reviewed backup phases, and reviewed lifecycle execution phases.
 - Host-level timer enablement still requires operator deployment review.
