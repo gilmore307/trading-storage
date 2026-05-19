@@ -79,7 +79,7 @@ class LifecyclePlannerTests(unittest.TestCase):
             root = Path(tmp)
             artifact = root / "storage" / "artifacts" / "component_completion_receipt" / "receipt.json"
             artifact.parent.mkdir(parents=True, exist_ok=True)
-            artifact.write_text(json.dumps({"contract_type": "component_completion_receipt_payload_v1"}), encoding="utf-8")
+            artifact.write_text(json.dumps({"contract_type": "component_completion_receipt_payload"}), encoding="utf-8")
             index = build_artifact_index(root=root)
             record = index.records[0].__class__(
                 **{
@@ -138,7 +138,7 @@ class LifecyclePlannerTests(unittest.TestCase):
             summary = json.loads((root / "storage" / "lifecycle_plan" / "summary.json").read_text(encoding="utf-8"))
 
             self.assertEqual(payload["records"][0]["action"], "archive_candidate")
-            self.assertEqual(summary["contract_type"], "storage_lifecycle_plan_summary_v1")
+            self.assertEqual(summary["contract_type"], "storage_lifecycle_plan_summary")
 
     def test_loads_existing_index_and_protected_set_files(self):
         with tempfile.TemporaryDirectory() as tmp:

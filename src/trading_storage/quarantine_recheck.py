@@ -94,7 +94,7 @@ class QuarantineRecheckEvidence:
             if record.deletion_allowed:
                 deletion_allowed_count += 1
         return {
-            "contract_type": "storage_quarantine_recheck_summary_v1",
+            "contract_type": "storage_quarantine_recheck_summary",
             "generated_at": self.generated_at,
             "source_lifecycle_plan_generated_at": self.source_lifecycle_plan_generated_at,
             "final_protected_set_generated_at": self.final_protected_set_generated_at,
@@ -214,7 +214,7 @@ def build_quarantine_recheck_evidence(
         for record in lifecycle_plan.records
     )
     return QuarantineRecheckEvidence(
-        contract_type="storage_quarantine_recheck_evidence_v1",
+        contract_type="storage_quarantine_recheck_evidence",
         generated_at=generated,
         source_lifecycle_plan_generated_at=lifecycle_plan.generated_at,
         final_protected_set_generated_at=final_protected_set.generated_at if final_protected_set else None,
@@ -243,7 +243,7 @@ def load_storage_lifecycle_plan_json(path: Path) -> StorageLifecyclePlan:
             raise ValueError("lifecycle plan records must be JSON objects")
         records.append(_plan_record_from_mapping(row))
     return StorageLifecyclePlan(
-        contract_type=str(data.get("contract_type", "storage_lifecycle_plan_v1")),
+        contract_type=str(data.get("contract_type", "storage_lifecycle_plan")),
         generated_at=str(data.get("generated_at", "")),
         dry_run=bool(data.get("dry_run", True)),
         records=tuple(records),

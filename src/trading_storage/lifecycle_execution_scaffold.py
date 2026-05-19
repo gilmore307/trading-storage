@@ -197,7 +197,7 @@ class LifecycleExecutionScaffold:
             action = str(row.get("plan_action", "unknown"))
             skipped_counts[action] = skipped_counts.get(action, 0) + 1
         return {
-            "contract_type": "storage_lifecycle_execution_scaffold_summary_v1",
+            "contract_type": "storage_lifecycle_execution_scaffold_summary",
             "generated_at": self.generated_at,
             "source_lifecycle_plan_generated_at": self.source_lifecycle_plan_generated_at,
             "compression_manifest_count": len(self.compression_manifests),
@@ -270,7 +270,7 @@ def _restore_receipt_for_manifest(
     reason: str,
 ) -> RestoreReceiptDraft:
     return RestoreReceiptDraft(
-        contract_type="restore_receipt_draft_v1",
+        contract_type="restore_receipt_draft",
         receipt_ref=_stable_ref("restore_receipt", manifest_ref, artifact_id),
         source_manifest_ref=manifest_ref,
         source_artifact_id=artifact_id,
@@ -293,7 +293,7 @@ def _build_compression(record: LifecyclePlanRecord, generated_at: str) -> tuple[
     compressed_path = _compressed_path(record)
     compressed_uri = _compressed_uri(record)
     manifest = CompressionManifestDraft(
-        contract_type="compression_manifest_draft_v1",
+        contract_type="compression_manifest_draft",
         manifest_ref=manifest_ref,
         artifact_id=record.artifact_id,
         artifact_kind=record.artifact_kind,
@@ -316,7 +316,7 @@ def _build_compression(record: LifecyclePlanRecord, generated_at: str) -> tuple[
         mutation_performed=False,
     )
     receipt = CompressionReceiptDraft(
-        contract_type="compression_receipt_draft_v1",
+        contract_type="compression_receipt_draft",
         receipt_ref=_stable_ref("compression_receipt", manifest_ref, record.artifact_id),
         manifest_ref=manifest_ref,
         artifact_id=record.artifact_id,
@@ -354,7 +354,7 @@ def _build_archive(record: LifecyclePlanRecord, generated_at: str) -> tuple[SqlA
     archive_path = _archive_path(record)
     archive_uri = _archive_uri(record)
     manifest = SqlArchiveManifestDraft(
-        contract_type="sql_archive_manifest_draft_v1",
+        contract_type="sql_archive_manifest_draft",
         manifest_ref=manifest_ref,
         artifact_id=record.artifact_id,
         artifact_kind=record.artifact_kind,
@@ -376,7 +376,7 @@ def _build_archive(record: LifecyclePlanRecord, generated_at: str) -> tuple[SqlA
         mutation_performed=False,
     )
     receipt = ArchiveReceiptDraft(
-        contract_type="archive_receipt_draft_v1",
+        contract_type="archive_receipt_draft",
         receipt_ref=_stable_ref("archive_receipt", manifest_ref, record.artifact_id),
         manifest_ref=manifest_ref,
         artifact_id=record.artifact_id,
@@ -459,7 +459,7 @@ def build_lifecycle_execution_scaffold(
         )
 
     return LifecycleExecutionScaffold(
-        contract_type="storage_lifecycle_execution_scaffold_v1",
+        contract_type="storage_lifecycle_execution_scaffold",
         generated_at=generated,
         source_lifecycle_plan_generated_at=lifecycle_plan.generated_at,
         compression_manifests=tuple(compression_manifests),

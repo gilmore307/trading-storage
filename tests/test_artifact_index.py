@@ -140,7 +140,7 @@ class ArtifactIndexTests(unittest.TestCase):
             self.assertEqual(len(rows), 1)
             self.assertEqual(rows[0]["artifact_kind"], "example")
             self.assertEqual(summary["record_count"], 1)
-            self.assertEqual(summary["contract_type"], "storage_artifact_index_summary_v1")
+            self.assertEqual(summary["contract_type"], "storage_artifact_index_summary")
 
     def test_duplicate_explicit_artifact_ids_are_rejected(self):
         with tempfile.TemporaryDirectory() as tmp:

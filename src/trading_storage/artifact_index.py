@@ -110,7 +110,7 @@ class ArtifactIndex:
             by_retention[record.retention_class] = by_retention.get(record.retention_class, 0) + 1
             total_bytes += record.artifact_size_bytes
         return {
-            "contract_type": "storage_artifact_index_summary_v1",
+            "contract_type": "storage_artifact_index_summary",
             "generated_at": self.generated_at,
             "root": self.root,
             "scanned_roots": list(self.scanned_roots),

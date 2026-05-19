@@ -129,7 +129,7 @@ class QuarantineDeleteResult:
             reason = str(row.get("skip_reason", "unknown"))
             skipped_counts[reason] = skipped_counts.get(reason, 0) + 1
         return {
-            "contract_type": "storage_quarantine_delete_summary_v1",
+            "contract_type": "storage_quarantine_delete_summary",
             "generated_at": self.generated_at,
             "source_quarantine_recheck_generated_at": self.source_quarantine_recheck_generated_at,
             "quarantine_receipt_count": len(self.quarantine_receipts),
@@ -182,7 +182,7 @@ def _quarantine_uri(record: QuarantineRecheckRecord) -> str:
 def _quarantine_receipt(record: QuarantineRecheckRecord, *, generated_at: str, status: str, reason: str) -> QuarantineReceipt:
     allowed_to_plan = status == "planned_not_executed"
     return QuarantineReceipt(
-        contract_type="quarantine_receipt_draft_v1",
+        contract_type="quarantine_receipt_draft",
         receipt_ref=_stable_ref("quarantine_receipt", record.artifact_id, record.physical_path, status),
         artifact_id=record.artifact_id,
         policy_id=record.policy_id,
@@ -213,7 +213,7 @@ def _deletion_receipt(
     reason: str,
 ) -> DeletionReceipt:
     return DeletionReceipt(
-        contract_type="deletion_receipt_draft_v1",
+        contract_type="deletion_receipt_draft",
         receipt_ref=_stable_ref("deletion_receipt", record.artifact_id, record.physical_path, status),
         artifact_id=record.artifact_id,
         policy_id=record.policy_id,
@@ -238,7 +238,7 @@ def _deletion_receipt(
 
 def _tombstone_draft(record: QuarantineRecheckRecord, *, generated_at: str, deletion_receipt_ref: str) -> ArtifactTombstoneDraft:
     return ArtifactTombstoneDraft(
-        contract_type="artifact_tombstone_draft_v1",
+        contract_type="artifact_tombstone_draft",
         tombstone_ref=_stable_ref("artifact_tombstone", record.artifact_id, record.physical_path),
         artifact_id=record.artifact_id,
         previous_uri=record.artifact_uri,
@@ -308,7 +308,7 @@ def build_quarantine_delete_result(evidence: QuarantineRecheckEvidence, *, gener
         tombstone_drafts.append(tombstone)
 
     return QuarantineDeleteResult(
-        contract_type="storage_quarantine_delete_result_v1",
+        contract_type="storage_quarantine_delete_result",
         generated_at=generated,
         source_quarantine_recheck_generated_at=evidence.generated_at,
         quarantine_receipts=tuple(quarantine_receipts),
@@ -331,7 +331,7 @@ def load_quarantine_recheck_evidence_json(path: Path) -> QuarantineRecheckEviden
         raise ValueError("quarantine/recheck evidence must be a JSON object")
     records = tuple(_record_from_mapping(row) for row in data.get("records", []) if isinstance(row, Mapping))
     return QuarantineRecheckEvidence(
-        contract_type=str(data.get("contract_type", "storage_quarantine_recheck_evidence_v1")),
+        contract_type=str(data.get("contract_type", "storage_quarantine_recheck_evidence")),
         generated_at=str(data.get("generated_at", "")),
         source_lifecycle_plan_generated_at=data.get("source_lifecycle_plan_generated_at"),
         final_protected_set_generated_at=data.get("final_protected_set_generated_at"),

@@ -128,9 +128,9 @@ class SingleFileCompressionTests(unittest.TestCase):
             payload = json.loads((root / "storage" / "lifecycle_execution" / "compression.json").read_text(encoding="utf-8"))
             summary = json.loads((root / "storage" / "lifecycle_execution" / "compression_summary.json").read_text(encoding="utf-8"))
 
-            self.assertEqual(payload["contract_type"], "storage_single_file_compression_result_v1")
+            self.assertEqual(payload["contract_type"], "storage_single_file_compression_result")
             self.assertEqual(payload["source_lifecycle_plan_generated_at"], "2026-05-16T00:00:00Z")
-            self.assertEqual(summary["contract_type"], "storage_single_file_compression_summary_v1")
+            self.assertEqual(summary["contract_type"], "storage_single_file_compression_summary")
 
     def test_compressed_output_paths_use_full_artifact_identity(self):
         with tempfile.TemporaryDirectory() as tmp:

@@ -118,8 +118,8 @@ class ProtectedSetTests(unittest.TestCase):
             payload = json.loads((root / "storage" / "protected_set" / "protected_set.json").read_text(encoding="utf-8"))
             summary = json.loads((root / "storage" / "protected_set" / "protected_set_summary.json").read_text(encoding="utf-8"))
 
-            self.assertEqual(payload["contract_type"], "storage_protected_set_v1")
-            self.assertEqual(summary["contract_type"], "storage_protected_set_summary_v1")
+            self.assertEqual(payload["contract_type"], "storage_protected_set")
+            self.assertEqual(summary["contract_type"], "storage_protected_set_summary")
             self.assertEqual(summary["protected_count"], 1)
 
 

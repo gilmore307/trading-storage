@@ -71,7 +71,7 @@ class DashboardSnapshotLifecyclePlan:
             if record.action.startswith("retain"):
                 retained_bytes += record.artifact_size_bytes
         return {
-            "contract_type": "dashboard_snapshot_prune_summary_v1",
+            "contract_type": "dashboard_snapshot_prune_summary",
             "generated_at": self.generated_at,
             "storage_root": self.storage_root,
             "max_age_hours": self.max_age_hours,
@@ -231,7 +231,7 @@ def build_dashboard_snapshot_lifecycle_plan(
             )
 
     return DashboardSnapshotLifecyclePlan(
-        contract_type="dashboard_snapshot_prune_plan_v1" if not apply else "dashboard_snapshot_prune_receipt_v1",
+        contract_type="dashboard_snapshot_prune_plan" if not apply else "dashboard_snapshot_prune_receipt",
         generated_at=generated,
         storage_root=str(storage_root),
         max_age_hours=max_age_hours,

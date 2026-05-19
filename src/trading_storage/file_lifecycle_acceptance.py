@@ -129,7 +129,7 @@ class FileLifecycleAcceptance:
     @property
     def summary(self) -> dict[str, Any]:
         return {
-            "contract_type": "storage_file_lifecycle_acceptance_summary_v1",
+            "contract_type": "storage_file_lifecycle_acceptance_summary",
             "generated_at": self.generated_at,
             "root": self.root,
             "include_roots": list(self.include_roots),
@@ -243,7 +243,7 @@ def build_file_lifecycle_acceptance(
     compressed_copy_mutation = bool(compression.summary.get("mutation_performed"))
     dashboard_delete_mutation = bool(dashboard_prune.summary.get("mutation_performed"))
     acceptance = FileLifecycleAcceptance(
-        contract_type="storage_file_lifecycle_acceptance_v1",
+        contract_type="storage_file_lifecycle_acceptance",
         generated_at=generated,
         root=str(root),
         include_roots=include_roots,

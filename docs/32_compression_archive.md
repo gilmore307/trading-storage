@@ -59,7 +59,7 @@ The first compression/archive/restore implementation slice is a non-mutating sca
 - executable wrapper: `scripts/lifecycle/build_lifecycle_execution_scaffold.py`;
 - default input: a live dry-run lifecycle plan;
 - optional input: existing lifecycle-plan JSON via `--lifecycle-plan-json`;
-- output contracts: `compression_manifest_draft_v1`, `compression_receipt_draft_v1`, `sql_archive_manifest_draft_v1`, `archive_receipt_draft_v1`, and `restore_receipt_draft_v1` inside `storage_lifecycle_execution_scaffold_v1`;
+- output contracts: `compression_manifest_draft`, `compression_receipt_draft`, `sql_archive_manifest_draft`, `archive_receipt_draft`, and `restore_receipt_draft` inside `storage_lifecycle_execution_scaffold`;
 - default output behavior prints a summary only; `--write` writes `storage/lifecycle_execution/lifecycle_execution_scaffold.json` and `storage/lifecycle_execution/lifecycle_execution_scaffold_summary.json`;
 - protected lifecycle-plan rows are skipped;
 - `compress_candidate` rows produce compression manifest/receipt drafts plus a restore verification receipt draft;
@@ -92,7 +92,7 @@ The first reviewed mutating slice is deliberately narrow:
 - deletion/quarantine/SQL detach/drop are not performed;
 - zstd decompression checksum smoke verifies that decompressed bytes match the original checksum before a successful receipt is emitted.
 
-The executor emits `storage_single_file_compression_result_v1` with `compression_manifest_v1`, `compression_receipt_v1`, and `restore_receipt_v1`. In apply mode, `mutation_performed=true` means only that a compressed copy was written; `delete_original_performed=false`, `artifact_index_updated=false`, and `sql_mutation_performed=false` remain explicit.
+The executor emits `storage_single_file_compression_result` with `compression_manifest`, `compression_receipt`, and `restore_receipt`. In apply mode, `mutation_performed=true` means only that a compressed copy was written; `delete_original_performed=false`, `artifact_index_updated=false`, and `sql_mutation_performed=false` remain explicit.
 
 CLI smoke:
 

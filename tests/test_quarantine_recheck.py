@@ -162,10 +162,10 @@ class QuarantineRecheckTests(unittest.TestCase):
             payload = json.loads((root / "storage" / "quarantine_recheck" / "evidence.json").read_text(encoding="utf-8"))
             summary = json.loads((root / "storage" / "quarantine_recheck" / "summary.json").read_text(encoding="utf-8"))
 
-            self.assertEqual(payload["contract_type"], "storage_quarantine_recheck_evidence_v1")
+            self.assertEqual(payload["contract_type"], "storage_quarantine_recheck_evidence")
             self.assertEqual(payload["source_lifecycle_plan_generated_at"], "2026-05-16T00:00:00Z")
             self.assertEqual(payload["final_protected_set_generated_at"], "2026-05-16T00:01:00Z")
-            self.assertEqual(summary["contract_type"], "storage_quarantine_recheck_summary_v1")
+            self.assertEqual(summary["contract_type"], "storage_quarantine_recheck_summary")
 
 
 if __name__ == "__main__":

@@ -14,12 +14,12 @@ Receipt records are control evidence. They do not embed large payloads.
 
 The first receipt implementation slice is non-mutating and emits drafts only:
 
-- `compression_manifest_draft_v1`;
-- `compression_receipt_draft_v1`;
-- `sql_archive_manifest_draft_v1`;
-- `archive_receipt_draft_v1`;
-- `restore_receipt_draft_v1`;
-- wrapper contract `storage_lifecycle_execution_scaffold_v1`.
+- `compression_manifest_draft`;
+- `compression_receipt_draft`;
+- `sql_archive_manifest_draft`;
+- `archive_receipt_draft`;
+- `restore_receipt_draft`;
+- wrapper contract `storage_lifecycle_execution_scaffold`.
 
 Draft receipts must use `status=planned_not_executed`, `dry_run=true`, and `mutation_performed=false`. They may record paths, checksums from the artifact index, planned archive/compression destinations, restore commands, and protected-set check status, but they must not claim successful compression/archive/restore/deletion.
 
@@ -51,21 +51,21 @@ Required content:
 
 The current executor emits:
 
-- wrapper: `storage_single_file_compression_result_v1`;
-- summary: `storage_single_file_compression_summary_v1`;
-- manifest: `compression_manifest_v1`;
-- receipt: `compression_receipt_v1`;
-- restore check: `restore_receipt_v1`.
+- wrapper: `storage_single_file_compression_result`;
+- summary: `storage_single_file_compression_summary`;
+- manifest: `compression_manifest`;
+- receipt: `compression_receipt`;
+- restore check: `restore_receipt`.
 
 Allowed successful mutation is only writing `storage/archive/compressed/<artifact_id>/<original-name>.zst`. A successful receipt must still report `original_preserved=true`, `delete_original_performed=false`, `artifact_index_updated=false`, and `sql_mutation_performed=false`.
 
 ### Current V0.1 file-lifecycle acceptance receipts
 
-The one-pass acceptance emits `storage_file_lifecycle_acceptance_v1` and `storage_file_lifecycle_acceptance_summary_v1` after chaining the current index/protected-set/plan/quarantine/scaffold/compression/dashboard-prune helpers. Its summary is an operator receipt for the pass, not a deletion receipt. It must explicitly report `delete_original_performed=false`, `artifact_index_updated=false`, `quarantine_move_performed=false`, `sql_mutation_performed=false`, `model_activation_performed=false`, `broker_execution_performed=false`, and `account_mutation_performed=false`.
+The one-pass acceptance emits `storage_file_lifecycle_acceptance` and `storage_file_lifecycle_acceptance_summary` after chaining the current index/protected-set/plan/quarantine/scaffold/compression/dashboard-prune helpers. Its summary is an operator receipt for the pass, not a deletion receipt. It must explicitly report `delete_original_performed=false`, `artifact_index_updated=false`, `quarantine_move_performed=false`, `sql_mutation_performed=false`, `model_activation_performed=false`, `broker_execution_performed=false`, and `account_mutation_performed=false`.
 
 ### `archive_receipt`
 
-Emitted after file or SQL archive creation. Current V0.1 execution support is limited to reviewed file-backed gzip archive copies from already-materialized export artifacts selected as unprotected `archive_candidate` rows. It does not connect to a database, export live SQL, detach/drop SQL, mutate artifact indexes, quarantine sources, or delete sources. Non-executed archive plans still emit `archive_receipt_draft_v1`.
+Emitted after file or SQL archive creation. Current V0.1 execution support is limited to reviewed file-backed gzip archive copies from already-materialized export artifacts selected as unprotected `archive_candidate` rows. It does not connect to a database, export live SQL, detach/drop SQL, mutate artifact indexes, quarantine sources, or delete sources. Non-executed archive plans still emit `archive_receipt_draft`.
 
 Required content:
 
@@ -108,7 +108,7 @@ The current quarantine/delete executor emits quarantine and deletion draft recei
 
 ### `deletion_receipt`
 
-Emitted only after quarantine and final protected-set recheck pass, and only by a separately reviewed destructive executor. Current V0.1 support emits `deletion_receipt_draft_v1`; it must report `delete_performed=false`, `mutation_performed=false`, `artifact_index_updated=false`, and `sql_mutation_performed=false`.
+Emitted only after quarantine and final protected-set recheck pass, and only by a separately reviewed destructive executor. Current V0.1 support emits `deletion_receipt_draft`; it must report `delete_performed=false`, `mutation_performed=false`, `artifact_index_updated=false`, and `sql_mutation_performed=false`.
 
 Required content:
 
@@ -127,7 +127,7 @@ Required content:
 
 ### `restore_receipt`
 
-Emitted after restore verification or actual restore. Current V0.1 support verifies single-file compression restores and reviewed file-backed SQL archive gzip restores by checksum only. It does not materialize database restores or mutate online SQL state. Non-executed restore plans still emit `restore_receipt_draft_v1` with `status=planned_not_executed`.
+Emitted after restore verification or actual restore. Current V0.1 support verifies single-file compression restores and reviewed file-backed SQL archive gzip restores by checksum only. It does not materialize database restores or mutate online SQL state. Non-executed restore plans still emit `restore_receipt_draft` with `status=planned_not_executed`.
 
 Required content:
 

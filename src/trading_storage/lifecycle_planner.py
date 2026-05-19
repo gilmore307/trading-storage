@@ -82,7 +82,7 @@ class StorageLifecyclePlan:
             if record.protected and record.action == "retain_protected":
                 protected_block_count += 1
         return {
-            "contract_type": "storage_lifecycle_plan_summary_v1",
+            "contract_type": "storage_lifecycle_plan_summary",
             "generated_at": self.generated_at,
             "dry_run": self.dry_run,
             "record_count": len(self.records),
@@ -109,7 +109,7 @@ class StorageLifecyclePlan:
 
 DEFAULT_POLICY_RULES: tuple[LifecyclePolicyRule, ...] = (
     LifecyclePolicyRule(
-        policy_id="storage_lifecycle_default_v1",
+        policy_id="storage_lifecycle_default",
         rule_id="retain_receipts_and_evidence",
         selector={"artifact_kind_contains": "receipt"},
         action="retain_evidence",
@@ -117,7 +117,7 @@ DEFAULT_POLICY_RULES: tuple[LifecyclePolicyRule, ...] = (
         reason="Receipt/evidence artifacts are retained by default.",
     ),
     LifecyclePolicyRule(
-        policy_id="storage_lifecycle_default_v1",
+        policy_id="storage_lifecycle_default",
         rule_id="retain_manual_review_required",
         selector={"retention_class": "manual_review_required"},
         action="retain_manual_review_required",
@@ -125,7 +125,7 @@ DEFAULT_POLICY_RULES: tuple[LifecyclePolicyRule, ...] = (
         reason="Metadata is insufficient for automated lifecycle action.",
     ),
     LifecyclePolicyRule(
-        policy_id="storage_lifecycle_default_v1",
+        policy_id="storage_lifecycle_default",
         rule_id="compress_source_data",
         selector={"retention_class": "compress_and_retain", "content_codec": "none"},
         action="compress_candidate",
@@ -133,7 +133,7 @@ DEFAULT_POLICY_RULES: tuple[LifecyclePolicyRule, ...] = (
         reason="Uncompressed source-like artifacts may be compression candidates once unprotected.",
     ),
     LifecyclePolicyRule(
-        policy_id="storage_lifecycle_default_v1",
+        policy_id="storage_lifecycle_default",
         rule_id="quarantine_ttl_delete_allowed",
         selector={"retention_class": "ttl_delete_allowed"},
         action="quarantine_candidate",
@@ -236,7 +236,7 @@ def plan_storage_lifecycle(
         )
 
     return StorageLifecyclePlan(
-        contract_type="storage_lifecycle_plan_v1",
+        contract_type="storage_lifecycle_plan",
         generated_at=generated,
         dry_run=True,
         records=tuple(plan_records),
@@ -284,7 +284,7 @@ def load_protected_set_json(path: Path) -> ProtectedSet:
         values["evidence_refs"] = tuple(values.get("evidence_refs", ()))
         records.append(ProtectedArtifact(**values))
     return ProtectedSet(
-        contract_type=str(data.get("contract_type", "storage_protected_set_v1")),
+        contract_type=str(data.get("contract_type", "storage_protected_set")),
         generated_at=str(data.get("generated_at", "")),
         source_index_generated_at=data.get("source_index_generated_at"),
         records=tuple(records),

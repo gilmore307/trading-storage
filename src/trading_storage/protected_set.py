@@ -96,7 +96,7 @@ class ProtectedSet:
         candidate_protected = sum(1 for record in self.records if record.candidate_requested and record.protected)
         candidate_clear = sum(1 for record in self.records if record.candidate_requested and record.mutation_allowed)
         return {
-            "contract_type": "storage_protected_set_summary_v1",
+            "contract_type": "storage_protected_set_summary",
             "generated_at": self.generated_at,
             "source_index_generated_at": self.source_index_generated_at,
             "record_count": len(self.records),
@@ -219,7 +219,7 @@ def build_protected_set(
         )
 
     return ProtectedSet(
-        contract_type="storage_protected_set_v1",
+        contract_type="storage_protected_set",
         generated_at=generated,
         source_index_generated_at=source_index_generated_at,
         records=tuple(protected_records),

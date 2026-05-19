@@ -28,7 +28,7 @@ class QuarantineDeleteExecutorTests(unittest.TestCase):
             )
             plan = plan_storage_lifecycle((clear_record,), generated_at="2026-05-17T00:00:00Z")
             final_set = ProtectedSet(
-                contract_type="storage_protected_set_v1",
+                contract_type="storage_protected_set",
                 generated_at="2026-05-17T00:01:00Z",
                 source_index_generated_at=None,
                 records=(

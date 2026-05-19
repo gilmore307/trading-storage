@@ -96,8 +96,8 @@ class DashboardSnapshotLifecycleTests(unittest.TestCase):
 
             payload = json.loads((storage_root / "dashboard" / "lifecycle" / "plan.json").read_text(encoding="utf-8"))
             summary = json.loads((storage_root / "dashboard" / "lifecycle" / "summary.json").read_text(encoding="utf-8"))
-            self.assertEqual(payload["contract_type"], "dashboard_snapshot_prune_plan_v1")
-            self.assertEqual(summary["contract_type"], "dashboard_snapshot_prune_summary_v1")
+            self.assertEqual(payload["contract_type"], "dashboard_snapshot_prune_plan")
+            self.assertEqual(summary["contract_type"], "dashboard_snapshot_prune_summary")
 
     def test_apply_requires_approval_ref(self):
         with tempfile.TemporaryDirectory() as tmp:

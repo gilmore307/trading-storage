@@ -160,7 +160,7 @@ class SqlArchiveResult:
             reason = str(row.get("skip_reason", "unknown"))
             skipped_counts[reason] = skipped_counts.get(reason, 0) + 1
         return {
-            "contract_type": "storage_sql_archive_summary_v1",
+            "contract_type": "storage_sql_archive_summary",
             "generated_at": self.generated_at,
             "source_lifecycle_plan_generated_at": self.source_lifecycle_plan_generated_at,
             "apply": self.apply,
@@ -219,7 +219,7 @@ class SqlArchiveRestoreVerification:
             reason = str(row.get("skip_reason", "unknown"))
             skipped_counts[reason] = skipped_counts.get(reason, 0) + 1
         return {
-            "contract_type": "storage_sql_archive_restore_verification_summary_v1",
+            "contract_type": "storage_sql_archive_restore_verification_summary",
             "generated_at": self.generated_at,
             "source_archive_result_generated_at": self.source_archive_result_generated_at,
             "receipt_count": len(self.receipts),
@@ -309,7 +309,7 @@ def _restore_receipt(
     reason: str,
 ) -> SqlArchiveRestoreReceipt:
     return SqlArchiveRestoreReceipt(
-        contract_type="restore_receipt_v1" if not dry_run else "restore_receipt_draft_v1",
+        contract_type="restore_receipt" if not dry_run else "restore_receipt_draft",
         receipt_ref=_stable_ref("sql_archive_restore_receipt", manifest_ref, artifact_id, status, checksum_status),
         source_manifest_ref=manifest_ref,
         source_artifact_id=artifact_id,
@@ -339,7 +339,7 @@ def _manifest_for_record(
     manifest_ref = _stable_ref("sql_archive_manifest", record.artifact_id, record.physical_path, record.rule_id, record.checksum_sha256)
     archive_path = _archive_relative_path(record)
     return SqlArchiveManifest(
-        contract_type="sql_archive_manifest_v1" if not dry_run else "sql_archive_manifest_draft_v1",
+        contract_type="sql_archive_manifest" if not dry_run else "sql_archive_manifest_draft",
         manifest_ref=manifest_ref,
         artifact_id=record.artifact_id,
         artifact_kind=record.artifact_kind,
@@ -379,7 +379,7 @@ def _receipt_for_record(
     archive_checksum: str | None,
 ) -> SqlArchiveReceipt:
     return SqlArchiveReceipt(
-        contract_type="archive_receipt_v1" if not dry_run else "archive_receipt_draft_v1",
+        contract_type="archive_receipt" if not dry_run else "archive_receipt_draft",
         receipt_ref=_stable_ref("sql_archive_receipt", record.artifact_id, record.physical_path, status, archive_checksum or ""),
         manifest_ref=manifest.manifest_ref if manifest else None,
         artifact_id=record.artifact_id,
@@ -521,7 +521,7 @@ def execute_sql_archive(
             receipts.append(receipt)
 
     return SqlArchiveResult(
-        contract_type="storage_sql_archive_result_v1",
+        contract_type="storage_sql_archive_result",
         generated_at=generated,
         source_lifecycle_plan_generated_at=lifecycle_plan.generated_at,
         apply=apply,
@@ -553,7 +553,7 @@ def load_sql_archive_result_json(path: Path) -> SqlArchiveResult:
     restore_receipts = tuple(SqlArchiveRestoreReceipt(**dict(row)) for row in data.get("restore_receipts", []) if isinstance(row, Mapping))
     skipped = tuple(dict(row) for row in data.get("skipped_records", []) if isinstance(row, Mapping))
     return SqlArchiveResult(
-        contract_type=str(data.get("contract_type", "storage_sql_archive_result_v1")),
+        contract_type=str(data.get("contract_type", "storage_sql_archive_result")),
         generated_at=str(data.get("generated_at", "")),
         source_lifecycle_plan_generated_at=data.get("source_lifecycle_plan_generated_at"),
         apply=bool(data.get("apply", False)),
@@ -622,7 +622,7 @@ def verify_sql_archive_restore(
                 reason=str(exc),
             ))
     return SqlArchiveRestoreVerification(
-        contract_type="storage_sql_archive_restore_verification_v1",
+        contract_type="storage_sql_archive_restore_verification",
         generated_at=generated,
         source_archive_result_generated_at=archive_result.generated_at,
         receipts=tuple(receipts),

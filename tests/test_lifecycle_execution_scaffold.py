@@ -157,9 +157,9 @@ class LifecycleExecutionScaffoldTests(unittest.TestCase):
             payload = json.loads((root / "storage" / "lifecycle_execution" / "scaffold.json").read_text(encoding="utf-8"))
             summary = json.loads((root / "storage" / "lifecycle_execution" / "summary.json").read_text(encoding="utf-8"))
 
-            self.assertEqual(payload["contract_type"], "storage_lifecycle_execution_scaffold_v1")
+            self.assertEqual(payload["contract_type"], "storage_lifecycle_execution_scaffold")
             self.assertEqual(payload["source_lifecycle_plan_generated_at"], "2026-05-16T00:00:00Z")
-            self.assertEqual(summary["contract_type"], "storage_lifecycle_execution_scaffold_summary_v1")
+            self.assertEqual(summary["contract_type"], "storage_lifecycle_execution_scaffold_summary")
             self.assertEqual(summary["executor_mode"], "dry_run_scaffold_only")
 
 

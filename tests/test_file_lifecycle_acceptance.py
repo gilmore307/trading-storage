@@ -30,7 +30,7 @@ class FileLifecycleAcceptanceTests(unittest.TestCase):
             )
             summary = acceptance.summary
 
-            self.assertEqual(summary["contract_type"], "storage_file_lifecycle_acceptance_summary_v1")
+            self.assertEqual(summary["contract_type"], "storage_file_lifecycle_acceptance_summary")
             self.assertEqual(summary["artifact_record_count"], 1)
             self.assertEqual(summary["lifecycle_action_counts"], {"compress_candidate": 1})
             self.assertEqual(summary["compression_status_counts"], {"succeeded": 1})

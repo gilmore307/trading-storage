@@ -155,7 +155,7 @@ class SingleFileCompressionResult:
             reason = str(row.get("skip_reason", "unknown"))
             skipped_counts[reason] = skipped_counts.get(reason, 0) + 1
         return {
-            "contract_type": "storage_single_file_compression_summary_v1",
+            "contract_type": "storage_single_file_compression_summary",
             "generated_at": self.generated_at,
             "source_lifecycle_plan_generated_at": self.source_lifecycle_plan_generated_at,
             "apply": self.apply,
@@ -265,7 +265,7 @@ def _manifest_for_record(
     manifest_ref = _stable_ref("compression_manifest", record.artifact_id, record.artifact_uri, record.physical_path, record.rule_id)
     compressed_relative = _compressed_relative_path(record)
     return CompressionManifest(
-        contract_type="compression_manifest_v1",
+        contract_type="compression_manifest",
         manifest_ref=manifest_ref,
         artifact_id=record.artifact_id,
         artifact_kind=record.artifact_kind,
@@ -306,7 +306,7 @@ def _receipt_for_record(
     reason: str,
 ) -> CompressionReceipt:
     return CompressionReceipt(
-        contract_type="compression_receipt_v1",
+        contract_type="compression_receipt",
         receipt_ref=_stable_ref("compression_receipt", manifest_ref or "no_manifest", record.artifact_id, record.artifact_uri, record.physical_path, status),
         manifest_ref=manifest_ref,
         artifact_id=record.artifact_id,
@@ -347,7 +347,7 @@ def _restore_receipt(
     reason: str,
 ) -> RestoreVerificationReceipt:
     return RestoreVerificationReceipt(
-        contract_type="restore_receipt_v1",
+        contract_type="restore_receipt",
         receipt_ref=_stable_ref("restore_receipt", manifest_ref, record.artifact_id, record.artifact_uri, record.physical_path, checksum_status),
         source_manifest_ref=manifest_ref,
         source_artifact_id=record.artifact_id,
@@ -516,7 +516,7 @@ def execute_single_file_compression(
             )
 
     return SingleFileCompressionResult(
-        contract_type="storage_single_file_compression_result_v1",
+        contract_type="storage_single_file_compression_result",
         generated_at=generated,
         source_lifecycle_plan_generated_at=lifecycle_plan.generated_at,
         apply=apply,
