@@ -234,7 +234,7 @@ def main(argv: Sequence[str] | None = None) -> int:
     parser.add_argument("--output-path", type=Path, default=DEFAULT_MAINTENANCE_OUTPUT)
     parser.add_argument("--apply-local-retention", action="store_true", help="Archive/delete eligible local runtime files.")
     parser.add_argument("--skip-local-retention", action="store_true", help="Skip local retention planning.")
-    parser.add_argument("--skip-fold-monitor", action="store_true", help="Skip manager fold-state monitoring.")
+    parser.add_argument("--skip-fold-monitor", action="store_true", help="Skip direct manager fold-state reads.")
     parser.add_argument("--json", action="store_true", help="Print the summary JSON to stdout.")
     args = parser.parse_args(argv)
     summary = run_storage_maintenance(
