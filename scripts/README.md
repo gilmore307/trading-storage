@@ -6,6 +6,8 @@ Executable storage maintenance and artifact helpers live here. Scripts may impor
 
 - `dashboard/materialize_read_model.py` validates a dashboard read-model common envelope and writes storage-owned snapshot/latest/schema/index files under `storage/dashboard/`.
 - `dashboard/refresh_historical_task_progress_read_model.py` runs the manager-owned `historical_task_progress_summary` producer and materializes the validated payload into the accepted storage layout.
+- `dashboard/refresh_realtime_signal_summary_read_model.py` builds the execution-owned realtime signal summary from monitor receipts and materializes the validated payload into the accepted storage layout.
+- `dashboard/refresh_public_dashboard_read_models.py` refreshes the public dashboard read-model set, currently including current system status, historical task progress, and realtime signal summary.
 
 Examples:
 
@@ -15,6 +17,10 @@ PYTHONPATH=src python3 scripts/dashboard/materialize_read_model.py summary.json 
 
 PYTHONPATH=src python3 scripts/dashboard/refresh_historical_task_progress_read_model.py \
   --trading-manager-root /root/projects/trading-manager \
+  --storage-root storage
+
+PYTHONPATH=src python3 scripts/dashboard/refresh_realtime_signal_summary_read_model.py \
+  --trading-execution-root /root/projects/trading-execution \
   --storage-root storage
 ```
 
