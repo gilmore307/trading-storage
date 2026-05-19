@@ -16,7 +16,7 @@ src/         Importable storage helper package.
 tests/       First-party storage tests.
 ```
 
-The current implementation slices are storage-owned JSON artifact writing for completion receipt payloads, conservative local lifecycle maintenance for ignored runtime files, dry-run-first lifecycle planning/protected-set/quarantine evidence, narrow compressed-copy and file-backed archive-copy executors, no-mutation quarantine/delete gate receipts, dashboard read-model materialization, and dashboard read-model refresh wrappers. `src/` owns reusable code, `scripts/` owns executable entrypoints, and `tests/` owns verification; `scripts/` may import `src/`, but `src/` must not import `scripts/`.
+The current implementation slices are storage-owned JSON artifact writing for completion receipt payloads, conservative local lifecycle maintenance for ignored runtime files, scheduled maintenance wrapping, dry-run-first lifecycle planning/protected-set/quarantine evidence, narrow compressed-copy and file-backed archive-copy executors, no-mutation quarantine/delete gate receipts, dashboard read-model materialization, and dashboard read-model refresh wrappers. `src/` owns reusable code, `scripts/` owns executable entrypoints, and `tests/` owns verification; `scripts/` may import `src/`, but `src/` must not import `scripts/`.
 
 ## Docs Spine
 
@@ -54,4 +54,5 @@ Any new global helper, reusable template, shared field, status, type, config key
 PYTHONPATH=src python3 -m unittest discover -s tests
 python3 -m compileall -q src scripts
 PYTHONPATH=src python3 scripts/lifecycle/maintain_local_storage.py --root .
+PYTHONPATH=src python3 scripts/lifecycle/run_storage_maintenance.py --root . --json
 ```

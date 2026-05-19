@@ -528,3 +528,24 @@ For direct equity targets such as AAOI, auxiliary proxy fields may be empty and 
 - `target_symbol` is not unique in the mapping CSV; consumers must group rows by target and preserve all reviewed context rows.
 - Multi-row business mappings do not add the target itself to Layer 1/2 ETF universes.
 - Mapping rows remain metadata/evidence boundaries and do not authorize provider calls, model activation, broker/account mutation, storage lifecycle mutation, or Layer 1/2 universe edits.
+
+## D021 - Storage maintenance is the scheduled action service
+
+Date: 2026-05-19
+Status: Accepted
+
+### Context
+
+Backup and deletion actions should not be scattered across manager, model, data, or ad hoc shell timers. Storage already owns lifecycle policy, local retention helpers, archive/restore receipts, and deployable helper services, so scheduled data backup and cleanup should enter through one storage-owned service boundary.
+
+### Decision
+
+Accept `trading-storage-maintenance.service` / `.timer` as the storage-owned scheduled maintenance boundary. The current runner executes local retention for storage-owned runtime roots, including timed log archive/delete behavior. Manager may plan or request lifecycle work, but storage owns physical backup/archive/delete execution and receipts.
+
+Fold SQL backup execution is not yet configured in this runner. It must be added as a storage-owned phase that consumes reviewed manager fold-backup plans, performs `pg_dump -Fc` and restore-smoke/checksum evidence, then gates deletion/lifecycle execution.
+
+### Consequences
+
+- Manager must not directly run data backup or deletion; it may create plans and route requests.
+- Storage maintenance may include logs, tmp/cache, runs, outputs, staging, archive pruning, reviewed backup phases, and reviewed lifecycle execution phases.
+- Host-level timer enablement still requires operator deployment review.

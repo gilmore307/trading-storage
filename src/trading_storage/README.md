@@ -16,5 +16,6 @@ Importable storage helper implementation lives here.
 - `protected_set.py` owns conservative protected-set construction from artifact-index records and optional reason-code references/manual pins.
 - `quarantine_recheck.py` owns report-only quarantine/recheck evidence for dry-run lifecycle candidates; it never authorizes deletion or mutates storage state.
 - `single_file_compression.py` owns the narrow single-file zstd compressed-copy executor for unprotected `compress_candidate` rows; it preserves originals and does not update the artifact index or touch SQL.
+- `storage_maintenance.py` owns the scheduled maintenance runner boundary and emits `storage_scheduled_maintenance_summary` receipts.
 
 This package must not import from `scripts/`; executable wrappers belong under `scripts/`.

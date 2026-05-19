@@ -1,0 +1,11 @@
+[Unit]
+Description=Daily trading-storage scheduled maintenance
+Documentation=file:/root/projects/trading-storage/docs/20_storage_lifecycle_policy.md
+
+[Timer]
+OnCalendar=*-*-* 03:20:00 America/New_York
+Persistent=true
+Unit=trading-storage-maintenance.service
+
+[Install]
+WantedBy=timers.target
