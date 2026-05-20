@@ -21,13 +21,15 @@ from .dashboard_read_models import materialize_dashboard_read_model
 
 REALTIME_SIGNAL_SUMMARY_CONTRACT = "realtime_signal_summary"
 REALTIME_SIGNAL_SUMMARY_SCHEMA_REF = f"storage/dashboard/schemas/{REALTIME_SIGNAL_SUMMARY_CONTRACT}.schema.json"
-DEFAULT_TRADING_EXECUTION_ROOT = Path(os.environ.get("TRADING_EXECUTION_ROOT", "/root/projects/trading-execution"))
+DEFAULT_TRADING_STORAGE_ROOT = Path(os.environ.get("TRADING_STORAGE_ROOT", "/root/projects/trading-storage/storage"))
+DEFAULT_EXECUTION_STORAGE_ROOT = Path(os.environ.get("TRADING_EXECUTION_STORAGE_ROOT", str(DEFAULT_TRADING_STORAGE_ROOT / "execution")))
+DEFAULT_TRADING_EXECUTION_ROOT = DEFAULT_EXECUTION_STORAGE_ROOT
 DEFAULT_STALE_AFTER_SECONDS = 30
 
 MONITOR_RECEIPT_PATTERNS = (
-    "storage/runtime/realtime_monitor/**/*.json",
-    "storage/realtime_monitor/**/*.json",
-    "storage/**/loop_receipt.json",
+    "runtime/realtime_monitor/**/*.json",
+    "realtime_monitor/**/*.json",
+    "**/loop_receipt.json",
 )
 
 
@@ -123,7 +125,7 @@ def _truthy(value: object) -> bool:
 def build_realtime_signal_summary(
     *,
     storage_root: Path,
-    execution_root: Path = DEFAULT_TRADING_EXECUTION_ROOT,
+    execution_root: Path = DEFAULT_EXECUTION_STORAGE_ROOT,
     generated_at_utc: str | None = None,
 ) -> dict[str, Any]:
     """Build a realtime/shadow signal dashboard summary from execution evidence."""
@@ -241,7 +243,7 @@ def build_realtime_signal_summary(
 def refresh_realtime_signal_summary_read_model(
     *,
     storage_root: Path = Path("storage"),
-    execution_root: Path = DEFAULT_TRADING_EXECUTION_ROOT,
+    execution_root: Path = DEFAULT_EXECUTION_STORAGE_ROOT,
 ) -> dict[str, Any]:
     storage_root.mkdir(parents=True, exist_ok=True)
     payload = build_realtime_signal_summary(storage_root=storage_root, execution_root=execution_root)
@@ -269,7 +271,7 @@ def write_realtime_signal_summary(payload: Mapping[str, Any], *, output: TextIO)
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description="Build or refresh realtime_signal_summary from execution-owned monitor evidence.")
     parser.add_argument("--storage-root", type=Path, default=Path("storage"))
-    parser.add_argument("--execution-root", type=Path, default=DEFAULT_TRADING_EXECUTION_ROOT)
+    parser.add_argument("--execution-root", type=Path, default=DEFAULT_EXECUTION_STORAGE_ROOT)
     parser.add_argument("--refresh", action="store_true")
     args = parser.parse_args(argv)
     if args.refresh:

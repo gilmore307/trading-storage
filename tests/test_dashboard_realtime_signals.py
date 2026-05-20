@@ -31,7 +31,7 @@ class RealtimeSignalSummaryTests(unittest.TestCase):
     def test_builds_shadow_ready_state_from_latest_loop_receipt(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
-            receipt_path = root / "execution/storage/runtime/realtime_monitor/loop_receipt.json"
+            receipt_path = root / "execution/runtime/realtime_monitor/loop_receipt.json"
             receipt_path.parent.mkdir(parents=True)
             receipt_path.write_text(
                 json.dumps(

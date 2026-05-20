@@ -30,6 +30,8 @@ CURRENT_SYSTEM_STATUS_SCHEMA_REF = f"storage/dashboard/schemas/{CURRENT_SYSTEM_S
 HISTORICAL_TASK_PROGRESS_CONTRACT = "historical_task_progress_summary"
 DEFAULT_STALE_AFTER_SECONDS = 120
 DEFAULT_TRADING_MANAGER_ROOT = Path(os.environ.get("TRADING_MANAGER_ROOT", "/root/projects/trading-manager"))
+DEFAULT_TRADING_STORAGE_ROOT = Path(os.environ.get("TRADING_STORAGE_ROOT", "/root/projects/trading-storage/storage"))
+DEFAULT_MANAGER_STORAGE_ROOT = Path(os.environ.get("TRADING_MANAGER_STORAGE_ROOT", str(DEFAULT_TRADING_STORAGE_ROOT / "manager")))
 DEFAULT_SCHEDULER_ENV_PATH = Path("/etc/default/trading-manager-historical-scheduler")
 DEFAULT_STORAGE_REFRESH_ENV_PATH = Path(os.environ.get("TRADING_STORAGE_REFRESH_ENV_PATH", "/etc/default/trading-storage-dashboard-read-model-refresh"))
 DEFAULT_REFRESH_CADENCE_SECONDS = 60
@@ -251,13 +253,13 @@ def _tail_jsonl(path: Path, *, max_bytes: int = 4 * 1024 * 1024) -> list[dict[st
 def _historical_scheduler_runtime_throughput(
     *,
     values: Mapping[str, str],
-    trading_manager_root: Path = DEFAULT_TRADING_MANAGER_ROOT,
+    manager_storage_root: Path = DEFAULT_MANAGER_STORAGE_ROOT,
     window_minutes: int = DEFAULT_THROUGHPUT_WINDOW_MINUTES,
 ) -> dict[str, Any]:
     month_workers = _env_int(values, "TRADING_MANAGER_MONTH_INGEST_WORKERS", DEFAULT_MONTH_INGEST_WORKERS)
     model_workers = DEFAULT_MODEL_WORKERS
     total_workers = max(1, month_workers) + model_workers
-    rows = _tail_jsonl(trading_manager_root / "storage/runtime/historical_scheduler_decisions.jsonl")
+    rows = _tail_jsonl(manager_storage_root / "runtime/historical_scheduler_decisions.jsonl")
     timed_rows: list[tuple[datetime, dict[str, Any]]] = []
     for row in rows:
         parsed = _parse_utc_timestamp(row.get("now_utc") or row.get("updated_utc") or row.get("generated_at_utc"))
@@ -549,8 +551,13 @@ def _active_workflow_state_path(runtime_root: Path) -> Path | None:
     return _latest_matching_file(runtime_root, "model_training_workflow_state_????-??.json") or runtime_root / "model_training_workflow_state.json"
 
 
-def _dashboard_source_outputs(*, trading_manager_root: Path, now_epoch: float) -> list[dict[str, Any]]:
-    runtime_root = trading_manager_root / "storage" / "runtime"
+def _manager_storage_root_from(storage_root: Path) -> Path:
+    override = os.environ.get("TRADING_MANAGER_STORAGE_ROOT")
+    return Path(override) if override else Path(storage_root) / "manager"
+
+
+def _dashboard_source_outputs(*, manager_storage_root: Path, now_epoch: float) -> list[dict[str, Any]]:
+    runtime_root = manager_storage_root / "runtime"
     heartbeat_note = "Expected to update on scheduler heartbeat; old timestamps can indicate daemon trouble."
     event_note = "Event-driven artifact; timestamp changes only when the scheduler makes a decision or stage progress occurs."
     # Keep this inventory synchronized with website/read-model slices that consume
@@ -609,10 +616,11 @@ def build_current_system_status_summary(*, storage_root: Path, generated_at_utc:
     now_epoch = time.time()
     host = _host_resources(storage_root)
     parallelism = _historical_scheduler_parallelism(host)
+    manager_storage_root = _manager_storage_root_from(storage_root)
     runtime_values = _read_env_file(DEFAULT_TRADING_MANAGER_ROOT / "deploy/systemd/trading-manager-historical-scheduler.env") | _read_env_file(DEFAULT_SCHEDULER_ENV_PATH)
-    runtime_throughput = _historical_scheduler_runtime_throughput(values=runtime_values)
+    runtime_throughput = _historical_scheduler_runtime_throughput(values=runtime_values, manager_storage_root=manager_storage_root)
     services = [_systemd_unit(unit) for unit in SYSTEMD_UNITS]
-    source_outputs = _dashboard_source_outputs(trading_manager_root=DEFAULT_TRADING_MANAGER_ROOT, now_epoch=now_epoch)
+    source_outputs = _dashboard_source_outputs(manager_storage_root=manager_storage_root, now_epoch=now_epoch)
     scheduler_active = _historical_scheduler_is_active(services)
     if not scheduler_active:
         source_outputs = _mark_source_outputs_not_started(source_outputs)

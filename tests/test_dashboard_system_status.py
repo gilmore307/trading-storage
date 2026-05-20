@@ -82,7 +82,7 @@ class DashboardSystemStatusTests(unittest.TestCase):
     def test_runtime_throughput_summarizes_recent_decision_log(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             manager_root = Path(tmp)
-            runtime = manager_root / "storage/runtime"
+            runtime = manager_root / "runtime"
             runtime.mkdir(parents=True)
             (runtime / "historical_scheduler_decisions.jsonl").write_text(
                 "\n".join(
@@ -98,7 +98,7 @@ class DashboardSystemStatusTests(unittest.TestCase):
 
             throughput = _historical_scheduler_runtime_throughput(
                 values={"TRADING_MANAGER_MONTH_INGEST_WORKERS": "3"},
-                trading_manager_root=manager_root,
+                manager_storage_root=manager_root,
             )
 
         self.assertEqual(throughput["month_ingest_worker_count"], 3)
@@ -111,7 +111,7 @@ class DashboardSystemStatusTests(unittest.TestCase):
     def test_source_outputs_use_active_month_workflow_state(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             manager_root = Path(tmp)
-            runtime = manager_root / "storage/runtime"
+            runtime = manager_root / "runtime"
             runtime.mkdir(parents=True)
             (runtime / "historical_scheduler_state.json").write_text(
                 json.dumps({"start_month": "2020-01", "updated_utc": "2026-05-14T00:00:00Z"}),
@@ -125,7 +125,7 @@ class DashboardSystemStatusTests(unittest.TestCase):
                 json.dumps({"updated_utc": "2026-05-14T00:01:00Z"}),
                 encoding="utf-8",
             )
-            outputs = _dashboard_source_outputs(trading_manager_root=manager_root, now_epoch=0)
+            outputs = _dashboard_source_outputs(manager_storage_root=manager_root, now_epoch=0)
             active_workflow = next(output for output in outputs if output["label"] == "Active Workflow State")
             self.assertEqual(active_workflow["latest_updated_at_utc"], "2026-05-14T00:01:00Z")
             self.assertEqual(active_workflow["freshness_class"], "event_driven")
