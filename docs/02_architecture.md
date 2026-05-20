@@ -30,7 +30,7 @@ This file maps those modules and records the implemented local ignored-file help
 | Class | Path | Owner | Rule |
 |---|---|---|---|
 | Source-controlled contracts/assets | `docs/`, `main/`, `src/`, `scripts/`, `tests/` | Git | Reviewed and committed. No generated output belongs here. |
-| Source data and source outputs | `storage/01_source_data/` | data-producing repositories with storage-owned placement | Downloaded/provider/source evidence, monthly backfill data, realtime source evidence, source-output artifacts, and event evidence. |
+| Source data and source outputs | `storage/01_source_data/` | data-producing repositories with storage-owned placement | Reusable Layer 1/2 foundations, downloaded/provider/source evidence, monthly backfill data, realtime source evidence, source-output artifacts, event evidence, and explicitly fold-scoped target/source folders. Reusable Layer 1/2 data is not deleted; fold-scoped target/source folders may become deletion candidates only after the full fold closes. |
 | Control-plane state | `storage/02_control_plane/` | `trading-manager` with storage-owned placement | Manager task payloads, scheduler state, locks, coverage, dispatch receipts, and workflow checkpoints. |
 | Model artifacts | `storage/03_model_artifacts/` | `trading-model` with storage-owned placement | Model research artifacts, training/runtime outputs, diagnostics, and promotion-adjacent model evidence. |
 | Execution artifacts | `storage/04_execution_artifacts/` | `trading-execution` with storage-owned placement | Realtime monitor receipts, execution-side observations, shadow/live evidence, and execution runtime files. |
@@ -79,6 +79,7 @@ The command emits a JSON plan with counts for `archive`, `delete`, `retain`, and
 
 - Dry-run is the default.
 - Durable numbered roots are report-only by default in local retention; the helper does not delete source data, control-plane evidence, model artifacts, execution artifacts, benchmark datasets, completion receipts, or other storage-owned artifact evidence.
+- `storage/01_source_data/fold_scoped/<fold_id>/` is the only accepted source-data folder boundary for fold-completion cleanup candidates. Scheduled maintenance may report those folders after a completed ten-layer fold, but real deletion still requires artifact-index coverage, protected-set clearance, quarantine/recheck, and a deletion receipt.
 - Current compatibility `logs/`, `runs/`, and `outputs/` are copied to `storage/90_lifecycle/archive/` before active files are removed.
 - Current compatibility `tmp/` is disposable and is deleted after its TTL without archiving.
 - Target `storage/90_lifecycle/logs/`, `storage/90_lifecycle/runs/`, `storage/90_lifecycle/outputs/`, `storage/90_lifecycle/tmp/`, `storage/90_lifecycle/staging/<component>/`, and `storage/90_lifecycle/cache/<component>/` roots are covered by the lifecycle helper.

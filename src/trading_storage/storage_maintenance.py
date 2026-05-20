@@ -15,8 +15,14 @@ DEFAULT_MAINTENANCE_OUTPUT = Path("storage/90_lifecycle/maintenance/storage_main
 MODEL_WORKER_STAGE_TYPES = {"model_generation", "model_evaluation", "promotion_review", "maintenance"}
 COMPLETE_STATUSES = {"succeeded", "not_applicable"}
 FOLD_STATE_GLOB = "model_training_fold_state_*.json"
+FOLD_SCOPED_SOURCE_ROOT = Path("storage/01_source_data/fold_scoped")
 ORDERED_STORAGE_ROOTS: tuple[tuple[str, str, str, str], ...] = (
-    ("01_source_data", "storage/01_source_data", "durable_source", "Downloaded/provider/source evidence and source-output artifacts."),
+    (
+        "01_source_data",
+        "storage/01_source_data",
+        "durable_source",
+        "Reusable Layer 1/2 source foundations plus explicitly fold-scoped target/source artifacts.",
+    ),
     ("02_control_plane", "storage/02_control_plane", "durable_control", "Manager task state, workflow state, receipts, and control-plane artifacts."),
     ("03_model_artifacts", "storage/03_model_artifacts", "durable_model", "Model training, diagnostics, research, and promotion-adjacent artifacts."),
     ("04_execution_artifacts", "storage/04_execution_artifacts", "durable_execution", "Realtime observation, shadow/live, and execution-side artifacts."),
@@ -51,7 +57,10 @@ class StorageMaintenanceSummary:
     completed_fold_count: int
     completed_fold_ids: tuple[str, ...]
     fold_backup_candidates: tuple[dict[str, Any], ...]
+    fold_source_cleanup_candidates: tuple[dict[str, Any], ...]
+    fold_source_cleanup_candidate_count: int
     fold_sql_backup_phase_status: str
+    fold_source_cleanup_phase_status: str
     deletion_phase_status: str
     provider_calls_performed: bool
     model_activation_performed: bool
@@ -73,7 +82,10 @@ class StorageMaintenanceSummary:
             "completed_fold_count": self.completed_fold_count,
             "completed_fold_ids": list(self.completed_fold_ids),
             "fold_backup_candidates": list(self.fold_backup_candidates),
+            "fold_source_cleanup_candidates": list(self.fold_source_cleanup_candidates),
+            "fold_source_cleanup_candidate_count": self.fold_source_cleanup_candidate_count,
             "fold_sql_backup_phase_status": self.fold_sql_backup_phase_status,
+            "fold_source_cleanup_phase_status": self.fold_source_cleanup_phase_status,
             "deletion_phase_status": self.deletion_phase_status,
             "provider_calls_performed": self.provider_calls_performed,
             "model_activation_performed": self.model_activation_performed,
@@ -211,6 +223,36 @@ def _backup_candidate(*, fold_id: str, start_month: str, end_month: str, state_p
     }
 
 
+def _fold_source_cleanup_candidate(*, fold_id: str, source_folder: Path, root: Path) -> dict[str, Any]:
+    relative = source_folder.relative_to(root).as_posix()
+    file_count = 0
+    byte_count = 0
+    for path in source_folder.rglob("*"):
+        if path.is_symlink() or not path.is_file():
+            continue
+        file_count += 1
+        try:
+            byte_count += path.stat().st_size
+        except OSError:
+            pass
+    return {
+        "contract_type": "storage_fold_source_cleanup_candidate",
+        "fold_id": fold_id,
+        "source_folder_path": relative,
+        "cleanup_unit": "fold_folder",
+        "retention_boundary": "fold_complete_delete_allowed",
+        "file_count": file_count,
+        "byte_count": byte_count,
+        "required_completion_gate": "fold_layers_01_10_model_evaluation_complete",
+        "requires_artifact_index": True,
+        "requires_protected_set_clear": True,
+        "requires_quarantine_recheck": True,
+        "requires_deletion_receipt": True,
+        "preserve_reusable_layer_01_02_source_data": True,
+        "deletion_performed": False,
+    }
+
+
 def detect_completed_model_worker_folds(*, manager_root: Path) -> tuple[dict[str, Any], ...]:
     runtime_root = manager_root / "storage" / "runtime"
     if not runtime_root.exists():
@@ -239,6 +281,25 @@ def detect_completed_model_worker_folds(*, manager_root: Path) -> tuple[dict[str
     return tuple(candidates)
 
 
+def detect_fold_scoped_source_cleanup_candidates(
+    *,
+    root: Path,
+    completed_fold_ids: Sequence[str],
+) -> tuple[dict[str, Any], ...]:
+    """Find fold-folder source cleanup candidates without mutating storage."""
+
+    source_root = root / FOLD_SCOPED_SOURCE_ROOT
+    if not source_root.exists():
+        return ()
+    completed = set(completed_fold_ids)
+    candidates: list[dict[str, Any]] = []
+    for folder in sorted(source_root.iterdir()):
+        if not folder.is_dir() or folder.is_symlink() or folder.name not in completed:
+            continue
+        candidates.append(_fold_source_cleanup_candidate(fold_id=folder.name, source_folder=folder, root=root))
+    return tuple(candidates)
+
+
 def run_storage_maintenance(
     *,
     root: Path = Path("."),
@@ -263,6 +324,16 @@ def run_storage_maintenance(
         if include_fold_monitor and resolved_manager_root is not None
         else ()
     )
+    completed_fold_ids = tuple(str(candidate["fold_id"]) for candidate in fold_candidates)
+    fold_source_cleanup_candidates = detect_fold_scoped_source_cleanup_candidates(
+        root=root,
+        completed_fold_ids=completed_fold_ids,
+    )
+    fold_source_cleanup_phase = (
+        "ready_for_quarantine_review" if fold_source_cleanup_candidates else "no_fold_scoped_source_cleanup_candidates"
+    )
+    if not include_fold_monitor:
+        fold_source_cleanup_phase = "fold_monitor_skipped"
     return StorageMaintenanceSummary(
         contract_type="storage_scheduled_maintenance_summary",
         generated_at_utc=generated_at_utc or _now_utc(),
@@ -275,9 +346,12 @@ def run_storage_maintenance(
         manager_root=str(resolved_manager_root) if resolved_manager_root is not None else None,
         fold_monitor_enabled=include_fold_monitor and resolved_manager_root is not None,
         completed_fold_count=len(fold_candidates),
-        completed_fold_ids=tuple(str(candidate["fold_id"]) for candidate in fold_candidates),
+        completed_fold_ids=completed_fold_ids,
         fold_backup_candidates=fold_candidates,
+        fold_source_cleanup_candidates=fold_source_cleanup_candidates,
+        fold_source_cleanup_candidate_count=len(fold_source_cleanup_candidates),
         fold_sql_backup_phase_status="ready_for_storage_backup" if fold_candidates else "no_completed_fold_detected",
+        fold_source_cleanup_phase_status=fold_source_cleanup_phase,
         deletion_phase_status="local_retention_only" if include_local_retention else "local_retention_skipped",
         provider_calls_performed=False,
         model_activation_performed=False,
@@ -321,6 +395,7 @@ __all__ = [
     "DEFAULT_MAINTENANCE_OUTPUT",
     "StorageMaintenanceSummary",
     "detect_completed_model_worker_folds",
+    "detect_fold_scoped_source_cleanup_candidates",
     "run_storage_maintenance",
     "write_storage_maintenance_summary",
 ]

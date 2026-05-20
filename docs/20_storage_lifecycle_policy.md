@@ -12,6 +12,8 @@ Core rule:
 
 ```text
 Layer 1 and Layer 2 data are persistent source/feature foundations and must be retained, compressed, and protected from deletion by default.
+Reusable source data, including Layer 1/2 market-regime and sector-context foundations, is never a fold-completion delete target.
+Target-specific or experiment-specific source data that will not be reused may enter deletion planning only as an explicit fold-scoped folder after the full Layer 1-10 fold closes.
 Later-layer model-run metadata and dashboard/cache snapshots may be deleted only after the model run cycle closes, provided latest summaries, receipts, manifests, lineage refs, unresolved-alert evidence, and any needed regeneration/debug evidence remain. While the event model is being redesigned and downstream models must be regenerated, dashboard/model-run metadata pruning is on hold.
 Promoted model bodies are preserved permanently.
 Regenerable intermediate training data may be deleted after TTL.
@@ -88,6 +90,12 @@ Includes Layer 1 market-regime and Layer 2 sector-context source/feature foundat
 
 Policy: persist by default. Prefer compression and archive over deletion. Do not classify Layer 1/2 data as disposable metadata merely because a model run completed.
 
+### Fold-scoped target source data
+
+Includes target-symbol or experiment-specific source folders created for a bounded six-month model-worker fold, where the folder is not intended to serve as reusable Layer 1/2 source foundation or durable benchmark/source history.
+
+Policy: delete by fold folder only after the full Layer 1-10 fold closes. The accepted folder boundary is `storage/01_source_data/fold_scoped/<fold_id>/...`; storage maintenance emits `storage_fold_source_cleanup_candidate` rows only for completed fold ids under that root. These candidates still require artifact-index coverage, protected-set clearance, quarantine/recheck, and deletion receipts before any destructive executor may remove bytes. Individual files inside a fold-scoped folder should not be independently deleted out of order.
+
 ### Later-layer model-run metadata
 
 Includes Layer 3+ diagnostic summaries, runtime metadata, dashboard snapshots, staging/intermediate files, scratch feature files, failed-run temp files, duplicated dry-run payloads, and old stdout/stderr logs that are not the only remaining receipt/manifest/lineage evidence.
@@ -161,6 +169,8 @@ Scheduled maintenance emits a `storage_root_inventory_summary` inside each `stor
 
 The inventory records existence, file count, directory count, byte count, lifecycle role, and managed root ids. It does not hash payloads and does not authorize mutation. Hashing, protected-set checks, compression planning, quarantine/recheck, and deletion gates remain in the artifact-index and lifecycle-plan pipeline.
 
+Scheduled maintenance also reads completed ten-layer fold state from manager. For completed folds, it may report `storage_fold_sql_backup_candidate` rows and, when `storage/01_source_data/fold_scoped/<fold_id>/` exists, `storage_fold_source_cleanup_candidate` rows. Cleanup candidates are folder-level planning evidence only; the scheduled maintenance pass does not delete those folders.
+
 ## Current V0.1 dry-run planner
 
 The first durable-artifact lifecycle planner is conservative and non-mutating:
@@ -173,6 +183,7 @@ The first durable-artifact lifecycle planner is conservative and non-mutating:
 - all output records carry `dry_run=true` and `mutation_performed=false` in the summary;
 - protected artifacts become `retain_protected` regardless of matched lifecycle policy;
 - ambiguous manual-review artifacts remain retained until metadata is classified.
+- explicit `storage_retention_class` or `retention_class` metadata can classify reviewed artifacts, including `fold_complete_delete_allowed` for fold-scoped source artifacts that may become quarantine candidates after fold completion.
 
 CLI smoke:
 

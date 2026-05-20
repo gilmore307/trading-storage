@@ -549,3 +549,31 @@ When storage detects a completed fold, it may create a storage-owned SQL backup 
 - Manager must not directly run data backup or deletion and must not create backup/cleanup signals, requests, or plans; storage reads manager fold runtime state directly.
 - Storage maintenance may include numbered-root inventory, logs, tmp/cache, runs, outputs, staging, archive pruning, reviewed backup phases, and reviewed lifecycle execution phases.
 - Host-level timer enablement still requires operator deployment review.
+
+## D022 - Fold-scoped target source data may be cleanup candidates after full-fold completion
+
+Date: 2026-05-20
+Status: Accepted
+
+### Context
+
+`storage/01_source_data` now contains both reusable source foundations and source artifacts produced for bounded target/fold work. Treating all source data as permanent would eventually exhaust local storage, but deleting reusable Layer 1/2 market-regime and sector-context foundations would break later folds and downstream reuse.
+
+### Decision
+
+Keep reusable Layer 1/2 source data out of deletion planning. It may be compressed or archived, but it is not a fold-completion delete target.
+
+Allow target-specific or experiment-specific source data to become cleanup candidates only when it is explicitly placed under:
+
+```text
+storage/01_source_data/fold_scoped/<fold_id>/
+```
+
+The cleanup unit is the fold folder. Storage maintenance may emit a `storage_fold_source_cleanup_candidate` only after the corresponding manager fold state proves the full Layer 1-10 fold is complete. File-level artifact metadata may also use `storage_retention_class=fold_complete_delete_allowed` for fold-scoped source artifacts, which maps to quarantine planning after protected-set clearance.
+
+### Consequences
+
+- Layer 1/2 reusable source foundations remain protected from deletion even after a model fold finishes.
+- Fold-scoped target/source folders can be rolled off by completed fold to prevent storage growth.
+- No destructive deletion is authorized by this decision alone. Candidates still require artifact-index coverage, protected-set clearance, quarantine/recheck, and deletion receipts.
+- Producers must not label reusable source foundations as `fold_complete_delete_allowed`.

@@ -140,6 +140,17 @@ DEFAULT_POLICY_RULES: tuple[LifecyclePolicyRule, ...] = (
         require_protected_set_clear=True,
         reason="TTL-delete artifacts require quarantine-before-delete after protected-set clearance.",
     ),
+    LifecyclePolicyRule(
+        policy_id="storage_lifecycle_default",
+        rule_id="quarantine_fold_complete_delete_allowed",
+        selector={"retention_class": "fold_complete_delete_allowed"},
+        action="quarantine_candidate",
+        require_protected_set_clear=True,
+        reason=(
+            "Fold-scoped target/source artifacts may become deletion candidates only after the full "
+            "Layer 1-10 fold closes and protected-set clearance remains clear."
+        ),
+    ),
 )
 
 

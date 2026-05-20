@@ -301,6 +301,16 @@ def _dependency_refs(data: Mapping[str, Any] | None) -> tuple[str, ...]:
     return tuple(dict.fromkeys(refs))
 
 
+def _metadata_string(data: Mapping[str, Any] | None, *keys: str) -> str | None:
+    if not data:
+        return None
+    for key in keys:
+        value = data.get(key)
+        if value is not None and str(value):
+            return str(value)
+    return None
+
+
 def _classification_text(
     relative_path: Path,
     *,
@@ -338,6 +348,9 @@ def _retention_class(
     artifact_kind: str,
     producer_component: str,
 ) -> str:
+    explicit = _metadata_string(data, "storage_retention_class", "retention_class")
+    if explicit:
+        return explicit
     text = _classification_text(relative_path, data=data, artifact_kind=artifact_kind, producer_component=producer_component)
     if _is_dashboard_latest(relative_path):
         return "dashboard_latest_retained"
@@ -369,6 +382,10 @@ def _retention_class(
     ) and any(token in text for token in ("metadata", "summary", "diagnostic", "scratch", "intermediate", "runtime", "staging")):
         return "ttl_delete_allowed"
     return "manual_review_required"
+
+
+def _reproducibility_class(data: Mapping[str, Any] | None) -> str:
+    return _metadata_string(data, "storage_reproducibility_class", "reproducibility_class") or "unknown"
 
 
 def _protected_reason_codes(retention_class: str) -> tuple[str, ...]:
@@ -433,6 +450,7 @@ def build_artifact_index(
                 schema_version=_schema_version(data),
                 lineage_refs=_lineage_refs(data),
                 dependency_refs=_dependency_refs(data),
+                reproducibility_class=_reproducibility_class(data),
                 retention_class=retention_class,
                 protected_reason_codes=_protected_reason_codes(retention_class),
                 last_lifecycle_scan_at=scan_time,

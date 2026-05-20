@@ -19,7 +19,9 @@ The first implementation slice is conservative and filesystem-only:
 - default CLI behavior prints the summary only; `--write` is required to write index files;
 - indexed payloads are never mutated;
 - ambiguous artifacts default to `reproducibility_class=unknown`, `retention_class=manual_review_required`, and `protected_reason_codes=[unknown_metadata]`;
+- payload metadata may explicitly set `storage_retention_class`/`retention_class` and `storage_reproducibility_class`/`reproducibility_class` when a producer has a reviewed lifecycle classification;
 - explicit Layer 1/2 data hints classify as `retention_class=compress_and_retain` with no deletion-protection reason so compression planning can proceed while deletion remains out of policy;
+- `fold_complete_delete_allowed` is reserved for explicitly fold-scoped target/source artifacts that may become quarantine candidates only after full-fold completion; reusable Layer 1/2 source foundations must not use this class;
 - dashboard `latest.json` read models classify as `dashboard_latest_retained` and protected;
 - explicitly indexed dashboard snapshots classify as `ttl_delete_allowed` because they are metadata caches, not canonical Layer 1/2 data.
 
@@ -78,6 +80,7 @@ Initial retention classes:
 - `compress_and_retain`: valuable source data or row-level history that should move to cold compressed storage while remaining retained, including Layer 1/2 data foundations;
 - `archive_retain`: online detail that can be detached/exported but must remain restorable;
 - `ttl_delete_allowed`: regenerable scratch, cache, dashboard snapshots, and later-layer model-run metadata that may be deleted after TTL/quarantine/run-cycle closure;
+- `fold_complete_delete_allowed`: target-symbol or experiment-specific source artifacts scoped to one completed model-worker fold and managed as a fold folder, not reusable Layer 1/2 foundations;
 - `dashboard_latest_retained`: current dashboard `latest.json` summaries that should remain hot and protected;
 - `metadata_only_after_archive`: detail can leave online storage after summary/manifest/archive is verified;
 - `manual_review_required`: default for ambiguous or high-risk artifacts.

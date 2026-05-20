@@ -52,6 +52,29 @@ class LifecyclePlannerTests(unittest.TestCase):
             self.assertEqual(plan.records[0].rule_id, "quarantine_ttl_delete_allowed")
             self.assertFalse(plan.records[0].protected)
 
+    def test_fold_complete_source_artifact_becomes_quarantine_candidate(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            artifact = root / "storage" / "01_source_data" / "fold_scoped" / "fold_2016-01_2016-06" / "targets" / "AAPL" / "source.json"
+            artifact.parent.mkdir(parents=True, exist_ok=True)
+            artifact.write_text(
+                json.dumps(
+                    {
+                        "contract_type": "target_symbol_source_payload",
+                        "storage_retention_class": "fold_complete_delete_allowed",
+                        "storage_reproducibility_class": "reproducible",
+                    }
+                ),
+                encoding="utf-8",
+            )
+            index = build_artifact_index(root=root)
+
+            plan = plan_storage_lifecycle(index)
+
+            self.assertEqual(plan.records[0].action, "quarantine_candidate")
+            self.assertEqual(plan.records[0].rule_id, "quarantine_fold_complete_delete_allowed")
+            self.assertFalse(plan.records[0].protected)
+
     def test_unprotected_source_artifact_becomes_compression_candidate(self):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)

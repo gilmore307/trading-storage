@@ -104,6 +104,28 @@ class ArtifactIndexTests(unittest.TestCase):
             self.assertEqual(index.records[0].retention_class, "compress_and_retain")
             self.assertEqual(index.records[0].protected_reason_codes, ())
 
+    def test_explicit_storage_retention_and_reproducibility_metadata_are_indexed(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            artifact = root / "storage" / "01_source_data" / "fold_scoped" / "fold_2016-01_2016-06" / "targets" / "AAPL" / "source.json"
+            artifact.parent.mkdir(parents=True, exist_ok=True)
+            artifact.write_text(
+                json.dumps(
+                    {
+                        "contract_type": "target_symbol_source_payload",
+                        "storage_retention_class": "fold_complete_delete_allowed",
+                        "storage_reproducibility_class": "reproducible",
+                    }
+                ),
+                encoding="utf-8",
+            )
+
+            index = build_artifact_index(root=root)
+
+            self.assertEqual(index.records[0].retention_class, "fold_complete_delete_allowed")
+            self.assertEqual(index.records[0].reproducibility_class, "reproducible")
+            self.assertEqual(index.records[0].protected_reason_codes, ())
+
     def test_compressed_artifact_requires_restore(self):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
