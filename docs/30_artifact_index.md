@@ -22,6 +22,10 @@ The first implementation slice is conservative and filesystem-only:
 - payload metadata may explicitly set `storage_retention_class`/`retention_class` and `storage_reproducibility_class`/`reproducibility_class` when a producer has a reviewed lifecycle classification;
 - explicit Layer 1/2 data hints classify as `retention_class=compress_and_retain` with no deletion-protection reason so compression planning can proceed while deletion remains out of policy;
 - Layer 1/2 runtime, log, scratch, staging, cache, and intermediate path hints classify as `ttl_delete_allowed`; this exception covers disposable run material only, not reusable source/feature foundations;
+- benchmark model-pipeline result summaries classify as `keep_forever` and are protected by `benchmark_result_summary`;
+- non-benchmark artifacts explicitly classified as `keep_forever` are protected by `keep_forever_retention`;
+- benchmark reusable Layer 1/2 and event/news inputs classify as `compress_and_retain`;
+- benchmark model-specific option snapshot/download hints classify as `ttl_delete_allowed` after benchmark close when summaries, manifests, and receipts are retained;
 - `fold_complete_delete_allowed` is reserved for explicitly fold-scoped target/source artifacts that may become quarantine candidates only after full-fold completion; reusable Layer 1/2 source foundations must not use this class;
 - dashboard `latest.json` read models classify as `dashboard_latest_retained` and protected;
 - explicitly indexed dashboard snapshots classify as `ttl_delete_allowed` because they are metadata caches, not canonical Layer 1/2 data.
@@ -77,7 +81,7 @@ Deletion policy must depend strongly on `reproducibility_class`. `unknown`, `non
 
 Initial retention classes:
 
-- `keep_forever`: promoted model bodies, decisions, activation records, critical lineage;
+- `keep_forever`: promoted model bodies, decisions, activation records, critical lineage, and model-pipeline benchmark result summaries;
 - `compress_and_retain`: valuable source data or row-level history that should move to cold compressed storage while remaining retained, including Layer 1/2 data foundations;
 - `archive_retain`: online detail that can be detached/exported but must remain restorable;
 - `ttl_delete_allowed`: regenerable scratch, cache, dashboard snapshots, Layer 1/2 runtime/log/intermediate files, and later-layer model-run metadata that may be deleted after TTL/quarantine/run-cycle closure;

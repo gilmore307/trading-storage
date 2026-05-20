@@ -77,6 +77,22 @@ class ProtectedSetTests(unittest.TestCase):
             self.assertIn("dataset_snapshot_or_split", protected_set.records[0].protected_reason_codes)
             self.assertEqual(protected_set.records[0].evidence_refs, ("dataset://snapshot/monthly-2016-01",))
 
+    def test_benchmark_result_summary_is_protected(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            artifact = root / "storage" / "05_benchmark_datasets" / "pipelines" / "model_03_target_state" / "result_summary.json"
+            artifact.parent.mkdir(parents=True, exist_ok=True)
+            artifact.write_text(
+                json.dumps({"contract_type": "model_pipeline_benchmark_result_summary"}),
+                encoding="utf-8",
+            )
+            index = build_artifact_index(root=root)
+
+            protected_set = build_protected_set(index)
+
+            self.assertEqual(protected_set.records[0].protected_reason_codes, ("benchmark_result_summary",))
+            self.assertFalse(protected_set.records[0].mutation_allowed)
+
     def test_clear_record_allows_candidate_mutation(self):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)

@@ -364,6 +364,54 @@ def _has_disposable_runtime_marker(text: str) -> bool:
     )
 
 
+def _is_benchmark_path(relative_path: Path) -> bool:
+    return len(relative_path.parts) >= 2 and relative_path.parts[:2] == ("storage", "05_benchmark_datasets")
+
+
+def _has_benchmark_result_summary_marker(text: str) -> bool:
+    return "benchmark" in text and any(
+        token in text
+        for token in (
+            "baseline_comparison",
+            "model_pipeline_benchmark_result_summary",
+            "pipeline_benchmark_result_summary",
+            "promotion_benchmark_result",
+            "result_summary",
+            "scorecard",
+        )
+    )
+
+
+def _has_reusable_benchmark_input_marker(text: str) -> bool:
+    return "benchmark" in text and any(
+        token in text
+        for token in (
+            "event_news",
+            "event_source_news",
+            "layer_01",
+            "layer_02",
+            "market_regime",
+            "news",
+            "sector_context",
+        )
+    )
+
+
+def _has_model_specific_benchmark_download_marker(text: str) -> bool:
+    return "benchmark" in text and any(
+        token in text
+        for token in (
+            "model_specific_download",
+            "model_pipeline_download",
+            "option_chain",
+            "option_snapshot",
+            "options_snapshot",
+            "point_in_time_option",
+            "theta_snapshot",
+        )
+    )
+
+
 def _retention_class(
     relative_path: Path,
     *,
@@ -379,6 +427,12 @@ def _retention_class(
         return "dashboard_latest_retained"
     if _is_dashboard_snapshot(relative_path):
         return "ttl_delete_allowed"
+    if _is_benchmark_path(relative_path) and _has_benchmark_result_summary_marker(text):
+        return "keep_forever"
+    if _is_benchmark_path(relative_path) and _has_model_specific_benchmark_download_marker(text):
+        return "ttl_delete_allowed"
+    if _is_benchmark_path(relative_path) and _has_reusable_benchmark_input_marker(text):
+        return "compress_and_retain"
     if _has_layer_01_02_marker(text) and _has_disposable_runtime_marker(text):
         return "ttl_delete_allowed"
     if _has_layer_01_02_marker(text):
@@ -413,11 +467,15 @@ def _reproducibility_class(data: Mapping[str, Any] | None) -> str:
     return _metadata_string(data, "storage_reproducibility_class", "reproducibility_class") or "unknown"
 
 
-def _protected_reason_codes(retention_class: str) -> tuple[str, ...]:
+def _protected_reason_codes(retention_class: str, *, classification_text: str) -> tuple[str, ...]:
     if retention_class == "manual_review_required":
         return ("unknown_metadata",)
     if retention_class == "dashboard_latest_retained":
         return ("dashboard_latest_snapshot",)
+    if retention_class == "keep_forever" and _has_benchmark_result_summary_marker(classification_text):
+        return ("benchmark_result_summary",)
+    if retention_class == "keep_forever":
+        return ("keep_forever_retention",)
     return ()
 
 
@@ -477,7 +535,10 @@ def build_artifact_index(
                 dependency_refs=_dependency_refs(data),
                 reproducibility_class=_reproducibility_class(data),
                 retention_class=retention_class,
-                protected_reason_codes=_protected_reason_codes(retention_class),
+                protected_reason_codes=_protected_reason_codes(
+                    retention_class,
+                    classification_text=_classification_text(relative, data=data, artifact_kind=artifact_kind, producer_component=producer_component),
+                ),
                 last_lifecycle_scan_at=scan_time,
             )
         )

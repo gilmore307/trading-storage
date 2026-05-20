@@ -34,6 +34,8 @@ PROTECTED_REASON_CODES = frozenset(
         "manual_pin",
         "unknown_metadata",
         "dashboard_latest_snapshot",
+        "benchmark_result_summary",
+        "keep_forever_retention",
     }
 )
 

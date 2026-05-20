@@ -66,6 +66,43 @@ class LifecyclePlannerTests(unittest.TestCase):
             self.assertEqual(plan.records[0].rule_id, "quarantine_ttl_delete_allowed")
             self.assertFalse(plan.records[0].protected)
 
+    def test_benchmark_summary_is_retained_as_protected(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            artifact = root / "storage" / "05_benchmark_datasets" / "pipelines" / "model_04_event_overlay" / "result_summary.json"
+            artifact.parent.mkdir(parents=True, exist_ok=True)
+            artifact.write_text(
+                json.dumps({"contract_type": "model_pipeline_benchmark_result_summary"}),
+                encoding="utf-8",
+            )
+            index = build_artifact_index(root=root)
+
+            plan = plan_storage_lifecycle(index)
+
+            self.assertEqual(plan.records[0].action, "retain_protected")
+            self.assertEqual(plan.records[0].protected_reason_codes, ("benchmark_result_summary",))
+
+    def test_model_specific_benchmark_download_becomes_quarantine_candidate(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            artifact = (
+                root
+                / "storage"
+                / "05_benchmark_datasets"
+                / "model_specific_downloads"
+                / "model_08_option_expression"
+                / "option_snapshot"
+                / "AAPL_2016-01-15.json"
+            )
+            artifact.parent.mkdir(parents=True, exist_ok=True)
+            artifact.write_text(json.dumps({"contract_type": "point_in_time_option_snapshot"}), encoding="utf-8")
+            index = build_artifact_index(root=root)
+
+            plan = plan_storage_lifecycle(index)
+
+            self.assertEqual(plan.records[0].action, "quarantine_candidate")
+            self.assertEqual(plan.records[0].rule_id, "quarantine_ttl_delete_allowed")
+
     def test_fold_complete_source_artifact_becomes_quarantine_candidate(self):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)

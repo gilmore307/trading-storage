@@ -108,6 +108,16 @@ Includes Layer 3+ diagnostic summaries, runtime metadata, dashboard snapshots, s
 
 Policy: delete by TTL after the model run cycle closes and after latest summaries, receipts, manifests, lineage refs, and unresolved-alert evidence are preserved. Keep only compact summary/receipt evidence after the retention window.
 
+### Benchmark datasets and benchmark downloads
+
+Benchmark storage separates reusable benchmark inputs, model-specific temporary downloads, and permanent model-pipeline benchmark results.
+
+Reusable benchmark inputs include Layer 1 market-regime inputs, Layer 2 sector-context inputs, and event/news inputs collected for benchmark/replay use. Policy: retain or compress/archive because later model pipelines and replay windows can reuse them.
+
+Model-specific benchmark downloads include one-off files pulled only because a particular model pipeline needed them for a benchmark run, such as point-in-time option snapshots. Policy: delete by TTL after the benchmark closes once result summaries, manifests, acquisition receipts, and any reusable inputs are preserved.
+
+Model-pipeline benchmark result summaries are permanent. Each model pipeline must retain its compact benchmark result summary, scorecard/baseline comparison, manifest refs, and receipt evidence so later promotions remain comparable without keeping every non-reusable downloaded file online.
+
 ### Downloaded source data
 
 Source data is classified by reproducibility and reuse:
@@ -132,6 +142,9 @@ Policy: never compress PostgreSQL live data files directly. Archive through dump
 - promoted model bodies: permanent;
 - promotion/review/activation/deactivation receipts: permanent;
 - dataset snapshot/split manifests: permanent or lineage lifetime;
+- model-pipeline benchmark result summaries and scorecards: permanent;
+- benchmark Layer 1/2 and event/news reusable inputs: retain or compress/archive;
+- model-specific benchmark downloads such as one-off option snapshots: TTL delete after benchmark close when summaries/manifests/receipts are retained;
 - PIT/vintage/source history: compress and retain by default;
 - dashboard/read-model latest summaries: retained;
 - dashboard/read-model high-frequency snapshots: metadata TTL after model-run cycle close; current default prune plan keeps the latest 24 snapshots per contract and marks snapshots older than 24 hours as delete candidates, but apply is currently on hold until the event-model redo and downstream model regeneration are complete/reviewed;
