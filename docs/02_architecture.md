@@ -78,7 +78,7 @@ The command emits a JSON plan with counts for `archive`, `delete`, `retain`, and
 ## Safety Rules
 
 - Dry-run is the default.
-- Durable numbered roots are report-only by default in local retention; the helper does not delete source data, control-plane evidence, model artifacts, execution artifacts, benchmark datasets, completion receipts, or other storage-owned artifact evidence.
+- Durable numbered roots are report-only by default in local retention; the helper does not delete source data, control-plane evidence, model artifacts, execution artifacts, benchmark datasets, completion receipts, or other storage-owned artifact evidence. Artifact-index lifecycle planning may still classify disposable Layer 1/2 runtime/log/intermediate files as TTL cleanup candidates after run/fold close.
 - `storage/01_source_data/fold_scoped/<fold_id>/` is the only accepted source-data folder boundary for fold-completion cleanup candidates. Scheduled maintenance may report those folders after a completed ten-layer fold, but real deletion still requires artifact-index coverage, protected-set clearance, quarantine/recheck, and a deletion receipt.
 - Current compatibility `logs/`, `runs/`, and `outputs/` are copied to `storage/90_lifecycle/archive/` before active files are removed.
 - Current compatibility `tmp/` is disposable and is deleted after its TTL without archiving.

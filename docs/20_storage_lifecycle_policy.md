@@ -90,6 +90,12 @@ Includes Layer 1 market-regime and Layer 2 sector-context source/feature foundat
 
 Policy: persist by default. Prefer compression and archive over deletion. Do not classify Layer 1/2 data as disposable metadata merely because a model run completed.
 
+### Layer 1 and Layer 2 intermediate/runtime files
+
+Includes Layer 1/2 scratch, staging, intermediate files, runtime directories, failed-run temp files, and stdout/stderr/log files that are not the only remaining receipt, manifest, lineage reference, reusable source/feature foundation, or compact summary.
+
+Policy: delete by TTL after the run or fold closes and after compact summaries, receipts, manifests, and reusable Layer 1/2 outputs are preserved. These files may enter quarantine planning even though Layer 1/2 final source/feature foundations remain protected.
+
 ### Fold-scoped target source data
 
 Includes target-symbol or experiment-specific source folders created for a bounded six-month model-worker fold, where the folder is not intended to serve as reusable Layer 1/2 source foundation or durable benchmark/source history.
@@ -122,6 +128,7 @@ Policy: never compress PostgreSQL live data files directly. Archive through dump
 
 - Layer 1 market-regime data: persistent; compress/archive if needed, do not auto-delete;
 - Layer 2 sector-context data: persistent; compress/archive if needed, do not auto-delete;
+- Layer 1/2 intermediate/runtime/log files: TTL delete after run/fold close when summaries, receipts, manifests, and reusable outputs are retained;
 - promoted model bodies: permanent;
 - promotion/review/activation/deactivation receipts: permanent;
 - dataset snapshot/split manifests: permanent or lineage lifetime;

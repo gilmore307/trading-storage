@@ -577,3 +577,24 @@ The cleanup unit is the fold folder. Storage maintenance may emit a `storage_fol
 - Fold-scoped target/source folders can be rolled off by completed fold to prevent storage growth.
 - No destructive deletion is authorized by this decision alone. Candidates still require artifact-index coverage, protected-set clearance, quarantine/recheck, and deletion receipts.
 - Producers must not label reusable source foundations as `fold_complete_delete_allowed`.
+
+## D023 - Layer 1/2 intermediate and log files are not foundation data
+
+Date: 2026-05-20
+Status: Accepted
+
+### Context
+
+D022 protects reusable Layer 1/2 source foundations while allowing fold-scoped target/source cleanup. A remaining ambiguity was Layer 1/2 run byproducts: logs, stdout/stderr, scratch, staging, cache, failed-run temp files, and intermediate files. Keeping those indefinitely would waste storage, but deleting reusable Layer 1/2 foundations would break reuse.
+
+### Decision
+
+Classify Layer 1/2 intermediate/runtime/log byproducts as TTL cleanup candidates after the run or fold closes, provided compact summaries, receipts, manifests, lineage references, and reusable Layer 1/2 outputs are retained.
+
+Reusable Layer 1/2 source/feature foundations remain `compress_and_retain` or stronger. The cleanup rule applies only to disposable runtime/intermediate/log material.
+
+### Consequences
+
+- Artifact-index classification may assign `ttl_delete_allowed` to Layer 1/2 paths containing runtime/log/scratch/staging/cache/intermediate markers.
+- Such files still require lifecycle planning, protected-set clearance, quarantine/recheck, and deletion receipts before destructive deletion.
+- Producers should keep final reusable Layer 1/2 outputs and compact summaries out of disposable runtime/log paths.

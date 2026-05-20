@@ -52,6 +52,20 @@ class LifecyclePlannerTests(unittest.TestCase):
             self.assertEqual(plan.records[0].rule_id, "quarantine_ttl_delete_allowed")
             self.assertFalse(plan.records[0].protected)
 
+    def test_layer_one_two_runtime_log_becomes_quarantine_candidate(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            artifact = root / "storage" / "03_model_artifacts" / "layer_01_market_regime" / "runtime" / "stderr.log"
+            artifact.parent.mkdir(parents=True, exist_ok=True)
+            artifact.write_text("traceback\n", encoding="utf-8")
+            index = build_artifact_index(root=root)
+
+            plan = plan_storage_lifecycle(index)
+
+            self.assertEqual(plan.records[0].action, "quarantine_candidate")
+            self.assertEqual(plan.records[0].rule_id, "quarantine_ttl_delete_allowed")
+            self.assertFalse(plan.records[0].protected)
+
     def test_fold_complete_source_artifact_becomes_quarantine_candidate(self):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)

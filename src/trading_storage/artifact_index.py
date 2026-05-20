@@ -341,6 +341,29 @@ def _is_dashboard_latest(relative_path: Path) -> bool:
     return len(relative_path.parts) >= 5 and relative_path.parts[:3] == ("storage", "06_dashboard_cache", "read_models") and relative_path.name == "latest.json"
 
 
+def _has_layer_01_02_marker(text: str) -> bool:
+    return any(token in text for token in ("layer_01", "layer_02", "model_01", "model_02", "feature_01", "feature_02"))
+
+
+def _has_disposable_runtime_marker(text: str) -> bool:
+    return any(
+        token in text
+        for token in (
+            "cache",
+            "failed_run",
+            "intermediate",
+            "log",
+            "logs",
+            "runtime",
+            "scratch",
+            "staging",
+            "stderr",
+            "stdout",
+            "tmp",
+        )
+    )
+
+
 def _retention_class(
     relative_path: Path,
     *,
@@ -356,7 +379,9 @@ def _retention_class(
         return "dashboard_latest_retained"
     if _is_dashboard_snapshot(relative_path):
         return "ttl_delete_allowed"
-    if any(token in text for token in ("layer_01", "layer_02", "model_01", "model_02", "feature_01", "feature_02")):
+    if _has_layer_01_02_marker(text) and _has_disposable_runtime_marker(text):
+        return "ttl_delete_allowed"
+    if _has_layer_01_02_marker(text):
         return "compress_and_retain"
     if any(
         token in text

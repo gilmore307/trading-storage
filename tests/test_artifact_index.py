@@ -104,6 +104,18 @@ class ArtifactIndexTests(unittest.TestCase):
             self.assertEqual(index.records[0].retention_class, "compress_and_retain")
             self.assertEqual(index.records[0].protected_reason_codes, ())
 
+    def test_layer_one_two_runtime_logs_are_ttl_delete_allowed(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            artifact = root / "storage" / "03_model_artifacts" / "layer_02_sector_context" / "runs" / "run_1" / "stdout.log"
+            artifact.parent.mkdir(parents=True, exist_ok=True)
+            artifact.write_text("run log\n", encoding="utf-8")
+
+            index = build_artifact_index(root=root)
+
+            self.assertEqual(index.records[0].retention_class, "ttl_delete_allowed")
+            self.assertEqual(index.records[0].protected_reason_codes, ())
+
     def test_explicit_storage_retention_and_reproducibility_metadata_are_indexed(self):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)

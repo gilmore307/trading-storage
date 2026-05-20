@@ -5,7 +5,7 @@ First-party tests for storage implementation slices.
 ## Current coverage
 
 - `test_artifact_store.py` verifies canonical JSON bytes, immutable artifact writes, `artifact_ref` metadata, and storage-owned completion receipt payload wrapping.
-- `test_artifact_index.py` verifies conservative filesystem artifact indexing, explicit lifecycle metadata classification, explicit dashboard read-model indexing, and JSONL/summary writes.
+- `test_artifact_index.py` verifies conservative filesystem artifact indexing, Layer 1/2 foundation versus runtime/log classification, explicit lifecycle metadata classification, explicit dashboard read-model indexing, and JSONL/summary writes.
 - `test_file_lifecycle_acceptance.py` verifies the one-pass safe file-lifecycle acceptance, compressed-copy-only apply behavior, original preservation, output evidence writes, dashboard deletion hold, and dashboard latest protected-set reason handling.
 - `test_lifecycle.py` verifies dry-run planning, temporary-file deletion, archive-before-remove behavior, durable artifact retention, and JSON output shape.
 - `test_lifecycle_execution_scaffold.py` verifies non-mutating compression/archive/restore manifest and receipt drafts, protected skip behavior, no delete receipts for quarantine candidates, and JSON output round trips.
