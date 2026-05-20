@@ -33,7 +33,7 @@ def sample_payload(**overrides):
         "diagnostic_refs": [],
         "lineage_refs": [{"ref": "manager_status_snapshot"}],
         "freshness": {"class": "fresh", "stale_after_seconds": 300, "status": "healthy"},
-        "schema_ref": "storage/dashboard/schemas/current_system_status_summary.schema.json",
+        "schema_ref": "storage/dashboard_cache/schemas/current_system_status_summary.schema.json",
     }
     payload.update(overrides)
     return payload
@@ -108,7 +108,7 @@ class DashboardReadModelTests(unittest.TestCase):
                 result = main([str(payload_path), "--contract-type", "current_system_status_summary", "--storage-root", str(storage_root)])
 
             self.assertEqual(result, 0)
-            self.assertTrue((storage_root / "dashboard/read_models/current_system_status_summary/latest.json").exists())
+            self.assertTrue((storage_root / "dashboard_cache/read_models/current_system_status_summary/latest.json").exists())
 
 
 if __name__ == "__main__":

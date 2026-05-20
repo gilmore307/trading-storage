@@ -184,7 +184,7 @@ class DashboardSystemStatusTests(unittest.TestCase):
             storage_root = Path(tmp)
             receipt = refresh_current_system_status_read_model(storage_root=storage_root)
             self.assertEqual(receipt["refreshed_contract_type"], CURRENT_SYSTEM_STATUS_CONTRACT)
-            latest_path = storage_root / "dashboard/read_models/current_system_status_summary/latest.json"
+            latest_path = storage_root / "dashboard_cache/read_models/current_system_status_summary/latest.json"
             self.assertTrue(latest_path.exists())
             latest = json.loads(latest_path.read_text())
             self.assertEqual(latest["contract_type"], CURRENT_SYSTEM_STATUS_CONTRACT)

@@ -148,7 +148,7 @@ class LifecyclePlannerTests(unittest.TestCase):
             artifact.write_text("payload", encoding="utf-8")
             index = build_artifact_index(root=root)
             protected_set = build_protected_set(index)
-            write_artifact_index(index, index_path=Path("storage/artifact_index/artifact_index.jsonl"))
+            write_artifact_index(index, index_path=Path("storage/lifecycle/artifact_index/artifact_index.jsonl"))
             write_protected_set(protected_set, output_path=root / "storage" / "protected_set" / "protected_set.json")
 
             loaded_protected = load_protected_set_json(root / "storage" / "protected_set" / "protected_set.json")

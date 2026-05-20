@@ -36,7 +36,7 @@ def historical_payload() -> dict:
         "diagnostic_refs": [],
         "lineage_refs": [{"contract_type": "manager_historical_scheduler_status"}],
         "freshness": {"class": "runtime_status_snapshot", "status": "fresh", "stale_after_seconds": 900},
-        "schema_ref": "storage/dashboard/schemas/historical_task_progress_summary.schema.json",
+        "schema_ref": "storage/dashboard_cache/schemas/historical_task_progress_summary.schema.json",
     }
 
 
@@ -56,7 +56,7 @@ class DashboardRefreshTests(unittest.TestCase):
                 expected_contract_type=HISTORICAL_TASK_PROGRESS_CONTRACT,
             )
 
-            latest_path = storage_root / "dashboard" / "read_models" / HISTORICAL_TASK_PROGRESS_CONTRACT / "latest.json"
+            latest_path = storage_root / "dashboard_cache" / "read_models" / HISTORICAL_TASK_PROGRESS_CONTRACT / "latest.json"
             self.assertTrue(latest_path.exists())
             self.assertEqual(result.receipt["contract_type"], "dashboard_read_model_refresh_receipt")
             self.assertEqual(result.receipt["refreshed_contract_type"], HISTORICAL_TASK_PROGRESS_CONTRACT)
@@ -117,7 +117,7 @@ class DashboardRefreshTests(unittest.TestCase):
             by_contract = {row["refreshed_contract_type"]: row for row in receipt["results"]}
             self.assertEqual(by_contract["current_system_status_summary"]["status"], "succeeded")
             self.assertEqual(by_contract[HISTORICAL_TASK_PROGRESS_CONTRACT]["status"], "failed")
-            self.assertTrue((storage_root / "dashboard/read_models/current_system_status_summary/latest.json").exists())
+            self.assertTrue((storage_root / "dashboard_cache/read_models/current_system_status_summary/latest.json").exists())
 
 
 if __name__ == "__main__":

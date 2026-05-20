@@ -20,9 +20,19 @@ from .artifact_store import now_utc
 from .dashboard_read_models import materialize_dashboard_read_model
 
 REALTIME_SIGNAL_SUMMARY_CONTRACT = "realtime_signal_summary"
-REALTIME_SIGNAL_SUMMARY_SCHEMA_REF = f"storage/dashboard/schemas/{REALTIME_SIGNAL_SUMMARY_CONTRACT}.schema.json"
-DEFAULT_TRADING_STORAGE_ROOT = Path(os.environ.get("TRADING_STORAGE_ROOT", "/root/projects/trading-storage/storage"))
-DEFAULT_EXECUTION_STORAGE_ROOT = Path(os.environ.get("TRADING_EXECUTION_STORAGE_ROOT", str(DEFAULT_TRADING_STORAGE_ROOT / "execution")))
+REALTIME_SIGNAL_SUMMARY_SCHEMA_REF = f"storage/dashboard_cache/schemas/{REALTIME_SIGNAL_SUMMARY_CONTRACT}.schema.json"
+
+
+def _default_storage_root() -> Path:
+    explicit = os.environ.get("TRADING_STORAGE_FILES_ROOT")
+    if explicit:
+        return Path(explicit)
+    root = Path(os.environ.get("TRADING_STORAGE_ROOT", "/root/projects/trading-storage"))
+    return root if root.name == "storage" else root / "storage"
+
+
+DEFAULT_STORAGE_ROOT = _default_storage_root()
+DEFAULT_EXECUTION_STORAGE_ROOT = Path(os.environ.get("TRADING_EXECUTION_STORAGE_ROOT", str(DEFAULT_STORAGE_ROOT / "execution_artifacts")))
 DEFAULT_TRADING_EXECUTION_ROOT = DEFAULT_EXECUTION_STORAGE_ROOT
 DEFAULT_STALE_AFTER_SECONDS = 30
 

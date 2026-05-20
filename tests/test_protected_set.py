@@ -106,17 +106,17 @@ class ProtectedSetTests(unittest.TestCase):
             artifact.parent.mkdir(parents=True, exist_ok=True)
             artifact.write_text("payload", encoding="utf-8")
             index = build_artifact_index(root=root)
-            write_artifact_index(index, index_path=Path("storage/artifact_index/artifact_index.jsonl"))
-            records = load_artifact_index_jsonl(root / "storage" / "artifact_index" / "artifact_index.jsonl")
+            write_artifact_index(index, index_path=Path("storage/lifecycle/artifact_index/artifact_index.jsonl"))
+            records = load_artifact_index_jsonl(root / "storage" / "lifecycle" / "artifact_index" / "artifact_index.jsonl")
             protected_set = build_protected_set(records)
             write_protected_set(
                 protected_set,
-                output_path=root / "storage" / "protected_set" / "protected_set.json",
-                summary_path=root / "storage" / "protected_set" / "protected_set_summary.json",
+                output_path=root / "storage" / "lifecycle" / "protected_set" / "protected_set.json",
+                summary_path=root / "storage" / "lifecycle" / "protected_set" / "protected_set_summary.json",
             )
 
-            payload = json.loads((root / "storage" / "protected_set" / "protected_set.json").read_text(encoding="utf-8"))
-            summary = json.loads((root / "storage" / "protected_set" / "protected_set_summary.json").read_text(encoding="utf-8"))
+            payload = json.loads((root / "storage" / "lifecycle" / "protected_set" / "protected_set.json").read_text(encoding="utf-8"))
+            summary = json.loads((root / "storage" / "lifecycle" / "protected_set" / "protected_set_summary.json").read_text(encoding="utf-8"))
 
             self.assertEqual(payload["contract_type"], "storage_protected_set")
             self.assertEqual(summary["contract_type"], "storage_protected_set_summary")

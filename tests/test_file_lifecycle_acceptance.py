@@ -19,7 +19,7 @@ class FileLifecycleAcceptanceTests(unittest.TestCase):
             source_dir.mkdir(parents=True)
             source = source_dir / "layer_01_payload.json"
             source.write_text('{"contract_type":"layer_01_source_data","model_layer":"layer_01_market_regime"}\n', encoding="utf-8")
-            snapshot_dir = root / "storage" / "dashboard" / "read_models" / "current_status" / "snapshots" / "2026" / "05" / "01"
+            snapshot_dir = root / "storage" / "dashboard_cache" / "read_models" / "current_status" / "snapshots" / "2026" / "05" / "01"
             snapshot_dir.mkdir(parents=True)
             (snapshot_dir / "20260501T000000Z.json").write_text('{"contract_type":"current_status"}\n', encoding="utf-8")
 
@@ -31,8 +31,8 @@ class FileLifecycleAcceptanceTests(unittest.TestCase):
             summary = acceptance.summary
 
             self.assertEqual(summary["contract_type"], "storage_file_lifecycle_acceptance_summary")
-            self.assertEqual(summary["artifact_record_count"], 1)
-            self.assertEqual(summary["lifecycle_action_counts"], {"compress_candidate": 1})
+            self.assertEqual(summary["artifact_record_count"], 2)
+            self.assertEqual(summary["lifecycle_action_counts"], {"compress_candidate": 1, "quarantine_candidate": 1})
             self.assertEqual(summary["compression_status_counts"], {"succeeded": 1})
             self.assertTrue(summary["compressed_copy_mutation_performed"])
             self.assertFalse(summary["delete_original_performed"])
@@ -41,10 +41,10 @@ class FileLifecycleAcceptanceTests(unittest.TestCase):
             self.assertFalse(summary["sql_mutation_performed"])
             self.assertFalse(summary["dashboard_snapshot_delete_performed"])
             self.assertTrue(source.exists())
-            compressed = list((root / "storage" / "archive" / "compressed").rglob("*.zst"))
+            compressed = list((root / "storage" / "lifecycle" / "archive" / "compressed").rglob("*.zst"))
             self.assertEqual(len(compressed), 1)
-            self.assertTrue((root / "storage" / "lifecycle_execution" / "file_lifecycle_acceptance_summary.json").exists())
-            saved = json.loads((root / "storage" / "lifecycle_execution" / "file_lifecycle_acceptance_summary.json").read_text(encoding="utf-8"))
+            self.assertTrue((root / "storage" / "lifecycle" / "execution" / "file_lifecycle_acceptance_summary.json").exists())
+            saved = json.loads((root / "storage" / "lifecycle" / "execution" / "file_lifecycle_acceptance_summary.json").read_text(encoding="utf-8"))
             self.assertEqual(saved["compression_status_counts"], {"succeeded": 1})
 
     def test_acceptance_resolves_dashboard_outputs_under_explicit_root(self) -> None:
@@ -62,18 +62,18 @@ class FileLifecycleAcceptanceTests(unittest.TestCase):
             finally:
                 os.chdir(previous_cwd)
 
-            self.assertTrue((root / "storage" / "dashboard" / "lifecycle" / "dashboard_snapshot_prune_plan.json").exists())
-            self.assertTrue((root / "storage" / "dashboard" / "lifecycle" / "dashboard_snapshot_prune_summary.json").exists())
-            self.assertFalse((cwd / "storage" / "dashboard" / "lifecycle" / "dashboard_snapshot_prune_plan.json").exists())
+            self.assertTrue((root / "storage" / "dashboard_cache" / "lifecycle" / "dashboard_snapshot_prune_plan.json").exists())
+            self.assertTrue((root / "storage" / "dashboard_cache" / "lifecycle" / "dashboard_snapshot_prune_summary.json").exists())
+            self.assertFalse((cwd / "storage" / "dashboard_cache" / "lifecycle" / "dashboard_snapshot_prune_plan.json").exists())
 
     def test_dashboard_latest_reason_is_protected_reason(self) -> None:
         with tempfile.TemporaryDirectory() as raw_tmp:
             root = Path(raw_tmp)
-            latest = root / "storage" / "dashboard" / "read_models" / "current_status" / "latest.json"
+            latest = root / "storage" / "dashboard_cache" / "read_models" / "current_status" / "latest.json"
             latest.parent.mkdir(parents=True)
             latest.write_text('{"contract_type":"current_status"}\n', encoding="utf-8")
 
-            index = build_artifact_index(root=root, include_roots=("storage/dashboard/read_models/current_status/latest.json",))
+            index = build_artifact_index(root=root, include_roots=("storage/dashboard_cache/read_models/current_status/latest.json",))
             protected = build_protected_set(index)
 
             self.assertEqual(index.records[0].retention_class, "dashboard_latest_retained")

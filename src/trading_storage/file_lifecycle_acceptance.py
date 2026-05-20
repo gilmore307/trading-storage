@@ -63,8 +63,8 @@ from trading_storage.single_file_compression import (
     write_single_file_compression_result,
 )
 
-DEFAULT_FILE_LIFECYCLE_ACCEPTANCE_OUTPUT = Path("storage/lifecycle_execution/file_lifecycle_acceptance.json")
-DEFAULT_FILE_LIFECYCLE_ACCEPTANCE_SUMMARY_OUTPUT = Path("storage/lifecycle_execution/file_lifecycle_acceptance_summary.json")
+DEFAULT_FILE_LIFECYCLE_ACCEPTANCE_OUTPUT = Path("storage/lifecycle/execution/file_lifecycle_acceptance.json")
+DEFAULT_FILE_LIFECYCLE_ACCEPTANCE_SUMMARY_OUTPUT = Path("storage/lifecycle/execution/file_lifecycle_acceptance_summary.json")
 
 
 @dataclass(frozen=True)
@@ -281,7 +281,7 @@ def build_file_lifecycle_acceptance(
 def _parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Run the complete safe storage file-lifecycle acceptance pass.")
     parser.add_argument("--root", default=".", help="Repository/root directory for relative inputs and outputs.")
-    parser.add_argument("--include-root", action="append", dest="include_roots", help="Relative root/file to include in the durable artifact index. Defaults to storage/artifacts.")
+    parser.add_argument("--include-root", action="append", dest="include_roots", help="Relative root/file to include in the durable artifact index. Defaults to the storage artifact index root set.")
     parser.add_argument("--apply-compression", action="store_true", help="Write zstd compressed copies for eligible unprotected compress_candidate rows. Originals are preserved.")
     parser.add_argument("--overwrite-compression", action="store_true", help="Allow replacing existing compressed copies for eligible compression rows.")
     parser.add_argument("--apply-dashboard-prune", action="store_true", help="Delete eligible dashboard snapshot metadata. Use only after event regeneration review and explicit approval.")

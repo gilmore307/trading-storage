@@ -12,14 +12,14 @@ A cleanup tool that cannot build a protected set may produce a report, but it mu
 
 The first implementation slice is conservative and filesystem/artifact-index based:
 
-- importable code: `src/trading_storage/protected_set.py`;
+- importable code: `src/trading_storage/lifecycle/protected_set.py`;
 - executable wrapper: `scripts/lifecycle/build_protected_set.py`;
-- default input: a live bounded artifact-index scan using `storage/artifacts/`;
+- default input: a live bounded artifact-index scan using the storage artifact index root set;
 - optional input: existing artifact-index JSONL via `--index-jsonl`;
 - optional protected-reference input: JSON object keyed by protected reason code via `--reference-file`;
 - optional manual pins: repeated `--manual-pin <artifact-id-or-ref>`;
 - optional mutation candidates: repeated `--candidate <artifact-id-or-ref>`;
-- default output behavior prints the summary only; `--write` writes `storage/protected_set/protected_set.json` and `storage/protected_set/protected_set_summary.json`;
+- default output behavior prints the summary only; `--write` writes `storage/lifecycle/protected_set/protected_set.json` and `storage/lifecycle/protected_set/protected_set_summary.json`;
 - all artifacts with `unknown_metadata` remain protected, which is the default for ambiguous artifact-index rows.
 
 This builder only produces safety evidence. It does not compress, archive, delete, quarantine, detach SQL, or authorize production mutation by itself.
@@ -28,12 +28,12 @@ This builder only produces safety evidence. It does not compress, archive, delet
 
 The first quarantine/recheck slice is also report-only:
 
-- importable code: `src/trading_storage/quarantine_recheck.py`;
+- importable code: `src/trading_storage/lifecycle/quarantine_recheck.py`;
 - executable wrapper: `scripts/lifecycle/build_quarantine_recheck_evidence.py`;
 - default input: a live dry-run lifecycle plan built from the bounded artifact index and protected set;
 - optional input: an existing lifecycle-plan JSON via `--lifecycle-plan-json`;
 - optional final recheck input: an existing protected-set JSON via `--final-protected-set-json`;
-- default output behavior prints the summary only; `--write` writes `storage/quarantine_recheck/quarantine_recheck_evidence.json` and `storage/quarantine_recheck/quarantine_recheck_summary.json`;
+- default output behavior prints the summary only; `--write` writes `storage/lifecycle/quarantine_recheck/quarantine_recheck_evidence.json` and `storage/lifecycle/quarantine_recheck/quarantine_recheck_summary.json`;
 - output records report whether each lifecycle-plan row is blocked by initial protection, not a quarantine candidate, pending final recheck, blocked by final recheck, or clear on final recheck.
 
 The evidence builder deliberately sets `deletion_allowed=false` and `mutation_performed=false` for every row. A final recheck clear result is necessary evidence for a future executor, not authorization to delete.

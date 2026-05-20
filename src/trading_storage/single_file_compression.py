@@ -19,7 +19,7 @@ from dataclasses import asdict, dataclass
 from pathlib import Path
 from typing import Any, Sequence
 
-from trading_storage.artifact_index import ArtifactIndex, ArtifactIndexRecord, build_artifact_index, now_utc, sha256_file
+from trading_storage.artifact_index import ArtifactIndex, ArtifactIndexRecord, DEFAULT_INDEX_ROOTS, build_artifact_index, now_utc, sha256_file
 from trading_storage.io import write_text_atomic
 from trading_storage.lifecycle_planner import (
     DEFAULT_POLICY_RULES,
@@ -32,8 +32,8 @@ from trading_storage.lifecycle_planner import (
 from trading_storage.protected_set import load_artifact_index_jsonl
 from trading_storage.quarantine_recheck import load_storage_lifecycle_plan_json
 
-DEFAULT_SINGLE_FILE_COMPRESSION_OUTPUT = Path("storage/lifecycle_execution/single_file_compression_result.json")
-DEFAULT_SINGLE_FILE_COMPRESSION_SUMMARY_OUTPUT = Path("storage/lifecycle_execution/single_file_compression_summary.json")
+DEFAULT_SINGLE_FILE_COMPRESSION_OUTPUT = Path("storage/lifecycle/execution/single_file_compression_result.json")
+DEFAULT_SINGLE_FILE_COMPRESSION_SUMMARY_OUTPUT = Path("storage/lifecycle/execution/single_file_compression_summary.json")
 EXECUTOR_VERSION = "storage_single_file_compression_executor_v0_1"
 
 
@@ -204,7 +204,7 @@ def _artifact_identity_hash(record: LifecyclePlanRecord) -> str:
 
 
 def _compressed_relative_path(record: LifecyclePlanRecord) -> Path:
-    return Path("storage") / "archive" / "compressed" / _artifact_identity_hash(record) / (Path(record.physical_path).name + ".zst")
+    return Path("storage") / "lifecycle" / "archive" / "compressed" / _artifact_identity_hash(record) / (Path(record.physical_path).name + ".zst")
 
 
 def _compressed_uri(record: LifecyclePlanRecord) -> str:
@@ -552,7 +552,7 @@ def _build_or_load_lifecycle_plan(args: argparse.Namespace, root: Path) -> Stora
     if args.index_jsonl:
         index_or_records: ArtifactIndex | Sequence[ArtifactIndexRecord] = load_artifact_index_jsonl(_resolve_path(root, Path(args.index_jsonl)))
     else:
-        index_or_records = build_artifact_index(root=root, include_roots=tuple(args.include_roots or ("storage/artifacts",)))
+        index_or_records = build_artifact_index(root=root, include_roots=tuple(args.include_roots or DEFAULT_INDEX_ROOTS))
     protected_set = load_protected_set_json(_resolve_path(root, Path(args.protected_set_json))) if args.protected_set_json else None
     rules = load_policy_rules(_resolve_path(root, Path(args.policy_file))) if args.policy_file else DEFAULT_POLICY_RULES
     return plan_storage_lifecycle(index_or_records, protected_set=protected_set, rules=rules)

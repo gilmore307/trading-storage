@@ -49,7 +49,7 @@ class ArtifactIndexTests(unittest.TestCase):
     def test_dashboard_read_model_payload_is_indexed(self):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
-            latest = root / "storage" / "dashboard" / "read_models" / "current_system_status_summary" / "latest.json"
+            latest = root / "storage" / "dashboard_cache" / "read_models" / "current_system_status_summary" / "latest.json"
             latest.parent.mkdir(parents=True, exist_ok=True)
             latest.write_text(
                 json.dumps(
@@ -62,11 +62,11 @@ class ArtifactIndexTests(unittest.TestCase):
                 encoding="utf-8",
             )
 
-            index = build_artifact_index(root=root, include_roots=("storage/dashboard/read_models/current_system_status_summary/latest.json",))
+            index = build_artifact_index(root=root, include_roots=("storage/dashboard_cache/read_models/current_system_status_summary/latest.json",))
 
             self.assertEqual(index.summary["artifact_kind_counts"], {"current_system_status_summary": 1})
             self.assertEqual(index.records[0].producer_component, "current_system_status_summary")
-            self.assertEqual(index.records[0].schema_ref, "storage/dashboard/schemas/current_system_status_summary.schema.json")
+            self.assertEqual(index.records[0].schema_ref, "storage/dashboard_cache/schemas/current_system_status_summary.schema.json")
             self.assertEqual(index.records[0].schema_version, "1")
             self.assertEqual(index.records[0].retention_class, "dashboard_latest_retained")
             self.assertEqual(index.records[0].protected_reason_codes, ("dashboard_latest_snapshot",))
@@ -74,7 +74,7 @@ class ArtifactIndexTests(unittest.TestCase):
     def test_dashboard_snapshot_payload_is_ttl_delete_allowed_when_explicitly_indexed(self):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
-            snapshot = root / "storage" / "dashboard" / "read_models" / "historical_task_progress_summary" / "snapshots" / "2026" / "05" / "16" / "20260516T000000Z.json"
+            snapshot = root / "storage" / "dashboard_cache" / "read_models" / "historical_task_progress_summary" / "snapshots" / "2026" / "05" / "16" / "20260516T000000Z.json"
             snapshot.parent.mkdir(parents=True, exist_ok=True)
             snapshot.write_text(
                 json.dumps(
@@ -87,7 +87,7 @@ class ArtifactIndexTests(unittest.TestCase):
                 encoding="utf-8",
             )
 
-            index = build_artifact_index(root=root, include_roots=("storage/dashboard/read_models/historical_task_progress_summary/snapshots/2026/05/16/20260516T000000Z.json",))
+            index = build_artifact_index(root=root, include_roots=("storage/dashboard_cache/read_models/historical_task_progress_summary/snapshots/2026/05/16/20260516T000000Z.json",))
 
             self.assertEqual(index.records[0].retention_class, "ttl_delete_allowed")
             self.assertEqual(index.records[0].protected_reason_codes, ())
@@ -128,12 +128,12 @@ class ArtifactIndexTests(unittest.TestCase):
             index = build_artifact_index(root=root)
             write_artifact_index(
                 index,
-                index_path=Path("storage/artifact_index/artifact_index.jsonl"),
-                summary_path=Path("storage/artifact_index/artifact_index_summary.json"),
+                index_path=Path("storage/lifecycle/artifact_index/artifact_index.jsonl"),
+                summary_path=Path("storage/lifecycle/artifact_index/artifact_index_summary.json"),
             )
 
-            jsonl_path = root / "storage" / "artifact_index" / "artifact_index.jsonl"
-            summary_path = root / "storage" / "artifact_index" / "artifact_index_summary.json"
+            jsonl_path = root / "storage" / "lifecycle" / "artifact_index" / "artifact_index.jsonl"
+            summary_path = root / "storage" / "lifecycle" / "artifact_index" / "artifact_index_summary.json"
             rows = [json.loads(line) for line in jsonl_path.read_text(encoding="utf-8").splitlines()]
             summary = json.loads(summary_path.read_text(encoding="utf-8"))
 

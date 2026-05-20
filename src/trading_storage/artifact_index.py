@@ -18,9 +18,9 @@ from typing import Any, Iterable, Mapping, Sequence
 
 from trading_storage.io import write_text_atomic
 
-DEFAULT_INDEX_ROOTS = ("storage/artifacts",)
-DEFAULT_INDEX_OUTPUT = Path("storage/artifact_index/artifact_index.jsonl")
-DEFAULT_SUMMARY_OUTPUT = Path("storage/artifact_index/artifact_index_summary.json")
+DEFAULT_INDEX_ROOTS = ("storage/artifacts", "storage/source_data", "storage/model_artifacts", "storage/benchmark_datasets", "storage/dashboard_cache/read_models")
+DEFAULT_INDEX_OUTPUT = Path("storage/lifecycle/artifact_index/artifact_index.jsonl")
+DEFAULT_SUMMARY_OUTPUT = Path("storage/lifecycle/artifact_index/artifact_index_summary.json")
 
 _FORMAT_BY_SUFFIX = {
     ".json": "json",
@@ -197,7 +197,7 @@ def _artifact_kind(relative_path: Path, data: Mapping[str, Any] | None) -> str:
             return "component_completion_receipt_payload"
         if contract_type:
             return str(contract_type)
-    if len(relative_path.parts) >= 2 and relative_path.parts[0] == "storage" and relative_path.parts[1] == "dashboard":
+    if len(relative_path.parts) >= 2 and relative_path.parts[0] == "storage" and relative_path.parts[1] == "dashboard_cache":
         return "dashboard_read_model_payload"
     if len(relative_path.parts) >= 3 and relative_path.parts[:2] == ("storage", "artifacts"):
         return relative_path.parts[2]
@@ -219,7 +219,7 @@ def _producer_component(relative_path: Path, data: Mapping[str, Any] | None) -> 
             value = data.get(key)
             if value:
                 return str(value)
-    if len(relative_path.parts) >= 4 and relative_path.parts[:3] == ("storage", "dashboard", "read_models"):
+    if len(relative_path.parts) >= 4 and relative_path.parts[:3] == ("storage", "dashboard_cache", "read_models"):
         return relative_path.parts[3]
     if len(relative_path.parts) >= 3 and relative_path.parts[:2] == ("storage", "artifacts"):
         return relative_path.parts[2]
@@ -248,7 +248,7 @@ def _schema_ref(data: Mapping[str, Any] | None) -> str | None:
             return str(value)
     contract_type = data.get("contract_type")
     if contract_type:
-        return f"storage/dashboard/schemas/{contract_type}.schema.json"
+        return f"storage/dashboard_cache/schemas/{contract_type}.schema.json"
     return None
 
 
@@ -315,13 +315,13 @@ def _classification_text(
 def _is_dashboard_snapshot(relative_path: Path) -> bool:
     return (
         len(relative_path.parts) >= 5
-        and relative_path.parts[:3] == ("storage", "dashboard", "read_models")
+        and relative_path.parts[:3] == ("storage", "dashboard_cache", "read_models")
         and relative_path.parts[4] == "snapshots"
     )
 
 
 def _is_dashboard_latest(relative_path: Path) -> bool:
-    return len(relative_path.parts) >= 5 and relative_path.parts[:3] == ("storage", "dashboard", "read_models") and relative_path.name == "latest.json"
+    return len(relative_path.parts) >= 5 and relative_path.parts[:3] == ("storage", "dashboard_cache", "read_models") and relative_path.name == "latest.json"
 
 
 def _retention_class(

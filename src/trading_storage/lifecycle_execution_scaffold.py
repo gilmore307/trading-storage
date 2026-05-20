@@ -15,7 +15,7 @@ from dataclasses import asdict, dataclass
 from pathlib import Path
 from typing import Any, Mapping, Sequence
 
-from trading_storage.artifact_index import ArtifactIndex, ArtifactIndexRecord, build_artifact_index, now_utc
+from trading_storage.artifact_index import ArtifactIndex, ArtifactIndexRecord, DEFAULT_INDEX_ROOTS, build_artifact_index, now_utc
 from trading_storage.io import write_text_atomic
 from trading_storage.lifecycle_planner import (
     DEFAULT_POLICY_RULES,
@@ -28,8 +28,8 @@ from trading_storage.lifecycle_planner import (
 from trading_storage.protected_set import load_artifact_index_jsonl
 from trading_storage.quarantine_recheck import load_storage_lifecycle_plan_json
 
-DEFAULT_EXECUTION_SCAFFOLD_OUTPUT = Path("storage/lifecycle_execution/lifecycle_execution_scaffold.json")
-DEFAULT_EXECUTION_SCAFFOLD_SUMMARY_OUTPUT = Path("storage/lifecycle_execution/lifecycle_execution_scaffold_summary.json")
+DEFAULT_EXECUTION_SCAFFOLD_OUTPUT = Path("storage/lifecycle/execution/lifecycle_execution_scaffold.json")
+DEFAULT_EXECUTION_SCAFFOLD_SUMMARY_OUTPUT = Path("storage/lifecycle/execution/lifecycle_execution_scaffold_summary.json")
 EXECUTOR_VERSION = "storage_lifecycle_execution_scaffold_v0_1"
 
 
@@ -238,7 +238,7 @@ def _stable_ref(prefix: str, *parts: object) -> str:
 
 
 def _compressed_path(record: LifecyclePlanRecord) -> str:
-    return f"storage/archive/compressed/{record.artifact_id}/{Path(record.physical_path).name}.zst"
+    return f"storage/lifecycle/archive/compressed/{record.artifact_id}/{Path(record.physical_path).name}.zst"
 
 
 def _compressed_uri(record: LifecyclePlanRecord) -> str:
@@ -246,7 +246,7 @@ def _compressed_uri(record: LifecyclePlanRecord) -> str:
 
 
 def _archive_path(record: LifecyclePlanRecord) -> str:
-    return f"storage/archive/sql/{record.artifact_id}.dump.zst"
+    return f"storage/lifecycle/archive/sql/{record.artifact_id}.dump.zst"
 
 
 def _archive_uri(record: LifecyclePlanRecord) -> str:
@@ -496,7 +496,7 @@ def _build_or_load_lifecycle_plan(args: argparse.Namespace, root: Path) -> Stora
     if args.index_jsonl:
         index_or_records: ArtifactIndex | Sequence[ArtifactIndexRecord] = load_artifact_index_jsonl(_resolve_path(root, Path(args.index_jsonl)))
     else:
-        index_or_records = build_artifact_index(root=root, include_roots=tuple(args.include_roots or ("storage/artifacts",)))
+        index_or_records = build_artifact_index(root=root, include_roots=tuple(args.include_roots or DEFAULT_INDEX_ROOTS))
     protected_set = load_protected_set_json(_resolve_path(root, Path(args.protected_set_json))) if args.protected_set_json else None
     rules = load_policy_rules(_resolve_path(root, Path(args.policy_file))) if args.policy_file else DEFAULT_POLICY_RULES
     return plan_storage_lifecycle(index_or_records, protected_set=protected_set, rules=rules)

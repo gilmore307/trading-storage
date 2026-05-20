@@ -12,10 +12,10 @@ A file scanner without an artifact index can report disk usage. It cannot safely
 
 The first implementation slice is conservative and filesystem-only:
 
-- importable code: `src/trading_storage/artifact_index.py`;
+- importable code: `src/trading_storage/lifecycle/artifact_index.py`;
 - executable wrapper: `scripts/lifecycle/build_artifact_index.py`;
-- default scanned root: `storage/artifacts/`; specific dashboard read-model latest files or bounded roots can be added with repeated `--include-root` arguments;
-- default optional outputs: `storage/artifact_index/artifact_index.jsonl` and `storage/artifact_index/artifact_index_summary.json`;
+- default scanned roots: `storage/artifacts/`, `storage/source_data/`, `storage/model_artifacts/`, `storage/benchmark_datasets/`, and `storage/dashboard_cache/read_models/`; specific files or bounded roots can be added with repeated `--include-root` arguments;
+- default optional outputs: `storage/lifecycle/artifact_index/artifact_index.jsonl` and `storage/lifecycle/artifact_index/artifact_index_summary.json`;
 - default CLI behavior prints the summary only; `--write` is required to write index files;
 - indexed payloads are never mutated;
 - ambiguous artifacts default to `reproducibility_class=unknown`, `retention_class=manual_review_required`, and `protected_reason_codes=[unknown_metadata]`;

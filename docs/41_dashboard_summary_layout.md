@@ -11,16 +11,16 @@ The dashboard remains read-only. These summaries are owner-facing materialized d
 Dashboard summaries live under one storage-owned root:
 
 ```text
-storage/dashboard/
+storage/dashboard_cache/
 ```
 
 Accepted subpaths:
 
 ```text
-storage/dashboard/read_models/<contract_type>/latest.json
-storage/dashboard/read_models/<contract_type>/snapshots/YYYY/MM/DD/<generated_at_utc_compact>.json
-storage/dashboard/schemas/<contract_type>.schema.json
-storage/dashboard/index/dashboard_read_model_index.jsonl
+storage/dashboard_cache/read_models/<contract_type>/latest.json
+storage/dashboard_cache/read_models/<contract_type>/snapshots/YYYY/MM/DD/<generated_at_utc_compact>.json
+storage/dashboard_cache/schemas/<contract_type>.schema.json
+storage/dashboard_cache/index/dashboard_read_model_index.jsonl
 ```
 
 Where:

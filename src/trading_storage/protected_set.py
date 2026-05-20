@@ -14,11 +14,11 @@ from dataclasses import asdict, dataclass, field, fields
 from pathlib import Path
 from typing import Any, Mapping, Sequence
 
-from trading_storage.artifact_index import ArtifactIndex, ArtifactIndexRecord, build_artifact_index, now_utc
+from trading_storage.artifact_index import ArtifactIndex, ArtifactIndexRecord, DEFAULT_INDEX_ROOTS, build_artifact_index, now_utc
 from trading_storage.io import write_text_atomic
 
-DEFAULT_PROTECTED_SET_OUTPUT = Path("storage/protected_set/protected_set.json")
-DEFAULT_PROTECTED_SET_SUMMARY_OUTPUT = Path("storage/protected_set/protected_set_summary.json")
+DEFAULT_PROTECTED_SET_OUTPUT = Path("storage/lifecycle/protected_set/protected_set.json")
+DEFAULT_PROTECTED_SET_SUMMARY_OUTPUT = Path("storage/lifecycle/protected_set/protected_set_summary.json")
 
 PROTECTED_REASON_CODES = frozenset(
     {
@@ -307,7 +307,7 @@ def main(argv: Sequence[str] | None = None) -> int:
     if args.index_jsonl:
         index_or_records: ArtifactIndex | Sequence[ArtifactIndexRecord] = load_artifact_index_jsonl(_resolve_output_path(root, Path(args.index_jsonl)))
     else:
-        index_or_records = build_artifact_index(root=root, include_roots=tuple(args.include_roots or ("storage/artifacts",)))
+        index_or_records = build_artifact_index(root=root, include_roots=tuple(args.include_roots or DEFAULT_INDEX_ROOTS))
     reference_sets = load_reference_sets(_resolve_output_path(root, Path(args.reference_file))) if args.reference_file else None
     protected_set = build_protected_set(
         index_or_records,
