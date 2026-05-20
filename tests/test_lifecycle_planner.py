@@ -19,7 +19,7 @@ class LifecyclePlannerTests(unittest.TestCase):
     def test_unknown_metadata_is_retained_as_protected(self):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
-            artifact = root / "storage" / "artifacts" / "example" / "payload.json"
+            artifact = root / "storage" / "02_control_plane" / "artifacts" / "example" / "payload.json"
             artifact.parent.mkdir(parents=True, exist_ok=True)
             artifact.write_text(json.dumps({"contract_type": "example_payload"}), encoding="utf-8")
             index = build_artifact_index(root=root)
@@ -33,7 +33,7 @@ class LifecyclePlannerTests(unittest.TestCase):
     def test_unprotected_ttl_delete_artifact_becomes_quarantine_candidate(self):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
-            artifact = root / "storage" / "artifacts" / "scratch" / "payload.json"
+            artifact = root / "storage" / "02_control_plane" / "artifacts" / "scratch" / "payload.json"
             artifact.parent.mkdir(parents=True, exist_ok=True)
             artifact.write_text(json.dumps({"contract_type": "scratch_payload"}), encoding="utf-8")
             index = build_artifact_index(root=root)
@@ -55,7 +55,7 @@ class LifecyclePlannerTests(unittest.TestCase):
     def test_unprotected_source_artifact_becomes_compression_candidate(self):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
-            artifact = root / "storage" / "artifacts" / "pit_source_data" / "payload.csv"
+            artifact = root / "storage" / "02_control_plane" / "artifacts" / "pit_source_data" / "payload.csv"
             artifact.parent.mkdir(parents=True, exist_ok=True)
             artifact.write_text("a,b\n1,2\n", encoding="utf-8")
             index = build_artifact_index(root=root)
@@ -77,7 +77,7 @@ class LifecyclePlannerTests(unittest.TestCase):
     def test_receipts_are_retained_even_when_clear(self):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
-            artifact = root / "storage" / "artifacts" / "component_completion_receipt" / "receipt.json"
+            artifact = root / "storage" / "02_control_plane" / "artifacts" / "component_completion_receipt" / "receipt.json"
             artifact.parent.mkdir(parents=True, exist_ok=True)
             artifact.write_text(json.dumps({"contract_type": "component_completion_receipt_payload"}), encoding="utf-8")
             index = build_artifact_index(root=root)
@@ -97,7 +97,7 @@ class LifecyclePlannerTests(unittest.TestCase):
     def test_policy_and_json_outputs_round_trip(self):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
-            artifact = root / "storage" / "artifacts" / "custom_kind" / "payload.dat"
+            artifact = root / "storage" / "02_control_plane" / "artifacts" / "custom_kind" / "payload.dat"
             artifact.parent.mkdir(parents=True, exist_ok=True)
             artifact.write_text("payload", encoding="utf-8")
             index = build_artifact_index(root=root)
@@ -143,12 +143,12 @@ class LifecyclePlannerTests(unittest.TestCase):
     def test_loads_existing_index_and_protected_set_files(self):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
-            artifact = root / "storage" / "artifacts" / "example" / "payload.txt"
+            artifact = root / "storage" / "02_control_plane" / "artifacts" / "example" / "payload.txt"
             artifact.parent.mkdir(parents=True, exist_ok=True)
             artifact.write_text("payload", encoding="utf-8")
             index = build_artifact_index(root=root)
             protected_set = build_protected_set(index)
-            write_artifact_index(index, index_path=Path("storage/lifecycle/artifact_index/artifact_index.jsonl"))
+            write_artifact_index(index, index_path=Path("storage/90_lifecycle/artifact_index/artifact_index.jsonl"))
             write_protected_set(protected_set, output_path=root / "storage" / "protected_set" / "protected_set.json")
 
             loaded_protected = load_protected_set_json(root / "storage" / "protected_set" / "protected_set.json")
@@ -159,8 +159,8 @@ class LifecyclePlannerTests(unittest.TestCase):
     def test_manual_pin_by_physical_path_survives_duplicate_legacy_artifact_ids(self):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
-            first = root / "storage" / "artifacts" / "a" / "same.json"
-            second = root / "storage" / "artifacts" / "b" / "same.json"
+            first = root / "storage" / "02_control_plane" / "artifacts" / "a" / "same.json"
+            second = root / "storage" / "02_control_plane" / "artifacts" / "b" / "same.json"
             first.parent.mkdir(parents=True, exist_ok=True)
             second.parent.mkdir(parents=True, exist_ok=True)
             first.write_text(json.dumps({"contract_type": "scratch_payload"}), encoding="utf-8")
@@ -177,15 +177,15 @@ class LifecyclePlannerTests(unittest.TestCase):
                 )
                 for record in index.records
             )
-            protected_set = build_protected_set(legacy_records, manual_pins=("storage/artifacts/a/same.json",))
+            protected_set = build_protected_set(legacy_records, manual_pins=("storage/02_control_plane/artifacts/a/same.json",))
 
             plan = plan_storage_lifecycle(legacy_records, protected_set=protected_set)
 
             by_path = {record.physical_path: record for record in plan.records}
-            self.assertTrue(by_path["storage/artifacts/a/same.json"].protected)
-            self.assertEqual(by_path["storage/artifacts/a/same.json"].action, "retain_protected")
-            self.assertFalse(by_path["storage/artifacts/b/same.json"].protected)
-            self.assertEqual(by_path["storage/artifacts/b/same.json"].action, "quarantine_candidate")
+            self.assertTrue(by_path["storage/02_control_plane/artifacts/a/same.json"].protected)
+            self.assertEqual(by_path["storage/02_control_plane/artifacts/a/same.json"].action, "retain_protected")
+            self.assertFalse(by_path["storage/02_control_plane/artifacts/b/same.json"].protected)
+            self.assertEqual(by_path["storage/02_control_plane/artifacts/b/same.json"].action, "quarantine_candidate")
 
 
 if __name__ == "__main__":

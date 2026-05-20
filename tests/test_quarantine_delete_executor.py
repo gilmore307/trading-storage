@@ -15,7 +15,7 @@ class QuarantineDeleteExecutorTests(unittest.TestCase):
     def test_clear_recheck_gets_planned_receipts_but_no_mutation(self):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
-            artifact = root / "storage" / "artifacts" / "scratch" / "payload.json"
+            artifact = root / "storage" / "02_control_plane" / "artifacts" / "scratch" / "payload.json"
             artifact.parent.mkdir(parents=True, exist_ok=True)
             artifact.write_text('{"contract_type":"scratch_payload"}\n', encoding="utf-8")
             index = build_artifact_index(root=root)
@@ -59,7 +59,7 @@ class QuarantineDeleteExecutorTests(unittest.TestCase):
     def test_pending_recheck_blocks_deletion_receipt(self):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
-            artifact = root / "storage" / "artifacts" / "scratch" / "payload.json"
+            artifact = root / "storage" / "02_control_plane" / "artifacts" / "scratch" / "payload.json"
             artifact.parent.mkdir(parents=True, exist_ok=True)
             artifact.write_text('{"contract_type":"scratch_payload"}\n', encoding="utf-8")
             index = build_artifact_index(root=root)

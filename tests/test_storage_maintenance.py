@@ -32,8 +32,8 @@ class StorageMaintenanceTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as raw_tmp:
             root = Path(raw_tmp)
             summary = run_storage_maintenance(root=root, generated_at_utc="2026-05-19T12:00:00Z")
-            write_storage_maintenance_summary(summary, output_path=Path("storage/lifecycle/maintenance/summary.json"), root=root)
-            payload = json.loads((root / "storage" / "lifecycle" / "maintenance" / "summary.json").read_text(encoding="utf-8"))
+            write_storage_maintenance_summary(summary, output_path=Path("storage/90_lifecycle/maintenance/summary.json"), root=root)
+            payload = json.loads((root / "storage" / "90_lifecycle" / "maintenance" / "summary.json").read_text(encoding="utf-8"))
 
         self.assertEqual(payload["contract_type"], "storage_scheduled_maintenance_summary")
         self.assertEqual(payload["generated_at_utc"], "2026-05-19T12:00:00Z")

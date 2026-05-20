@@ -38,7 +38,7 @@ class ArtifactStoreTests(unittest.TestCase):
             self.assertEqual(stored.artifact_ref["contract_type"], "artifact_ref")
             self.assertEqual(stored.artifact_ref["schema_version"], 1)
             self.assertEqual(stored.artifact_ref["artifact_id"], "art_sample_001")
-            self.assertEqual(stored.artifact_ref["storage_uri"], "storage://trading-storage/artifacts/sample_payload/art_sample_001.json")
+            self.assertEqual(stored.artifact_ref["storage_uri"], "storage://trading-storage/02_control_plane/artifacts/sample_payload/art_sample_001.json")
             self.assertEqual(stored.artifact_ref["schema_ref"], "sample_payload")
             self.assertEqual(stored.artifact_ref["content_hash_sha256"], stored.content_hash)
             self.assertEqual(json.loads(stored.local_path.read_text(encoding="utf-8"))["value"], 1)

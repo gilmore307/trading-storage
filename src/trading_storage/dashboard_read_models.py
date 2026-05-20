@@ -2,7 +2,7 @@
 
 This module implements the first storage-side writer/validation slice for
 owner-facing dashboard summaries.  It materializes validated JSON documents
-under the accepted ``storage/dashboard_cache`` layout without creating dashboard UI,
+under the accepted ``storage/06_dashboard_cache`` layout without creating dashboard UI,
 refresh jobs, provider calls, model activation, broker execution, or account
 mutation.
 """
@@ -23,7 +23,7 @@ from trading_storage.artifact_store import canonical_json_bytes, now_utc
 from trading_storage.io import append_text_locked
 
 DEFAULT_STORAGE_ROOT = Path("storage")
-DASHBOARD_ROOT = Path("dashboard_cache")
+DASHBOARD_ROOT = Path("06_dashboard_cache")
 INDEX_PATH = DASHBOARD_ROOT / "index" / "dashboard_read_model_index.jsonl"
 CLOCK_SKEW = timedelta(minutes=5)
 
@@ -188,8 +188,8 @@ def validate_dashboard_read_model(
         raise DashboardReadModelError("generated_at_utc is in the future beyond accepted clock skew")
 
     schema_ref = str(payload["schema_ref"])
-    expected_schema_suffix = f"dashboard_cache/schemas/{contract_type}.schema.json"
-    legacy_schema_suffix = f"dashboard_cache/schemas/{payload['contract_type']}.schema.json"
+    expected_schema_suffix = f"06_dashboard_cache/schemas/{contract_type}.schema.json"
+    legacy_schema_suffix = f"06_dashboard_cache/schemas/{payload['contract_type']}.schema.json"
     if schema_ref != contract_type and not schema_ref.endswith(expected_schema_suffix) and not schema_ref.endswith(legacy_schema_suffix):
         raise DashboardReadModelError(
             "schema_ref must be the contract type or the accepted storage schema path for the contract"
@@ -205,7 +205,7 @@ def common_dashboard_schema(contract_type: str) -> dict[str, Any]:
     contract_type = _safe_contract_type(contract_type)
     return {
         "$schema": "https://json-schema.org/draft/2020-12/schema",
-        "$id": f"storage://trading-storage/dashboard_cache/schemas/{contract_type}.schema.json",
+        "$id": f"storage://trading-storage/06_dashboard_cache/schemas/{contract_type}.schema.json",
         "title": contract_type,
         "type": "object",
         "required": list(REQUIRED_ENVELOPE_FIELDS),

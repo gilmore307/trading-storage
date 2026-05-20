@@ -17,7 +17,7 @@ from trading_storage.single_file_compression import (
 
 class SingleFileCompressionTests(unittest.TestCase):
     def _compression_plan(self, root: Path):
-        artifact = root / "storage" / "artifacts" / "pit_source_data" / "payload.csv"
+        artifact = root / "storage" / "02_control_plane" / "artifacts" / "pit_source_data" / "payload.csv"
         artifact.parent.mkdir(parents=True, exist_ok=True)
         artifact.write_text("a,b\n1,2\n", encoding="utf-8")
         index = build_artifact_index(root=root)
@@ -66,7 +66,7 @@ class SingleFileCompressionTests(unittest.TestCase):
     def test_protected_records_are_skipped(self):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
-            artifact = root / "storage" / "artifacts" / "example" / "payload.json"
+            artifact = root / "storage" / "02_control_plane" / "artifacts" / "example" / "payload.json"
             artifact.parent.mkdir(parents=True, exist_ok=True)
             artifact.write_text(json.dumps({"contract_type": "example_payload"}), encoding="utf-8")
             plan = plan_storage_lifecycle(build_artifact_index(root=root))
@@ -80,7 +80,7 @@ class SingleFileCompressionTests(unittest.TestCase):
     def test_quarantine_candidates_are_not_compressed(self):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
-            artifact = root / "storage" / "artifacts" / "scratch" / "payload.json"
+            artifact = root / "storage" / "02_control_plane" / "artifacts" / "scratch" / "payload.json"
             artifact.parent.mkdir(parents=True, exist_ok=True)
             artifact.write_text(json.dumps({"contract_type": "scratch_payload"}), encoding="utf-8")
             index = build_artifact_index(root=root)
@@ -135,8 +135,8 @@ class SingleFileCompressionTests(unittest.TestCase):
     def test_compressed_output_paths_use_full_artifact_identity(self):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
-            first = root / "storage" / "artifacts" / "pit_source_data" / "a" / "same.csv"
-            second = root / "storage" / "artifacts" / "pit_source_data" / "b" / "same.csv"
+            first = root / "storage" / "02_control_plane" / "artifacts" / "pit_source_data" / "a" / "same.csv"
+            second = root / "storage" / "02_control_plane" / "artifacts" / "pit_source_data" / "b" / "same.csv"
             first.parent.mkdir(parents=True, exist_ok=True)
             second.parent.mkdir(parents=True, exist_ok=True)
             first.write_text("a,b\n1,2\n", encoding="utf-8")

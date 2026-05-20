@@ -26,7 +26,7 @@ from .artifact_store import now_utc
 from .dashboard_read_models import materialize_dashboard_read_model
 
 CURRENT_SYSTEM_STATUS_CONTRACT = "current_system_status_summary"
-CURRENT_SYSTEM_STATUS_SCHEMA_REF = f"storage/dashboard_cache/schemas/{CURRENT_SYSTEM_STATUS_CONTRACT}.schema.json"
+CURRENT_SYSTEM_STATUS_SCHEMA_REF = f"storage/06_dashboard_cache/schemas/{CURRENT_SYSTEM_STATUS_CONTRACT}.schema.json"
 HISTORICAL_TASK_PROGRESS_CONTRACT = "historical_task_progress_summary"
 DEFAULT_STALE_AFTER_SECONDS = 120
 DEFAULT_TRADING_MANAGER_ROOT = Path(os.environ.get("TRADING_MANAGER_ROOT", "/root/projects/trading-manager"))
@@ -41,7 +41,7 @@ def _default_storage_root() -> Path:
 
 
 DEFAULT_STORAGE_ROOT = _default_storage_root()
-DEFAULT_MANAGER_STORAGE_ROOT = Path(os.environ.get("TRADING_MANAGER_STORAGE_ROOT", str(DEFAULT_STORAGE_ROOT / "control_plane")))
+DEFAULT_MANAGER_STORAGE_ROOT = Path(os.environ.get("TRADING_MANAGER_STORAGE_ROOT", str(DEFAULT_STORAGE_ROOT / "02_control_plane")))
 DEFAULT_SCHEDULER_ENV_PATH = Path("/etc/default/trading-manager-historical-scheduler")
 DEFAULT_STORAGE_REFRESH_ENV_PATH = Path(os.environ.get("TRADING_STORAGE_REFRESH_ENV_PATH", "/etc/default/trading-storage-dashboard-read-model-refresh"))
 DEFAULT_REFRESH_CADENCE_SECONDS = 60
@@ -563,7 +563,7 @@ def _active_workflow_state_path(runtime_root: Path) -> Path | None:
 
 def _manager_storage_root_from(storage_root: Path) -> Path:
     override = os.environ.get("TRADING_MANAGER_STORAGE_ROOT")
-    return Path(override) if override else Path(storage_root) / "control_plane"
+    return Path(override) if override else Path(storage_root) / "02_control_plane"
 
 
 def _dashboard_source_outputs(*, manager_storage_root: Path, now_epoch: float) -> list[dict[str, Any]]:
@@ -729,7 +729,7 @@ def write_current_system_status_summary(payload: Mapping[str, Any], *, output: T
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description="Build or refresh current_system_status_summary from read-only infrastructure observations.")
     parser.add_argument("--storage-root", type=Path, default=Path("storage"))
-    parser.add_argument("--refresh", action="store_true", help="Materialize the summary into storage/dashboard_cache instead of printing only.")
+    parser.add_argument("--refresh", action="store_true", help="Materialize the summary into storage/06_dashboard_cache instead of printing only.")
     args = parser.parse_args(argv)
     if args.refresh:
         json.dump(refresh_current_system_status_read_model(storage_root=args.storage_root), sys.stdout, indent=2, sort_keys=True)

@@ -18,7 +18,7 @@ class LifecycleExecutionScaffoldTests(unittest.TestCase):
     def test_compression_candidate_gets_manifest_receipt_and_restore_draft(self):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
-            artifact = root / "storage" / "artifacts" / "pit_source_data" / "payload.csv"
+            artifact = root / "storage" / "02_control_plane" / "artifacts" / "pit_source_data" / "payload.csv"
             artifact.parent.mkdir(parents=True, exist_ok=True)
             artifact.write_text("a,b\n1,2\n", encoding="utf-8")
             index = build_artifact_index(root=root)
@@ -49,7 +49,7 @@ class LifecycleExecutionScaffoldTests(unittest.TestCase):
     def test_archive_candidate_gets_archive_and_restore_drafts(self):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
-            artifact = root / "storage" / "artifacts" / "sql_partition" / "partition.json"
+            artifact = root / "storage" / "02_control_plane" / "artifacts" / "sql_partition" / "partition.json"
             artifact.parent.mkdir(parents=True, exist_ok=True)
             artifact.write_text(json.dumps({"contract_type": "sql_partition_ref"}), encoding="utf-8")
             index = build_artifact_index(root=root)
@@ -95,7 +95,7 @@ class LifecycleExecutionScaffoldTests(unittest.TestCase):
     def test_protected_records_are_skipped(self):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
-            artifact = root / "storage" / "artifacts" / "example" / "payload.json"
+            artifact = root / "storage" / "02_control_plane" / "artifacts" / "example" / "payload.json"
             artifact.parent.mkdir(parents=True, exist_ok=True)
             artifact.write_text(json.dumps({"contract_type": "example_payload"}), encoding="utf-8")
             plan = plan_storage_lifecycle(build_artifact_index(root=root))
@@ -109,7 +109,7 @@ class LifecycleExecutionScaffoldTests(unittest.TestCase):
     def test_quarantine_candidates_do_not_get_delete_receipts(self):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
-            artifact = root / "storage" / "artifacts" / "scratch" / "payload.json"
+            artifact = root / "storage" / "02_control_plane" / "artifacts" / "scratch" / "payload.json"
             artifact.parent.mkdir(parents=True, exist_ok=True)
             artifact.write_text(json.dumps({"contract_type": "scratch_payload"}), encoding="utf-8")
             index = build_artifact_index(root=root)
@@ -132,7 +132,7 @@ class LifecycleExecutionScaffoldTests(unittest.TestCase):
     def test_lifecycle_plan_and_scaffold_outputs_round_trip(self):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
-            artifact = root / "storage" / "artifacts" / "pit_source_data" / "payload.csv"
+            artifact = root / "storage" / "02_control_plane" / "artifacts" / "pit_source_data" / "payload.csv"
             artifact.parent.mkdir(parents=True, exist_ok=True)
             artifact.write_text("a,b\n1,2\n", encoding="utf-8")
             index = build_artifact_index(root=root)

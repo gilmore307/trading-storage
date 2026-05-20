@@ -21,8 +21,8 @@ from trading_storage.io import write_text_atomic
 from trading_storage.artifact_index import now_utc
 
 DEFAULT_STORAGE_ROOT = Path("storage")
-DEFAULT_OUTPUT = Path("storage/dashboard_cache/lifecycle/dashboard_snapshot_prune_plan.json")
-DEFAULT_SUMMARY_OUTPUT = Path("storage/dashboard_cache/lifecycle/dashboard_snapshot_prune_summary.json")
+DEFAULT_OUTPUT = Path("storage/06_dashboard_cache/lifecycle/dashboard_snapshot_prune_plan.json")
+DEFAULT_SUMMARY_OUTPUT = Path("storage/06_dashboard_cache/lifecycle/dashboard_snapshot_prune_summary.json")
 DEFAULT_MAX_AGE_HOURS = 24
 DEFAULT_KEEP_LATEST_PER_CONTRACT = 24
 
@@ -84,7 +84,7 @@ class DashboardSnapshotLifecyclePlan:
             "deleted_bytes": deleted_bytes,
             "retained_bytes": retained_bytes,
             "mutation_performed": any(record.mutation_performed for record in self.records),
-            "scope": "storage/dashboard_cache/read_models/*/snapshots/**/*.json only",
+            "scope": "storage/06_dashboard_cache/read_models/*/snapshots/**/*.json only",
             "latest_json_deleted": False,
             "schema_deleted": False,
             "index_deleted": False,
@@ -121,7 +121,7 @@ def _parse_snapshot_timestamp(path: Path) -> datetime | None:
 
 
 def _snapshot_files(storage_root: Path) -> dict[str, list[Path]]:
-    read_models_root = storage_root / "dashboard_cache" / "read_models"
+    read_models_root = storage_root / "06_dashboard_cache" / "read_models"
     by_contract: dict[str, list[Path]] = {}
     if not read_models_root.exists():
         return by_contract
@@ -260,7 +260,7 @@ def write_dashboard_snapshot_lifecycle_plan(
 
 def _parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Plan or apply dashboard read-model snapshot pruning.")
-    parser.add_argument("--storage-root", default=str(DEFAULT_STORAGE_ROOT), help="Storage root containing dashboard_cache/read_models.")
+    parser.add_argument("--storage-root", default=str(DEFAULT_STORAGE_ROOT), help="Storage root containing 06_dashboard_cache/read_models.")
     parser.add_argument("--max-age-hours", type=int, default=DEFAULT_MAX_AGE_HOURS, help="Delete-candidate threshold for snapshots outside the hot keep window.")
     parser.add_argument("--keep-latest-per-contract", type=int, default=DEFAULT_KEEP_LATEST_PER_CONTRACT, help="Minimum recent snapshots to keep per contract.")
     parser.add_argument("--apply", action="store_true", help="Delete eligible dashboard snapshot files. Default is dry-run only.")

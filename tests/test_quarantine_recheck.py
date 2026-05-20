@@ -19,7 +19,7 @@ class QuarantineRecheckTests(unittest.TestCase):
     def test_protected_plan_record_blocks_quarantine(self):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
-            artifact = root / "storage" / "artifacts" / "example" / "payload.json"
+            artifact = root / "storage" / "02_control_plane" / "artifacts" / "example" / "payload.json"
             artifact.parent.mkdir(parents=True, exist_ok=True)
             artifact.write_text(json.dumps({"contract_type": "example_payload"}), encoding="utf-8")
             plan = plan_storage_lifecycle(build_artifact_index(root=root))
@@ -34,7 +34,7 @@ class QuarantineRecheckTests(unittest.TestCase):
     def test_clear_quarantine_candidate_requires_final_recheck(self):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
-            artifact = root / "storage" / "artifacts" / "scratch" / "payload.json"
+            artifact = root / "storage" / "02_control_plane" / "artifacts" / "scratch" / "payload.json"
             artifact.parent.mkdir(parents=True, exist_ok=True)
             artifact.write_text(json.dumps({"contract_type": "scratch_payload"}), encoding="utf-8")
             index = build_artifact_index(root=root)
@@ -58,7 +58,7 @@ class QuarantineRecheckTests(unittest.TestCase):
     def test_final_recheck_can_block_candidate(self):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
-            artifact = root / "storage" / "artifacts" / "scratch" / "payload.json"
+            artifact = root / "storage" / "02_control_plane" / "artifacts" / "scratch" / "payload.json"
             artifact.parent.mkdir(parents=True, exist_ok=True)
             artifact.write_text(json.dumps({"contract_type": "scratch_payload"}), encoding="utf-8")
             index = build_artifact_index(root=root)
@@ -88,7 +88,7 @@ class QuarantineRecheckTests(unittest.TestCase):
     def test_final_recheck_clear_still_does_not_authorize_deletion(self):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
-            artifact = root / "storage" / "artifacts" / "scratch" / "payload.json"
+            artifact = root / "storage" / "02_control_plane" / "artifacts" / "scratch" / "payload.json"
             artifact.parent.mkdir(parents=True, exist_ok=True)
             artifact.write_text(json.dumps({"contract_type": "scratch_payload"}), encoding="utf-8")
             index = build_artifact_index(root=root)
@@ -113,7 +113,7 @@ class QuarantineRecheckTests(unittest.TestCase):
     def test_non_quarantine_actions_are_not_candidates(self):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
-            artifact = root / "storage" / "artifacts" / "pit_source_data" / "payload.csv"
+            artifact = root / "storage" / "02_control_plane" / "artifacts" / "pit_source_data" / "payload.csv"
             artifact.parent.mkdir(parents=True, exist_ok=True)
             artifact.write_text("a,b\n1,2\n", encoding="utf-8")
             index = build_artifact_index(root=root)
@@ -135,7 +135,7 @@ class QuarantineRecheckTests(unittest.TestCase):
     def test_lifecycle_plan_and_evidence_outputs_round_trip(self):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
-            artifact = root / "storage" / "artifacts" / "scratch" / "payload.json"
+            artifact = root / "storage" / "02_control_plane" / "artifacts" / "scratch" / "payload.json"
             artifact.parent.mkdir(parents=True, exist_ok=True)
             artifact.write_text(json.dumps({"contract_type": "scratch_payload"}), encoding="utf-8")
             index = build_artifact_index(root=root)

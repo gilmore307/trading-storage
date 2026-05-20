@@ -23,8 +23,8 @@ from trading_storage.protected_set import (
 
 LifecyclePlanAction = str
 
-DEFAULT_LIFECYCLE_PLAN_OUTPUT = Path("storage/lifecycle/plans/storage_lifecycle_plan.json")
-DEFAULT_LIFECYCLE_PLAN_SUMMARY_OUTPUT = Path("storage/lifecycle/plans/storage_lifecycle_plan_summary.json")
+DEFAULT_LIFECYCLE_PLAN_OUTPUT = Path("storage/90_lifecycle/plans/storage_lifecycle_plan.json")
+DEFAULT_LIFECYCLE_PLAN_SUMMARY_OUTPUT = Path("storage/90_lifecycle/plans/storage_lifecycle_plan_summary.json")
 
 
 @dataclass(frozen=True)

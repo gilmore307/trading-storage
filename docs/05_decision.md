@@ -283,7 +283,7 @@ Accept `docs/02_architecture.md` as the local lifecycle contract and add the fir
 - `scripts/lifecycle/maintain_local_storage.py`
 - `main/templates/maintenance/` timer templates
 
-The helper dry-runs by default. It retains `storage/artifacts/`, archives `logs/`, `runs/`, and `outputs/` before removing active copies, deletes old `tmp/` files without archive, removes Python/tool caches, prunes aged local archives, keeps archive destinations under the repository root, and skips symlinks.
+The helper dry-runs by default. It retains `storage/02_control_plane/artifacts/`, archives `logs/`, `runs/`, and `outputs/` before removing active copies, deletes old `tmp/` files without archive, removes Python/tool caches, prunes aged local archives, keeps archive destinations under the repository root, and skips symlinks.
 
 ### Consequences
 
@@ -384,13 +384,13 @@ After accepting storage ownership for durable non-SQL saved data, Chentong clari
 
 Trading runtime disposable cache, temporary files, and local staging should use storage-owned ignored roots and storage-owned scheduled cleanup by default. Component-local runtime staging is transitional only until a storage-owned root/path contract exists for the output class.
 
-The accepted target roots are storage-owned equivalents such as `storage/lifecycle/tmp/`, `storage/lifecycle/cache/<component>/`, `storage/lifecycle/staging/<component>/`, `storage/lifecycle/runs/`, `storage/lifecycle/outputs/`, and `storage/lifecycle/logs/`, with TTL/archive/delete behavior governed by `trading-storage` lifecycle policy. Unavoidable tool byproducts such as `__pycache__/` and `.pytest_cache/` may remain source-adjacent because they are not trading runtime data and can be deleted at any time.
+The accepted target roots are storage-owned equivalents such as `storage/90_lifecycle/tmp/`, `storage/90_lifecycle/cache/<component>/`, `storage/90_lifecycle/staging/<component>/`, `storage/90_lifecycle/runs/`, `storage/90_lifecycle/outputs/`, and `storage/90_lifecycle/logs/`, with TTL/archive/delete behavior governed by `trading-storage` lifecycle policy. Unavoidable tool byproducts such as `__pycache__/` and `.pytest_cache/` may remain source-adjacent because they are not trading runtime data and can be deleted at any time.
 
 ### Consequences
 
 - New trading runtime scratch/staging/cache paths should not be invented ad hoc inside component repositories.
 - Storage scheduled cleanup becomes the uniform path for disposable runtime files.
-- The first local helper implementation covers target `storage/lifecycle/tmp`, `storage/lifecycle/cache`, `storage/lifecycle/staging`, `storage/lifecycle/logs`, `storage/lifecycle/runs`, and `storage/lifecycle/outputs` roots while preserving legacy root cleanup during migration. Future slices still need concrete cross-repository migration expectations before broad movement of existing local staging files.
+- The first local helper implementation covers target `storage/90_lifecycle/tmp`, `storage/90_lifecycle/cache`, `storage/90_lifecycle/staging`, `storage/90_lifecycle/logs`, `storage/90_lifecycle/runs`, and `storage/90_lifecycle/outputs` roots while preserving legacy root cleanup during migration. Future slices still need concrete cross-repository migration expectations before broad movement of existing local staging files.
 - This does not authorize deletion beyond reviewed dry-run-first lifecycle helpers, protected-set rules, quarantine rules where applicable, and lifecycle receipts for durable-adjacent actions.
 
 
@@ -408,10 +408,10 @@ Dashboard read-model contracts are now accepted as storage-hosted summaries. The
 Accept `docs/41_dashboard_summary_layout.md` as the first physical layout and validation-boundary contract for dashboard summaries. Dashboard summaries live under:
 
 ```text
-storage/dashboard_cache/read_models/<contract_type>/latest.json
-storage/dashboard_cache/read_models/<contract_type>/snapshots/YYYY/MM/DD/<generated_at_utc_compact>.json
-storage/dashboard_cache/schemas/<contract_type>.schema.json
-storage/dashboard_cache/index/dashboard_read_model_index.jsonl
+storage/06_dashboard_cache/read_models/<contract_type>/latest.json
+storage/06_dashboard_cache/read_models/<contract_type>/snapshots/YYYY/MM/DD/<generated_at_utc_compact>.json
+storage/06_dashboard_cache/schemas/<contract_type>.schema.json
+storage/06_dashboard_cache/index/dashboard_read_model_index.jsonl
 ```
 
 The common envelope requires contract metadata, generation freshness, source ownership, owner-facing status/summary, chart payload, profile refs, issue refs, issue-focused diagnostic refs, lineage refs, freshness details, and schema refs.

@@ -57,7 +57,7 @@ The current executor emits:
 - receipt: `compression_receipt`;
 - restore check: `restore_receipt`.
 
-Allowed successful mutation is only writing `storage/lifecycle/archive/compressed/<artifact_id>/<original-name>.zst`. A successful receipt must still report `original_preserved=true`, `delete_original_performed=false`, `artifact_index_updated=false`, and `sql_mutation_performed=false`.
+Allowed successful mutation is only writing `storage/90_lifecycle/archive/compressed/<artifact_id>/<original-name>.zst`. A successful receipt must still report `original_preserved=true`, `delete_original_performed=false`, `artifact_index_updated=false`, and `sql_mutation_performed=false`.
 
 ### Current V0.1 file-lifecycle acceptance receipts
 

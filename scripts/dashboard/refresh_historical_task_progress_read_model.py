@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Refresh historical_task_progress_summary into storage/dashboard_cache."""
+"""Refresh historical_task_progress_summary into storage/06_dashboard_cache."""
 
 from __future__ import annotations
 
@@ -13,7 +13,7 @@ from trading_storage.dashboard_refresh import DEFAULT_TRADING_MANAGER_ROOT, refr
 
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(
-        description="Run the manager semantic producer and materialize historical_task_progress_summary under storage/dashboard_cache."
+        description="Run the manager semantic producer and materialize historical_task_progress_summary under storage/06_dashboard_cache."
     )
     parser.add_argument("--trading-manager-root", type=Path, default=DEFAULT_TRADING_MANAGER_ROOT)
     parser.add_argument("--storage-root", type=Path, default=Path("storage"))

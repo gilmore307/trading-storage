@@ -151,11 +151,11 @@ Scripts may implement the policy, but policy review must be possible without rea
 
 The first durable-artifact lifecycle planner is conservative and non-mutating:
 
-- importable code: `src/trading_storage/lifecycle/plansner.py`;
+- importable code: `src/trading_storage/lifecycle_planner.py`;
 - executable wrapper: `scripts/lifecycle/plan_storage_lifecycle.py`;
 - default input: a live bounded artifact-index scan plus a freshly built protected set;
 - optional inputs: existing artifact-index JSONL, existing protected-set JSON, and reviewed JSON policy rules;
-- default output behavior prints a summary only; `--write` writes `storage/lifecycle/plans/storage_lifecycle_plan.json` and `storage/lifecycle/plans/storage_lifecycle_plan_summary.json`;
+- default output behavior prints a summary only; `--write` writes `storage/90_lifecycle/plans/storage_lifecycle_plan.json` and `storage/90_lifecycle/plans/storage_lifecycle_plan_summary.json`;
 - all output records carry `dry_run=true` and `mutation_performed=false` in the summary;
 - protected artifacts become `retain_protected` regardless of matched lifecycle policy;
 - ambiguous manual-review artifacts remain retained until metadata is classified.
@@ -173,11 +173,11 @@ This planner prepares evidence for later compression/archive/quarantine executor
 
 The first quarantine-before-delete evidence builder is conservative and non-mutating:
 
-- importable code: `src/trading_storage/lifecycle/quarantine_recheck.py`;
+- importable code: `src/trading_storage/quarantine_recheck.py`;
 - executable wrapper: `scripts/lifecycle/build_quarantine_recheck_evidence.py`;
 - default input: a live dry-run lifecycle plan;
 - optional inputs: existing lifecycle-plan JSON plus optional final protected-set JSON;
-- default output behavior prints a summary only; `--write` writes `storage/lifecycle/quarantine_recheck/quarantine_recheck_evidence.json` and `storage/lifecycle/quarantine_recheck/quarantine_recheck_summary.json`;
+- default output behavior prints a summary only; `--write` writes `storage/90_lifecycle/quarantine_recheck/quarantine_recheck_evidence.json` and `storage/90_lifecycle/quarantine_recheck/quarantine_recheck_summary.json`;
 - every row has `mutation_performed=false` and `deletion_allowed=false`;
 - quarantine candidates without final protected-set evidence remain `dry_run_candidate_pending_recheck`;
 - a clear final recheck is recorded as `dry_run_recheck_clear`, but still does not authorize deletion without a reviewed executor and deletion receipt.
@@ -195,7 +195,7 @@ This evidence builder prepares the quarantine/recheck gate; it does not quaranti
 
 The first compression/archive/restore execution slice is a non-mutating scaffold:
 
-- importable code: `src/trading_storage/lifecycle/execution_scaffold.py`;
+- importable code: `src/trading_storage/lifecycle_execution_scaffold.py`;
 - executable wrapper: `scripts/lifecycle/build_lifecycle_execution_scaffold.py`;
 - default input: a live dry-run lifecycle plan;
 - optional input: an existing lifecycle-plan JSON;
@@ -238,7 +238,7 @@ Reviewed apply shape:
 PYTHONPATH=src python3 scripts/lifecycle/compress_single_file_candidates.py --lifecycle-plan-json <plan.json> --apply --write
 ```
 
-This executor is allowed to write compressed copies under `storage/lifecycle/archive/compressed/`; it does not delete originals or mutate SQL/index state.
+This executor is allowed to write compressed copies under `storage/90_lifecycle/archive/compressed/`; it does not delete originals or mutate SQL/index state.
 
 ## Current V0.1 reviewed file-backed SQL archive executor
 
@@ -265,7 +265,7 @@ PYTHONPATH=src python3 scripts/lifecycle/execute_sql_archive.py --lifecycle-plan
 CLI smoke:
 
 ```bash
-PYTHONPATH=src python3 scripts/lifecycle/verify_sql_archive_restore.py --archive-result-json storage/lifecycle/execution/sql_archive_result.json
+PYTHONPATH=src python3 scripts/lifecycle/verify_sql_archive_restore.py --archive-result-json storage/90_lifecycle/execution/sql_archive_result.json
 ```
 
 ## Current V0.1 no-mutation quarantine/delete receipt builder
@@ -275,7 +275,7 @@ PYTHONPATH=src python3 scripts/lifecycle/verify_sql_archive_restore.py --archive
 CLI smoke:
 
 ```bash
-PYTHONPATH=src python3 scripts/lifecycle/build_quarantine_delete_result.py --quarantine-recheck-json storage/lifecycle/quarantine_recheck/quarantine_recheck_evidence.json
+PYTHONPATH=src python3 scripts/lifecycle/build_quarantine_delete_result.py --quarantine-recheck-json storage/90_lifecycle/quarantine_recheck/quarantine_recheck_evidence.json
 ```
 
 ## Current V0.1 one-pass file-lifecycle acceptance

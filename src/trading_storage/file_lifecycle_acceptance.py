@@ -63,8 +63,8 @@ from trading_storage.single_file_compression import (
     write_single_file_compression_result,
 )
 
-DEFAULT_FILE_LIFECYCLE_ACCEPTANCE_OUTPUT = Path("storage/lifecycle/execution/file_lifecycle_acceptance.json")
-DEFAULT_FILE_LIFECYCLE_ACCEPTANCE_SUMMARY_OUTPUT = Path("storage/lifecycle/execution/file_lifecycle_acceptance_summary.json")
+DEFAULT_FILE_LIFECYCLE_ACCEPTANCE_OUTPUT = Path("storage/90_lifecycle/execution/file_lifecycle_acceptance.json")
+DEFAULT_FILE_LIFECYCLE_ACCEPTANCE_SUMMARY_OUTPUT = Path("storage/90_lifecycle/execution/file_lifecycle_acceptance_summary.json")
 
 
 @dataclass(frozen=True)

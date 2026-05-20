@@ -32,8 +32,8 @@ from trading_storage.lifecycle_planner import (
 from trading_storage.protected_set import load_artifact_index_jsonl
 from trading_storage.quarantine_recheck import load_storage_lifecycle_plan_json
 
-DEFAULT_SINGLE_FILE_COMPRESSION_OUTPUT = Path("storage/lifecycle/execution/single_file_compression_result.json")
-DEFAULT_SINGLE_FILE_COMPRESSION_SUMMARY_OUTPUT = Path("storage/lifecycle/execution/single_file_compression_summary.json")
+DEFAULT_SINGLE_FILE_COMPRESSION_OUTPUT = Path("storage/90_lifecycle/execution/single_file_compression_result.json")
+DEFAULT_SINGLE_FILE_COMPRESSION_SUMMARY_OUTPUT = Path("storage/90_lifecycle/execution/single_file_compression_summary.json")
 EXECUTOR_VERSION = "storage_single_file_compression_executor_v0_1"
 
 
@@ -204,7 +204,14 @@ def _artifact_identity_hash(record: LifecyclePlanRecord) -> str:
 
 
 def _compressed_relative_path(record: LifecyclePlanRecord) -> Path:
-    return Path("storage") / "lifecycle" / "archive" / "compressed" / _artifact_identity_hash(record) / (Path(record.physical_path).name + ".zst")
+    return (
+        Path("storage")
+        / "90_lifecycle"
+        / "archive"
+        / "compressed"
+        / _artifact_identity_hash(record)
+        / (Path(record.physical_path).name + ".zst")
+    )
 
 
 def _compressed_uri(record: LifecyclePlanRecord) -> str:

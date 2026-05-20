@@ -17,8 +17,8 @@ from typing import Any, Mapping, Sequence
 from trading_storage.artifact_index import ArtifactIndex, ArtifactIndexRecord, DEFAULT_INDEX_ROOTS, build_artifact_index, now_utc
 from trading_storage.io import write_text_atomic
 
-DEFAULT_PROTECTED_SET_OUTPUT = Path("storage/lifecycle/protected_set/protected_set.json")
-DEFAULT_PROTECTED_SET_SUMMARY_OUTPUT = Path("storage/lifecycle/protected_set/protected_set_summary.json")
+DEFAULT_PROTECTED_SET_OUTPUT = Path("storage/90_lifecycle/protected_set/protected_set.json")
+DEFAULT_PROTECTED_SET_SUMMARY_OUTPUT = Path("storage/90_lifecycle/protected_set/protected_set_summary.json")
 
 PROTECTED_REASON_CODES = frozenset(
     {

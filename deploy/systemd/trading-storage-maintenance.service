@@ -8,7 +8,7 @@ Wants=network-online.target
 Type=oneshot
 Environment=TRADING_STORAGE_ROOT=/root/projects/trading-storage
 Environment=TRADING_MANAGER_ROOT=/root/projects/trading-manager
-Environment=TRADING_STORAGE_MAINTENANCE_OUTPUT=storage/lifecycle/maintenance/storage_maintenance_summary.json
+Environment=TRADING_STORAGE_MAINTENANCE_OUTPUT=storage/90_lifecycle/maintenance/storage_maintenance_summary.json
 Environment=TRADING_STORAGE_MAINTENANCE_LOCAL_RETENTION_ARGS=--apply-local-retention
 EnvironmentFile=-/etc/default/trading-storage-maintenance
 WorkingDirectory=/root/projects/trading-storage

@@ -4,7 +4,7 @@ Executable storage maintenance and artifact helpers live here. Scripts may impor
 
 ## Dashboard helpers
 
-- `dashboard/materialize_read_model.py` validates a dashboard read-model common envelope and writes storage-owned snapshot/latest/schema/index files under `storage/dashboard_cache/`.
+- `dashboard/materialize_read_model.py` validates a dashboard read-model common envelope and writes storage-owned snapshot/latest/schema/index files under `storage/06_dashboard_cache/`.
 - `dashboard/refresh_historical_task_progress_read_model.py` runs the manager-owned `historical_task_progress_summary` producer and materializes the validated payload into the accepted storage layout.
 - `dashboard/refresh_realtime_signal_summary_read_model.py` builds the execution-owned realtime signal summary from monitor receipts and materializes the validated payload into the accepted storage layout.
 - `dashboard/refresh_public_dashboard_read_models.py` refreshes the public dashboard read-model set, currently including current system status, historical task progress, and realtime signal summary.

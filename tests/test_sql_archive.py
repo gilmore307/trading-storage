@@ -16,7 +16,7 @@ from trading_storage.sql_archive import (
 
 class SqlArchiveExecutorTests(unittest.TestCase):
     def _archive_plan(self, root: Path):
-        artifact = root / "storage" / "artifacts" / "sql_partition" / "partition.json"
+        artifact = root / "storage" / "02_control_plane" / "artifacts" / "sql_partition" / "partition.json"
         artifact.parent.mkdir(parents=True, exist_ok=True)
         artifact.write_text(json.dumps({"contract_type": "sql_partition_ref", "rows": 2}), encoding="utf-8")
         index = build_artifact_index(root=root)

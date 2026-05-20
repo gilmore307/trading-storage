@@ -28,8 +28,8 @@ from trading_storage.lifecycle_planner import (
 from trading_storage.protected_set import load_artifact_index_jsonl
 from trading_storage.quarantine_recheck import load_storage_lifecycle_plan_json
 
-DEFAULT_EXECUTION_SCAFFOLD_OUTPUT = Path("storage/lifecycle/execution/lifecycle_execution_scaffold.json")
-DEFAULT_EXECUTION_SCAFFOLD_SUMMARY_OUTPUT = Path("storage/lifecycle/execution/lifecycle_execution_scaffold_summary.json")
+DEFAULT_EXECUTION_SCAFFOLD_OUTPUT = Path("storage/90_lifecycle/execution/lifecycle_execution_scaffold.json")
+DEFAULT_EXECUTION_SCAFFOLD_SUMMARY_OUTPUT = Path("storage/90_lifecycle/execution/lifecycle_execution_scaffold_summary.json")
 EXECUTOR_VERSION = "storage_lifecycle_execution_scaffold_v0_1"
 
 
@@ -238,7 +238,7 @@ def _stable_ref(prefix: str, *parts: object) -> str:
 
 
 def _compressed_path(record: LifecyclePlanRecord) -> str:
-    return f"storage/lifecycle/archive/compressed/{record.artifact_id}/{Path(record.physical_path).name}.zst"
+    return f"storage/90_lifecycle/archive/compressed/{record.artifact_id}/{Path(record.physical_path).name}.zst"
 
 
 def _compressed_uri(record: LifecyclePlanRecord) -> str:
@@ -246,7 +246,7 @@ def _compressed_uri(record: LifecyclePlanRecord) -> str:
 
 
 def _archive_path(record: LifecyclePlanRecord) -> str:
-    return f"storage/lifecycle/archive/sql/{record.artifact_id}.dump.zst"
+    return f"storage/90_lifecycle/archive/sql/{record.artifact_id}.dump.zst"
 
 
 def _archive_uri(record: LifecyclePlanRecord) -> str:

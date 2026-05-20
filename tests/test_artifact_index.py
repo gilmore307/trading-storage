@@ -12,7 +12,7 @@ class ArtifactIndexTests(unittest.TestCase):
     def test_indexes_storage_artifact_payload_conservatively(self):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
-            payload_path = root / "storage" / "artifacts" / "component_completion_receipt" / "receipt-1.json"
+            payload_path = root / "storage" / "02_control_plane" / "artifacts" / "component_completion_receipt" / "receipt-1.json"
             payload_path.parent.mkdir(parents=True, exist_ok=True)
             payload_path.write_text(
                 json.dumps(
@@ -49,7 +49,7 @@ class ArtifactIndexTests(unittest.TestCase):
     def test_dashboard_read_model_payload_is_indexed(self):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
-            latest = root / "storage" / "dashboard_cache" / "read_models" / "current_system_status_summary" / "latest.json"
+            latest = root / "storage" / "06_dashboard_cache" / "read_models" / "current_system_status_summary" / "latest.json"
             latest.parent.mkdir(parents=True, exist_ok=True)
             latest.write_text(
                 json.dumps(
@@ -62,11 +62,11 @@ class ArtifactIndexTests(unittest.TestCase):
                 encoding="utf-8",
             )
 
-            index = build_artifact_index(root=root, include_roots=("storage/dashboard_cache/read_models/current_system_status_summary/latest.json",))
+            index = build_artifact_index(root=root, include_roots=("storage/06_dashboard_cache/read_models/current_system_status_summary/latest.json",))
 
             self.assertEqual(index.summary["artifact_kind_counts"], {"current_system_status_summary": 1})
             self.assertEqual(index.records[0].producer_component, "current_system_status_summary")
-            self.assertEqual(index.records[0].schema_ref, "storage/dashboard_cache/schemas/current_system_status_summary.schema.json")
+            self.assertEqual(index.records[0].schema_ref, "storage/06_dashboard_cache/schemas/current_system_status_summary.schema.json")
             self.assertEqual(index.records[0].schema_version, "1")
             self.assertEqual(index.records[0].retention_class, "dashboard_latest_retained")
             self.assertEqual(index.records[0].protected_reason_codes, ("dashboard_latest_snapshot",))
@@ -74,7 +74,7 @@ class ArtifactIndexTests(unittest.TestCase):
     def test_dashboard_snapshot_payload_is_ttl_delete_allowed_when_explicitly_indexed(self):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
-            snapshot = root / "storage" / "dashboard_cache" / "read_models" / "historical_task_progress_summary" / "snapshots" / "2026" / "05" / "16" / "20260516T000000Z.json"
+            snapshot = root / "storage" / "06_dashboard_cache" / "read_models" / "historical_task_progress_summary" / "snapshots" / "2026" / "05" / "16" / "20260516T000000Z.json"
             snapshot.parent.mkdir(parents=True, exist_ok=True)
             snapshot.write_text(
                 json.dumps(
@@ -87,7 +87,7 @@ class ArtifactIndexTests(unittest.TestCase):
                 encoding="utf-8",
             )
 
-            index = build_artifact_index(root=root, include_roots=("storage/dashboard_cache/read_models/historical_task_progress_summary/snapshots/2026/05/16/20260516T000000Z.json",))
+            index = build_artifact_index(root=root, include_roots=("storage/06_dashboard_cache/read_models/historical_task_progress_summary/snapshots/2026/05/16/20260516T000000Z.json",))
 
             self.assertEqual(index.records[0].retention_class, "ttl_delete_allowed")
             self.assertEqual(index.records[0].protected_reason_codes, ())
@@ -95,7 +95,7 @@ class ArtifactIndexTests(unittest.TestCase):
     def test_layer_one_two_artifacts_are_compress_and_retain(self):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
-            artifact = root / "storage" / "artifacts" / "layer_01_market_regime" / "bars.csv"
+            artifact = root / "storage" / "02_control_plane" / "artifacts" / "layer_01_market_regime" / "bars.csv"
             artifact.parent.mkdir(parents=True, exist_ok=True)
             artifact.write_text("date,symbol,close\n2016-01-04,SPY,200\n", encoding="utf-8")
 
@@ -107,7 +107,7 @@ class ArtifactIndexTests(unittest.TestCase):
     def test_compressed_artifact_requires_restore(self):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
-            archive = root / "storage" / "artifacts" / "sql_archive" / "partition.tar.zst"
+            archive = root / "storage" / "02_control_plane" / "artifacts" / "sql_archive" / "partition.tar.zst"
             archive.parent.mkdir(parents=True, exist_ok=True)
             archive.write_bytes(b"compressed-placeholder")
 
@@ -121,19 +121,19 @@ class ArtifactIndexTests(unittest.TestCase):
     def test_write_artifact_index_outputs_jsonl_and_summary(self):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
-            artifact = root / "storage" / "artifacts" / "example" / "payload.txt"
+            artifact = root / "storage" / "02_control_plane" / "artifacts" / "example" / "payload.txt"
             artifact.parent.mkdir(parents=True, exist_ok=True)
             artifact.write_text("payload", encoding="utf-8")
 
             index = build_artifact_index(root=root)
             write_artifact_index(
                 index,
-                index_path=Path("storage/lifecycle/artifact_index/artifact_index.jsonl"),
-                summary_path=Path("storage/lifecycle/artifact_index/artifact_index_summary.json"),
+                index_path=Path("storage/90_lifecycle/artifact_index/artifact_index.jsonl"),
+                summary_path=Path("storage/90_lifecycle/artifact_index/artifact_index_summary.json"),
             )
 
-            jsonl_path = root / "storage" / "lifecycle" / "artifact_index" / "artifact_index.jsonl"
-            summary_path = root / "storage" / "lifecycle" / "artifact_index" / "artifact_index_summary.json"
+            jsonl_path = root / "storage" / "90_lifecycle" / "artifact_index" / "artifact_index.jsonl"
+            summary_path = root / "storage" / "90_lifecycle" / "artifact_index" / "artifact_index_summary.json"
             rows = [json.loads(line) for line in jsonl_path.read_text(encoding="utf-8").splitlines()]
             summary = json.loads(summary_path.read_text(encoding="utf-8"))
 
@@ -145,8 +145,8 @@ class ArtifactIndexTests(unittest.TestCase):
     def test_duplicate_explicit_artifact_ids_are_rejected(self):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
-            first = root / "storage" / "artifacts" / "a" / "one.json"
-            second = root / "storage" / "artifacts" / "b" / "two.json"
+            first = root / "storage" / "02_control_plane" / "artifacts" / "a" / "one.json"
+            second = root / "storage" / "02_control_plane" / "artifacts" / "b" / "two.json"
             first.parent.mkdir(parents=True, exist_ok=True)
             second.parent.mkdir(parents=True, exist_ok=True)
             first.write_text(json.dumps({"artifact_id": "duplicate", "contract_type": "example_payload"}), encoding="utf-8")
@@ -158,8 +158,8 @@ class ArtifactIndexTests(unittest.TestCase):
     def test_implicit_artifact_ids_include_path_and_checksum_identity(self):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
-            first = root / "storage" / "artifacts" / "a" / "same.json"
-            second = root / "storage" / "artifacts" / "b" / "same.json"
+            first = root / "storage" / "02_control_plane" / "artifacts" / "a" / "same.json"
+            second = root / "storage" / "02_control_plane" / "artifacts" / "b" / "same.json"
             first.parent.mkdir(parents=True, exist_ok=True)
             second.parent.mkdir(parents=True, exist_ok=True)
             payload = json.dumps({"contract_type": "example_payload"}, sort_keys=True)
@@ -174,7 +174,7 @@ class ArtifactIndexTests(unittest.TestCase):
     def test_layer_nine_runtime_metadata_is_ttl_delete_allowed(self):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
-            artifact = root / "storage" / "artifacts" / "model_09_event_risk_governor" / "runtime_summary.json"
+            artifact = root / "storage" / "02_control_plane" / "artifacts" / "model_09_event_risk_governor" / "runtime_summary.json"
             artifact.parent.mkdir(parents=True, exist_ok=True)
             artifact.write_text(
                 json.dumps(

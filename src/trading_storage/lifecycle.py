@@ -3,7 +3,7 @@
 The helpers in this module are deliberately conservative:
 
 - source-controlled files are never candidates;
-- durable local artifacts under ``storage/artifacts`` and semantic storage roots are reported, not deleted;
+- durable local artifacts under ``storage/02_control_plane/artifacts`` and semantic storage roots are reported, not deleted;
 - logs and development outputs are archived before active copies are removed;
 - legacy component-local roots and storage-owned roots are both covered during migration;
 - temporary/cache files are deleted only after a short TTL;
@@ -23,7 +23,7 @@ from typing import Iterable, Literal
 LifecycleAction = Literal["delete", "archive_then_delete", "retain"]
 PlannedAction = Literal["delete", "archive", "retain", "skip"]
 
-DEFAULT_ARCHIVE_ROOT = Path("storage/lifecycle/archive")
+DEFAULT_ARCHIVE_ROOT = Path("storage/90_lifecycle/archive")
 PYTHON_CACHE_NAMES = frozenset({"__pycache__", ".pytest_cache", ".mypy_cache", ".ruff_cache"})
 
 
@@ -84,42 +84,42 @@ class LifecyclePlan:
 DEFAULT_RETENTION_RULES: tuple[RetentionRule, ...] = (
     RetentionRule(
         name="temporary_files",
-        roots=("tmp", "storage/lifecycle/tmp", "storage/lifecycle/cache"),
+        roots=("tmp", "storage/90_lifecycle/tmp", "storage/90_lifecycle/cache"),
         action="delete",
         ttl_days=3,
         description="Scratch/cache files are disposable after three days and are not archived.",
     ),
     RetentionRule(
         name="diagnostic_logs",
-        roots=("logs", "storage/lifecycle/logs"),
+        roots=("logs", "storage/90_lifecycle/logs"),
         action="archive_then_delete",
         ttl_days=14,
         description="Local logs are archived before active copies older than fourteen days are removed.",
     ),
     RetentionRule(
         name="development_runs",
-        roots=("runs", "storage/lifecycle/runs"),
+        roots=("runs", "storage/90_lifecycle/runs"),
         action="archive_then_delete",
         ttl_days=30,
         description="Local run staging is archived before active copies older than thirty days are removed.",
     ),
     RetentionRule(
         name="development_outputs",
-        roots=("outputs", "storage/lifecycle/outputs", "storage/lifecycle/staging"),
+        roots=("outputs", "storage/90_lifecycle/outputs", "storage/90_lifecycle/staging"),
         action="archive_then_delete",
         ttl_days=30,
         description="Disposable development outputs are archived before active copies older than thirty days are removed.",
     ),
     RetentionRule(
         name="local_artifacts",
-        roots=("storage/artifacts", "storage/source_data", "storage/model_artifacts", "storage/benchmark_datasets"),
+        roots=("storage/02_control_plane/artifacts", "storage/01_source_data", "storage/03_model_artifacts", "storage/05_benchmark_datasets"),
         action="retain",
         ttl_days=None,
         description="Storage-owned local artifacts are retained until a reviewed promotion or deletion policy supersedes them.",
     ),
     RetentionRule(
         name="local_archives",
-        roots=("storage/lifecycle/archive",),
+        roots=("storage/90_lifecycle/archive",),
         action="delete",
         ttl_days=180,
         description="Local archives are pruned after one hundred eighty days.",
@@ -172,7 +172,7 @@ def _archive_path(root: Path, archive_root: Path, path: Path) -> Path:
     if (
         len(relative.parts) >= 3
         and relative.parts[0] == "storage"
-        and relative.parts[1] == "lifecycle"
+        and relative.parts[1] == "90_lifecycle"
         and relative.parts[2] in {"logs", "runs", "outputs", "staging"}
     ):
         relative = Path(*relative.parts[2:])
@@ -359,12 +359,12 @@ def _remove_empty_local_dirs(root: Path) -> None:
         "logs",
         "runs",
         "outputs",
-        "storage/lifecycle/tmp",
-        "storage/lifecycle/cache",
-        "storage/lifecycle/logs",
-        "storage/lifecycle/runs",
-        "storage/lifecycle/outputs",
-        "storage/lifecycle/staging",
+        "storage/90_lifecycle/tmp",
+        "storage/90_lifecycle/cache",
+        "storage/90_lifecycle/logs",
+        "storage/90_lifecycle/runs",
+        "storage/90_lifecycle/outputs",
+        "storage/90_lifecycle/staging",
         ".pytest_cache",
         ".mypy_cache",
         ".ruff_cache",

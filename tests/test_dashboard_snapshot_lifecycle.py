@@ -18,7 +18,7 @@ def _write_snapshot(storage_root: Path, contract: str, stamp: str, size: int = 1
     parsed = datetime.strptime(stamp, "%Y%m%dT%H%M%SZ").replace(tzinfo=timezone.utc)
     path = (
         storage_root
-        / "dashboard_cache"
+        / "06_dashboard_cache"
         / "read_models"
         / contract
         / "snapshots"
@@ -38,7 +38,7 @@ class DashboardSnapshotLifecycleTests(unittest.TestCase):
             storage_root = Path(tmp) / "storage"
             old = _write_snapshot(storage_root, "historical_task_progress_summary", "20260514T000000Z")
             recent = _write_snapshot(storage_root, "historical_task_progress_summary", "20260516T110000Z")
-            latest = storage_root / "dashboard_cache" / "read_models" / "historical_task_progress_summary" / "latest.json"
+            latest = storage_root / "06_dashboard_cache" / "read_models" / "historical_task_progress_summary" / "latest.json"
             latest.write_text("latest", encoding="utf-8")
 
             plan = build_dashboard_snapshot_lifecycle_plan(
@@ -62,7 +62,7 @@ class DashboardSnapshotLifecycleTests(unittest.TestCase):
             storage_root = Path(tmp) / "storage"
             old = _write_snapshot(storage_root, "historical_task_progress_summary", "20260514T000000Z")
             recent = _write_snapshot(storage_root, "historical_task_progress_summary", "20260516T110000Z")
-            latest = storage_root / "dashboard_cache" / "read_models" / "historical_task_progress_summary" / "latest.json"
+            latest = storage_root / "06_dashboard_cache" / "read_models" / "historical_task_progress_summary" / "latest.json"
             latest.write_text("latest", encoding="utf-8")
 
             plan = build_dashboard_snapshot_lifecycle_plan(
@@ -90,12 +90,12 @@ class DashboardSnapshotLifecycleTests(unittest.TestCase):
 
             write_dashboard_snapshot_lifecycle_plan(
                 plan,
-                output_path=Path("storage/dashboard_cache/lifecycle/plan.json"),
-                summary_path=Path("storage/dashboard_cache/lifecycle/summary.json"),
+                output_path=Path("storage/06_dashboard_cache/lifecycle/plan.json"),
+                summary_path=Path("storage/06_dashboard_cache/lifecycle/summary.json"),
             )
 
-            payload = json.loads((storage_root / "dashboard_cache" / "lifecycle" / "plan.json").read_text(encoding="utf-8"))
-            summary = json.loads((storage_root / "dashboard_cache" / "lifecycle" / "summary.json").read_text(encoding="utf-8"))
+            payload = json.loads((storage_root / "06_dashboard_cache" / "lifecycle" / "plan.json").read_text(encoding="utf-8"))
+            summary = json.loads((storage_root / "06_dashboard_cache" / "lifecycle" / "summary.json").read_text(encoding="utf-8"))
             self.assertEqual(payload["contract_type"], "dashboard_snapshot_prune_plan")
             self.assertEqual(summary["contract_type"], "dashboard_snapshot_prune_summary")
 

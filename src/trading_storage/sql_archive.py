@@ -32,10 +32,10 @@ from trading_storage.lifecycle_planner import (
 from trading_storage.protected_set import load_artifact_index_jsonl
 from trading_storage.quarantine_recheck import load_storage_lifecycle_plan_json
 
-DEFAULT_SQL_ARCHIVE_OUTPUT = Path("storage/lifecycle/execution/sql_archive_result.json")
-DEFAULT_SQL_ARCHIVE_SUMMARY_OUTPUT = Path("storage/lifecycle/execution/sql_archive_summary.json")
-DEFAULT_SQL_ARCHIVE_RESTORE_OUTPUT = Path("storage/lifecycle/execution/sql_archive_restore_verification.json")
-DEFAULT_SQL_ARCHIVE_RESTORE_SUMMARY_OUTPUT = Path("storage/lifecycle/execution/sql_archive_restore_verification_summary.json")
+DEFAULT_SQL_ARCHIVE_OUTPUT = Path("storage/90_lifecycle/execution/sql_archive_result.json")
+DEFAULT_SQL_ARCHIVE_SUMMARY_OUTPUT = Path("storage/90_lifecycle/execution/sql_archive_summary.json")
+DEFAULT_SQL_ARCHIVE_RESTORE_OUTPUT = Path("storage/90_lifecycle/execution/sql_archive_restore_verification.json")
+DEFAULT_SQL_ARCHIVE_RESTORE_SUMMARY_OUTPUT = Path("storage/90_lifecycle/execution/sql_archive_restore_verification_summary.json")
 EXECUTOR_VERSION = "storage_sql_archive_executor_v0_1"
 RESTORE_VERIFIER_VERSION = "storage_sql_archive_restore_verifier_v0_1"
 

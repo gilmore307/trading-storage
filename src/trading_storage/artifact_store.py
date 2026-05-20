@@ -1,8 +1,8 @@
 """Filesystem-backed artifact payload helpers for the storage boundary.
 
 This is the first concrete storage implementation slice: canonical JSON payloads
-are written under an ignored local storage root, while callers receive an
-`artifact_ref`-shaped metadata record suitable for manager SQL.
+are written under the ordered control-plane artifact area, while callers receive
+an `artifact_ref`-shaped metadata record suitable for manager SQL.
 """
 
 from __future__ import annotations
@@ -54,7 +54,7 @@ def _safe_token(value: str, *, field: str) -> str:
 def _artifact_path(storage_root: Path, artifact_type: str, artifact_id: str, suffix: str) -> Path:
     safe_type = _safe_token(artifact_type, field="artifact_type")
     safe_id = _safe_token(artifact_id, field="artifact_id")
-    return storage_root / "artifacts" / safe_type / f"{safe_id}.{suffix}"
+    return storage_root / "02_control_plane" / "artifacts" / safe_type / f"{safe_id}.{suffix}"
 
 
 def store_json_artifact(

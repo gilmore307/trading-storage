@@ -11,7 +11,7 @@ from typing import Any, Mapping, Sequence
 
 from .lifecycle import apply_retention_plan, plan_retention
 
-DEFAULT_MAINTENANCE_OUTPUT = Path("storage/lifecycle/maintenance/storage_maintenance_summary.json")
+DEFAULT_MAINTENANCE_OUTPUT = Path("storage/90_lifecycle/maintenance/storage_maintenance_summary.json")
 MODEL_WORKER_STAGE_TYPES = {"model_generation", "model_evaluation", "promotion_review", "maintenance"}
 COMPLETE_STATUSES = {"succeeded", "not_applicable"}
 FOLD_STATE_GLOB = "model_training_fold_state_*.json"
@@ -179,7 +179,7 @@ def detect_completed_model_worker_folds(*, manager_root: Path) -> tuple[dict[str
 def run_storage_maintenance(
     *,
     root: Path = Path("."),
-    archive_root: Path = Path("storage/lifecycle/archive"),
+    archive_root: Path = Path("storage/90_lifecycle/archive"),
     manager_root: Path | None = None,
     apply_local_retention: bool = False,
     include_local_retention: bool = True,
@@ -229,7 +229,7 @@ def write_storage_maintenance_summary(summary: StorageMaintenanceSummary, *, out
 def main(argv: Sequence[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description="Run the storage-owned scheduled maintenance pass.")
     parser.add_argument("--root", type=Path, default=Path("."), help="Repository root. Defaults to current directory.")
-    parser.add_argument("--archive-root", type=Path, default=Path("storage/lifecycle/archive"))
+    parser.add_argument("--archive-root", type=Path, default=Path("storage/90_lifecycle/archive"))
     parser.add_argument("--manager-root", type=Path, help="Manager repository root for fold-state monitoring.")
     parser.add_argument("--output-path", type=Path, default=DEFAULT_MAINTENANCE_OUTPUT)
     parser.add_argument("--apply-local-retention", action="store_true", help="Archive/delete eligible local runtime files.")

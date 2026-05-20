@@ -18,8 +18,8 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument(
         "--archive-root",
         type=Path,
-        default=Path("storage/lifecycle/archive"),
-        help="Archive destination relative to --root unless absolute. Defaults to storage/lifecycle/archive.",
+        default=Path("storage/90_lifecycle/archive"),
+        help="Archive destination relative to --root unless absolute. Defaults to storage/90_lifecycle/archive.",
     )
     parser.add_argument("--apply", action="store_true", help="Apply the planned archive/delete actions. Default is dry-run only.")
     args = parser.parse_args(argv)

@@ -30,24 +30,24 @@ This file maps those modules and records the implemented local ignored-file help
 | Class | Path | Owner | Rule |
 |---|---|---|---|
 | Source-controlled contracts/assets | `docs/`, `main/`, `src/`, `scripts/`, `tests/` | Git | Reviewed and committed. No generated output belongs here. |
-| Source data and source outputs | `storage/source_data/` | data-producing repositories with storage-owned placement | Downloaded/provider/source evidence, monthly backfill data, realtime source evidence, source-output artifacts, and event evidence. |
-| Control-plane state | `storage/control_plane/` | `trading-manager` with storage-owned placement | Manager task payloads, scheduler state, locks, coverage, dispatch receipts, and workflow checkpoints. |
-| Model artifacts | `storage/model_artifacts/` | `trading-model` with storage-owned placement | Model research artifacts, training/runtime outputs, diagnostics, and promotion-adjacent model evidence. |
-| Execution artifacts | `storage/execution_artifacts/` | `trading-execution` with storage-owned placement | Realtime monitor receipts, execution-side observations, shadow/live evidence, and execution runtime files. |
-| Benchmark datasets | `storage/benchmark_datasets/` | `trading-evaluation` with storage-owned placement | Frozen benchmark preparation bundles, replay dataset manifests, acquisition plans, and benchmark data snapshots. |
-| Dashboard cache | `storage/dashboard_cache/` | `trading-storage` dashboard read-model helpers | Materialized latest/snapshot/schema/index JSON used by dashboard readers; cache retention is storage-owned. |
-| Local durable artifact evidence | `storage/artifacts/` | `trading-storage` helper | Retained until reviewed promotion/deletion policy supersedes it. Not committed. |
-| Local archive | `storage/lifecycle/archive/` | retention helper | Receives aged logs/runs/outputs before active copies are removed. Pruned after 180 days. Not committed. |
+| Source data and source outputs | `storage/01_source_data/` | data-producing repositories with storage-owned placement | Downloaded/provider/source evidence, monthly backfill data, realtime source evidence, source-output artifacts, and event evidence. |
+| Control-plane state | `storage/02_control_plane/` | `trading-manager` with storage-owned placement | Manager task payloads, scheduler state, locks, coverage, dispatch receipts, and workflow checkpoints. |
+| Model artifacts | `storage/03_model_artifacts/` | `trading-model` with storage-owned placement | Model research artifacts, training/runtime outputs, diagnostics, and promotion-adjacent model evidence. |
+| Execution artifacts | `storage/04_execution_artifacts/` | `trading-execution` with storage-owned placement | Realtime monitor receipts, execution-side observations, shadow/live evidence, and execution runtime files. |
+| Benchmark datasets | `storage/05_benchmark_datasets/` | `trading-evaluation` with storage-owned placement | Frozen benchmark preparation bundles, replay dataset manifests, acquisition plans, and benchmark data snapshots. |
+| Dashboard cache | `storage/06_dashboard_cache/` | `trading-storage` dashboard read-model helpers | Materialized latest/snapshot/schema/index JSON used by dashboard readers; cache retention is storage-owned. |
+| Local durable artifact evidence | `storage/02_control_plane/artifacts/` | `trading-storage` helper | Retained until reviewed promotion/deletion policy supersedes it. Not committed. |
+| Local archive | `storage/90_lifecycle/archive/` | retention helper | Receives aged logs/runs/outputs before active copies are removed. Pruned after 180 days. Not committed. |
 | Current temporary scratch | `tmp/` | current local helper | Deleted after 3 days. Not archived. Transitional root. |
 | Current local logs | `logs/` | current local helper | Archived after 14 days, then active copy is removed. Transitional root. |
 | Current local run staging | `runs/` | current local helper | Archived after 30 days, then active copy is removed. Transitional root. |
 | Current local development outputs | `outputs/` | current local helper | Archived after 30 days, then active copy is removed. Transitional root. |
-| Target temporary scratch | `storage/lifecycle/tmp/` | `trading-storage` lifecycle helper | Deleted after 3 days. Not archived. |
-| Target local logs | `storage/lifecycle/logs/` | `trading-storage` lifecycle helper | Archived after 14 days, then active copy is removed. |
-| Target local run staging | `storage/lifecycle/runs/` | `trading-storage` lifecycle helper | Archived after 30 days, then active copy is removed. |
-| Target local development outputs | `storage/lifecycle/outputs/` | `trading-storage` lifecycle helper | Archived after 30 days, then active copy is removed. |
-| Cross-component disposable staging | `storage/lifecycle/staging/<component>/` | `trading-storage` lifecycle helper | Archived after 30 days, then active copy is removed. |
-| Cross-component disposable cache | `storage/lifecycle/cache/<component>/` | `trading-storage` lifecycle helper | Deleted after 3 days. Not durable evidence. |
+| Target temporary scratch | `storage/90_lifecycle/tmp/` | `trading-storage` lifecycle helper | Deleted after 3 days. Not archived. |
+| Target local logs | `storage/90_lifecycle/logs/` | `trading-storage` lifecycle helper | Archived after 14 days, then active copy is removed. |
+| Target local run staging | `storage/90_lifecycle/runs/` | `trading-storage` lifecycle helper | Archived after 30 days, then active copy is removed. |
+| Target local development outputs | `storage/90_lifecycle/outputs/` | `trading-storage` lifecycle helper | Archived after 30 days, then active copy is removed. |
+| Cross-component disposable staging | `storage/90_lifecycle/staging/<component>/` | `trading-storage` lifecycle helper | Archived after 30 days, then active copy is removed. |
+| Cross-component disposable cache | `storage/90_lifecycle/cache/<component>/` | `trading-storage` lifecycle helper | Deleted after 3 days. Not durable evidence. |
 | Python/test caches | `__pycache__/`, `.pytest_cache/`, similar | tools | Deleted by the lifecycle helper where covered; regenerated by tools. |
 
 All runtime classes above are ignored by Git. Existing component-local `tmp/`, `runs/`, `outputs/`, or cache paths are covered compatibility roots; new trading runtime staging should target storage-owned ignored roots.
@@ -78,10 +78,10 @@ The command emits a JSON plan with counts for `archive`, `delete`, `retain`, and
 ## Safety Rules
 
 - Dry-run is the default.
-- `storage/artifacts/` is report-only by default; the helper does not delete completion receipts or other storage-owned artifact evidence.
-- Current compatibility `logs/`, `runs/`, and `outputs/` are copied to `storage/lifecycle/archive/` before active files are removed.
+- `storage/02_control_plane/artifacts/` is report-only by default; the helper does not delete completion receipts or other storage-owned artifact evidence.
+- Current compatibility `logs/`, `runs/`, and `outputs/` are copied to `storage/90_lifecycle/archive/` before active files are removed.
 - Current compatibility `tmp/` is disposable and is deleted after its TTL without archiving.
-- Target `storage/lifecycle/logs/`, `storage/lifecycle/runs/`, `storage/lifecycle/outputs/`, `storage/lifecycle/tmp/`, `storage/lifecycle/staging/<component>/`, and `storage/lifecycle/cache/<component>/` roots are covered by the lifecycle helper.
+- Target `storage/90_lifecycle/logs/`, `storage/90_lifecycle/runs/`, `storage/90_lifecycle/outputs/`, `storage/90_lifecycle/tmp/`, `storage/90_lifecycle/staging/<component>/`, and `storage/90_lifecycle/cache/<component>/` roots are covered by the lifecycle helper.
 - Trading runtime scratch/staging/cache paths should be under storage-owned ignored roots so scheduled cleanup covers them uniformly.
 - Python/test caches are disposable and may be removed on every cleanup run; they are tool byproducts, not accepted trading runtime staging.
 - Symlinks are skipped.

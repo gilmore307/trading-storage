@@ -55,12 +55,12 @@ identify candidate
 
 The first compression/archive/restore implementation slice is a non-mutating scaffold:
 
-- importable code: `src/trading_storage/lifecycle/execution_scaffold.py`;
+- importable code: `src/trading_storage/lifecycle_execution_scaffold.py`;
 - executable wrapper: `scripts/lifecycle/build_lifecycle_execution_scaffold.py`;
 - default input: a live dry-run lifecycle plan;
 - optional input: existing lifecycle-plan JSON via `--lifecycle-plan-json`;
 - output contracts: `compression_manifest_draft`, `compression_receipt_draft`, `sql_archive_manifest_draft`, `archive_receipt_draft`, and `restore_receipt_draft` inside `storage_lifecycle_execution_scaffold`;
-- default output behavior prints a summary only; `--write` writes `storage/lifecycle/execution/lifecycle_execution_scaffold.json` and `storage/lifecycle/execution/lifecycle_execution_scaffold_summary.json`;
+- default output behavior prints a summary only; `--write` writes `storage/90_lifecycle/execution/lifecycle_execution_scaffold.json` and `storage/90_lifecycle/execution/lifecycle_execution_scaffold_summary.json`;
 - protected lifecycle-plan rows are skipped;
 - `compress_candidate` rows produce compression manifest/receipt drafts plus a restore verification receipt draft;
 - `archive_candidate` rows produce archive manifest/receipt drafts plus a restore verification receipt draft;
@@ -85,7 +85,7 @@ The first reviewed mutating slice is deliberately narrow:
 - `--apply` is required before any compressed copy is written;
 - only unprotected `compress_candidate` rows are eligible;
 - eligible source must be a regular file under the selected repository/root, not a symlink or directory;
-- output path is `storage/lifecycle/archive/compressed/<artifact_id>/<original-name>.zst`;
+- output path is `storage/90_lifecycle/archive/compressed/<artifact_id>/<original-name>.zst`;
 - existing compressed outputs are refused unless `--overwrite` is passed;
 - original files are always preserved;
 - artifact index is not mutated;

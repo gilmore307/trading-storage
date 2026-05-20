@@ -27,8 +27,8 @@ from trading_storage.lifecycle_planner import (
 )
 from trading_storage.protected_set import ProtectedSet, load_artifact_index_jsonl
 
-DEFAULT_QUARANTINE_RECHECK_OUTPUT = Path("storage/lifecycle/quarantine_recheck/quarantine_recheck_evidence.json")
-DEFAULT_QUARANTINE_RECHECK_SUMMARY_OUTPUT = Path("storage/lifecycle/quarantine_recheck/quarantine_recheck_summary.json")
+DEFAULT_QUARANTINE_RECHECK_OUTPUT = Path("storage/90_lifecycle/quarantine_recheck/quarantine_recheck_evidence.json")
+DEFAULT_QUARANTINE_RECHECK_SUMMARY_OUTPUT = Path("storage/90_lifecycle/quarantine_recheck/quarantine_recheck_summary.json")
 
 
 @dataclass(frozen=True)

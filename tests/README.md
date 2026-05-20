@@ -15,7 +15,7 @@ First-party tests for storage implementation slices.
 - `test_single_file_compression.py` verifies dry-run and applied single-file zstd compressed-copy behavior, original preservation, restore checksum smoke, protected/quarantine skips, existing-output refusal, and JSON output round trips.
 - `test_storage_maintenance.py` verifies the scheduled maintenance summary boundary, local-retention phase reporting, side-effect flags, and output writes.
 - `test_dashboard_read_models.py` verifies common dashboard read-model envelope validation, unsafe payload rejection, and snapshot/latest/schema/index materialization.
-- `test_dashboard_refresh.py` verifies storage-owned refresh orchestration from semantic producer output into `storage/dashboard_cache`, including no provider/model/broker/account side-effect flags.
+- `test_dashboard_refresh.py` verifies storage-owned refresh orchestration from semantic producer output into `storage/06_dashboard_cache`, including no provider/model/broker/account side-effect flags.
 - `test_dashboard_snapshot_lifecycle.py` verifies dashboard snapshot metadata dry-run/apply pruning, latest preservation, Layer 1/2/SQL non-mutation summary flags, and plan/summary output writes.
 
 ## Default command

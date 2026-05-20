@@ -20,8 +20,8 @@ from trading_storage.artifact_index import now_utc
 from trading_storage.io import write_text_atomic
 from trading_storage.quarantine_recheck import QuarantineRecheckEvidence, QuarantineRecheckRecord
 
-DEFAULT_QUARANTINE_DELETE_OUTPUT = Path("storage/lifecycle/execution/quarantine_delete_result.json")
-DEFAULT_QUARANTINE_DELETE_SUMMARY_OUTPUT = Path("storage/lifecycle/execution/quarantine_delete_summary.json")
+DEFAULT_QUARANTINE_DELETE_OUTPUT = Path("storage/90_lifecycle/execution/quarantine_delete_result.json")
+DEFAULT_QUARANTINE_DELETE_SUMMARY_OUTPUT = Path("storage/90_lifecycle/execution/quarantine_delete_summary.json")
 EXECUTOR_VERSION = "storage_quarantine_delete_executor_v0_1"
 
 
@@ -172,7 +172,7 @@ def _stable_ref(prefix: str, *parts: object) -> str:
 
 
 def _quarantine_path(record: QuarantineRecheckRecord) -> str:
-    return f"storage/lifecycle/quarantine/{record.artifact_id}/{Path(record.physical_path).name}"
+    return f"storage/90_lifecycle/quarantine/{record.artifact_id}/{Path(record.physical_path).name}"
 
 
 def _quarantine_uri(record: QuarantineRecheckRecord) -> str:
@@ -354,7 +354,7 @@ def _resolve_path(root: Path, path: Path) -> Path:
 def _parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Build reviewed no-mutation quarantine/delete gate receipts from quarantine/recheck evidence.")
     parser.add_argument("--root", default=".", help="Repository/root directory for relative inputs and outputs.")
-    parser.add_argument("--quarantine-recheck-json", default="storage/lifecycle/quarantine_recheck/quarantine_recheck_evidence.json", help="Quarantine/recheck evidence JSON path.")
+    parser.add_argument("--quarantine-recheck-json", default="storage/90_lifecycle/quarantine_recheck/quarantine_recheck_evidence.json", help="Quarantine/recheck evidence JSON path.")
     parser.add_argument("--write", action="store_true", help="Write result JSON and summary files. Default prints summary only.")
     parser.add_argument("--output-path", default=str(DEFAULT_QUARANTINE_DELETE_OUTPUT), help="Relative/absolute result JSON output path.")
     parser.add_argument("--summary-path", default=str(DEFAULT_QUARANTINE_DELETE_SUMMARY_OUTPUT), help="Relative/absolute summary JSON output path.")
