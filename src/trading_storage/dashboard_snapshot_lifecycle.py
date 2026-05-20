@@ -1,8 +1,8 @@
 """Lifecycle planner/executor for dashboard read-model snapshots.
 
 Dashboard snapshots are owner-facing metadata caches, not canonical Layer 1/2
-source data.  This helper keeps latest/hot snapshots and can remove older
-snapshot files after a reviewed model-run retention window.  It never deletes
+source data.  This helper keeps a small count-based hot window per read-model
+contract and can remove older snapshot files after review.  It never deletes
 ``latest.json``, schemas, index rows, Layer 1/2 source artifacts, SQL data, or
 non-dashboard paths.
 """
@@ -23,8 +23,8 @@ from trading_storage.artifact_index import now_utc
 DEFAULT_STORAGE_ROOT = Path("storage")
 DEFAULT_OUTPUT = Path("storage/06_dashboard_cache/lifecycle/dashboard_snapshot_prune_plan.json")
 DEFAULT_SUMMARY_OUTPUT = Path("storage/06_dashboard_cache/lifecycle/dashboard_snapshot_prune_summary.json")
-DEFAULT_MAX_AGE_HOURS = 24
-DEFAULT_KEEP_LATEST_PER_CONTRACT = 24
+DEFAULT_MAX_AGE_HOURS = 0
+DEFAULT_KEEP_LATEST_PER_CONTRACT = 10
 
 
 @dataclass(frozen=True)
@@ -197,7 +197,7 @@ def build_dashboard_snapshot_lifecycle_plan(
                     )
                 )
                 continue
-            if timestamp > cutoff:
+            if max_age_hours > 0 and timestamp > cutoff:
                 records.append(
                     DashboardSnapshotLifecycleRecord(
                         contract_type=contract_type,
@@ -211,13 +211,17 @@ def build_dashboard_snapshot_lifecycle_plan(
                 continue
             action = "delete_candidate"
             mutation = False
-            reason = "Older than dashboard metadata retention cutoff and outside hot snapshot window."
+            reason = "Outside dashboard hot snapshot count window."
+            if max_age_hours > 0:
+                reason = "Older than dashboard metadata retention cutoff and outside hot snapshot window."
             if apply:
                 path.unlink()
                 _prune_empty_snapshot_dirs(storage_root, path)
                 action = "deleted"
                 mutation = True
-                reason = "Deleted dashboard metadata snapshot after retention cutoff; latest/schema/index were preserved."
+                reason = "Deleted dashboard metadata snapshot outside hot snapshot count window; latest/schema/index were preserved."
+                if max_age_hours > 0:
+                    reason = "Deleted dashboard metadata snapshot after retention cutoff; latest/schema/index were preserved."
             records.append(
                 DashboardSnapshotLifecycleRecord(
                     contract_type=contract_type,
@@ -261,7 +265,7 @@ def write_dashboard_snapshot_lifecycle_plan(
 def _parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Plan or apply dashboard read-model snapshot pruning.")
     parser.add_argument("--storage-root", default=str(DEFAULT_STORAGE_ROOT), help="Storage root containing 06_dashboard_cache/read_models.")
-    parser.add_argument("--max-age-hours", type=int, default=DEFAULT_MAX_AGE_HOURS, help="Delete-candidate threshold for snapshots outside the hot keep window.")
+    parser.add_argument("--max-age-hours", type=int, default=DEFAULT_MAX_AGE_HOURS, help="Optional extra age grace for snapshots outside the hot keep window. Default 0 means count-only pruning.")
     parser.add_argument("--keep-latest-per-contract", type=int, default=DEFAULT_KEEP_LATEST_PER_CONTRACT, help="Minimum recent snapshots to keep per contract.")
     parser.add_argument("--apply", action="store_true", help="Delete eligible dashboard snapshot files. Default is dry-run only.")
     parser.add_argument("--approval-ref", help="Required reviewed approval/reference when --apply is used.")

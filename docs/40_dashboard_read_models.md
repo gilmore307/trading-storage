@@ -93,12 +93,12 @@ Default lifecycle posture:
 - keep `latest.json` hot for every summary family;
 - keep schemas and compact index metadata;
 - keep a short recent snapshot window for charts/debugging;
-- prune high-frequency snapshots after the model-run cycle closes or after the metadata TTL expires;
+- prune high-frequency snapshots by count after the model-run cycle closes;
 - never delete summaries that are the only remaining explanation for an unresolved alert;
 - preserve summary contract/version metadata for restore compatibility;
 - never use dashboard snapshot pruning to delete Layer 1/2 data, SQL data, schemas, index files, or `latest.json`.
 
-The current V0.1 snapshot-prune helper defaults to keeping the latest 24 snapshots per contract and marking snapshots older than 24 hours as delete candidates. It is dry-run by default and requires `--apply` for deletion.
+The current V0.1 snapshot-prune helper defaults to keeping the latest 10 snapshots per contract and marking older snapshots as delete candidates. The optional `--max-age-hours` flag can add a temporary age grace window, but the default is count-only. It is dry-run by default and requires `--apply` plus a reviewed approval reference for deletion.
 
 Operational hold: do not apply dashboard snapshot deletion while the event model is being redesigned and downstream models must be regenerated. These metadata snapshots may still be needed for comparison, debugging, and regeneration evidence until that cycle is closed and reviewed.
 

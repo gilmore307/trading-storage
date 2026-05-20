@@ -623,3 +623,31 @@ Allow model-specific benchmark downloads, such as option snapshots fetched only 
 - Model-pipeline benchmark result summaries classify as `keep_forever` with protected reason `benchmark_result_summary`.
 - Model-specific benchmark option/download artifacts classify as `ttl_delete_allowed`.
 - Destructive deletion still requires lifecycle planning, protected-set clearance, quarantine/recheck, and deletion receipts.
+
+## D025 - Dashboard snapshots retain a small recent count
+
+Date: 2026-05-20
+Status: Accepted
+
+### Context
+
+`storage/06_dashboard_cache` is a read-model cache, not the canonical evidence store. Keeping every timestamped dashboard snapshot would grow unbounded under frequent refreshes, while retaining a small recent window is still useful for trend charts, debugging, and quick operator comparison.
+
+### Decision
+
+Retain `latest.json`, schema files, and index metadata for dashboard read models.
+
+For timestamped dashboard snapshots under:
+
+```text
+storage/06_dashboard_cache/read_models/<contract_type>/snapshots/
+```
+
+use count-based hot retention. The default prune plan keeps the latest 10 snapshots per contract and marks older snapshots as delete candidates. The optional age grace flag may be used for short debugging windows, but it is not the default retention mechanism.
+
+### Consequences
+
+- Dashboard snapshot retention is bounded by count instead of refresh frequency.
+- `latest.json`, schemas, index rows, Layer 1/2 data, SQL data, and canonical evidence are not deletion targets for the dashboard snapshot pruner.
+- If a dashboard snapshot contains the only copy of important evidence, that evidence must be moved to its canonical root before snapshot cleanup.
+- Destructive dashboard snapshot deletion still requires explicit apply plus a reviewed approval reference.

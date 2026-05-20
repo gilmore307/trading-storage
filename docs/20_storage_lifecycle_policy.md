@@ -147,7 +147,7 @@ Policy: never compress PostgreSQL live data files directly. Archive through dump
 - model-specific benchmark downloads such as one-off option snapshots: TTL delete after benchmark close when summaries/manifests/receipts are retained;
 - PIT/vintage/source history: compress and retain by default;
 - dashboard/read-model latest summaries: retained;
-- dashboard/read-model high-frequency snapshots: metadata TTL after model-run cycle close; current default prune plan keeps the latest 24 snapshots per contract and marks snapshots older than 24 hours as delete candidates, but apply is currently on hold until the event-model redo and downstream model regeneration are complete/reviewed;
+- dashboard/read-model high-frequency snapshots: count-based metadata pruning after model-run cycle close; current default prune plan keeps the latest 10 snapshots per contract and marks older snapshots as delete candidates, but apply is currently on hold until the event-model redo and downstream model regeneration are complete/reviewed;
 - Layer 3+ model-run metadata/intermediates: delete by TTL after run-cycle close when reproducible or no longer lineage-required;
 - failed/blocked run scratch: 7-14 days;
 - ordinary logs: 30 days, then delete or compress if important;

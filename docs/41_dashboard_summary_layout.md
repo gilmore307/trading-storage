@@ -113,12 +113,12 @@ Dashboard summaries are small durable owner-facing read models.
 Default lifecycle posture:
 
 - retain `latest.json` for every registered summary contract;
-- retain recent snapshots for trend charts;
-- compress/archive older snapshots when trend windows no longer need hot JSON;
+- retain the latest few snapshots for trend charts and debugging;
+- prune older snapshots when they fall outside the per-contract hot count window;
 - never delete a summary snapshot that is the only remaining explanation for an unresolved alert;
 - preserve schema and contract metadata needed for restore compatibility.
 
-Exact TTL values remain future retention-policy details.
+The accepted default is count-based retention: keep the latest 10 snapshots per contract. Time-based grace is optional for operational debugging windows, not the default retention mechanism.
 
 ## Dashboard Access Rule
 

@@ -33,6 +33,24 @@ def _write_snapshot(storage_root: Path, contract: str, stamp: str, size: int = 1
 
 
 class DashboardSnapshotLifecycleTests(unittest.TestCase):
+    def test_default_policy_keeps_only_recent_few_per_contract(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            storage_root = Path(tmp) / "storage"
+            for hour in range(12):
+                _write_snapshot(storage_root, "current_system_status_summary", f"20260516T{hour:02d}0000Z")
+
+            plan = build_dashboard_snapshot_lifecycle_plan(
+                storage_root=storage_root,
+                apply=False,
+                now=NOW,
+                generated_at="2026-05-16T12:00:00Z",
+            )
+
+            self.assertEqual(plan.keep_latest_per_contract, 10)
+            self.assertEqual(plan.max_age_hours, 0)
+            self.assertEqual(plan.summary["action_counts"], {"delete_candidate": 2, "retain_recent_snapshot": 10})
+            self.assertFalse(plan.summary["mutation_performed"])
+
     def test_dry_run_marks_old_snapshots_without_deleting_latest(self):
         with tempfile.TemporaryDirectory() as tmp:
             storage_root = Path(tmp) / "storage"
