@@ -15,6 +15,15 @@ DEFAULT_MAINTENANCE_OUTPUT = Path("storage/90_lifecycle/maintenance/storage_main
 MODEL_WORKER_STAGE_TYPES = {"model_generation", "model_evaluation", "promotion_review", "maintenance"}
 COMPLETE_STATUSES = {"succeeded", "not_applicable"}
 FOLD_STATE_GLOB = "model_training_fold_state_*.json"
+ORDERED_STORAGE_ROOTS: tuple[tuple[str, str, str, str], ...] = (
+    ("01_source_data", "storage/01_source_data", "durable_source", "Downloaded/provider/source evidence and source-output artifacts."),
+    ("02_control_plane", "storage/02_control_plane", "durable_control", "Manager task state, workflow state, receipts, and control-plane artifacts."),
+    ("03_model_artifacts", "storage/03_model_artifacts", "durable_model", "Model training, diagnostics, research, and promotion-adjacent artifacts."),
+    ("04_execution_artifacts", "storage/04_execution_artifacts", "durable_execution", "Realtime observation, shadow/live, and execution-side artifacts."),
+    ("05_benchmark_datasets", "storage/05_benchmark_datasets", "durable_benchmark", "Frozen benchmark datasets, acquisition plans, and replay inputs."),
+    ("06_dashboard_cache", "storage/06_dashboard_cache", "managed_cache", "Dashboard read-model latest/snapshot/schema/index cache."),
+    ("90_lifecycle", "storage/90_lifecycle", "lifecycle_control", "Lifecycle plans, indexes, protected sets, receipts, archives, cache, staging, and logs."),
+)
 
 
 def _now_utc() -> str:
@@ -35,6 +44,8 @@ class StorageMaintenanceSummary:
     local_retention_enabled: bool
     local_retention_apply: bool
     local_retention_summary: dict[str, int]
+    storage_root_inventory_summary: dict[str, Any]
+    storage_root_inventory: tuple[dict[str, Any], ...]
     manager_root: str | None
     fold_monitor_enabled: bool
     completed_fold_count: int
@@ -55,6 +66,8 @@ class StorageMaintenanceSummary:
             "local_retention_enabled": self.local_retention_enabled,
             "local_retention_apply": self.local_retention_apply,
             "local_retention_summary": self.local_retention_summary,
+            "storage_root_inventory_summary": self.storage_root_inventory_summary,
+            "storage_root_inventory": list(self.storage_root_inventory),
             "manager_root": self.manager_root,
             "fold_monitor_enabled": self.fold_monitor_enabled,
             "completed_fold_count": self.completed_fold_count,
@@ -70,6 +83,56 @@ class StorageMaintenanceSummary:
 
     def to_json(self) -> str:
         return json.dumps(self.to_dict(), indent=2, sort_keys=True) + "\n"
+
+
+def _build_storage_root_inventory(root: Path) -> tuple[dict[str, Any], ...]:
+    inventory: list[dict[str, Any]] = []
+    for root_id, relative, lifecycle_role, description in ORDERED_STORAGE_ROOTS:
+        base = root / relative
+        file_count = 0
+        directory_count = 0
+        byte_count = 0
+        if base.exists():
+            if base.is_file() and not base.is_symlink():
+                file_count = 1
+                byte_count = base.stat().st_size
+            elif base.is_dir():
+                for path in base.rglob("*"):
+                    if path.is_symlink():
+                        continue
+                    if path.is_dir():
+                        directory_count += 1
+                    elif path.is_file():
+                        file_count += 1
+                        try:
+                            byte_count += path.stat().st_size
+                        except OSError:
+                            pass
+        inventory.append(
+            {
+                "root_id": root_id,
+                "path": relative,
+                "exists": base.exists(),
+                "lifecycle_role": lifecycle_role,
+                "description": description,
+                "file_count": file_count,
+                "directory_count": directory_count,
+                "byte_count": byte_count,
+            }
+        )
+    return tuple(inventory)
+
+
+def _storage_root_inventory_summary(inventory: Sequence[Mapping[str, Any]]) -> dict[str, Any]:
+    return {
+        "contract_type": "storage_root_inventory_summary",
+        "root_count": len(inventory),
+        "existing_root_count": sum(1 for row in inventory if row.get("exists")),
+        "total_file_count": sum(int(row.get("file_count") or 0) for row in inventory),
+        "total_directory_count": sum(int(row.get("directory_count") or 0) for row in inventory),
+        "total_byte_count": sum(int(row.get("byte_count") or 0) for row in inventory),
+        "managed_root_ids": [str(row.get("root_id")) for row in inventory],
+    }
 
 
 def _state_months(path: Path) -> tuple[str, str] | None:
@@ -111,7 +174,7 @@ def _is_completed_model_worker_fold(payload: Mapping[str, Any]) -> bool:
         if str(stage.get("status") or "") not in COMPLETE_STATUSES:
             return False
         layer_stage_types.setdefault(layer, set()).add(str(stage.get("stage_type") or ""))
-    expected_layers = set(range(1, 10))
+    expected_layers = set(range(1, 11))
     return set(layer_stage_types) == expected_layers and all(
         stage_types >= MODEL_WORKER_STAGE_TYPES for stage_types in layer_stage_types.values()
     )
@@ -187,6 +250,7 @@ def run_storage_maintenance(
     generated_at_utc: str | None = None,
 ) -> StorageMaintenanceSummary:
     root = root.resolve()
+    storage_root_inventory = _build_storage_root_inventory(root)
     local_retention_summary = {"archive": 0, "delete": 0, "retain": 0, "skip": 0}
     if include_local_retention:
         retention = plan_retention(root=root, archive_root=archive_root, dry_run=not apply_local_retention)
@@ -206,13 +270,15 @@ def run_storage_maintenance(
         local_retention_enabled=include_local_retention,
         local_retention_apply=apply_local_retention,
         local_retention_summary=local_retention_summary,
+        storage_root_inventory_summary=_storage_root_inventory_summary(storage_root_inventory),
+        storage_root_inventory=storage_root_inventory,
         manager_root=str(resolved_manager_root) if resolved_manager_root is not None else None,
         fold_monitor_enabled=include_fold_monitor and resolved_manager_root is not None,
         completed_fold_count=len(fold_candidates),
         completed_fold_ids=tuple(str(candidate["fold_id"]) for candidate in fold_candidates),
         fold_backup_candidates=fold_candidates,
         fold_sql_backup_phase_status="ready_for_storage_backup" if fold_candidates else "no_completed_fold_detected",
-        deletion_phase_status="local_retention_only",
+        deletion_phase_status="local_retention_only" if include_local_retention else "local_retention_skipped",
         provider_calls_performed=False,
         model_activation_performed=False,
         broker_execution_performed=False,

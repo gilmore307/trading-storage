@@ -3,7 +3,7 @@
 The helpers in this module are deliberately conservative:
 
 - source-controlled files are never candidates;
-- durable local artifacts under ``storage/02_control_plane/artifacts`` and semantic storage roots are reported, not deleted;
+- durable local artifacts under semantic storage roots are reported, not deleted;
 - logs and development outputs are archived before active copies are removed;
 - legacy component-local roots and storage-owned roots are both covered during migration;
 - temporary/cache files are deleted only after a short TTL;
@@ -112,7 +112,13 @@ DEFAULT_RETENTION_RULES: tuple[RetentionRule, ...] = (
     ),
     RetentionRule(
         name="local_artifacts",
-        roots=("storage/02_control_plane/artifacts", "storage/01_source_data", "storage/03_model_artifacts", "storage/05_benchmark_datasets"),
+        roots=(
+            "storage/01_source_data",
+            "storage/02_control_plane",
+            "storage/03_model_artifacts",
+            "storage/04_execution_artifacts",
+            "storage/05_benchmark_datasets",
+        ),
         action="retain",
         ttl_days=None,
         description="Storage-owned local artifacts are retained until a reviewed promotion or deletion policy supersedes them.",

@@ -18,7 +18,14 @@ from typing import Any, Iterable, Mapping, Sequence
 
 from trading_storage.io import write_text_atomic
 
-DEFAULT_INDEX_ROOTS = ("storage/02_control_plane/artifacts", "storage/01_source_data", "storage/03_model_artifacts", "storage/05_benchmark_datasets", "storage/06_dashboard_cache/read_models")
+DEFAULT_INDEX_ROOTS = (
+    "storage/01_source_data",
+    "storage/02_control_plane",
+    "storage/03_model_artifacts",
+    "storage/04_execution_artifacts",
+    "storage/05_benchmark_datasets",
+    "storage/06_dashboard_cache/read_models",
+)
 DEFAULT_INDEX_OUTPUT = Path("storage/90_lifecycle/artifact_index/artifact_index.jsonl")
 DEFAULT_SUMMARY_OUTPUT = Path("storage/90_lifecycle/artifact_index/artifact_index_summary.json")
 

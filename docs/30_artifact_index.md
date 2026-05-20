@@ -14,7 +14,7 @@ The first implementation slice is conservative and filesystem-only:
 
 - importable code: `src/trading_storage/artifact_index.py`;
 - executable wrapper: `scripts/lifecycle/build_artifact_index.py`;
-- default scanned roots: `storage/02_control_plane/artifacts/`, `storage/01_source_data/`, `storage/03_model_artifacts/`, `storage/05_benchmark_datasets/`, and `storage/06_dashboard_cache/read_models/`; specific files or bounded roots can be added with repeated `--include-root` arguments;
+- default scanned roots: `storage/01_source_data/`, `storage/02_control_plane/`, `storage/03_model_artifacts/`, `storage/04_execution_artifacts/`, `storage/05_benchmark_datasets/`, and `storage/06_dashboard_cache/read_models/`; specific files or bounded roots can be added with repeated `--include-root` arguments;
 - default optional outputs: `storage/90_lifecycle/artifact_index/artifact_index.jsonl` and `storage/90_lifecycle/artifact_index/artifact_index_summary.json`;
 - default CLI behavior prints the summary only; `--write` is required to write index files;
 - indexed payloads are never mutated;

@@ -147,6 +147,20 @@ delete_uncompressed_after_verify: true
 
 Scripts may implement the policy, but policy review must be possible without reading every code branch.
 
+## Current scheduled root inventory
+
+Scheduled maintenance emits a `storage_root_inventory_summary` inside each `storage_scheduled_maintenance_summary`. This is the formal lifecycle-management view of the numbered storage layout:
+
+- `storage/01_source_data`
+- `storage/02_control_plane`
+- `storage/03_model_artifacts`
+- `storage/04_execution_artifacts`
+- `storage/05_benchmark_datasets`
+- `storage/06_dashboard_cache`
+- `storage/90_lifecycle`
+
+The inventory records existence, file count, directory count, byte count, lifecycle role, and managed root ids. It does not hash payloads and does not authorize mutation. Hashing, protected-set checks, compression planning, quarantine/recheck, and deletion gates remain in the artifact-index and lifecycle-plan pipeline.
+
 ## Current V0.1 dry-run planner
 
 The first durable-artifact lifecycle planner is conservative and non-mutating:

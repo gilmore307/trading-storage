@@ -78,7 +78,7 @@ The command emits a JSON plan with counts for `archive`, `delete`, `retain`, and
 ## Safety Rules
 
 - Dry-run is the default.
-- `storage/02_control_plane/artifacts/` is report-only by default; the helper does not delete completion receipts or other storage-owned artifact evidence.
+- Durable numbered roots are report-only by default in local retention; the helper does not delete source data, control-plane evidence, model artifacts, execution artifacts, benchmark datasets, completion receipts, or other storage-owned artifact evidence.
 - Current compatibility `logs/`, `runs/`, and `outputs/` are copied to `storage/90_lifecycle/archive/` before active files are removed.
 - Current compatibility `tmp/` is disposable and is deleted after its TTL without archiving.
 - Target `storage/90_lifecycle/logs/`, `storage/90_lifecycle/runs/`, `storage/90_lifecycle/outputs/`, `storage/90_lifecycle/tmp/`, `storage/90_lifecycle/staging/<component>/`, and `storage/90_lifecycle/cache/<component>/` roots are covered by the lifecycle helper.
