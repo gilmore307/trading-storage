@@ -10,7 +10,7 @@ Importable storage helper implementation lives here.
 - `dashboard_refresh.py` owns storage-side refresh orchestration that runs accepted semantic producers and materializes validated dashboard read models.
 - `dashboard_snapshot_lifecycle.py` owns bounded pruning of dashboard read-model snapshot metadata outside the recent-count hot window; it preserves latest summaries, schemas, index files, Layer 1/2 data, and SQL.
 - `file_lifecycle_acceptance.py` owns the one-pass safe file-lifecycle acceptance over current index/protected-set/plan/quarantine/scaffold/compression/dashboard-prune helpers.
-- `lifecycle.py` owns local retention planning and application for ignored runtime files.
+- `lifecycle.py` owns local retention planning and application for ignored runtime files, including guards that keep evidence-shaped lifecycle receipts/manifests/tombstones/plans in transient run/output folders until they are extracted to canonical evidence directories.
 - `lifecycle_execution_scaffold.py` owns non-mutating compression/archive/restore manifest and receipt drafts for future lifecycle executors.
 - `lifecycle_planner.py` owns non-mutating durable-artifact lifecycle planning from artifact-index metadata, protected-set evidence, and reviewed policy rules.
 - `protected_set.py` owns conservative protected-set construction from artifact-index records and optional reason-code references/manual pins.

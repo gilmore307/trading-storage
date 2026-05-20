@@ -98,6 +98,26 @@ class LifecycleTests(unittest.TestCase):
                 "staged output",
             )
 
+    def test_transient_lifecycle_evidence_is_retained_until_extracted(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            receipt = root / "storage" / "90_lifecycle" / "runs" / "run-001" / "delete_receipt.json"
+            debug = root / "storage" / "90_lifecycle" / "runs" / "run-001" / "debug.log"
+            self._touch_old(receipt, age_days=31, content='{"contract_type":"storage_delete_receipt"}\n')
+            self._touch_old(debug, age_days=31, content="debug context")
+
+            plan = plan_retention(root=root)
+            by_path = {item.path: item for item in plan.items}
+
+            self.assertEqual(by_path["storage/90_lifecycle/runs/run-001/delete_receipt.json"].action, "retain")
+            self.assertIn("extract to canonical storage/90_lifecycle evidence directory", by_path["storage/90_lifecycle/runs/run-001/delete_receipt.json"].reason)
+            self.assertEqual(by_path["storage/90_lifecycle/runs/run-001/debug.log"].action, "archive")
+
+            apply_retention_plan(plan)
+            self.assertTrue(receipt.exists())
+            self.assertFalse(debug.exists())
+            self.assertEqual((root / "storage/90_lifecycle/archive/runs/run-001/debug.log").read_text(encoding="utf-8"), "debug context")
+
     def test_python_caches_are_disposable(self):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)

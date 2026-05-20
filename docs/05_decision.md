@@ -651,3 +651,36 @@ use count-based hot retention. The default prune plan keeps the latest 10 snapsh
 - `latest.json`, schemas, index rows, Layer 1/2 data, SQL data, and canonical evidence are not deletion targets for the dashboard snapshot pruner.
 - If a dashboard snapshot contains the only copy of important evidence, that evidence must be moved to its canonical root before snapshot cleanup.
 - Destructive dashboard snapshot deletion still requires explicit apply plus a reviewed approval reference.
+
+## D026 - Lifecycle runs and outputs are not the audit ledger
+
+Date: 2026-05-20
+Status: Accepted
+
+### Context
+
+`storage/90_lifecycle/runs`, `storage/90_lifecycle/outputs`, and `storage/90_lifecycle/staging` are useful for command context, debug logs, dry-run dumps, and intermediate execution output. They should not grow forever. At the same time, a formal lifecycle mutation may produce receipts, tombstones, manifests, protected-set evidence, lifecycle plans, artifact indexes, or quarantine/recheck evidence. Those files are audit material and must not be lost through routine runtime cleanup.
+
+### Decision
+
+Treat `runs`, `outputs`, and `staging` under `storage/90_lifecycle` as transient lifecycle runtime folders. Ordinary run context and debug output may roll off after about 30 days.
+
+Formal lifecycle evidence belongs in canonical evidence directories, including:
+
+```text
+storage/90_lifecycle/artifact_index/
+storage/90_lifecycle/protected_set/
+storage/90_lifecycle/plans/
+storage/90_lifecycle/quarantine_recheck/
+storage/90_lifecycle/receipts/
+storage/90_lifecycle/tombstones/
+```
+
+If formal lifecycle evidence is found inside a transient run/output/staging folder, local retention must keep it and mark it for extraction instead of archiving and deleting the active copy.
+
+### Consequences
+
+- `runs` and `outputs` can stay bounded without risking loss of the lifecycle audit chain.
+- `receipts` and `tombstones` are the ledger; `runs` and `outputs` are runtime context.
+- Formal lifecycle runners should write canonical evidence directly to stable `90_lifecycle` evidence directories whenever possible.
+- Cleanup of transient lifecycle folders remains safe because evidence-shaped files are retained until extracted.

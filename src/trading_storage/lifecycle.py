@@ -25,6 +25,31 @@ PlannedAction = Literal["delete", "archive", "retain", "skip"]
 
 DEFAULT_ARCHIVE_ROOT = Path("storage/90_lifecycle/archive")
 PYTHON_CACHE_NAMES = frozenset({"__pycache__", ".pytest_cache", ".mypy_cache", ".ruff_cache"})
+TRANSIENT_LIFECYCLE_ROOTS = (
+    Path("storage/90_lifecycle/runs"),
+    Path("storage/90_lifecycle/outputs"),
+    Path("storage/90_lifecycle/staging"),
+)
+LIFECYCLE_EVIDENCE_MARKERS = frozenset(
+    {
+        "artifact_index",
+        "archive_manifest",
+        "archive_receipt",
+        "compression_manifest",
+        "compression_receipt",
+        "delete_receipt",
+        "deletion_receipt",
+        "file_lifecycle_acceptance",
+        "lifecycle_plan",
+        "manifest",
+        "protected_set",
+        "quarantine_recheck",
+        "receipt",
+        "restore_receipt",
+        "storage_lifecycle_plan",
+        "tombstone",
+    }
+)
 
 
 @dataclass(frozen=True)
@@ -196,6 +221,32 @@ def _archive_path(root: Path, archive_root: Path, path: Path) -> Path:
     return candidate.with_name(f"{stem}.{current_hash.removeprefix('sha256:')[:12]}{suffix}")
 
 
+def _is_under_any(path: Path, roots: tuple[Path, ...]) -> bool:
+    return any(path == root or root in path.parents for root in roots)
+
+
+def _contains_evidence_marker(value: str) -> bool:
+    normalized = value.lower().replace("-", "_")
+    return any(marker in normalized for marker in LIFECYCLE_EVIDENCE_MARKERS)
+
+
+def _is_lifecycle_evidence_file(path: Path) -> bool:
+    if any(_contains_evidence_marker(part) for part in path.parts):
+        return True
+    if path.suffix.lower() != ".json":
+        return False
+    try:
+        payload = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, UnicodeDecodeError, json.JSONDecodeError):
+        return False
+    if not isinstance(payload, dict):
+        return False
+    contract_type = payload.get("contract_type")
+    if isinstance(contract_type, str) and _contains_evidence_marker(contract_type):
+        return True
+    return False
+
+
 def plan_retention(
     root: Path = Path("."),
     *,
@@ -278,6 +329,23 @@ def plan_retention(
                     )
                 )
             elif rule.action == "archive_then_delete":
+                relative_path = Path(display_path)
+                if _is_under_any(relative_path, TRANSIENT_LIFECYCLE_ROOTS) and _is_lifecycle_evidence_file(path):
+                    items.append(
+                        LifecyclePlanItem(
+                            rule=rule.name,
+                            action="retain",
+                            path=display_path,
+                            age_days=round(age, 3),
+                            byte_count=stat.st_size,
+                            reason=(
+                                "formal lifecycle evidence in transient run/output storage; "
+                                "extract to canonical storage/90_lifecycle evidence directory before cleanup"
+                            ),
+                            content_hash_sha256=file_hash,
+                        )
+                    )
+                    continue
                 target = _archive_path(root, archive_root, path)
                 items.append(
                     LifecyclePlanItem(

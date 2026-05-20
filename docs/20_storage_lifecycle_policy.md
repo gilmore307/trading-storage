@@ -148,6 +148,8 @@ Policy: never compress PostgreSQL live data files directly. Archive through dump
 - PIT/vintage/source history: compress and retain by default;
 - dashboard/read-model latest summaries: retained;
 - dashboard/read-model high-frequency snapshots: count-based metadata pruning after model-run cycle close; current default prune plan keeps the latest 10 snapshots per contract and marks older snapshots as delete candidates, but apply is currently on hold until the event-model redo and downstream model regeneration are complete/reviewed;
+- lifecycle receipts, tombstones, executed protected sets, executed lifecycle plans, and quarantine/recheck evidence: retained as audit evidence;
+- lifecycle `runs`, `outputs`, and `staging`: ordinary runtime context rolls off after about 30 days; formal lifecycle evidence found there is retained until extracted to canonical `storage/90_lifecycle` evidence directories;
 - Layer 3+ model-run metadata/intermediates: delete by TTL after run-cycle close when reproducible or no longer lineage-required;
 - failed/blocked run scratch: 7-14 days;
 - ordinary logs: 30 days, then delete or compress if important;
