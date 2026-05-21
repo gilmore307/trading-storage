@@ -599,29 +599,29 @@ Reusable Layer 1/2 source/feature foundations remain `compress_and_retain` or st
 - Such files still require lifecycle planning, protected-set clearance, quarantine/recheck, and deletion receipts before destructive deletion.
 - Producers should keep final reusable Layer 1/2 outputs and compact summaries out of disposable runtime/log paths.
 
-## D024 - Benchmark keeps reusable inputs and summaries, not model-specific downloads
+## D024 - Replay keeps reusable inputs and summaries, not model-specific downloads
 
 Date: 2026-05-20
 Status: Accepted
 
 ### Context
 
-Benchmark work needs both reusable cross-pipeline inputs and model-pipeline-specific downloads. Treating every benchmark download as permanent would cause storage growth, especially for one-off point-in-time option snapshots. Treating every benchmark input as disposable would waste provider calls and make replay harder.
+Replay work needs both reusable cross-pipeline inputs and model-pipeline-specific downloads. Treating every replay download as permanent would cause storage growth, especially for one-off point-in-time option snapshots. Treating every replay input as disposable would waste provider calls and make replay harder.
 
 ### Decision
 
-Keep benchmark Layer 1/2 inputs and benchmark event/news inputs as reusable data. They may be compressed or archived, but they should remain available for future benchmark/replay use.
+Keep replay Layer 1/2 inputs and replay event/news inputs as reusable data. They may be compressed or archived, but they should remain available for future replay/replay use.
 
-Keep every model pipeline's compact benchmark result summary, scorecard/baseline comparison, manifest refs, and receipt evidence permanently.
+Keep every model pipeline's compact replay result summary, scorecard/baseline comparison, manifest refs, and receipt evidence permanently.
 
-Allow model-specific benchmark downloads, such as option snapshots fetched only for one pipeline's benchmark run, to become TTL cleanup candidates after the benchmark closes and after summaries, manifests, receipts, and reusable inputs are preserved.
+Allow model-specific replay downloads, such as option snapshots fetched only for one pipeline's replay run, to become TTL cleanup candidates after the replay closes and after summaries, manifests, receipts, and reusable inputs are preserved.
 
 ### Consequences
 
-- `storage/05_benchmark_datasets` is not a single retention class.
-- Reusable benchmark Layer 1/2 and event/news inputs classify as `compress_and_retain`.
-- Model-pipeline benchmark result summaries classify as `keep_forever` with protected reason `benchmark_result_summary`.
-- Model-specific benchmark option/download artifacts classify as `ttl_delete_allowed`.
+- `storage/05_replay_datasets` is not a single retention class.
+- Reusable replay Layer 1/2 and event/news inputs classify as `compress_and_retain`.
+- Model-pipeline replay result summaries classify as `keep_forever` with protected reason `replay_result_summary`.
+- Model-specific replay option/download artifacts classify as `ttl_delete_allowed`.
 - Destructive deletion still requires lifecycle planning, protected-set clearance, quarantine/recheck, and deletion receipts.
 
 ## D025 - Dashboard snapshots retain a small recent count

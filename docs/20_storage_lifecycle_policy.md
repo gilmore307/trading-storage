@@ -98,7 +98,7 @@ Policy: delete by TTL after the run or fold closes and after compact summaries, 
 
 ### Fold-scoped target source data
 
-Includes target-symbol or experiment-specific source folders created for a bounded six-month model-worker fold, where the folder is not intended to serve as reusable Layer 1/2 source foundation or durable benchmark/source history.
+Includes target-symbol or experiment-specific source folders created for a bounded six-month model-worker fold, where the folder is not intended to serve as reusable Layer 1/2 source foundation or durable replay/source history.
 
 Policy: delete by fold folder only after the full Layer 1-10 fold closes. The accepted folder boundary is `storage/01_source_data/fold_scoped/<fold_id>/...`; storage maintenance emits `storage_fold_source_cleanup_candidate` rows only for completed fold ids under that root. These candidates still require artifact-index coverage, protected-set clearance, quarantine/recheck, and deletion receipts before any destructive executor may remove bytes. Individual files inside a fold-scoped folder should not be independently deleted out of order.
 
@@ -108,15 +108,15 @@ Includes Layer 3+ diagnostic summaries, runtime metadata, dashboard snapshots, s
 
 Policy: delete by TTL after the model run cycle closes and after latest summaries, receipts, manifests, lineage refs, and unresolved-alert evidence are preserved. Keep only compact summary/receipt evidence after the retention window.
 
-### Benchmark datasets and benchmark downloads
+### Replay datasets and replay downloads
 
-Benchmark storage separates reusable benchmark inputs, model-specific temporary downloads, and permanent model-pipeline benchmark results.
+Replay storage separates reusable replay inputs, model-specific temporary downloads, and permanent model-pipeline replay results.
 
-Reusable benchmark inputs include Layer 1 market-regime inputs, Layer 2 sector-context inputs, and event/news inputs collected for benchmark/replay use. Policy: retain or compress/archive because later model pipelines and replay windows can reuse them.
+Reusable replay inputs include Layer 1 market-regime inputs, Layer 2 sector-context inputs, and event/news inputs collected for replay/replay use. Policy: retain or compress/archive because later model pipelines and replay windows can reuse them.
 
-Model-specific benchmark downloads include one-off files pulled only because a particular model pipeline needed them for a benchmark run, such as point-in-time option snapshots. Policy: delete by TTL after the benchmark closes once result summaries, manifests, acquisition receipts, and any reusable inputs are preserved.
+Model-specific replay downloads include one-off files pulled only because a particular model pipeline needed them for a replay run, such as point-in-time option snapshots. Policy: delete by TTL after the replay closes once result summaries, manifests, acquisition receipts, and any reusable inputs are preserved.
 
-Model-pipeline benchmark result summaries are permanent. Each model pipeline must retain its compact benchmark result summary, scorecard/baseline comparison, manifest refs, and receipt evidence so later promotions remain comparable without keeping every non-reusable downloaded file online.
+Model-pipeline replay result summaries are permanent. Each model pipeline must retain its compact replay result summary, scorecard/baseline comparison, manifest refs, and receipt evidence so later promotions remain comparable without keeping every non-reusable downloaded file online.
 
 ### Downloaded source data
 
@@ -142,9 +142,9 @@ Policy: never compress PostgreSQL live data files directly. Archive through dump
 - promoted model bodies: permanent;
 - promotion/review/activation/deactivation receipts: permanent;
 - dataset snapshot/split manifests: permanent or lineage lifetime;
-- model-pipeline benchmark result summaries and scorecards: permanent;
-- benchmark Layer 1/2 and event/news reusable inputs: retain or compress/archive;
-- model-specific benchmark downloads such as one-off option snapshots: TTL delete after benchmark close when summaries/manifests/receipts are retained;
+- model-pipeline replay result summaries and scorecards: permanent;
+- replay Layer 1/2 and event/news reusable inputs: retain or compress/archive;
+- model-specific replay downloads such as one-off option snapshots: TTL delete after replay close when summaries/manifests/receipts are retained;
 - PIT/vintage/source history: compress and retain by default;
 - dashboard/read-model latest summaries: retained;
 - dashboard/read-model high-frequency snapshots: count-based metadata pruning after model-run cycle close; current default prune plan keeps the latest 10 snapshots per contract and marks older snapshots as delete candidates, but apply is currently on hold until the event-model redo and downstream model regeneration are complete/reviewed;
@@ -185,7 +185,7 @@ Scheduled maintenance emits a `storage_root_inventory_summary` inside each `stor
 - `storage/02_control_plane`
 - `storage/03_model_artifacts`
 - `storage/04_execution_artifacts`
-- `storage/05_benchmark_datasets`
+- `storage/05_replay_datasets`
 - `storage/06_dashboard_cache`
 - `storage/90_lifecycle`
 

@@ -66,13 +66,13 @@ class LifecyclePlannerTests(unittest.TestCase):
             self.assertEqual(plan.records[0].rule_id, "quarantine_ttl_delete_allowed")
             self.assertFalse(plan.records[0].protected)
 
-    def test_benchmark_summary_is_retained_as_protected(self):
+    def test_replay_summary_is_retained_as_protected(self):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
-            artifact = root / "storage" / "05_benchmark_datasets" / "pipelines" / "model_04_event_overlay" / "result_summary.json"
+            artifact = root / "storage" / "05_replay_datasets" / "pipelines" / "model_04_event_overlay" / "result_summary.json"
             artifact.parent.mkdir(parents=True, exist_ok=True)
             artifact.write_text(
-                json.dumps({"contract_type": "model_pipeline_benchmark_result_summary"}),
+                json.dumps({"contract_type": "model_pipeline_replay_result_summary"}),
                 encoding="utf-8",
             )
             index = build_artifact_index(root=root)
@@ -80,15 +80,15 @@ class LifecyclePlannerTests(unittest.TestCase):
             plan = plan_storage_lifecycle(index)
 
             self.assertEqual(plan.records[0].action, "retain_protected")
-            self.assertEqual(plan.records[0].protected_reason_codes, ("benchmark_result_summary",))
+            self.assertEqual(plan.records[0].protected_reason_codes, ("replay_result_summary",))
 
-    def test_model_specific_benchmark_download_becomes_quarantine_candidate(self):
+    def test_model_specific_replay_download_becomes_quarantine_candidate(self):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
             artifact = (
                 root
                 / "storage"
-                / "05_benchmark_datasets"
+                / "05_replay_datasets"
                 / "model_specific_downloads"
                 / "model_09_option_expression"
                 / "option_snapshot"

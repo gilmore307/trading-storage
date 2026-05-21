@@ -14,7 +14,7 @@ main/        Checked-in reusable non-code assets shared across trading repositor
 scripts/     Executable storage artifact helpers and maintenance entrypoints.
 src/         Importable storage helper package.
 tests/       First-party storage tests.
-storage/     Ignored runtime/data root using numbered storage subdirectories such as 01_source_data, 02_control_plane, 03_model_artifacts, 04_execution_artifacts, 05_benchmark_datasets, 06_dashboard_cache, and 90_lifecycle.
+storage/     Ignored runtime/data root using numbered storage subdirectories such as 01_source_data, 02_control_plane, 03_model_artifacts, 04_execution_artifacts, 05_replay_datasets, 06_dashboard_cache, and 90_lifecycle.
 ```
 
 The current implementation slices are storage-owned JSON artifact writing for completion receipt payloads, conservative local lifecycle maintenance for ignored runtime files, scheduled maintenance that inventories all numbered storage roots and directly reads manager fold-state files, dry-run-first lifecycle planning/protected-set/quarantine evidence, narrow compressed-copy and file-backed archive-copy executors, no-mutation quarantine/delete gate receipts, dashboard read-model materialization, and dashboard read-model refresh wrappers. `src/` owns reusable code, `scripts/` owns executable entrypoints, and `tests/` owns verification; `scripts/` may import `src/`, but `src/` must not import `scripts/`.

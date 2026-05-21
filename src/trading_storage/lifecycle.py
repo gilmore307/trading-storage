@@ -142,7 +142,7 @@ DEFAULT_RETENTION_RULES: tuple[RetentionRule, ...] = (
             "storage/02_control_plane",
             "storage/03_model_artifacts",
             "storage/04_execution_artifacts",
-            "storage/05_benchmark_datasets",
+            "storage/05_replay_datasets",
         ),
         action="retain",
         ttl_days=None,

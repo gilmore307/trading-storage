@@ -138,22 +138,22 @@ class ArtifactIndexTests(unittest.TestCase):
             self.assertEqual(index.records[0].reproducibility_class, "reproducible")
             self.assertEqual(index.records[0].protected_reason_codes, ())
 
-    def test_benchmark_result_summary_is_kept_forever(self):
+    def test_replay_result_summary_is_kept_forever(self):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
-            artifact = root / "storage" / "05_benchmark_datasets" / "pipelines" / "model_03_target_state" / "result_summary.json"
+            artifact = root / "storage" / "05_replay_datasets" / "pipelines" / "model_03_target_state" / "result_summary.json"
             artifact.parent.mkdir(parents=True, exist_ok=True)
             artifact.write_text(
-                json.dumps({"contract_type": "model_pipeline_benchmark_result_summary"}),
+                json.dumps({"contract_type": "model_pipeline_replay_result_summary"}),
                 encoding="utf-8",
             )
 
             index = build_artifact_index(root=root)
 
             self.assertEqual(index.records[0].retention_class, "keep_forever")
-            self.assertEqual(index.records[0].protected_reason_codes, ("benchmark_result_summary",))
+            self.assertEqual(index.records[0].protected_reason_codes, ("replay_result_summary",))
 
-    def test_explicit_keep_forever_non_benchmark_uses_generic_protection(self):
+    def test_explicit_keep_forever_non_replay_uses_generic_protection(self):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
             artifact = root / "storage" / "03_model_artifacts" / "promoted_model" / "model.json"
@@ -168,11 +168,11 @@ class ArtifactIndexTests(unittest.TestCase):
             self.assertEqual(index.records[0].retention_class, "keep_forever")
             self.assertEqual(index.records[0].protected_reason_codes, ("keep_forever_retention",))
 
-    def test_reusable_benchmark_layer_and_news_inputs_are_compress_and_retain(self):
+    def test_reusable_replay_layer_and_news_inputs_are_compress_and_retain(self):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
-            layer_input = root / "storage" / "05_benchmark_datasets" / "reusable_inputs" / "layer_01_market_regime" / "bars.csv"
-            news_input = root / "storage" / "05_benchmark_datasets" / "reusable_inputs" / "event_news" / "news.jsonl"
+            layer_input = root / "storage" / "05_replay_datasets" / "reusable_inputs" / "layer_01_market_regime" / "bars.csv"
+            news_input = root / "storage" / "05_replay_datasets" / "reusable_inputs" / "event_news" / "news.jsonl"
             layer_input.parent.mkdir(parents=True, exist_ok=True)
             news_input.parent.mkdir(parents=True, exist_ok=True)
             layer_input.write_text("date,symbol,close\n2016-01-04,SPY,200\n", encoding="utf-8")
@@ -182,21 +182,21 @@ class ArtifactIndexTests(unittest.TestCase):
 
             by_path = {record.physical_path: record for record in index.records}
             self.assertEqual(
-                by_path["storage/05_benchmark_datasets/reusable_inputs/layer_01_market_regime/bars.csv"].retention_class,
+                by_path["storage/05_replay_datasets/reusable_inputs/layer_01_market_regime/bars.csv"].retention_class,
                 "compress_and_retain",
             )
             self.assertEqual(
-                by_path["storage/05_benchmark_datasets/reusable_inputs/event_news/news.jsonl"].retention_class,
+                by_path["storage/05_replay_datasets/reusable_inputs/event_news/news.jsonl"].retention_class,
                 "compress_and_retain",
             )
 
-    def test_model_specific_benchmark_option_snapshot_is_ttl_delete_allowed(self):
+    def test_model_specific_replay_option_snapshot_is_ttl_delete_allowed(self):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
             artifact = (
                 root
                 / "storage"
-                / "05_benchmark_datasets"
+                / "05_replay_datasets"
                 / "model_specific_downloads"
                 / "model_09_option_expression"
                 / "option_snapshot"

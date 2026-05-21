@@ -33,7 +33,7 @@ class StorageMaintenanceTests(unittest.TestCase):
                 "02_control_plane",
                 "03_model_artifacts",
                 "04_execution_artifacts",
-                "05_benchmark_datasets",
+                "05_replay_datasets",
                 "06_dashboard_cache",
                 "90_lifecycle",
             ],
