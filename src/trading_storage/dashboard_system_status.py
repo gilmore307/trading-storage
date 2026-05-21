@@ -54,11 +54,30 @@ DEFAULT_PROVIDER_STAGE_LOAD_TARGET_PER_CPU = 0.70
 DEFAULT_PROVIDER_STAGE_WORKER_MEMORY_MB = 512
 DEFAULT_PROVIDER_STAGE_RESERVED_MEMORY_MB = 2048
 
-SYSTEMD_UNITS = (
+SYSTEMD_UNIT_FALLBACKS = (
+    "trading-dashboard-web.service",
     "trading-manager-historical-scheduler.service",
-    "trading-storage-dashboard-read-model-refresh.timer",
+    "trading-execution-realtime-monitor-loop.service",
     "trading-storage-dashboard-read-model-refresh.service",
+    "trading-data-te-calendar-refresh.service",
+    "trading-execution-realtime-runtime-check.service",
+    "trading-storage-dashboard-read-model-refresh.timer",
+    "trading-data-te-calendar-refresh.timer",
+    "trading-execution-realtime-runtime-check.timer",
+    "trading-execution-realtime-runtime-check.path",
 )
+FAILED_SYSTEMD_RESULTS = {
+    "core-dump",
+    "exit-code",
+    "failed",
+    "oom-kill",
+    "protocol",
+    "resources",
+    "signal",
+    "start-limit-hit",
+    "timeout",
+    "watchdog",
+}
 PROVIDER_APIS = (
     {"alias": "alpaca", "name": "Alpaca Market Data API", "kind": "market_data"},
     {"alias": "okx", "name": "OKX Market Data API", "kind": "crypto_market_data"},
@@ -143,19 +162,117 @@ def _run_text(argv: tuple[str, ...], *, timeout: float = 3.0) -> tuple[int, str]
     return completed.returncode, completed.stdout.strip() or completed.stderr.strip()
 
 
+def _unit_kind(unit: str) -> str:
+    return unit.rsplit(".", 1)[-1] if "." in unit else "unit"
+
+
+def _unit_sort_key(unit: str) -> tuple[int, str]:
+    try:
+        return (SYSTEMD_UNIT_FALLBACKS.index(unit), unit)
+    except ValueError:
+        kind_rank = {"service": 10, "timer": 20, "path": 30}.get(_unit_kind(unit), 40)
+        return (kind_rank, unit)
+
+
+def _trading_systemd_unit_names() -> list[str]:
+    rc, output = _run_text(("systemctl", "list-unit-files", "trading-*", "--no-legend", "--no-pager", "--plain"))
+    units: list[str] = []
+    if rc == 0:
+        for line in output.splitlines():
+            parts = line.split()
+            if parts and parts[0].startswith("trading-") and "." in parts[0]:
+                units.append(parts[0])
+    if not units:
+        units = list(SYSTEMD_UNIT_FALLBACKS)
+    return sorted(set(units), key=_unit_sort_key)
+
+
+def _systemd_properties(unit: str) -> dict[str, str]:
+    rc, output = _run_text(
+        (
+            "systemctl",
+            "show",
+            unit,
+            "-p",
+            "ActiveState",
+            "-p",
+            "LoadState",
+            "-p",
+            "SubState",
+            "-p",
+            "Result",
+            "-p",
+            "Type",
+            "-p",
+            "UnitFileState",
+        )
+    )
+    if rc != 0:
+        return {}
+    properties: dict[str, str] = {}
+    for line in output.splitlines():
+        if "=" not in line:
+            continue
+        key, value = line.split("=", 1)
+        properties[key] = value
+    return properties
+
+
+def _systemd_unit_is_healthy(
+    *,
+    unit_kind: str,
+    unit_type: str,
+    load_state: str,
+    active_state: str,
+    enabled_state: str,
+    substate: str,
+    result: str,
+) -> bool:
+    if load_state in {"bad-setting", "error", "not-found"}:
+        return False
+    if active_state == "failed" or result in FAILED_SYSTEMD_RESULTS:
+        return False
+    if active_state in {"active", "reloading"}:
+        return True
+    if active_state == "activating":
+        return substate != "auto-restart"
+    if active_state == "inactive" and result in {"", "success"}:
+        if unit_type == "oneshot":
+            return True
+        if enabled_state in {"disabled", "indirect", "static"}:
+            return True
+        if unit_kind in {"path", "timer"} and enabled_state == "disabled":
+            return True
+    return False
+
+
 def _systemd_unit(unit: str) -> dict[str, Any]:
-    active_rc, active = _run_text(("systemctl", "is-active", unit))
-    enabled_rc, enabled = _run_text(("systemctl", "is-enabled", unit))
-    substate_rc, substate = _run_text(("systemctl", "show", unit, "-p", "SubState", "--value"))
-    result_rc, result = _run_text(("systemctl", "show", unit, "-p", "Result", "--value"))
-    active_state = active if active_rc == 0 else active or "unknown"
+    properties = _systemd_properties(unit)
+    active_state = properties.get("ActiveState") or "unknown"
+    enabled_state = properties.get("UnitFileState") or "unknown"
+    load_state = properties.get("LoadState") or "unknown"
+    substate = properties.get("SubState") or "unknown"
+    result = properties.get("Result") or "unknown"
+    unit_type = properties.get("Type") or "unknown"
+    unit_kind = _unit_kind(unit)
     return {
         "unit": unit,
+        "unit_kind": unit_kind,
+        "unit_type": unit_type,
+        "load_state": load_state,
         "active_state": active_state,
-        "enabled_state": enabled if enabled_rc == 0 else enabled or "unknown",
-        "substate": substate if substate_rc == 0 else "unknown",
-        "result": result if result_rc == 0 else "unknown",
-        "healthy": active_state != "failed" and (result if result_rc == 0 else "") not in {"failed", "timeout"},
+        "enabled_state": enabled_state,
+        "substate": substate,
+        "result": result,
+        "healthy": _systemd_unit_is_healthy(
+            unit_kind=unit_kind,
+            unit_type=unit_type,
+            load_state=load_state,
+            active_state=active_state,
+            enabled_state=enabled_state,
+            substate=substate,
+            result=result,
+        ),
     }
 
 
@@ -629,7 +746,7 @@ def build_current_system_status_summary(*, storage_root: Path, generated_at_utc:
     manager_storage_root = _manager_storage_root_from(storage_root)
     runtime_values = _read_env_file(DEFAULT_TRADING_MANAGER_ROOT / "deploy/systemd/trading-manager-historical-scheduler.env") | _read_env_file(DEFAULT_SCHEDULER_ENV_PATH)
     runtime_throughput = _historical_scheduler_runtime_throughput(values=runtime_values, manager_storage_root=manager_storage_root)
-    services = [_systemd_unit(unit) for unit in SYSTEMD_UNITS]
+    services = [_systemd_unit(unit) for unit in _trading_systemd_unit_names()]
     source_outputs = _dashboard_source_outputs(manager_storage_root=manager_storage_root, now_epoch=now_epoch)
     scheduler_active = _historical_scheduler_is_active(services)
     if not scheduler_active:
@@ -674,7 +791,14 @@ def build_current_system_status_summary(*, storage_root: Path, generated_at_utc:
             "refresh": {
                 "timer_unit": "trading-storage-dashboard-read-model-refresh.timer",
                 "cadence_seconds": _storage_refresh_cadence_seconds(),
-                "status": next((service["active_state"] for service in services if service["unit"].endswith(".timer")), "unknown"),
+                "status": next(
+                    (
+                        service["active_state"]
+                        for service in services
+                        if service["unit"] == "trading-storage-dashboard-read-model-refresh.timer"
+                    ),
+                    "unknown",
+                ),
             },
         },
         "profile_refs": [

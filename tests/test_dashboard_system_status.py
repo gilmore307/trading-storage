@@ -5,6 +5,7 @@ import os
 import tempfile
 import unittest
 from pathlib import Path
+from unittest.mock import patch
 
 from trading_storage.dashboard_system_status import (
     CURRENT_SYSTEM_STATUS_CONTRACT,
@@ -12,6 +13,7 @@ from trading_storage.dashboard_system_status import (
     _historical_scheduler_runtime_throughput,
     _mark_missing_event_outputs_waiting,
     _mark_source_outputs_not_started,
+    _trading_systemd_unit_names,
     build_current_system_status_summary,
     refresh_current_system_status_read_model,
 )
@@ -37,6 +39,8 @@ class DashboardSystemStatusTests(unittest.TestCase):
             self.assertIn("runtime_throughput", chart)
             self.assertIn("source_outputs", chart)
             self.assertEqual(chart["api"]["websocket_latest_route"], "/ws/read-models/<contract_type>/latest")
+            self.assertIn("trading-dashboard-web.service", {service["unit"] for service in chart["services"]})
+            self.assertTrue(all("unit_kind" in service and "load_state" in service for service in chart["services"]))
             self.assertEqual(
                 [api["name"] for api in chart["apis"]],
                 ["Alpaca Market Data API", "OKX Market Data API", "ThetaData Options API"],
@@ -209,6 +213,27 @@ class DashboardSystemStatusTests(unittest.TestCase):
                 else:
                     os.environ["TRADING_STORAGE_REFRESH_CADENCE_SECONDS"] = old_value
             self.assertEqual(payload["chart_payload"]["refresh"]["cadence_seconds"], 17)
+
+    def test_systemd_unit_inventory_uses_all_trading_unit_files(self) -> None:
+        output = "\n".join(
+            [
+                "trading-dashboard-web.service enabled enabled",
+                "trading-data-te-calendar-refresh.timer enabled enabled",
+                "trading-execution-realtime-runtime-check.path enabled enabled",
+                "unrelated.service enabled enabled",
+            ]
+        )
+        with patch("trading_storage.dashboard_system_status._run_text", return_value=(0, output)):
+            units = _trading_systemd_unit_names()
+
+        self.assertEqual(
+            units,
+            [
+                "trading-dashboard-web.service",
+                "trading-data-te-calendar-refresh.timer",
+                "trading-execution-realtime-runtime-check.path",
+            ],
+        )
 
 
 if __name__ == "__main__":
