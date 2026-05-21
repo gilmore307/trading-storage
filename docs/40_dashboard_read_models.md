@@ -51,6 +51,7 @@ The following dashboard summary families are accepted as storage-bound design ta
 
 Implemented realtime summary families:
 
+- `execution_realtime_trading_runtime_status`;
 - `realtime_signal_summary`;
 
 Future/parked summary families:
@@ -123,6 +124,7 @@ Implemented storage-side support:
 - `src/trading_storage/dashboard_snapshot_lifecycle.py` and `scripts/dashboard/prune_dashboard_snapshots.py` plan or apply bounded deletion for old dashboard snapshot metadata while preserving `latest.json`, schemas, index files, Layer 1/2 data, and SQL.
 - `scripts/dashboard/materialize_read_model.py` exposes the helper as a CLI for one payload at a time.
 - `src/trading_storage/dashboard_refresh.py` and `scripts/dashboard/refresh_historical_task_progress_read_model.py` run the manager-owned `historical_task_progress_summary` producer and materialize the validated result; when no explicit coverage path is supplied, the refresh wrapper attaches the newest manager stage-coverage artifact so the Historical Task Progress page can show coverage instead of a blank placeholder.
+- `src/trading_storage/dashboard_execution_runtime.py` and `scripts/dashboard/refresh_execution_runtime_status_read_model.py` build and materialize `execution_realtime_trading_runtime_status` from the execution-owned readiness artifact. Dashboard clients consume it through `/ws/read-models/execution_realtime_trading_runtime_status/latest`.
 - `src/trading_storage/dashboard_realtime_signals.py` and `scripts/dashboard/refresh_realtime_signal_summary_read_model.py` build and materialize `realtime_signal_summary` from execution-owned realtime monitor receipts. When no realtime monitor receipt exists, the producer emits an explicit safe `not_started` state rather than fabricating signal metrics.
 - `deploy/systemd/trading-storage-dashboard-read-model-refresh.service` and `.timer` define the fallback periodic refresh template. Manager workflow-state writes trigger primary progress refreshes, while the timer default is 60 seconds for calibration when an event is missed.
 - Tests cover envelope validation, path safety, future timestamp rejection, secret-like payload rejection, snapshot/latest/schema/index writes, the CLI materializer path, and refresh orchestration side-effect flags.
@@ -141,8 +143,17 @@ Refresh entrypoints:
 
 ```bash
 PYTHONPATH=src python3 scripts/dashboard/refresh_current_system_status_read_model.py --storage-root storage
+PYTHONPATH=src python3 scripts/dashboard/refresh_execution_runtime_status_read_model.py --storage-root storage
 PYTHONPATH=src python3 scripts/dashboard/refresh_realtime_signal_summary_read_model.py --storage-root storage --trading-execution-root /root/projects/trading-execution
 PYTHONPATH=src python3 scripts/dashboard/refresh_public_dashboard_read_models.py --storage-root storage --trading-manager-root /root/projects/trading-manager --trading-execution-root /root/projects/trading-execution
+```
+
+### Execution runtime status producer
+
+`trading_storage.dashboard_execution_runtime` produces `execution_realtime_trading_runtime_status` from the execution-owned runtime readiness artifact at `storage/04_execution_artifacts/runtime/realtime_trading_runtime/runtime_status.json`. It exposes the active model pointer state, next gate, connected interfaces, allowed action flags, required runtime inputs, and safety counters in the common dashboard envelope. It performs no provider calls, model activation, order construction, broker execution, or account mutation. The dashboard WebSocket route is:
+
+```text
+/ws/read-models/execution_realtime_trading_runtime_status/latest
 ```
 
 ### Realtime signal producer

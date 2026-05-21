@@ -11,4 +11,5 @@ These helpers do not create dashboard UI, provider calls, model activation, brok
 Additional refresh entrypoints:
 
 - `refresh_current_system_status_read_model.py` — refreshes `current_system_status_summary` from read-only infrastructure observations.
+- `refresh_execution_runtime_status_read_model.py` — refreshes `execution_realtime_trading_runtime_status` from the execution-owned readiness artifact for WebSocket clients.
 - `refresh_public_dashboard_read_models.py` — refreshes the current public dashboard read-model set used by the website.

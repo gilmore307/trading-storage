@@ -40,6 +40,7 @@ INITIAL_CONTRACT_TYPES = frozenset(
 )
 PARKED_CONTRACT_TYPES = frozenset(
     {
+        "execution_realtime_trading_runtime_status",
         "realtime_signal_summary",
         "runtime_decision_quality_summary",
         "trading_performance_summary",

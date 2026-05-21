@@ -9,6 +9,7 @@ from pathlib import Path
 from typing import Any, Callable
 
 from trading_storage.artifact_store import now_utc
+from trading_storage.dashboard_execution_runtime import DEFAULT_EXECUTION_STATUS_PATH, EXECUTION_RUNTIME_STATUS_CONTRACT, refresh_execution_runtime_status_read_model
 from trading_storage.dashboard_refresh import DEFAULT_TRADING_MANAGER_ROOT, HISTORICAL_TASK_PROGRESS_CONTRACT, refresh_historical_task_progress_read_model
 from trading_storage.dashboard_realtime_signals import DEFAULT_TRADING_EXECUTION_ROOT, REALTIME_SIGNAL_SUMMARY_CONTRACT, refresh_realtime_signal_summary_read_model
 from trading_storage.dashboard_system_status import CURRENT_SYSTEM_STATUS_CONTRACT, refresh_current_system_status_read_model
@@ -44,6 +45,7 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--storage-root", type=Path, default=Path("storage"))
     parser.add_argument("--trading-manager-root", type=Path, default=DEFAULT_TRADING_MANAGER_ROOT)
     parser.add_argument("--trading-execution-root", type=Path, default=DEFAULT_TRADING_EXECUTION_ROOT)
+    parser.add_argument("--execution-runtime-status-path", type=Path, default=DEFAULT_EXECUTION_STATUS_PATH)
     args = parser.parse_args(argv)
     args.storage_root.mkdir(parents=True, exist_ok=True)
     results = [
@@ -63,6 +65,13 @@ def main(argv: list[str] | None = None) -> int:
             lambda: refresh_realtime_signal_summary_read_model(
                 execution_root=args.trading_execution_root,
                 storage_root=args.storage_root,
+            ),
+        ),
+        _run_one(
+            EXECUTION_RUNTIME_STATUS_CONTRACT,
+            lambda: refresh_execution_runtime_status_read_model(
+                storage_root=args.storage_root,
+                status_path=args.execution_runtime_status_path,
             ),
         ),
     ]
