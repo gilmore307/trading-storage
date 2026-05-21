@@ -277,16 +277,16 @@ class ArtifactIndexTests(unittest.TestCase):
             self.assertEqual(len({record.artifact_id for record in index.records}), 2)
             self.assertTrue(all(record.artifact_id.startswith("art_idx_") for record in index.records))
 
-    def test_layer_nine_runtime_metadata_is_ttl_delete_allowed(self):
+    def test_layer_ten_runtime_metadata_is_ttl_delete_allowed(self):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
-            artifact = root / "storage" / "02_control_plane" / "artifacts" / "model_10_event_risk_governor" / "runtime_summary.json"
+            artifact = root / "storage" / "02_control_plane" / "artifacts" / "model_10_volatility_surface" / "runtime_summary.json"
             artifact.parent.mkdir(parents=True, exist_ok=True)
             artifact.write_text(
                 json.dumps(
                     {
-                        "contract_type": "model_10_event_risk_governor_runtime_summary",
-                        "model_layer": "layer_10_event_risk_governor",
+                        "contract_type": "model_10_volatility_surface_runtime_summary",
+                        "model_layer": "layer_10_volatility_surface",
                     }
                 ),
                 encoding="utf-8",

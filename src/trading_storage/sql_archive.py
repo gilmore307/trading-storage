@@ -259,7 +259,14 @@ def _artifact_identity_hash(record: LifecyclePlanRecord) -> str:
 
 
 def _archive_relative_path(record: LifecyclePlanRecord) -> Path:
-    return Path("storage") / "archive" / "sql" / _artifact_identity_hash(record) / (Path(record.physical_path).name + ".archive.json.gz")
+    return (
+        Path("storage")
+        / "90_lifecycle"
+        / "archive"
+        / "sql"
+        / _artifact_identity_hash(record)
+        / (Path(record.physical_path).name + ".archive.json.gz")
+    )
 
 
 def _archive_uri(record: LifecyclePlanRecord) -> str:

@@ -8,6 +8,7 @@ Executable local storage lifecycle helpers live here.
 - `build_protected_set.py` builds conservative protected-set safety evidence from artifact-index records and optional reason-code references/manual pins according to `docs/31_protected_set.md`.
 - `run_file_lifecycle_acceptance.py` runs the complete safe file-lifecycle pass: index, protected set, dry-run plan, quarantine/recheck evidence, execution scaffold, optional compressed-copy creation, and dashboard snapshot prune dry-run.
 - `compress_single_file_candidates.py` safely compresses unprotected single-file `compress_candidate` rows to zstd copies, preserving originals and leaving SQL/artifact-index/delete paths untouched according to `docs/32_compression_archive.md`.
+- `verify_single_file_compression_restore.py` verifies single-file zstd compressed copies by decompression and checksum comparison without restoring originals or mutating indexes.
 - `execute_sql_archive.py` plans or writes reviewed file-backed SQL archive gzip copies for unprotected `archive_candidate` rows. It consumes already-materialized export files only; it does not connect to a database, detach/drop SQL, mutate indexes, quarantine, or delete sources.
 - `verify_sql_archive_restore.py` verifies reviewed file-backed SQL archive copies by gzip decompression and checksum comparison without materializing a database restore.
 - `build_quarantine_delete_result.py` turns quarantine/recheck evidence into explicit quarantine/deletion/tombstone draft receipts while preserving the current no-mutation boundary.

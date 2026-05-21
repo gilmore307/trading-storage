@@ -447,6 +447,7 @@ def _retention_class(
             "layer_07",
             "layer_08",
             "layer_09",
+            "layer_10",
             "model_03",
             "model_04",
             "model_05",
@@ -454,8 +455,11 @@ def _retention_class(
             "model_07",
             "model_08",
             "model_09",
+            "model_10",
             "feature_09",
+            "feature_10",
             "source_09",
+            "source_10",
             "event_risk_governor",
         )
     ) and any(token in text for token in ("metadata", "summary", "diagnostic", "scratch", "intermediate", "runtime", "staging")):

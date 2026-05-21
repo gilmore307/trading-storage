@@ -413,15 +413,22 @@ def apply_retention_plan(plan: LifecyclePlan) -> LifecyclePlan:
         path = root / item.path
         if item.action == "delete":
             if path.exists() and not path.is_symlink():
+                if item.content_hash_sha256 and sha256_file(path) != item.content_hash_sha256:
+                    raise ValueError(f"source hash changed before delete: {item.path}")
                 path.unlink()
         elif item.action == "archive":
             if not item.archive_path:
                 continue
             target = root / item.archive_path
             if path.exists() and not path.is_symlink():
+                source_hash = sha256_file(path)
+                if item.content_hash_sha256 and source_hash != item.content_hash_sha256:
+                    raise ValueError(f"source hash changed before archive: {item.path}")
                 target.parent.mkdir(parents=True, exist_ok=True)
                 if not target.exists():
                     shutil.copy2(path, target)
+                if sha256_file(target) != source_hash:
+                    raise ValueError(f"archive target hash mismatch: {item.archive_path}")
                 path.unlink()
     _remove_empty_local_dirs(root)
     return LifecyclePlan(root=plan.root, generated_at=now_utc(), dry_run=False, items=plan.items)

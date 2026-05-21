@@ -47,6 +47,23 @@ class LifecycleTests(unittest.TestCase):
             self.assertFalse(log.exists())
             self.assertEqual((root / "storage/90_lifecycle/archive/logs/daily.log").read_text(encoding="utf-8"), "important diagnostic")
 
+    def test_archive_apply_refuses_stale_existing_target(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            log = root / "logs" / "daily.log"
+            archive = root / "storage" / "90_lifecycle" / "archive" / "logs" / "daily.log"
+            self._touch_old(log, age_days=15, content="new diagnostic")
+
+            plan = plan_retention(root=root)
+            archive.parent.mkdir(parents=True, exist_ok=True)
+            archive.write_text("old diagnostic", encoding="utf-8")
+
+            with self.assertRaisesRegex(ValueError, "archive target hash mismatch"):
+                apply_retention_plan(plan)
+            self.assertTrue(log.exists())
+            self.assertEqual(log.read_text(encoding="utf-8"), "new diagnostic")
+            self.assertEqual(archive.read_text(encoding="utf-8"), "old diagnostic")
+
     def test_storage_artifacts_are_reported_not_deleted(self):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)

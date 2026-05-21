@@ -17,7 +17,7 @@ import shutil
 import subprocess
 from dataclasses import asdict, dataclass
 from pathlib import Path
-from typing import Any, Sequence
+from typing import Any, Mapping, Sequence
 
 from trading_storage.artifact_index import ArtifactIndex, ArtifactIndexRecord, DEFAULT_INDEX_ROOTS, build_artifact_index, now_utc, sha256_file
 from trading_storage.io import write_text_atomic
@@ -34,6 +34,8 @@ from trading_storage.quarantine_recheck import load_storage_lifecycle_plan_json
 
 DEFAULT_SINGLE_FILE_COMPRESSION_OUTPUT = Path("storage/90_lifecycle/execution/single_file_compression_result.json")
 DEFAULT_SINGLE_FILE_COMPRESSION_SUMMARY_OUTPUT = Path("storage/90_lifecycle/execution/single_file_compression_summary.json")
+DEFAULT_SINGLE_FILE_COMPRESSION_RESTORE_OUTPUT = Path("storage/90_lifecycle/execution/single_file_compression_restore_verification.json")
+DEFAULT_SINGLE_FILE_COMPRESSION_RESTORE_SUMMARY_OUTPUT = Path("storage/90_lifecycle/execution/single_file_compression_restore_verification_summary.json")
 EXECUTOR_VERSION = "storage_single_file_compression_executor_v0_1"
 
 
@@ -182,6 +184,56 @@ class SingleFileCompressionResult:
             "manifests": [row.to_dict() for row in self.manifests],
             "receipts": [row.to_dict() for row in self.receipts],
             "restore_receipts": [row.to_dict() for row in self.restore_receipts],
+            "skipped_records": list(self.skipped_records),
+        }
+
+    def to_json(self) -> str:
+        return json.dumps(self.to_dict(), indent=2, sort_keys=True) + "\n"
+
+    def summary_json(self) -> str:
+        return json.dumps(self.summary, indent=2, sort_keys=True) + "\n"
+
+
+@dataclass(frozen=True)
+class SingleFileCompressionRestoreVerification:
+    """Verification bundle for existing zstd compression manifests."""
+
+    contract_type: str
+    generated_at: str
+    source_compression_result_generated_at: str | None
+    receipts: tuple[RestoreVerificationReceipt, ...]
+    skipped_records: tuple[dict[str, Any], ...]
+
+    @property
+    def summary(self) -> dict[str, Any]:
+        status_counts: dict[str, int] = {}
+        skipped_counts: dict[str, int] = {}
+        for receipt in self.receipts:
+            status_counts[receipt.status] = status_counts.get(receipt.status, 0) + 1
+        for row in self.skipped_records:
+            reason = str(row.get("skip_reason", "unknown"))
+            skipped_counts[reason] = skipped_counts.get(reason, 0) + 1
+        return {
+            "contract_type": "storage_single_file_compression_restore_verification_summary",
+            "generated_at": self.generated_at,
+            "source_compression_result_generated_at": self.source_compression_result_generated_at,
+            "receipt_count": len(self.receipts),
+            "skipped_record_count": len(self.skipped_records),
+            "status_counts": dict(sorted(status_counts.items())),
+            "skipped_reason_counts": dict(sorted(skipped_counts.items())),
+            "mutation_performed": False,
+            "delete_original_performed": False,
+            "artifact_index_updated": False,
+            "sql_mutation_performed": False,
+        }
+
+    def to_dict(self) -> dict[str, Any]:
+        return {
+            "contract_type": self.contract_type,
+            "generated_at": self.generated_at,
+            "source_compression_result_generated_at": self.source_compression_result_generated_at,
+            "summary": self.summary,
+            "receipts": [row.to_dict() for row in self.receipts],
             "skipped_records": list(self.skipped_records),
         }
 
@@ -549,6 +601,139 @@ def write_single_file_compression_result(
         write_text_atomic(summary_path, result.summary_json())
 
 
+def _manifest_from_mapping(row: Mapping[str, Any]) -> CompressionManifest:
+    return CompressionManifest(**dict(row))
+
+
+def load_single_file_compression_result_json(path: Path) -> SingleFileCompressionResult:
+    data = json.loads(path.read_text(encoding="utf-8"))
+    if not isinstance(data, Mapping):
+        raise ValueError("single-file compression result must be a JSON object")
+    manifests = tuple(_manifest_from_mapping(row) for row in data.get("manifests", []) if isinstance(row, Mapping))
+    receipts = tuple(CompressionReceipt(**dict(row)) for row in data.get("receipts", []) if isinstance(row, Mapping))
+    restore_receipts = tuple(RestoreVerificationReceipt(**dict(row)) for row in data.get("restore_receipts", []) if isinstance(row, Mapping))
+    skipped = tuple(dict(row) for row in data.get("skipped_records", []) if isinstance(row, Mapping))
+    return SingleFileCompressionResult(
+        contract_type=str(data.get("contract_type", "storage_single_file_compression_result")),
+        generated_at=str(data.get("generated_at", "")),
+        source_lifecycle_plan_generated_at=data.get("source_lifecycle_plan_generated_at"),
+        apply=bool(data.get("apply", False)),
+        manifests=manifests,
+        receipts=receipts,
+        restore_receipts=restore_receipts,
+        skipped_records=skipped,
+    )
+
+
+def verify_single_file_compression_restore(
+    compression_result: SingleFileCompressionResult,
+    *,
+    root: Path,
+    manifest_ref: str | None = None,
+    generated_at: str | None = None,
+) -> SingleFileCompressionRestoreVerification:
+    """Verify existing zstd compressed copies against their source checksums."""
+
+    generated = generated_at or now_utc()
+    receipts: list[RestoreVerificationReceipt] = []
+    skipped_records: list[dict[str, Any]] = []
+    for manifest in compression_result.manifests:
+        if manifest_ref and manifest.manifest_ref != manifest_ref:
+            skipped_records.append({"manifest_ref": manifest.manifest_ref, "skip_reason": "manifest_ref_filter"})
+            continue
+        if not manifest.compressed_checksum_sha256 or not manifest.original_checksum_sha256:
+            receipts.append(
+                RestoreVerificationReceipt(
+                    contract_type="restore_receipt",
+                    receipt_ref=_stable_ref("restore_receipt", manifest.manifest_ref, manifest.artifact_id, "missing_checksum"),
+                    source_manifest_ref=manifest.manifest_ref,
+                    source_artifact_id=manifest.artifact_id,
+                    restore_mode="verification_only",
+                    restore_destination=f"storage/restore_smoke/compression/{manifest.manifest_ref}",
+                    checksum_status="not_performed_missing_checksum",
+                    schema_check_status="not_applicable",
+                    row_count_check_status="not_applicable",
+                    status="planned_not_executed",
+                    executor_version=EXECUTOR_VERSION,
+                    generated_at=generated,
+                    dry_run=True,
+                    mutation_performed=False,
+                    reason="Manifest has no executed compressed/source checksum; restore verification remains planned only.",
+                )
+            )
+            continue
+        try:
+            compressed_path = _resolve_repo_file(root, manifest.compressed_path)
+            if sha256_file(compressed_path) != manifest.compressed_checksum_sha256:
+                checksum_status = "failed_compressed_checksum"
+                status = "failed"
+                reason = "Compressed file checksum does not match manifest compressed checksum."
+            else:
+                restored_checksum = _sha256_decompressed_zstd(compressed_path)
+                checksum_status = "match" if restored_checksum == manifest.original_checksum_sha256 else "failed_source_checksum"
+                status = "succeeded" if checksum_status == "match" else "failed"
+                reason = "Compressed copy decompression checksum verification matched original checksum."
+            receipts.append(
+                RestoreVerificationReceipt(
+                    contract_type="restore_receipt",
+                    receipt_ref=_stable_ref("restore_receipt", manifest.manifest_ref, manifest.artifact_id, checksum_status),
+                    source_manifest_ref=manifest.manifest_ref,
+                    source_artifact_id=manifest.artifact_id,
+                    restore_mode="verification_only",
+                    restore_destination=f"storage/restore_smoke/compression/{manifest.manifest_ref}",
+                    checksum_status=checksum_status,
+                    schema_check_status="not_applicable",
+                    row_count_check_status="not_applicable",
+                    status=status,
+                    executor_version=EXECUTOR_VERSION,
+                    generated_at=generated,
+                    dry_run=False,
+                    mutation_performed=False,
+                    reason=reason,
+                )
+            )
+        except Exception as exc:
+            receipts.append(
+                RestoreVerificationReceipt(
+                    contract_type="restore_receipt",
+                    receipt_ref=_stable_ref("restore_receipt", manifest.manifest_ref, manifest.artifact_id, "failed_exception"),
+                    source_manifest_ref=manifest.manifest_ref,
+                    source_artifact_id=manifest.artifact_id,
+                    restore_mode="verification_only",
+                    restore_destination=f"storage/restore_smoke/compression/{manifest.manifest_ref}",
+                    checksum_status="failed_exception",
+                    schema_check_status="not_applicable",
+                    row_count_check_status="not_applicable",
+                    status="failed",
+                    executor_version=EXECUTOR_VERSION,
+                    generated_at=generated,
+                    dry_run=False,
+                    mutation_performed=False,
+                    reason=str(exc),
+                )
+            )
+    return SingleFileCompressionRestoreVerification(
+        contract_type="storage_single_file_compression_restore_verification",
+        generated_at=generated,
+        source_compression_result_generated_at=compression_result.generated_at,
+        receipts=tuple(receipts),
+        skipped_records=tuple(skipped_records),
+    )
+
+
+def write_single_file_compression_restore_verification(
+    verification: SingleFileCompressionRestoreVerification,
+    *,
+    output_path: Path,
+    summary_path: Path | None = None,
+) -> None:
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+    write_text_atomic(output_path, verification.to_json())
+    if summary_path is not None:
+        summary_path.parent.mkdir(parents=True, exist_ok=True)
+        write_text_atomic(summary_path, verification.summary_json())
+
+
 def _resolve_path(root: Path, path: Path) -> Path:
     return path if path.is_absolute() else root / path
 
@@ -582,6 +767,18 @@ def _parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
     return parser.parse_args(argv)
 
 
+def _parse_restore_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
+    parser = argparse.ArgumentParser(description="Verify existing single-file zstd compression copies without restoring originals.")
+    parser.add_argument("--root", default=".", help="Repository/root directory for relative inputs and outputs.")
+    parser.add_argument("--compression-result-json", default=str(DEFAULT_SINGLE_FILE_COMPRESSION_OUTPUT), help="Compression result JSON path containing executed manifests.")
+    parser.add_argument("--manifest-ref", help="Optional manifest_ref filter.")
+    parser.add_argument("--write", action="store_true", help="Write verification JSON and summary files. Default prints summary only.")
+    parser.add_argument("--output-path", default=str(DEFAULT_SINGLE_FILE_COMPRESSION_RESTORE_OUTPUT), help="Relative/absolute verification JSON output path.")
+    parser.add_argument("--summary-path", default=str(DEFAULT_SINGLE_FILE_COMPRESSION_RESTORE_SUMMARY_OUTPUT), help="Relative/absolute summary JSON output path.")
+    parser.add_argument("--json", action="store_true", help="Print full verification JSON instead of summary JSON.")
+    return parser.parse_args(argv)
+
+
 def main(argv: Sequence[str] | None = None) -> int:
     args = _parse_args(argv)
     root = Path(args.root).resolve()
@@ -597,6 +794,21 @@ def main(argv: Sequence[str] | None = None) -> int:
         print(result.to_json(), end="")
     else:
         print(result.summary_json(), end="")
+    return 0
+
+
+def restore_main(argv: Sequence[str] | None = None) -> int:
+    args = _parse_restore_args(argv)
+    root = Path(args.root).resolve()
+    result = load_single_file_compression_result_json(_resolve_path(root, Path(args.compression_result_json)))
+    verification = verify_single_file_compression_restore(result, root=root, manifest_ref=args.manifest_ref)
+    if args.write:
+        write_single_file_compression_restore_verification(
+            verification,
+            output_path=_resolve_path(root, Path(args.output_path)),
+            summary_path=_resolve_path(root, Path(args.summary_path)),
+        )
+    print(verification.to_json() if args.json else verification.summary_json(), end="")
     return 0
 
 

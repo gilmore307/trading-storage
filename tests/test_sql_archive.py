@@ -72,6 +72,7 @@ class SqlArchiveExecutorTests(unittest.TestCase):
             self.assertFalse(result.summary["sql_mutation_performed"])
             self.assertFalse(result.summary["source_delete_performed"])
             archive_path = root / result.manifests[0].archive_path
+            self.assertIn("storage/90_lifecycle/archive/sql/", result.manifests[0].archive_path)
             self.assertTrue(archive_path.exists())
             self.assertEqual(result.restore_receipts[0].checksum_status, "passed")
 

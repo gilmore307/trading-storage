@@ -11,6 +11,8 @@ from trading_storage.lifecycle_planner import plan_storage_lifecycle, write_stor
 from trading_storage.quarantine_recheck import load_storage_lifecycle_plan_json
 from trading_storage.single_file_compression import (
     execute_single_file_compression,
+    load_single_file_compression_result_json,
+    verify_single_file_compression_restore,
     write_single_file_compression_result,
 )
 
@@ -62,6 +64,24 @@ class SingleFileCompressionTests(unittest.TestCase):
             self.assertFalse(result.receipts[0].delete_original_performed)
             self.assertFalse(result.receipts[0].artifact_index_updated)
             self.assertFalse(result.receipts[0].sql_mutation_performed)
+            restore_script = Path(result.manifests[0].restore_command.split()[2])
+            self.assertTrue(restore_script.exists())
+
+    @unittest.skipIf(shutil.which("zstd") is None, "zstd command not available")
+    def test_restore_verifier_loads_result_and_checks_compressed_copy(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            plan, _artifact = self._compression_plan(root)
+            result = execute_single_file_compression(plan, root=root, apply=True, generated_at="2026-05-16T00:01:00Z")
+            output = root / "storage" / "90_lifecycle" / "execution" / "single_file_compression_result.json"
+            write_single_file_compression_result(result, output_path=output)
+            loaded = load_single_file_compression_result_json(output)
+
+            verification = verify_single_file_compression_restore(loaded, root=root, manifest_ref=result.manifests[0].manifest_ref)
+
+            self.assertEqual(verification.summary["status_counts"], {"succeeded": 1})
+            self.assertFalse(verification.summary["mutation_performed"])
+            self.assertEqual(verification.receipts[0].checksum_status, "match")
 
     def test_protected_records_are_skipped(self):
         with tempfile.TemporaryDirectory() as tmp:
