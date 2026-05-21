@@ -618,6 +618,28 @@ def _source_connection_statuses(
             "age_seconds": receipt["age_seconds"],
         }
     )
+    connections.append(
+        {
+            "name": "Trading Economics Calendar Schedule",
+            "kind": "source_refresh_schedule",
+            "status": "scheduled" if timer.get("active_state") == "active" else "disabled" if timer.get("enabled_state") == "disabled" else str(timer.get("active_state") or "unknown"),
+            "healthy": timer_healthy,
+            "unit": "trading-data-te-calendar-refresh.timer",
+            "timer_unit": "trading-data-te-calendar-refresh.timer",
+        }
+    )
+    connections.append(
+        {
+            "name": "Trading Economics Calendar Worker",
+            "kind": "source_refresh_worker",
+            "status": "refreshing" if worker.get("active_state") == "activating" else "idle" if worker.get("unit_type") == "oneshot" and worker.get("result") == "success" else str(worker.get("active_state") or "unknown"),
+            "healthy": worker_healthy,
+            "unit": "trading-data-te-calendar-refresh.service",
+            "service_unit": "trading-data-te-calendar-refresh.service",
+            "latest_updated_at_utc": receipt["latest_updated_at_utc"],
+            "age_seconds": receipt["age_seconds"],
+        }
+    )
     return connections
 
 

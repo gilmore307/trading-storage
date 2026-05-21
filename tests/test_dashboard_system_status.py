@@ -48,6 +48,8 @@ class DashboardSystemStatusTests(unittest.TestCase):
                     "OKX Market Data API",
                     "ThetaData Options API",
                     "Trading Economics Calendar Web",
+                    "Trading Economics Calendar Schedule",
+                    "Trading Economics Calendar Worker",
                 ],
             )
             self.assertTrue(all("status" in api and "healthy" in api for api in chart["apis"]))
