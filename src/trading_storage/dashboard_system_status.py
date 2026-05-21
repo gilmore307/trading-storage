@@ -235,6 +235,8 @@ def _systemd_unit_is_healthy(
     if active_state in {"active", "reloading"}:
         return True
     if active_state == "activating":
+        if unit_kind == "service" and substate == "auto-restart" and result == "success":
+            return True
         return substate != "auto-restart"
     if active_state == "inactive" and result in {"", "success"}:
         if unit_type == "oneshot":

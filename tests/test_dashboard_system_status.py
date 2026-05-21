@@ -13,6 +13,7 @@ from trading_storage.dashboard_system_status import (
     _historical_scheduler_runtime_throughput,
     _mark_missing_event_outputs_waiting,
     _mark_source_outputs_not_started,
+    _systemd_unit_is_healthy,
     _trading_systemd_unit_names,
     build_current_system_status_summary,
     refresh_current_system_status_read_model,
@@ -252,6 +253,32 @@ class DashboardSystemStatusTests(unittest.TestCase):
                 "trading-data-te-calendar-refresh.timer",
                 "trading-execution-realtime-runtime-check.path",
             ],
+        )
+
+    def test_successful_auto_restart_service_is_healthy_between_cycles(self) -> None:
+        self.assertTrue(
+            _systemd_unit_is_healthy(
+                unit_kind="service",
+                unit_type="simple",
+                load_state="loaded",
+                active_state="activating",
+                enabled_state="enabled",
+                substate="auto-restart",
+                result="success",
+            )
+        )
+
+    def test_failed_auto_restart_service_is_unhealthy(self) -> None:
+        self.assertFalse(
+            _systemd_unit_is_healthy(
+                unit_kind="service",
+                unit_type="simple",
+                load_state="loaded",
+                active_state="activating",
+                enabled_state="enabled",
+                substate="auto-restart",
+                result="exit-code",
+            )
         )
 
 
