@@ -43,9 +43,15 @@ class DashboardSystemStatusTests(unittest.TestCase):
             self.assertTrue(all("unit_kind" in service and "load_state" in service for service in chart["services"]))
             self.assertEqual(
                 [api["name"] for api in chart["apis"]],
-                ["Alpaca Market Data API", "OKX Market Data API", "ThetaData Options API"],
+                [
+                    "Alpaca Market Data API",
+                    "OKX Market Data API",
+                    "ThetaData Options API",
+                    "Trading Economics Calendar Web",
+                ],
             )
             self.assertTrue(all("status" in api and "healthy" in api for api in chart["apis"]))
+            self.assertEqual(chart["source_connections"], chart["apis"])
             server = chart["server"]
             self.assertIn("cpu_usage_percent", server)
             self.assertIn("memory_usage_percent", server)
@@ -74,6 +80,17 @@ class DashboardSystemStatusTests(unittest.TestCase):
                     "Active Workflow State",
                     "Latest Stage Coverage Output",
                     "Latest Stage Run Output",
+                    "Execution Runtime Status",
+                    "Latest Realtime Monitor Receipt",
+                    "Latest Realtime Monitor Cycle",
+                    "Trading Economics Recent Calendar Receipt",
+                    "Trading Economics Recent Calendar Events",
+                    "Historical TE Calendar Seed Receipt",
+                    "Dashboard Read Model Index",
+                    "Current Status Read Model",
+                    "Historical Task Progress Read Model",
+                    "Realtime Signal Summary Read Model",
+                    "Execution Runtime Read Model",
                 ],
             )
             self.assertTrue(all("latest_updated_at_utc" in output for output in chart["source_outputs"]))
@@ -129,7 +146,7 @@ class DashboardSystemStatusTests(unittest.TestCase):
                 json.dumps({"updated_utc": "2026-05-14T00:01:00Z"}),
                 encoding="utf-8",
             )
-            outputs = _dashboard_source_outputs(manager_storage_root=manager_root, now_epoch=0)
+            outputs = _dashboard_source_outputs(storage_root=manager_root, manager_storage_root=manager_root, now_epoch=0)
             active_workflow = next(output for output in outputs if output["label"] == "Active Workflow State")
             self.assertEqual(active_workflow["latest_updated_at_utc"], "2026-05-14T00:01:00Z")
             self.assertEqual(active_workflow["freshness_class"], "event_driven")

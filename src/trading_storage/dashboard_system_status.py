@@ -574,6 +574,53 @@ def _provider_api_statuses() -> list[dict[str, Any]]:
     return statuses
 
 
+def _service_by_unit(services: list[Mapping[str, Any]], unit: str) -> Mapping[str, Any]:
+    return next((service for service in services if service.get("unit") == unit), {})
+
+
+def _source_connection_statuses(
+    *,
+    services: list[Mapping[str, Any]],
+    storage_root: Path,
+    now_epoch: float,
+) -> list[dict[str, Any]]:
+    connections = _provider_api_statuses()
+    timer = _service_by_unit(services, "trading-data-te-calendar-refresh.timer")
+    worker = _service_by_unit(services, "trading-data-te-calendar-refresh.service")
+    receipt = _source_output_status(
+        storage_root / "01_source_data/realtime/trading_economics_calendar_web/completion_receipt.json",
+        label="Trading Economics Recent Calendar Receipt",
+        kind="trading_economics_calendar_receipt",
+        now_epoch=now_epoch,
+        freshness_class="heartbeat",
+        freshness_note="Expected to update when the Trading Economics recent-calendar timer refreshes.",
+    )
+    timer_healthy = bool(timer.get("healthy")) if timer else False
+    worker_healthy = bool(worker.get("healthy")) if worker else False
+    receipt_available = receipt["status"] == "available"
+    if timer.get("active_state") == "active" and receipt_available:
+        status = "scheduled"
+    elif worker.get("active_state") == "activating":
+        status = "refreshing"
+    elif receipt_available:
+        status = "available"
+    else:
+        status = "missing_output"
+    connections.append(
+        {
+            "name": "Trading Economics Calendar Web",
+            "kind": "economic_calendar_source",
+            "status": status,
+            "healthy": (timer_healthy or worker_healthy) and receipt_available,
+            "service_unit": "trading-data-te-calendar-refresh.service",
+            "timer_unit": "trading-data-te-calendar-refresh.timer",
+            "latest_updated_at_utc": receipt["latest_updated_at_utc"],
+            "age_seconds": receipt["age_seconds"],
+        }
+    )
+    return connections
+
+
 def _mtime_utc(path: Path) -> str:
     return time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime(path.stat().st_mtime))
 
@@ -683,10 +730,13 @@ def _manager_storage_root_from(storage_root: Path) -> Path:
     return Path(override) if override else Path(storage_root) / "02_control_plane"
 
 
-def _dashboard_source_outputs(*, manager_storage_root: Path, now_epoch: float) -> list[dict[str, Any]]:
+def _dashboard_source_outputs(*, storage_root: Path, manager_storage_root: Path, now_epoch: float) -> list[dict[str, Any]]:
     runtime_root = manager_storage_root / "runtime"
     heartbeat_note = "Expected to update on scheduler heartbeat; old timestamps can indicate daemon trouble."
     event_note = "Event-driven artifact; timestamp changes only when the scheduler makes a decision or stage progress occurs."
+    dashboard_note = "Storage-hosted dashboard read model consumed by the website API and WebSocket stream."
+    execution_note = "Execution-owned runtime artifact consumed through storage-hosted read models; no broker mutation is performed by the dashboard."
+    source_note = "Source-data artifact produced by a bounded provider/data refresh path and consumed only as read-only freshness evidence here."
     # Keep this inventory synchronized with website/read-model slices that consume
     # original source outputs. The dashboard JSON is only a sanitized cache; these
     # rows preserve owner-facing freshness for the canonical source artifacts.
@@ -707,6 +757,83 @@ def _dashboard_source_outputs(*, manager_storage_root: Path, now_epoch: float) -
             _latest_matching_file(runtime_root / "stage_run_dashboard", "*.json"),
             "event_driven",
             event_note,
+        ),
+        (
+            "Execution Runtime Status",
+            "execution_runtime_status",
+            storage_root / "04_execution_artifacts/runtime/realtime_trading_runtime/runtime_status.json",
+            "event_driven",
+            execution_note,
+        ),
+        (
+            "Latest Realtime Monitor Receipt",
+            "execution_realtime_monitor_receipt",
+            _latest_matching_file(storage_root / "04_execution_artifacts/runtime/realtime_monitor", "**/loop_receipt.json"),
+            "heartbeat",
+            execution_note,
+        ),
+        (
+            "Latest Realtime Monitor Cycle",
+            "execution_realtime_monitor_cycle",
+            _latest_matching_file(storage_root / "04_execution_artifacts/runtime/realtime_monitor", "**/cycle_*.json"),
+            "heartbeat",
+            execution_note,
+        ),
+        (
+            "Trading Economics Recent Calendar Receipt",
+            "trading_economics_calendar_receipt",
+            storage_root / "01_source_data/realtime/trading_economics_calendar_web/completion_receipt.json",
+            "heartbeat",
+            source_note,
+        ),
+        (
+            "Trading Economics Recent Calendar Events",
+            "trading_economics_calendar_events",
+            _latest_matching_file(storage_root / "01_source_data/realtime/trading_economics_calendar_web/runs", "**/saved/trading_economics_calendar_event.csv"),
+            "heartbeat",
+            source_note,
+        ),
+        (
+            "Historical TE Calendar Seed Receipt",
+            "trading_economics_historical_seed_receipt",
+            _latest_matching_file(storage_root / "01_source_data/runtime", "source_*_event_risk_governor/te_calendar_historical_seed_*/completion_receipt.json"),
+            "event_driven",
+            source_note,
+        ),
+        (
+            "Dashboard Read Model Index",
+            "storage_dashboard_read_model_index",
+            storage_root / "06_dashboard_cache/index/dashboard_read_model_index.jsonl",
+            "heartbeat",
+            dashboard_note,
+        ),
+        (
+            "Current Status Read Model",
+            "storage_dashboard_current_status_latest",
+            storage_root / "06_dashboard_cache/read_models/current_system_status_summary/latest.json",
+            "heartbeat",
+            dashboard_note,
+        ),
+        (
+            "Historical Task Progress Read Model",
+            "storage_dashboard_historical_task_progress_latest",
+            storage_root / "06_dashboard_cache/read_models/historical_task_progress_summary/latest.json",
+            "heartbeat",
+            dashboard_note,
+        ),
+        (
+            "Realtime Signal Summary Read Model",
+            "storage_dashboard_realtime_signal_latest",
+            storage_root / "06_dashboard_cache/read_models/realtime_signal_summary/latest.json",
+            "heartbeat",
+            dashboard_note,
+        ),
+        (
+            "Execution Runtime Read Model",
+            "storage_dashboard_execution_runtime_latest",
+            storage_root / "06_dashboard_cache/read_models/execution_realtime_trading_runtime_status/latest.json",
+            "heartbeat",
+            dashboard_note,
         ),
     ]
     outputs: list[dict[str, Any]] = []
@@ -747,12 +874,13 @@ def build_current_system_status_summary(*, storage_root: Path, generated_at_utc:
     runtime_values = _read_env_file(DEFAULT_TRADING_MANAGER_ROOT / "deploy/systemd/trading-manager-historical-scheduler.env") | _read_env_file(DEFAULT_SCHEDULER_ENV_PATH)
     runtime_throughput = _historical_scheduler_runtime_throughput(values=runtime_values, manager_storage_root=manager_storage_root)
     services = [_systemd_unit(unit) for unit in _trading_systemd_unit_names()]
-    source_outputs = _dashboard_source_outputs(manager_storage_root=manager_storage_root, now_epoch=now_epoch)
+    source_outputs = _dashboard_source_outputs(storage_root=storage_root, manager_storage_root=manager_storage_root, now_epoch=now_epoch)
     scheduler_active = _historical_scheduler_is_active(services)
     if not scheduler_active:
         source_outputs = _mark_source_outputs_not_started(source_outputs)
     else:
         source_outputs = _mark_missing_event_outputs_waiting(source_outputs)
+    source_connections = _source_connection_statuses(services=services, storage_root=storage_root, now_epoch=now_epoch)
     unhealthy_services = [service["unit"] for service in services if not service["healthy"]]
     missing_outputs = [
         output["label"]
@@ -785,7 +913,8 @@ def build_current_system_status_summary(*, storage_root: Path, generated_at_utc:
                 "websocket_latest_route": "/ws/read-models/<contract_type>/latest",
                 "status": "configured",
             },
-            "apis": _provider_api_statuses(),
+            "apis": source_connections,
+            "source_connections": source_connections,
             "services": services,
             "source_outputs": source_outputs,
             "refresh": {
