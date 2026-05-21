@@ -56,7 +56,7 @@ A manifest explains what happened. It does not by itself authorize downstream co
   "request_id": "req_...",
   "run_id": "run_...",
   "producer_repo": "trading-data",
-  "workflow_id": "source_09_event_risk_governor",
+  "workflow_id": "source_10_event_risk_governor",
   "workflow_kind": "data_source",
   "started_at": "2026-05-08T08:00:00Z",
   "finished_at": "2026-05-08T08:04:00Z",

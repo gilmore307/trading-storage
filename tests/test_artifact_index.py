@@ -198,7 +198,7 @@ class ArtifactIndexTests(unittest.TestCase):
                 / "storage"
                 / "05_benchmark_datasets"
                 / "model_specific_downloads"
-                / "model_08_option_expression"
+                / "model_09_option_expression"
                 / "option_snapshot"
                 / "AAPL_2016-01-15.json"
             )
@@ -280,13 +280,13 @@ class ArtifactIndexTests(unittest.TestCase):
     def test_layer_nine_runtime_metadata_is_ttl_delete_allowed(self):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
-            artifact = root / "storage" / "02_control_plane" / "artifacts" / "model_09_event_risk_governor" / "runtime_summary.json"
+            artifact = root / "storage" / "02_control_plane" / "artifacts" / "model_10_event_risk_governor" / "runtime_summary.json"
             artifact.parent.mkdir(parents=True, exist_ok=True)
             artifact.write_text(
                 json.dumps(
                     {
-                        "contract_type": "model_09_event_risk_governor_runtime_summary",
-                        "model_layer": "layer_09_event_risk_governor",
+                        "contract_type": "model_10_event_risk_governor_runtime_summary",
+                        "model_layer": "layer_10_event_risk_governor",
                     }
                 ),
                 encoding="utf-8",

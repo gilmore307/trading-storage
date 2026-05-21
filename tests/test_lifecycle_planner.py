@@ -90,7 +90,7 @@ class LifecyclePlannerTests(unittest.TestCase):
                 / "storage"
                 / "05_benchmark_datasets"
                 / "model_specific_downloads"
-                / "model_08_option_expression"
+                / "model_09_option_expression"
                 / "option_snapshot"
                 / "AAPL_2016-01-15.json"
             )
