@@ -39,6 +39,7 @@ class DashboardSystemStatusTests(unittest.TestCase):
             self.assertIn("parallelism", chart)
             self.assertIn("runtime_throughput", chart)
             self.assertIn("source_outputs", chart)
+            self.assertEqual(chart["api"]["http_latest_route"], "/api/read-models/<contract_type>/latest")
             self.assertEqual(chart["api"]["websocket_latest_route"], "/ws/read-models/<contract_type>/latest")
             self.assertIn("trading-dashboard-web.service", {service["unit"] for service in chart["services"]})
             self.assertTrue(all("unit_kind" in service and "load_state" in service for service in chart["services"]))
@@ -153,6 +154,21 @@ class DashboardSystemStatusTests(unittest.TestCase):
             active_workflow = next(output for output in outputs if output["label"] == "Active Workflow State")
             self.assertEqual(active_workflow["latest_updated_at_utc"], "2026-05-14T00:01:00Z")
             self.assertEqual(active_workflow["freshness_class"], "event_driven")
+
+    def test_source_outputs_do_not_use_unqualified_workflow_state(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            manager_root = Path(tmp)
+            runtime = manager_root / "runtime"
+            runtime.mkdir(parents=True)
+            (runtime / "model_training_workflow_state.json").write_text(
+                json.dumps({"updated_utc": "2026-05-10T00:00:00Z"}),
+                encoding="utf-8",
+            )
+
+            outputs = _dashboard_source_outputs(storage_root=manager_root, manager_storage_root=manager_root, now_epoch=0)
+            active_workflow = next(output for output in outputs if output["label"] == "Active Workflow State")
+            self.assertEqual(active_workflow["status"], "missing")
+            self.assertIsNone(active_workflow["latest_updated_at_utc"])
 
     def test_missing_runtime_outputs_are_not_started_when_scheduler_is_stopped(self) -> None:
         outputs = _mark_source_outputs_not_started(

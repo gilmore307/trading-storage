@@ -673,7 +673,7 @@ def _latest_jsonl_timestamp(path: Path) -> str | None:
 
 
 def _source_output_status(
-    path: Path,
+    path: Path | None,
     *,
     label: str,
     kind: str,
@@ -681,7 +681,7 @@ def _source_output_status(
     freshness_class: str,
     freshness_note: str,
 ) -> dict[str, Any]:
-    if not path.exists():
+    if path is None or not path.exists():
         return {
             "label": label,
             "kind": kind,
@@ -746,7 +746,8 @@ def _active_workflow_state_path(runtime_root: Path) -> Path | None:
             active_path = runtime_root / f"model_training_workflow_state_{active_month}.json"
             if active_path.exists():
                 return active_path
-    return _latest_matching_file(runtime_root, "model_training_workflow_state_????-??.json") or runtime_root / "model_training_workflow_state.json"
+            return active_path
+    return _latest_matching_file(runtime_root, "model_training_workflow_state_????-??.json")
 
 
 def _manager_storage_root_from(storage_root: Path) -> Path:

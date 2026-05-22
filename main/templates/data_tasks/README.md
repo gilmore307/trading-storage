@@ -8,7 +8,7 @@ These templates are cross-repository planning surfaces:
 - `trading-data` uses source templates to implement fetch, clean, save, and receipt steps;
 - `trading-storage` uses receipt/output references later when durable contracts are accepted.
 
-Legacy development-stage file outputs should target ignored local `trading-data/storage/` paths until a durable SQL/artifact contract exists.
+Development-stage file outputs should target ignored local `trading-data/storage/` paths until a durable SQL/artifact contract exists.
 
 ## Templates
 

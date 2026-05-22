@@ -34,20 +34,20 @@ Reuse the default registry-registered vocabularies for `task_lifecycle_state`, `
 
 ```json
 {
-  "task_identity": "task_register_status_vocab",
-  "workflow_identity": "skill_cleanup",
+  "task_identity": "example_task_identity",
+  "workflow_identity": "example_workflow_identity",
   "task_lifecycle_state": "ready_for_acceptance",
-  "change_summary": "Registered default status vocabularies and updated the skill templates.",
+  "change_summary": "Updated maintained files for the scoped task.",
   "changed_files": [
-    "skills/openclaw/project_development/templates/completion_receipt_slots.md",
-    "skills/openclaw/project_development/references/status-vocabularies.md"
+    "docs/example.md",
+    "tests/test_example.py"
   ],
   "command_list": [
     "git status --short",
-    "node --test helpers/registry/registry-reader.test.js"
+    "PYTHONPATH=src python3 -m unittest discover -s tests"
   ],
   "test_status": "passed",
-  "test_output": "13/13 registry helper tests passed.",
+  "test_output": "Unit test discovery passed for the scoped task.",
   "issue_list": [],
   "review_readiness": "ready"
 }

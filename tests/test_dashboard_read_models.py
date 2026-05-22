@@ -75,6 +75,27 @@ class DashboardReadModelTests(unittest.TestCase):
                 now=FIXED_NOW,
             )
 
+    def test_rejects_versioned_contract_alias(self):
+        with self.assertRaises(DashboardReadModelError):
+            validate_dashboard_read_model(
+                sample_payload(
+                    contract_type="current_system_status_summary_v1",
+                    schema_ref="storage/06_dashboard_cache/schemas/current_system_status_summary_v1.schema.json",
+                ),
+                now=FIXED_NOW,
+            )
+
+    def test_accepts_registered_parked_contract_type(self):
+        contract_type = validate_dashboard_read_model(
+            sample_payload(
+                contract_type="alert_exception_summary",
+                schema_ref="storage/06_dashboard_cache/schemas/alert_exception_summary.schema.json",
+            ),
+            now=FIXED_NOW,
+        )
+
+        self.assertEqual(contract_type, "alert_exception_summary")
+
     def test_rejects_future_timestamp_beyond_skew(self):
         with self.assertRaises(DashboardReadModelError):
             validate_dashboard_read_model(

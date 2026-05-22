@@ -5,7 +5,7 @@ The helpers in this module are deliberately conservative:
 - source-controlled files are never candidates;
 - durable local artifacts under semantic storage roots are reported, not deleted;
 - logs and development outputs are archived before active copies are removed;
-- legacy component-local roots and storage-owned roots are both covered during migration;
+- repository-local roots and storage-owned lifecycle roots are both covered by one retention policy;
 - temporary/cache files are deleted only after a short TTL;
 - every mutation is opt-in by calling ``apply_retention_plan``.
 """

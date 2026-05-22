@@ -27,28 +27,27 @@ DASHBOARD_ROOT = Path("06_dashboard_cache")
 INDEX_PATH = DASHBOARD_ROOT / "index" / "dashboard_read_model_index.jsonl"
 CLOCK_SKEW = timedelta(minutes=5)
 
-INITIAL_CONTRACT_TYPES = frozenset(
+REFRESHABLE_CONTRACT_TYPES = frozenset(
     {
         "current_system_status_summary",
-        "alert_exception_summary",
         "historical_task_progress_summary",
-        "realtime_task_progress_summary",
-        "model_layer_readiness_summary",
-        "model_promotion_posture_summary",
-        "registry_dictionary_profile",
+        "realtime_signal_summary",
+        "execution_realtime_trading_runtime_status",
     }
 )
 PARKED_CONTRACT_TYPES = frozenset(
     {
-        "execution_realtime_trading_runtime_status",
-        "realtime_signal_summary",
+        "alert_exception_summary",
+        "realtime_task_progress_summary",
+        "model_layer_readiness_summary",
+        "model_promotion_posture_summary",
+        "registry_dictionary_profile",
         "runtime_decision_quality_summary",
         "trading_performance_summary",
         "storage_lifecycle_status_summary",
     }
 )
-REGISTERED_CONTRACT_TYPES = INITIAL_CONTRACT_TYPES | PARKED_CONTRACT_TYPES
-LEGACY_CONTRACT_ALIASES = {f"{contract_type}_v1": contract_type for contract_type in REGISTERED_CONTRACT_TYPES}
+REGISTERED_CONTRACT_TYPES = REFRESHABLE_CONTRACT_TYPES | PARKED_CONTRACT_TYPES
 
 REQUIRED_ENVELOPE_FIELDS = (
     "contract_type",
@@ -113,10 +112,9 @@ def _compact_timestamp(value: str) -> str:
 def _safe_contract_type(contract_type: str) -> str:
     if not isinstance(contract_type, str) or not SAFE_CONTRACT_RE.fullmatch(contract_type):
         raise DashboardReadModelError(f"unsafe or unregistered-shaped contract_type: {contract_type!r}")
-    canonical = LEGACY_CONTRACT_ALIASES.get(contract_type, contract_type)
-    if canonical not in REGISTERED_CONTRACT_TYPES:
+    if contract_type not in REGISTERED_CONTRACT_TYPES:
         raise DashboardReadModelError(f"contract_type is not registered for dashboard read models: {contract_type!r}")
-    return canonical
+    return contract_type
 
 
 def _expect_list(payload: Mapping[str, Any], field: str) -> None:
@@ -190,8 +188,7 @@ def validate_dashboard_read_model(
 
     schema_ref = str(payload["schema_ref"])
     expected_schema_suffix = f"06_dashboard_cache/schemas/{contract_type}.schema.json"
-    legacy_schema_suffix = f"06_dashboard_cache/schemas/{payload['contract_type']}.schema.json"
-    if schema_ref != contract_type and not schema_ref.endswith(expected_schema_suffix) and not schema_ref.endswith(legacy_schema_suffix):
+    if schema_ref != contract_type and not schema_ref.endswith(expected_schema_suffix):
         raise DashboardReadModelError(
             "schema_ref must be the contract type or the accepted storage schema path for the contract"
         )

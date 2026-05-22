@@ -33,22 +33,22 @@ Reuse the default registry-registered vocabularies for `acceptance_outcome` and 
 
 ```json
 {
-  "task_identity": "task_register_status_vocab",
-  "workflow_identity": "skill_cleanup",
+  "task_identity": "example_task_identity",
+  "workflow_identity": "example_workflow_identity",
   "acceptance_outcome": "accepted",
-  "acceptance_reference": "docs/10_layer_01_market_regime.md#layer-acceptance",
+  "acceptance_reference": "docs/example.md#acceptance",
   "reviewed_files": [
-    "skills/openclaw/project_development/templates/acceptance_receipt_slots.md",
-    "skills/openclaw/project_development/templates/maintenance_output_slots.md"
+    "docs/example.md",
+    "tests/test_example.py"
   ],
   "reviewed_commands": [
     "git diff --stat",
-    "node --test helpers/registry/registry-reader.test.js"
+    "PYTHONPATH=src python3 -m unittest discover -s tests"
   ],
   "test_status": "passed",
-  "test_output": "13/13 registry helper tests passed.",
+  "test_output": "Unit test discovery passed for the scoped task.",
   "issue_list": [],
-  "acceptance_summary": "Accepted after template review and registry verification."
+  "acceptance_summary": "Accepted for the referenced task scope."
 }
 ```
 

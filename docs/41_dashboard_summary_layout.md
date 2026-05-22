@@ -34,24 +34,25 @@ Where:
 
 ## Registered Initial Contracts
 
-Initial implementation targets:
+Accepted implementation targets:
 
 - `current_system_status_summary`
-- `alert_exception_summary`
 - `historical_task_progress_summary`
+- `realtime_signal_summary`
+- `execution_realtime_trading_runtime_status`
+
+Parked future contracts:
+
+- `alert_exception_summary`
 - `realtime_task_progress_summary`
 - `model_layer_readiness_summary`
 - `model_promotion_posture_summary`
 - `registry_dictionary_profile`
-
-Parked future contracts:
-
-- `realtime_signal_summary`
 - `runtime_decision_quality_summary`
 - `trading_performance_summary`
 - `storage_lifecycle_status_summary`
 
-Shared contract names and the layout policy are registered in `trading-manager` registry migration `344_register_dashboard_read_model_contracts.sql`. The first refreshable contract is `historical_task_progress_summary`; its semantic producer is manager-owned and its storage refresh wrapper lives in this repository.
+Shared contract names and the layout policy are registered through `trading-manager`. Current public dashboard refreshes use the storage-hosted read-model route `/api/read-models/<contract_type>/latest` for HTTP and `/ws/read-models/<contract_type>/latest` for WebSocket consumers.
 
 ## Common Envelope
 
@@ -138,6 +139,8 @@ The first storage-side materialization and refresh helpers are implemented:
 - `src/trading_storage/dashboard_read_models.py` validates the common dashboard read-model envelope, rejects unsafe contract paths, rejects future timestamps beyond accepted clock skew, scans for secret-like values, writes snapshots, atomically replaces `latest.json`, creates the common schema placeholder for the contract, and appends `dashboard_read_model_index.jsonl` rows with checksum and byte counts.
 - `scripts/dashboard/materialize_read_model.py` is the executable wrapper for validating and materializing one producer-supplied read-model JSON payload.
 - `src/trading_storage/dashboard_refresh.py` and `scripts/dashboard/refresh_historical_task_progress_read_model.py` run the manager-owned `historical_task_progress_summary` producer and materialize the validated output.
+- `src/trading_storage/dashboard_realtime_signals.py` and `scripts/dashboard/refresh_realtime_signal_summary_read_model.py` build and materialize `realtime_signal_summary`.
+- `src/trading_storage/dashboard_execution_runtime.py` and `scripts/dashboard/refresh_execution_runtime_status_read_model.py` build and materialize `execution_realtime_trading_runtime_status`.
 - `deploy/systemd/trading-storage-dashboard-read-model-refresh.service` and `.timer` provide the reviewed fallback refresh template. Manager workflow-state writes trigger primary progress refreshes; the timer default is 60 seconds for calibration when an event is missed.
 
 Still not implemented: dashboard read adapters, lifecycle timers for dashboard snapshots, or dashboard UI/runtime pages.
@@ -147,6 +150,8 @@ Still not implemented: dashboard read adapters, lifecycle timers for dashboard s
 `refresh_public_dashboard_read_models.py` refreshes the public dashboard set currently served to `trading-dashboard`:
 
 - `current_system_status_summary` for Current Status infrastructure/server/API/service/read-model freshness posture;
-- `historical_task_progress_summary` for Tasks / Historical Modeling progress.
+- `historical_task_progress_summary` for Tasks / Historical Modeling progress;
+- `realtime_signal_summary` for realtime monitor/signal readiness;
+- `execution_realtime_trading_runtime_status` for execution runtime readiness.
 
 The systemd refresh service uses this batch entrypoint so public pages update from storage-hosted read models without the dashboard querying raw component internals.
