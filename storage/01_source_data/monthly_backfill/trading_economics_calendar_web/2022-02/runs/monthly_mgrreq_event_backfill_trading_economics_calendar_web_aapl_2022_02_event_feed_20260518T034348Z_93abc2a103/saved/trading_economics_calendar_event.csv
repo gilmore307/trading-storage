@@ -1,0 +1,15 @@
+event_time,country,event,source_event_type,reference,actual,previous,consensus,te_forecast,revised,importance,symbol,source_url
+2022-02-01T10:00:00-05:00,United States,ISM Manufacturing PMI,business confidence,JAN,57.6,58.8,,,®,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2022-02-01&end=2022-03-01
+2022-02-01T10:00:00-05:00,United States,JOLTs Job Openings,job offers,DEC,10.925M,10.775M,,,®,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2022-02-01&end=2022-03-01
+2022-02-03T10:00:00-05:00,United States,ISM Non-Manufacturing PMI,non manufacturing pmi,JAN,59.9,62.3,,,®,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2022-02-01&end=2022-03-01
+2022-02-04T08:30:00-05:00,United States,Non Farm Payrolls,non farm payrolls,JAN,467K,510K,,,®,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2022-02-01&end=2022-03-01
+2022-02-08T08:30:00-05:00,United States,Balance of Trade,balance of trade,DEC,$-80.7B,$-79.3B,,,®,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2022-02-01&end=2022-03-01
+2022-02-10T08:30:00-05:00,United States,Core Inflation Rate YoY,core inflation rate,JAN,6%,5.5%,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2022-02-01&end=2022-03-01
+2022-02-10T08:30:00-05:00,United States,Inflation Rate YoY,inflation rate,JAN,7.5%,7%,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2022-02-01&end=2022-03-01
+2022-02-11T10:00:00-05:00,United States,Michigan Consumer Sentiment Prel,consumer confidence,FEB,61.7,67.2,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2022-02-01&end=2022-03-01
+2022-02-16T08:30:00-05:00,United States,Retail Sales MoM,retail sales mom,JAN,3.8%,-2.5%,,,®,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2022-02-01&end=2022-03-01
+2022-02-16T14:00:00-05:00,United States,FOMC Minutes,interest rate,,,,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2022-02-01&end=2022-03-01
+2022-02-17T08:30:00-05:00,United States,Building Permits,building permits,JAN,1.899M,1.885M,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2022-02-01&end=2022-03-01
+2022-02-25T08:30:00-05:00,United States,Durable Goods Orders MoM,durable goods orders,JAN,1.6%,1.2%,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2022-02-01&end=2022-03-01
+2022-02-25T08:30:00-05:00,United States,Personal Income MoM,personal income,JAN,0%,0.4%,,,®,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2022-02-01&end=2022-03-01
+2022-02-25T08:30:00-05:00,United States,Personal Spending MoM,personal spending,JAN,2.1%,-0.8%,,,®,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2022-02-01&end=2022-03-01

@@ -1,0 +1,133 @@
+event_time,country,event,source_event_type,reference,actual,previous,consensus,te_forecast,revised,importance,symbol,source_url
+2026-06-01T13:45:00-04:00,United States,S&P Global Manufacturing PMI Final,manufacturing pmi,MAY,,54.5,,,,3,,https://tradingeconomics.com/united-states/calendar
+2026-06-01T14:00:00-04:00,United States,ISM Manufacturing PMI,business confidence,MAY,,52.7,,,,3,,https://tradingeconomics.com/united-states/calendar
+2026-06-01T14:00:00-04:00,United States,ISM Manufacturing Employment,ism manufacturing employment,MAY,,46.4,,,,3,,https://tradingeconomics.com/united-states/calendar
+2026-06-01T14:00:00-04:00,United States,Construction Spending MoM,construction spending,APR,,0.6%,,,,3,,https://tradingeconomics.com/united-states/calendar
+2026-06-01T14:00:00-04:00,United States,ISM Manufacturing New Orders,ism manufacturing new orders,MAY,,54.1,,,,3,,https://tradingeconomics.com/united-states/calendar
+2026-06-01T14:00:00-04:00,United States,ISM Manufacturing Prices,ism manufacturing prices,MAY,,84.6,,,,3,,https://tradingeconomics.com/united-states/calendar
+2026-06-01T15:30:00-04:00,United States,3-Month Bill Auction,3 month bill yield,,,,,,,3,,https://tradingeconomics.com/united-states/calendar
+2026-06-01T15:30:00-04:00,United States,6-Month Bill Auction,6 month bill yield,,,,,,,3,,https://tradingeconomics.com/united-states/calendar
+2026-06-02T10:00:00-04:00,United States,LMI Logistics Managers Index,lmi logistics managers index,MAY,,69.9,,,,3,,https://tradingeconomics.com/united-states/calendar
+2026-06-02T12:55:00-04:00,United States,Redbook YoY,redbook index,MAY/30,,,,,,3,,https://tradingeconomics.com/united-states/calendar
+2026-06-02T14:00:00-04:00,United States,JOLTs Job Openings,job offers,APR,,6.866M,,,,3,,https://tradingeconomics.com/united-states/calendar
+2026-06-02T14:00:00-04:00,United States,JOLTs Job Quits,job quits,APR,,3.171M,,,,3,,https://tradingeconomics.com/united-states/calendar
+2026-06-02T14:10:00-04:00,United States,RCM/TIPP Economic Optimism Index,economic optimism index,JUN,,42.6,,,,3,,https://tradingeconomics.com/united-states/calendar
+2026-06-02T15:30:00-04:00,United States,6-Week Bill Auction,calendar,,,,,,,3,,https://tradingeconomics.com/united-states/calendar
+2026-06-02T20:30:00-04:00,United States,API Crude Oil Stock Change,api crude oil stock change,MAY/29,,,,,,3,,https://tradingeconomics.com/united-states/calendar
+2026-06-03T11:00:00-04:00,United States,MBA 30-Year Mortgage Rate,mortgage rate,MAY/29,,,,,,3,,https://tradingeconomics.com/united-states/calendar
+2026-06-03T11:00:00-04:00,United States,MBA Mortgage Applications,mortgage applications,MAY/29,,,,,,3,,https://tradingeconomics.com/united-states/calendar
+2026-06-03T11:00:00-04:00,United States,MBA Mortgage Market Index,mba mortgage market index,MAY/29,,,,,,3,,https://tradingeconomics.com/united-states/calendar
+2026-06-03T11:00:00-04:00,United States,MBA Mortgage Refinance Index,mba mortgage refinance index,MAY/29,,,,,,3,,https://tradingeconomics.com/united-states/calendar
+2026-06-03T11:00:00-04:00,United States,MBA Purchase Index,mba purchase index,MAY/29,,,,,,3,,https://tradingeconomics.com/united-states/calendar
+2026-06-03T12:15:00-04:00,United States,ADP Employment Change,adp employment change,MAY,,109K,,,,3,,https://tradingeconomics.com/united-states/calendar
+2026-06-03T13:45:00-04:00,United States,S&P Global Composite PMI Final,composite pmi,MAY,,51.7,,,,3,,https://tradingeconomics.com/united-states/calendar
+2026-06-03T13:45:00-04:00,United States,S&P Global Services PMI Final,services pmi,MAY,,51.0,,,,3,,https://tradingeconomics.com/united-states/calendar
+2026-06-03T14:00:00-04:00,United States,ISM Services PMI,non manufacturing pmi,MAY,,53.6,,,,3,,https://tradingeconomics.com/united-states/calendar
+2026-06-03T14:00:00-04:00,United States,Factory Orders MoM,factory orders,APR,,1.5%,,,,3,,https://tradingeconomics.com/united-states/calendar
+2026-06-03T14:00:00-04:00,United States,Factory Orders ex Transportation,factory orders ex transportation,APR,,1.6%,,,,3,,https://tradingeconomics.com/united-states/calendar
+2026-06-03T14:00:00-04:00,United States,ISM Services Business Activity,ism non manufacturing business activity,MAY,,55.9,,,,3,,https://tradingeconomics.com/united-states/calendar
+2026-06-03T14:00:00-04:00,United States,ISM Services Employment,ism non manufacturing employment,MAY,,48.0,,,,3,,https://tradingeconomics.com/united-states/calendar
+2026-06-03T14:00:00-04:00,United States,ISM Services New Orders,ism non manufacturing new orders,MAY,,53.5,,,,3,,https://tradingeconomics.com/united-states/calendar
+2026-06-03T14:00:00-04:00,United States,ISM Services Prices,ism non manufacturing prices,MAY,,70.7,,,,3,,https://tradingeconomics.com/united-states/calendar
+2026-06-03T14:30:00-04:00,United States,EIA Crude Oil Stocks Change,crude oil stocks change,MAY/29,,,,,,3,,https://tradingeconomics.com/united-states/calendar
+2026-06-03T14:30:00-04:00,United States,EIA Gasoline Stocks Change,gasoline stocks change,MAY/29,,,,,,3,,https://tradingeconomics.com/united-states/calendar
+2026-06-03T14:30:00-04:00,United States,EIA Crude Oil Imports Change,crude oil imports,MAY/29,,,,,,3,,https://tradingeconomics.com/united-states/calendar
+2026-06-03T14:30:00-04:00,United States,EIA Cushing Crude Oil Stocks Change,cushing crude oil stocks,MAY/29,,,,,,3,,https://tradingeconomics.com/united-states/calendar
+2026-06-03T14:30:00-04:00,United States,EIA Distillate Fuel Production Change,distillate fuel production,MAY/29,,,,,,3,,https://tradingeconomics.com/united-states/calendar
+2026-06-03T14:30:00-04:00,United States,EIA Distillate Stocks Change,distillate stocks,MAY/29,,,,,,3,,https://tradingeconomics.com/united-states/calendar
+2026-06-03T14:30:00-04:00,United States,EIA Gasoline Production Change,gasoline production,MAY/29,,,,,,3,,https://tradingeconomics.com/united-states/calendar
+2026-06-03T14:30:00-04:00,United States,EIA Heating Oil Stocks Change,heating oil stocks,MAY/29,,,,,,3,,https://tradingeconomics.com/united-states/calendar
+2026-06-03T14:30:00-04:00,United States,EIA Refinery Crude Runs Change,refinery crude runs,MAY/29,,,,,,3,,https://tradingeconomics.com/united-states/calendar
+2026-06-03T15:30:00-04:00,United States,17-Week Bill Auction,17 week bill yield,,,,,,,3,,https://tradingeconomics.com/united-states/calendar
+2026-06-03T18:00:00-04:00,United States,Fed Beige Book,interest rate,,,,,,,3,,https://tradingeconomics.com/united-states/calendar
+2026-06-04T11:30:00-04:00,United States,Challenger Job Cuts,challenger job cuts,MAY,,83.387K,,,,3,,https://tradingeconomics.com/united-states/calendar
+2026-06-04T12:30:00-04:00,United States,Initial Jobless Claims,initial jobless claims,MAY/30,,,,,,3,,https://tradingeconomics.com/united-states/calendar
+2026-06-04T12:30:00-04:00,United States,Continuing Jobless Claims,continuing jobless claims,MAY/23,,,,,,3,,https://tradingeconomics.com/united-states/calendar
+2026-06-04T12:30:00-04:00,United States,Jobless Claims 4-week Average,jobless claims 4-week average,MAY/30,,,,,,3,,https://tradingeconomics.com/united-states/calendar
+2026-06-04T12:30:00-04:00,United States,Nonfarm Productivity QoQ Final,nonfarm productivity qoq,Q1,,1.6%,,,,3,,https://tradingeconomics.com/united-states/calendar
+2026-06-04T12:30:00-04:00,United States,Unit Labour Costs QoQ Final,unit labour costs qoq,Q1,,4.4%,,,,3,,https://tradingeconomics.com/united-states/calendar
+2026-06-04T14:30:00-04:00,United States,EIA Natural Gas Stocks Change,natural gas stocks change,MAY/29,,,,,,3,,https://tradingeconomics.com/united-states/calendar
+2026-06-04T15:30:00-04:00,United States,4-Week Bill Auction,4 week bill yield,,,,,,,3,,https://tradingeconomics.com/united-states/calendar
+2026-06-04T15:30:00-04:00,United States,8-Week Bill Auction,8 week bill yield,,,,,,,3,,https://tradingeconomics.com/united-states/calendar
+2026-06-04T16:00:00-04:00,United States,15-Year Mortgage Rate,15 year mortgage rate,JUN/04,,,,,,3,,https://tradingeconomics.com/united-states/calendar
+2026-06-04T16:00:00-04:00,United States,30-Year Mortgage Rate,30 year mortgage rate,JUN/04,,,,,,3,,https://tradingeconomics.com/united-states/calendar
+2026-06-04T20:30:00-04:00,United States,Fed Balance Sheet,central bank balance sheet,JUN/03,,,,,,3,,https://tradingeconomics.com/united-states/calendar
+2026-06-05T12:30:00-04:00,United States,Non Farm Payrolls,non farm payrolls,MAY,,115K,,,,3,,https://tradingeconomics.com/united-states/calendar
+2026-06-05T12:30:00-04:00,United States,Unemployment Rate,unemployment rate,MAY,,4.3%,,,,3,,https://tradingeconomics.com/united-states/calendar
+2026-06-05T12:30:00-04:00,United States,Average Hourly Earnings MoM,average hourly earnings,MAY,,0.2%,,,,3,,https://tradingeconomics.com/united-states/calendar
+2026-06-05T12:30:00-04:00,United States,Average Hourly Earnings YoY,average hourly earnings yoy,MAY,,3.6%,,,,3,,https://tradingeconomics.com/united-states/calendar
+2026-06-05T12:30:00-04:00,United States,Participation Rate,labor force participation rate,MAY,,61.8%,,,,3,,https://tradingeconomics.com/united-states/calendar
+2026-06-05T12:30:00-04:00,United States,Average Weekly Hours,average weekly hours,MAY,,34.3,,,,3,,https://tradingeconomics.com/united-states/calendar
+2026-06-05T12:30:00-04:00,United States,Government Payrolls,government payrolls,MAY,,-8K,,,,3,,https://tradingeconomics.com/united-states/calendar
+2026-06-05T12:30:00-04:00,United States,Manufacturing Payrolls,manufacturing payrolls,MAY,,-2K,,,,3,,https://tradingeconomics.com/united-states/calendar
+2026-06-05T12:30:00-04:00,United States,Nonfarm Payrolls Private,nonfarm payrolls private,MAY,,123K,,,,3,,https://tradingeconomics.com/united-states/calendar
+2026-06-05T12:30:00-04:00,United States,U-6 Unemployment Rate,u6 unemployment rate,MAY,,8.2%,,,,3,,https://tradingeconomics.com/united-states/calendar
+2026-06-05T13:00:00-04:00,United States,Used Car Prices MoM,used car prices mom,MAY,,-1.6%,,,,3,,https://tradingeconomics.com/united-states/calendar
+2026-06-05T13:00:00-04:00,United States,Used Car Prices YoY,used car prices yoy,MAY,,1.8%,,,,3,,https://tradingeconomics.com/united-states/calendar
+2026-06-05T17:00:00-04:00,United States,Baker Hughes Oil Rig Count,crude oil rigs,JUN/05,,,,,,3,,https://tradingeconomics.com/united-states/calendar
+2026-06-05T17:00:00-04:00,United States,Baker Hughes Total Rigs Count,total rigs,JUN/05,,,,,,3,,https://tradingeconomics.com/united-states/calendar
+2026-06-05T19:00:00-04:00,United States,Consumer Credit Change,consumer credit,APR,,$24.86B,,,,3,,https://tradingeconomics.com/united-states/calendar
+2026-06-08T15:00:00-04:00,United States,Consumer Inflation Expectations,inflation expectations,MAY,,3.6%,,,,3,,https://tradingeconomics.com/united-states/calendar
+2026-06-08T15:30:00-04:00,United States,3-Month Bill Auction,3 month bill yield,,,,,,,3,,https://tradingeconomics.com/united-states/calendar
+2026-06-08T15:30:00-04:00,United States,6-Month Bill Auction,6 month bill yield,,,,,,,3,,https://tradingeconomics.com/united-states/calendar
+2026-06-09T10:00:00-04:00,United States,NFIB Business Optimism Index,nfib business optimism index,MAY,,95.9,,,,3,,https://tradingeconomics.com/united-states/calendar
+2026-06-09T12:15:00-04:00,United States,ADP Employment Change Weekly,adp employment change weekly,,,,,,,3,,https://tradingeconomics.com/united-states/calendar
+2026-06-09T12:30:00-04:00,United States,Balance of Trade,balance of trade,APR,,$-60.3B,,,,3,,https://tradingeconomics.com/united-states/calendar
+2026-06-09T12:30:00-04:00,United States,Exports,exports,APR,,$320.9B,,,,3,,https://tradingeconomics.com/united-states/calendar
+2026-06-09T12:30:00-04:00,United States,Imports,imports,APR,,$381.2B,,,,3,,https://tradingeconomics.com/united-states/calendar
+2026-06-09T12:55:00-04:00,United States,Redbook YoY,redbook index,JUN/06,,,,,,3,,https://tradingeconomics.com/united-states/calendar
+2026-06-09T14:00:00-04:00,United States,Existing Home Sales,existing home sales,MAY,,4.02M,,,,3,,https://tradingeconomics.com/united-states/calendar
+2026-06-09T14:00:00-04:00,United States,Existing Home Sales MoM,existing home sales mom,MAY,,0.2%,,,,3,,https://tradingeconomics.com/united-states/calendar
+2026-06-09T14:00:00-04:00,United States,Wholesale Inventories MoM,wholesale inventories,APR,,1.3%,,,,3,,https://tradingeconomics.com/united-states/calendar
+2026-06-09T15:30:00-04:00,United States,52-Week Bill Auction,52 week bill yield,,,3.650%,,,,3,,https://tradingeconomics.com/united-states/calendar
+2026-06-09T15:30:00-04:00,United States,6-Week Bill Auction,calendar,,,,,,,3,,https://tradingeconomics.com/united-states/calendar
+2026-06-09T17:00:00-04:00,United States,3-Year Note Auction,3 year note yield,,,,,,,3,,https://tradingeconomics.com/united-states/calendar
+2026-06-09T20:30:00-04:00,United States,API Crude Oil Stock Change,api crude oil stock change,JUN/05,,,,,,3,,https://tradingeconomics.com/united-states/calendar
+2026-06-10T11:00:00-04:00,United States,MBA 30-Year Mortgage Rate,mortgage rate,JUN/05,,,,,,3,,https://tradingeconomics.com/united-states/calendar
+2026-06-10T11:00:00-04:00,United States,MBA Mortgage Applications,mortgage applications,JUN/05,,,,,,3,,https://tradingeconomics.com/united-states/calendar
+2026-06-10T11:00:00-04:00,United States,MBA Mortgage Market Index,mba mortgage market index,JUN/05,,,,,,3,,https://tradingeconomics.com/united-states/calendar
+2026-06-10T11:00:00-04:00,United States,MBA Mortgage Refinance Index,mba mortgage refinance index,JUN/05,,,,,,3,,https://tradingeconomics.com/united-states/calendar
+2026-06-10T11:00:00-04:00,United States,MBA Purchase Index,mba purchase index,JUN/05,,,,,,3,,https://tradingeconomics.com/united-states/calendar
+2026-06-10T12:30:00-04:00,United States,Core Inflation Rate MoM,core inflation rate mom,MAY,,0.4%,,,,3,,https://tradingeconomics.com/united-states/calendar
+2026-06-10T12:30:00-04:00,United States,Core Inflation Rate YoY,core inflation rate,MAY,,2.8%,,,,3,,https://tradingeconomics.com/united-states/calendar
+2026-06-10T12:30:00-04:00,United States,Inflation Rate MoM,inflation rate mom,MAY,,0.6%,,,,3,,https://tradingeconomics.com/united-states/calendar
+2026-06-10T12:30:00-04:00,United States,Inflation Rate YoY,inflation rate,MAY,,3.8%,,,,3,,https://tradingeconomics.com/united-states/calendar
+2026-06-10T12:30:00-04:00,United States,CPI,consumer price index cpi,MAY,,333.02,,,,3,,https://tradingeconomics.com/united-states/calendar
+2026-06-10T12:30:00-04:00,United States,CPI s.a,cpi seasonally adjusted,MAY,,332.407,,,,3,,https://tradingeconomics.com/united-states/calendar
+2026-06-10T14:30:00-04:00,United States,EIA Crude Oil Stocks Change,crude oil stocks change,JUN/05,,,,,,3,,https://tradingeconomics.com/united-states/calendar
+2026-06-10T14:30:00-04:00,United States,EIA Gasoline Stocks Change,gasoline stocks change,JUN/05,,,,,,3,,https://tradingeconomics.com/united-states/calendar
+2026-06-10T14:30:00-04:00,United States,EIA Crude Oil Imports Change,crude oil imports,JUN/05,,,,,,3,,https://tradingeconomics.com/united-states/calendar
+2026-06-10T14:30:00-04:00,United States,EIA Cushing Crude Oil Stocks Change,cushing crude oil stocks,JUN/05,,,,,,3,,https://tradingeconomics.com/united-states/calendar
+2026-06-10T14:30:00-04:00,United States,EIA Distillate Fuel Production Change,distillate fuel production,JUN/05,,,,,,3,,https://tradingeconomics.com/united-states/calendar
+2026-06-10T14:30:00-04:00,United States,EIA Distillate Stocks Change,distillate stocks,JUN/05,,,,,,3,,https://tradingeconomics.com/united-states/calendar
+2026-06-10T14:30:00-04:00,United States,EIA Gasoline Production Change,gasoline production,JUN/05,,,,,,3,,https://tradingeconomics.com/united-states/calendar
+2026-06-10T14:30:00-04:00,United States,EIA Heating Oil Stocks Change,heating oil stocks,JUN/05,,,,,,3,,https://tradingeconomics.com/united-states/calendar
+2026-06-10T14:30:00-04:00,United States,EIA Refinery Crude Runs Change,refinery crude runs,JUN/05,,,,,,3,,https://tradingeconomics.com/united-states/calendar
+2026-06-10T15:30:00-04:00,United States,17-Week Bill Auction,17 week bill yield,,,,,,,3,,https://tradingeconomics.com/united-states/calendar
+2026-06-10T17:00:00-04:00,United States,10-Year Note Auction,government bond 10y,,,4.468%,,,,3,,https://tradingeconomics.com/united-states/calendar
+2026-06-10T18:00:00-04:00,United States,Monthly Budget Statement,government budget value,MAY,,$215B,,,,3,,https://tradingeconomics.com/united-states/calendar
+2026-06-11T12:30:00-04:00,United States,PPI MoM,producer price inflation mom,MAY,,1.4%,,,,3,,https://tradingeconomics.com/united-states/calendar
+2026-06-11T12:30:00-04:00,United States,Core PPI MoM,core producer prices mom,MAY,,1%,,,,3,,https://tradingeconomics.com/united-states/calendar
+2026-06-11T12:30:00-04:00,United States,Initial Jobless Claims,initial jobless claims,JUN/06,,,,,,3,,https://tradingeconomics.com/united-states/calendar
+2026-06-11T12:30:00-04:00,United States,Continuing Jobless Claims,continuing jobless claims,MAY/30,,,,,,3,,https://tradingeconomics.com/united-states/calendar
+2026-06-11T12:30:00-04:00,United States,Core PPI YoY,core producer prices yoy,MAY,,5.2%,,,,3,,https://tradingeconomics.com/united-states/calendar
+2026-06-11T12:30:00-04:00,United States,Jobless Claims 4-week Average,jobless claims 4-week average,JUN/06,,,,,,3,,https://tradingeconomics.com/united-states/calendar
+2026-06-11T12:30:00-04:00,United States,PPI,producer prices,MAY,,156.496,,,,3,,https://tradingeconomics.com/united-states/calendar
+2026-06-11T12:30:00-04:00,United States,"PPI Ex Food, Energy and Trade MoM",ppi ex food energy and trade services mom,MAY,,0.6%,,,,3,,https://tradingeconomics.com/united-states/calendar
+2026-06-11T12:30:00-04:00,United States,"PPI Ex Food, Energy and Trade YoY",ppi ex food energy and trade services yoy,MAY,,4.4%,,,,3,,https://tradingeconomics.com/united-states/calendar
+2026-06-11T12:30:00-04:00,United States,PPI YoY,producer prices change,MAY,,6%,,,,3,,https://tradingeconomics.com/united-states/calendar
+2026-06-11T14:30:00-04:00,United States,EIA Natural Gas Stocks Change,natural gas stocks change,JUN/05,,,,,,3,,https://tradingeconomics.com/united-states/calendar
+2026-06-11T15:30:00-04:00,United States,4-Week Bill Auction,4 week bill yield,,,,,,,3,,https://tradingeconomics.com/united-states/calendar
+2026-06-11T15:30:00-04:00,United States,8-Week Bill Auction,8 week bill yield,,,,,,,3,,https://tradingeconomics.com/united-states/calendar
+2026-06-11T16:00:00-04:00,United States,15-Year Mortgage Rate,15 year mortgage rate,JUN/11,,,,,,3,,https://tradingeconomics.com/united-states/calendar
+2026-06-11T16:00:00-04:00,United States,30-Year Mortgage Rate,30 year mortgage rate,JUN/11,,,,,,3,,https://tradingeconomics.com/united-states/calendar
+2026-06-11T16:00:00-04:00,United States,Wasde Report,calendar,,,,,,,3,,https://tradingeconomics.com/united-states/calendar
+2026-06-11T17:00:00-04:00,United States,30-Year Bond Auction,30 year bond yield,,,,,,,3,,https://tradingeconomics.com/united-states/calendar
+2026-06-11T20:30:00-04:00,United States,Fed Balance Sheet,central bank balance sheet,JUN/10,,,,,,3,,https://tradingeconomics.com/united-states/calendar
+2026-06-12T14:00:00-04:00,United States,Michigan Consumer Sentiment Prel,consumer confidence,JUN,,,,,,3,,https://tradingeconomics.com/united-states/calendar
+2026-06-12T14:00:00-04:00,United States,Michigan 5 Year Inflation Expectations Prel,michigan 5 year inflation expectations,JUN,,,,,,3,,https://tradingeconomics.com/united-states/calendar
+2026-06-12T14:00:00-04:00,United States,Michigan Consumer Expectations Prel,michigan consumer expectations,JUN,,,,,,3,,https://tradingeconomics.com/united-states/calendar
+2026-06-12T14:00:00-04:00,United States,Michigan Current Conditions Prel,michigan current economic conditions,JUN,,,,,,3,,https://tradingeconomics.com/united-states/calendar
+2026-06-12T14:00:00-04:00,United States,Michigan Inflation Expectations Prel,michigan inflation expectations,JUN,,,,,,3,,https://tradingeconomics.com/united-states/calendar
+2026-06-12T17:00:00-04:00,United States,Baker Hughes Oil Rig Count,crude oil rigs,JUN/12,,,,,,3,,https://tradingeconomics.com/united-states/calendar
+2026-06-12T17:00:00-04:00,United States,Baker Hughes Total Rigs Count,total rigs,JUN/12,,,,,,3,,https://tradingeconomics.com/united-states/calendar

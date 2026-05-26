@@ -1,0 +1,22 @@
+event_time,country,event,source_event_type,reference,actual,previous,consensus,te_forecast,revised,importance,symbol,source_url
+2023-07-03T10:00:00-04:00,United States,ISM Manufacturing PMI,business confidence,JUN,46,46.9,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2023-07-01&end=2023-08-01
+2023-07-05T14:00:00-04:00,United States,FOMC Minutes,interest rate,,,,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2023-07-01&end=2023-08-01
+2023-07-06T10:00:00-04:00,United States,ISM Services PMI,non manufacturing pmi,JUN,53.9,50.3,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2023-07-01&end=2023-08-01
+2023-07-06T10:00:00-04:00,United States,JOLTs Job Openings,job offers,MAY,9.8M,10.32M,,,®,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2023-07-01&end=2023-08-01
+2023-07-07T08:30:00-04:00,United States,Non Farm Payrolls,non farm payrolls,JUN,209K,306K,,,®,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2023-07-01&end=2023-08-01
+2023-07-07T08:30:00-04:00,United States,Unemployment Rate,unemployment rate,JUN,3.6%,3.7%,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2023-07-01&end=2023-08-01
+2023-07-12T08:30:00-04:00,United States,Core Inflation Rate MoM,core inflation rate mom,JUN,0.2%,0.4%,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2023-07-01&end=2023-08-01
+2023-07-12T08:30:00-04:00,United States,Core Inflation Rate YoY,core inflation rate,JUN,4.8%,5.3%,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2023-07-01&end=2023-08-01
+2023-07-12T08:30:00-04:00,United States,Inflation Rate MoM,inflation rate mom,JUN,0.2%,0.1%,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2023-07-01&end=2023-08-01
+2023-07-12T08:30:00-04:00,United States,Inflation Rate YoY,inflation rate,JUN,3%,4%,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2023-07-01&end=2023-08-01
+2023-07-13T08:30:00-04:00,United States,PPI MoM,producer price inflation mom,JUN,0.1%,-0.4%,,,®,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2023-07-01&end=2023-08-01
+2023-07-14T10:00:00-04:00,United States,Michigan Consumer Sentiment Prel,consumer confidence,JUL,72.6,64.4,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2023-07-01&end=2023-08-01
+2023-07-18T08:30:00-04:00,United States,Retail Sales MoM,retail sales mom,JUN,0.2%,0.5%,,,®,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2023-07-01&end=2023-08-01
+2023-07-19T08:30:00-04:00,United States,Building Permits Prel,building permits,JUN,1.44M,1.496M,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2023-07-01&end=2023-08-01
+2023-07-26T14:00:00-04:00,United States,Fed Interest Rate Decision,interest rate,,5.5%,5.25%,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2023-07-01&end=2023-08-01
+2023-07-26T14:30:00-04:00,United States,Fed Press Conference,interest rate,,,,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2023-07-01&end=2023-08-01
+2023-07-27T08:30:00-04:00,United States,Durable Goods Orders MoM,durable goods orders,JUN,4.7%,2%,,,®,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2023-07-01&end=2023-08-01
+2023-07-27T08:30:00-04:00,United States,GDP Growth Rate QoQ Adv,gdp growth rate,Q2,2.4%,2%,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2023-07-01&end=2023-08-01
+2023-07-28T08:30:00-04:00,United States,Core PCE Price Index MoM,core pce price index mom,JUN,0.2%,0.3%,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2023-07-01&end=2023-08-01
+2023-07-28T08:30:00-04:00,United States,Personal Income MoM,personal income,JUN,0.3%,0.5%,,,®,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2023-07-01&end=2023-08-01
+2023-07-28T08:30:00-04:00,United States,Personal Spending MoM,personal spending,JUN,0.5%,0.2%,,,®,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2023-07-01&end=2023-08-01

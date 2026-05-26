@@ -22,6 +22,20 @@ htmlcov/
 /tmp/
 *.log
 
+# Storage Git boundary
+#
+# Most storage paths are generated runtime state, caches, execution receipts, or
+# lifecycle scratch data. Track only the canonical Trading Economics monthly
+# source-data home so Git history can recover the accepted TE source rows.
+/storage/*
+!/storage/01_source_data/
+/storage/01_source_data/*
+!/storage/01_source_data/monthly_backfill/
+/storage/01_source_data/monthly_backfill/*
+!/storage/01_source_data/monthly_backfill/trading_economics_calendar_web/
+!/storage/01_source_data/monthly_backfill/trading_economics_calendar_web/**
+/storage/01_source_data/monthly_backfill/trading_economics_calendar_web/_manifests/
+
 # Secrets and credentials
 secrets/
 credentials/

@@ -1,0 +1,16 @@
+event_time,country,event,source_event_type,reference,actual,previous,consensus,te_forecast,revised,importance,symbol,source_url
+2022-10-03T10:00:00-04:00,United States,ISM Manufacturing PMI,business confidence,SEP,50.9,52.8,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2022-10-01&end=2022-11-01
+2022-10-04T10:00:00-04:00,United States,JOLTs Job Openings,job offers,AUG,10.053M,11.17M,,,®,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2022-10-01&end=2022-11-01
+2022-10-05T08:30:00-04:00,United States,Balance of Trade,balance of trade,AUG,$-67.4B,$-70.5B,,,®,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2022-10-01&end=2022-11-01
+2022-10-05T10:00:00-04:00,United States,ISM Non-Manufacturing PMI,non manufacturing pmi,SEP,56.7,56.9,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2022-10-01&end=2022-11-01
+2022-10-07T08:30:00-04:00,United States,Non Farm Payrolls,non farm payrolls,SEP,263K,315K,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2022-10-01&end=2022-11-01
+2022-10-12T08:30:00-04:00,United States,PPI MoM,producer price inflation mom,SEP,0.4%,-0.2%,,,®,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2022-10-01&end=2022-11-01
+2022-10-12T14:00:00-04:00,United States,FOMC Minutes,interest rate,,,,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2022-10-01&end=2022-11-01
+2022-10-13T08:30:00-04:00,United States,Core Inflation Rate YoY,core inflation rate,SEP,6.6%,6.3%,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2022-10-01&end=2022-11-01
+2022-10-13T08:30:00-04:00,United States,Inflation Rate YoY,inflation rate,SEP,8.2%,8.3%,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2022-10-01&end=2022-11-01
+2022-10-14T08:30:00-04:00,United States,Retail Sales MoM,retail sales mom,SEP,0.0%,0.4%,,,®,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2022-10-01&end=2022-11-01
+2022-10-14T10:00:00-04:00,United States,Michigan Consumer Sentiment Prel,consumer confidence,OCT,59.8,58.6,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2022-10-01&end=2022-11-01
+2022-10-19T08:30:00-04:00,United States,Building Permits,building permits,SEP,1.564M,1.542M,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2022-10-01&end=2022-11-01
+2022-10-27T08:30:00-04:00,United States,Durable Goods Orders MoM,durable goods orders,SEP,0.4%,0.2%,,,®,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2022-10-01&end=2022-11-01
+2022-10-28T08:30:00-04:00,United States,Personal Income MoM,personal income,SEP,0.4%,0.4%,,,®,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2022-10-01&end=2022-11-01
+2022-10-28T08:30:00-04:00,United States,Personal Spending MoM,personal spending,SEP,0.6%,0.6%,,,®,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2022-10-01&end=2022-11-01

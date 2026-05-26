@@ -1,0 +1,20 @@
+event_time,country,event,source_event_type,reference,actual,previous,consensus,te_forecast,revised,importance,symbol,source_url
+2023-02-01T10:00:00-05:00,United States,ISM Manufacturing PMI,business confidence,JAN,47.4,48.4,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2023-02-01&end=2023-03-01
+2023-02-01T10:00:00-05:00,United States,JOLTs Job Openings,job offers,DEC,11.012M,10.44M,,,®,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2023-02-01&end=2023-03-01
+2023-02-01T14:00:00-05:00,United States,Fed Interest Rate Decision,interest rate,,4.75%,4.5%,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2023-02-01&end=2023-03-01
+2023-02-01T14:30:00-05:00,United States,Fed Press Conference,interest rate,,,,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2023-02-01&end=2023-03-01
+2023-02-03T08:30:00-05:00,United States,Non Farm Payrolls,non farm payrolls,JAN,517K,260K,,,®,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2023-02-01&end=2023-03-01
+2023-02-03T08:30:00-05:00,United States,Unemployment Rate,unemployment rate,JAN,3.4%,3.5%,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2023-02-01&end=2023-03-01
+2023-02-03T10:00:00-05:00,United States,ISM Non-Manufacturing PMI,non manufacturing pmi,JAN,55.2,49.2,,,®,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2023-02-01&end=2023-03-01
+2023-02-07T08:30:00-05:00,United States,Balance of Trade,balance of trade,DEC,$-67.4B,$-61B,,,®,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2023-02-01&end=2023-03-01
+2023-02-10T10:00:00-05:00,United States,Michigan Consumer Sentiment Prel,consumer confidence,FEB,66.4,64.9,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2023-02-01&end=2023-03-01
+2023-02-14T08:30:00-05:00,United States,Core Inflation Rate YoY,core inflation rate,JAN,5.6%,5.7%,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2023-02-01&end=2023-03-01
+2023-02-14T08:30:00-05:00,United States,Inflation Rate YoY,inflation rate,JAN,6.4%,6.5%,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2023-02-01&end=2023-03-01
+2023-02-15T08:30:00-05:00,United States,Retail Sales MoM,retail sales mom,JAN,3%,-1.1%,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2023-02-01&end=2023-03-01
+2023-02-16T08:30:00-05:00,United States,Building Permits Prel,building permits,JAN,1.339M,1.337M,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2023-02-01&end=2023-03-01
+2023-02-16T08:30:00-05:00,United States,PPI MoM,producer price inflation mom,JAN,0.7%,-0.2%,,,®,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2023-02-01&end=2023-03-01
+2023-02-22T14:00:00-05:00,United States,FOMC Minutes,interest rate,,,,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2023-02-01&end=2023-03-01
+2023-02-24T08:30:00-05:00,United States,Core PCE Price Index MoM,core pce price index mom,JAN,0.6%,0.4%,,,®,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2023-02-01&end=2023-03-01
+2023-02-24T08:30:00-05:00,United States,Personal Income MoM,personal income,JAN,0.6%,0.3%,,,®,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2023-02-01&end=2023-03-01
+2023-02-24T08:30:00-05:00,United States,Personal Spending MoM,personal spending,JAN,1.8%,-0.1%,,,®,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2023-02-01&end=2023-03-01
+2023-02-27T08:30:00-05:00,United States,Durable Goods Orders MoM,durable goods orders,JAN,-4.5%,5.1%,,,®,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2023-02-01&end=2023-03-01

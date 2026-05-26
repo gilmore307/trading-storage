@@ -1,0 +1,9 @@
+event_time,country,event,source_event_type,reference,actual,previous,consensus,te_forecast,revised,importance,symbol,source_url
+2017-12-05T08:30:00-05:00,United States,Balance of Trade,balance of trade,OCT,$-48.70B,$-44.90B,$-47.5B,$ -46B,®,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2017-12-01&end=2018-01-01
+2017-12-08T08:30:00-05:00,United States,Non Farm Payrolls,non farm payrolls,NOV,228K,244K,200K,195K,®,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2017-12-01&end=2018-01-01
+2017-12-13T08:30:00-05:00,United States,Core Inflation Rate YoY,core inflation rate,NOV,1.7%,1.8%,1.8%,1.8%,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2017-12-01&end=2018-01-01
+2017-12-13T08:30:00-05:00,United States,Inflation Rate YoY,inflation rate,NOV,2.2%,2%,2.2%,2.1%,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2017-12-01&end=2018-01-01
+2017-12-14T08:30:00-05:00,United States,Retail Sales MoM,retail sales mom,NOV,0.8%,0.5%,0.3%,0.3%,®,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2017-12-01&end=2018-01-01
+2017-12-22T08:30:00-05:00,United States,Durable Goods Orders MoM,durable goods orders,NOV,1.3%,-0.4%,2%,1.5%,®,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2017-12-01&end=2018-01-01
+2017-12-22T08:30:00-05:00,United States,Personal Income MoM,personal income,NOV,0.3%,0.4%,0.4%,0.30%,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2017-12-01&end=2018-01-01
+2017-12-22T08:30:00-05:00,United States,Personal Spending MoM,personal spending,NOV,0.6%,0.2%,0.5%,0.3%,®,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2017-12-01&end=2018-01-01

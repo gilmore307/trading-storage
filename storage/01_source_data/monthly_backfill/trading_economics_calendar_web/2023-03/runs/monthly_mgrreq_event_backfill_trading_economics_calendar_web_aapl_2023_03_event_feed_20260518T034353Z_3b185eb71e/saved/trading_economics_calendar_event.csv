@@ -1,0 +1,2 @@
+event_time,country,event,source_event_type,reference,actual,previous,consensus,te_forecast,revised,importance,symbol,source_url
+2023-03-01T10:00:00-05:00,United States,ISM Manufacturing PMI,business confidence,FEB,47.7,47.4,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2023-03-01&end=2023-04-01

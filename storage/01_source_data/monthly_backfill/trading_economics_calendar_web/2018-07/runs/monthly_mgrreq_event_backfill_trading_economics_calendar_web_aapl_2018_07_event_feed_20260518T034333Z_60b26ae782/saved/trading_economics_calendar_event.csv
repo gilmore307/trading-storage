@@ -1,0 +1,9 @@
+event_time,country,event,source_event_type,reference,actual,previous,consensus,te_forecast,revised,importance,symbol,source_url
+2018-07-06T08:30:00-04:00,United States,Balance of Trade,balance of trade,MAY,$-43.1B,$-46.1B,,,®,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2018-07-01&end=2018-08-01
+2018-07-06T08:30:00-04:00,United States,Non Farm Payrolls,non farm payrolls,JUN,213K,244K,,,®,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2018-07-01&end=2018-08-01
+2018-07-12T08:30:00-04:00,United States,Core Inflation Rate YoY,core inflation rate,JUN,2.3%,2.2%,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2018-07-01&end=2018-08-01
+2018-07-12T08:30:00-04:00,United States,Inflation Rate YoY,inflation rate,JUN,2.9%,2.8%,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2018-07-01&end=2018-08-01
+2018-07-16T08:30:00-04:00,United States,Retail Sales MoM,retail sales mom,JUN,0.5%,1.3%,,,®,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2018-07-01&end=2018-08-01
+2018-07-26T08:30:00-04:00,United States,Durable Goods Orders MoM,durable goods orders,JUN,1%,-0.3%,,,®,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2018-07-01&end=2018-08-01
+2018-07-31T08:30:00-04:00,United States,Personal Income MoM,personal income,JUN,0.4%,0.4%,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2018-07-01&end=2018-08-01
+2018-07-31T08:30:00-04:00,United States,Personal Spending MoM,personal spending,JUN,0.4%,0.5%,,,®,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2018-07-01&end=2018-08-01

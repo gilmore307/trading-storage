@@ -1,0 +1,18 @@
+{
+  "row_count": 189,
+  "trading_economics_calendar_event": [
+    "event_time",
+    "country",
+    "event",
+    "source_event_type",
+    "reference",
+    "actual",
+    "previous",
+    "consensus",
+    "te_forecast",
+    "revised",
+    "importance",
+    "symbol",
+    "source_url"
+  ]
+}

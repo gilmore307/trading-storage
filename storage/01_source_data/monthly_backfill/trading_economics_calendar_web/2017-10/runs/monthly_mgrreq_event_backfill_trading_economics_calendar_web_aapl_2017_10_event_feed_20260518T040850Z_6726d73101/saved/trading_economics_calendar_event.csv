@@ -1,0 +1,9 @@
+event_time,country,event,source_event_type,reference,actual,previous,consensus,te_forecast,revised,importance,symbol,source_url
+2017-10-05T08:30:00-04:00,United States,Balance of Trade,balance of trade,AUG,$-42.40B,$-43.60B,$-42.70B,$ -43B,®,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2017-10-01&end=2017-11-01
+2017-10-06T08:30:00-04:00,United States,Non Farm Payrolls,non farm payrolls,SEP,-33K,169K,90K,100K,®,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2017-10-01&end=2017-11-01
+2017-10-13T08:30:00-04:00,United States,Core Inflation Rate YoY,core inflation rate,SEP,1.7%,1.7%,1.8%,1.8%,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2017-10-01&end=2017-11-01
+2017-10-13T08:30:00-04:00,United States,Inflation Rate YoY,inflation rate,SEP,2.2%,1.9%,2.3%,2%,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2017-10-01&end=2017-11-01
+2017-10-13T08:30:00-04:00,United States,Retail Sales MoM,retail sales mom,SEP,1.6%,-0.1%,1.7%,0.3%,®,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2017-10-01&end=2017-11-01
+2017-10-25T08:30:00-04:00,United States,Durable Goods Orders MoM,durable goods orders,SEP,2.2%,2.0%,1.0%,0.3%,®,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2017-10-01&end=2017-11-01
+2017-10-30T08:30:00-04:00,United States,Personal Income MoM,personal income,SEP,0.4%,0.2%,0.4%,0.4%,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2017-10-01&end=2017-11-01
+2017-10-30T08:30:00-04:00,United States,Personal Spending MoM,personal spending,SEP,1.0%,0.1%,0.8%,0.6%,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2017-10-01&end=2017-11-01

@@ -1,0 +1,25 @@
+event_time,country,event,source_event_type,reference,actual,previous,consensus,te_forecast,revised,importance,symbol,source_url
+2026-02-02T10:00:00-05:00,United States,ISM Manufacturing PMI,business confidence,JAN,52.6,47.9,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2026-02-01&end=2026-03-01
+2026-02-04T10:00:00-05:00,United States,ISM Services PMI,non manufacturing pmi,JAN,53.8,53.8,,,®,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2026-02-01&end=2026-03-01
+2026-02-05T10:00:00-05:00,United States,JOLTs Job Openings,job offers,DEC,6.542M,6.928M,,,®,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2026-02-01&end=2026-03-01
+2026-02-06T10:00:00-05:00,United States,Michigan Consumer Sentiment Prel,consumer confidence,FEB,57.3,56.4,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2026-02-01&end=2026-03-01
+2026-02-10T08:30:00-05:00,United States,Retail Sales MoM,retail sales mom,DEC,0%,0.6%,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2026-02-01&end=2026-03-01
+2026-02-11T08:30:00-05:00,United States,Non Farm Payrolls,non farm payrolls,JAN,130K,48K,,,®,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2026-02-01&end=2026-03-01
+2026-02-11T08:30:00-05:00,United States,Unemployment Rate,unemployment rate,JAN,4.3%,4.4%,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2026-02-01&end=2026-03-01
+2026-02-12T10:00:00-05:00,United States,Existing Home Sales,existing home sales,JAN,3.91M,4.27M,,,®,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2026-02-01&end=2026-03-01
+2026-02-13T08:30:00-05:00,United States,Core Inflation Rate MoM,core inflation rate mom,JAN,0.3%,0.2%,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2026-02-01&end=2026-03-01
+2026-02-13T08:30:00-05:00,United States,Core Inflation Rate YoY,core inflation rate,JAN,2.5%,2.6%,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2026-02-01&end=2026-03-01
+2026-02-13T08:30:00-05:00,United States,Inflation Rate MoM,inflation rate mom,JAN,0.2%,0.3%,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2026-02-01&end=2026-03-01
+2026-02-13T08:30:00-05:00,United States,Inflation Rate YoY,inflation rate,JAN,2.4%,2.7%,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2026-02-01&end=2026-03-01
+2026-02-18T08:30:00-05:00,United States,Building Permits Prel,building permits,NOV,1.388M,1.411M,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2026-02-01&end=2026-03-01
+2026-02-18T08:30:00-05:00,United States,Building Permits Prel,building permits,DEC,1.448M,1.388M,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2026-02-01&end=2026-03-01
+2026-02-18T08:30:00-05:00,United States,Durable Goods Orders MoM,durable goods orders,DEC,-1.4%,5.4%,,,®,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2026-02-01&end=2026-03-01
+2026-02-18T08:30:00-05:00,United States,Housing Starts,housing starts,NOV,1.322M,1.272M,,,®,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2026-02-01&end=2026-03-01
+2026-02-18T08:30:00-05:00,United States,Housing Starts,housing starts,DEC,1.404M,1.322M,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2026-02-01&end=2026-03-01
+2026-02-18T14:00:00-05:00,United States,FOMC Minutes,interest rate,,,,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2026-02-01&end=2026-03-01
+2026-02-20T08:30:00-05:00,United States,Core PCE Price Index MoM,core pce price index mom,DEC,0.4%,0.2%,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2026-02-01&end=2026-03-01
+2026-02-20T08:30:00-05:00,United States,GDP Growth Rate QoQ Adv,gdp growth rate,Q4,1.4%,4.4%,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2026-02-01&end=2026-03-01
+2026-02-20T08:30:00-05:00,United States,Personal Income MoM,personal income,DEC,0.3%,0.4%,,,®,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2026-02-01&end=2026-03-01
+2026-02-20T08:30:00-05:00,United States,Personal Spending MoM,personal spending,DEC,0.4%,0.4%,,,®,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2026-02-01&end=2026-03-01
+2026-02-24T21:00:00-05:00,United States,President Trump State Of The Union Speech,calendar,,,,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2026-02-01&end=2026-03-01
+2026-02-27T08:30:00-05:00,United States,PPI MoM,producer price inflation mom,JAN,0.5%,0.4%,,,®,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2026-02-01&end=2026-03-01

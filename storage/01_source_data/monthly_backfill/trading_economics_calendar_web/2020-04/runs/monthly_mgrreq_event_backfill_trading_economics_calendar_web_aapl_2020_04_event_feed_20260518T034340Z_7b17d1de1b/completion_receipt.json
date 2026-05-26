@@ -1,0 +1,19 @@
+{
+  "feed": "07_feed_trading_economics_calendar_web",
+  "runs": [
+    {
+      "error": null,
+      "output_dir": "/root/projects/trading-storage/storage/01_source_data/monthly_backfill/trading_economics_calendar_web/2020-04/runs/monthly_mgrreq_event_backfill_trading_economics_calendar_web_aapl_2020_04_event_feed_20260518T034340Z_7b17d1de1b",
+      "outputs": [
+        "/root/projects/trading-storage/storage/01_source_data/monthly_backfill/trading_economics_calendar_web/2020-04/runs/monthly_mgrreq_event_backfill_trading_economics_calendar_web_aapl_2020_04_event_feed_20260518T034340Z_7b17d1de1b/saved/trading_economics_calendar_event.csv",
+        "/root/projects/trading-storage/storage/01_source_data/monthly_backfill/trading_economics_calendar_web/2020-04/runs/monthly_mgrreq_event_backfill_trading_economics_calendar_web_aapl_2020_04_event_feed_20260518T034340Z_7b17d1de1b/cleaned/trading_economics_calendar_event.jsonl"
+      ],
+      "row_counts": {
+        "trading_economics_calendar_event": 8
+      },
+      "run_id": "monthly_mgrreq_event_backfill_trading_economics_calendar_web_aapl_2020_04_event_feed_20260518T034340Z_7b17d1de1b",
+      "status": "succeeded"
+    }
+  ],
+  "task_id": "trading_economics_source_consolidation"
+}

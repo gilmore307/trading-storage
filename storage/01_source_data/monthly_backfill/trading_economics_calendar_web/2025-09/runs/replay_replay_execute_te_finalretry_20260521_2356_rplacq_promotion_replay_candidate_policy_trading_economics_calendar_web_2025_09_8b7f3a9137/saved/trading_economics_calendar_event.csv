@@ -1,0 +1,27 @@
+event_time,country,event,source_event_type,reference,actual,previous,consensus,te_forecast,revised,importance,symbol,source_url
+2025-09-02T10:00:00-04:00,United States,ISM Manufacturing PMI,business confidence,AUG,48.7,48.0,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2025-09-01&end=2025-10-01
+2025-09-03T10:00:00-04:00,United States,JOLTs Job Openings,job offers,JUL,7.181M,7.357M,,,®,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2025-09-01&end=2025-10-01
+2025-09-04T10:00:00-04:00,United States,ISM Services PMI,non manufacturing pmi,AUG,52.0,50.1,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2025-09-01&end=2025-10-01
+2025-09-05T08:30:00-04:00,United States,Non Farm Payrolls,non farm payrolls,AUG,22K,79K,,,®,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2025-09-01&end=2025-10-01
+2025-09-05T08:30:00-04:00,United States,Unemployment Rate,unemployment rate,AUG,4.3%,4.2%,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2025-09-01&end=2025-10-01
+2025-09-09T10:00:00-04:00,United States,Non Farm Payrolls Annual Revision,non farm payrolls,,-911K,-818K,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2025-09-01&end=2025-10-01
+2025-09-10T08:30:00-04:00,United States,PPI MoM,producer price inflation mom,AUG,-0.1%,0.7%,,,®,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2025-09-01&end=2025-10-01
+2025-09-11T08:30:00-04:00,United States,Core Inflation Rate MoM,core inflation rate mom,AUG,0.3%,0.3%,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2025-09-01&end=2025-10-01
+2025-09-11T08:30:00-04:00,United States,Core Inflation Rate YoY,core inflation rate,AUG,3.1%,3.1%,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2025-09-01&end=2025-10-01
+2025-09-11T08:30:00-04:00,United States,Inflation Rate MoM,inflation rate mom,AUG,0.4%,0.2%,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2025-09-01&end=2025-10-01
+2025-09-11T08:30:00-04:00,United States,Inflation Rate YoY,inflation rate,AUG,2.9%,2.7%,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2025-09-01&end=2025-10-01
+2025-09-12T10:00:00-04:00,United States,Michigan Consumer Sentiment Prel,consumer confidence,SEP,55.4,58.2,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2025-09-01&end=2025-10-01
+2025-09-16T08:30:00-04:00,United States,Retail Sales MoM,retail sales mom,AUG,0.6%,0.6%,,,®,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2025-09-01&end=2025-10-01
+2025-09-17T08:30:00-04:00,United States,Building Permits Prel,building permits,AUG,1.312M,1.362M,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2025-09-01&end=2025-10-01
+2025-09-17T08:30:00-04:00,United States,Housing Starts,housing starts,AUG,1.307M,1.429M,,,®,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2025-09-01&end=2025-10-01
+2025-09-17T14:00:00-04:00,United States,Fed Interest Rate Decision,interest rate,,4.25%,4.5%,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2025-09-01&end=2025-10-01
+2025-09-17T14:00:00-04:00,United States,FOMC Economic Projections,interest rate,,,,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2025-09-01&end=2025-10-01
+2025-09-17T14:30:00-04:00,United States,Fed Press Conference,interest rate,,,,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2025-09-01&end=2025-10-01
+2025-09-23T12:35:00-04:00,United States,Fed Chair Powell Speech,interest rate,,,,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2025-09-01&end=2025-10-01
+2025-09-25T08:30:00-04:00,United States,Durable Goods Orders MoM,durable goods orders,AUG,2.9%,-2.7%,,,®,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2025-09-01&end=2025-10-01
+2025-09-25T08:30:00-04:00,United States,GDP Growth Rate QoQ Final,gdp growth rate,Q2,3.8%,-0.6%,,,®,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2025-09-01&end=2025-10-01
+2025-09-25T09:45:00-04:00,United States,Existing Home Sales,existing home sales,AUG,4M,4.01M,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2025-09-01&end=2025-10-01
+2025-09-26T08:30:00-04:00,United States,Core PCE Price Index MoM,core pce price index mom,AUG,0.2%,0.2%,,,®,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2025-09-01&end=2025-10-01
+2025-09-26T08:30:00-04:00,United States,Personal Income MoM,personal income,AUG,0.4%,0.4%,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2025-09-01&end=2025-10-01
+2025-09-26T08:30:00-04:00,United States,Personal Spending MoM,personal spending,AUG,0.6%,0.5%,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2025-09-01&end=2025-10-01
+2025-09-30T10:00:00-04:00,United States,JOLTs Job Openings,job offers,AUG,7.227M,7.208M,,,®,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2025-09-01&end=2025-10-01

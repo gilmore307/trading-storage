@@ -1,0 +1,1 @@
+storage/01_source_data/monthly_backfill/trading_economics_calendar_web/**/*.csv -text -whitespace

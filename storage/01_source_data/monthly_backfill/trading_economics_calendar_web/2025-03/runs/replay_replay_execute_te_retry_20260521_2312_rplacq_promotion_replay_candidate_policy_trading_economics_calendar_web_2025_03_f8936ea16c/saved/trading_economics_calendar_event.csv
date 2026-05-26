@@ -1,0 +1,25 @@
+event_time,country,event,source_event_type,reference,actual,previous,consensus,te_forecast,revised,importance,symbol,source_url
+2025-03-03T10:00:00-05:00,United States,ISM Manufacturing PMI,business confidence,FEB,50.3,50.9,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2025-03-01&end=2025-04-01
+2025-03-05T10:00:00-05:00,United States,ISM Services PMI,non manufacturing pmi,FEB,53.5,52.8,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2025-03-01&end=2025-04-01
+2025-03-07T08:30:00-05:00,United States,Non Farm Payrolls,non farm payrolls,FEB,151K,125K,,,®,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2025-03-01&end=2025-04-01
+2025-03-07T08:30:00-05:00,United States,Unemployment Rate,unemployment rate,FEB,4.1%,4%,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2025-03-01&end=2025-04-01
+2025-03-07T12:30:00-05:00,United States,Fed Chair Powell Speech,interest rate,,,,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2025-03-01&end=2025-04-01
+2025-03-11T09:00:00-04:00,United States,JOLTs Job Openings,job offers,JAN,7.74M,7.508M,,,®,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2025-03-01&end=2025-04-01
+2025-03-12T07:30:00-04:00,United States,Core Inflation Rate MoM,core inflation rate mom,FEB,0.2%,0.4%,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2025-03-01&end=2025-04-01
+2025-03-12T07:30:00-04:00,United States,Core Inflation Rate YoY,core inflation rate,FEB,3.1%,3.3%,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2025-03-01&end=2025-04-01
+2025-03-12T07:30:00-04:00,United States,Inflation Rate MoM,inflation rate mom,FEB,0.2%,0.5%,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2025-03-01&end=2025-04-01
+2025-03-12T07:30:00-04:00,United States,Inflation Rate YoY,inflation rate,FEB,2.8%,3%,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2025-03-01&end=2025-04-01
+2025-03-13T07:30:00-04:00,United States,PPI MoM,producer price inflation mom,FEB,0%,0.6%,,,®,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2025-03-01&end=2025-04-01
+2025-03-14T09:00:00-04:00,United States,Michigan Consumer Sentiment Prel,consumer confidence,MAR,57.9,64.7,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2025-03-01&end=2025-04-01
+2025-03-17T07:30:00-04:00,United States,Retail Sales MoM,retail sales mom,FEB,0.2%,-1.2%,,,®,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2025-03-01&end=2025-04-01
+2025-03-18T07:30:00-04:00,United States,Building Permits Prel,building permits,FEB,1.456M,1.473M,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2025-03-01&end=2025-04-01
+2025-03-18T07:30:00-04:00,United States,Housing Starts,housing starts,FEB,1.501M,1.35M,,,®,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2025-03-01&end=2025-04-01
+2025-03-19T13:00:00-04:00,United States,Fed Interest Rate Decision,interest rate,,4.5%,4.5%,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2025-03-01&end=2025-04-01
+2025-03-19T13:00:00-04:00,United States,FOMC Economic Projections,interest rate,,,,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2025-03-01&end=2025-04-01
+2025-03-19T13:30:00-04:00,United States,Fed Press Conference,interest rate,,,,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2025-03-01&end=2025-04-01
+2025-03-20T09:00:00-04:00,United States,Existing Home Sales,existing home sales,FEB,4.26M,4.09M,,,®,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2025-03-01&end=2025-04-01
+2025-03-26T07:30:00-04:00,United States,Durable Goods Orders MoM,durable goods orders,FEB,0.9%,3.3%,,,®,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2025-03-01&end=2025-04-01
+2025-03-27T07:30:00-04:00,United States,GDP Growth Rate QoQ Final,gdp growth rate,Q4,2.4%,3.1%,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2025-03-01&end=2025-04-01
+2025-03-28T07:30:00-04:00,United States,Core PCE Price Index MoM,core pce price index mom,FEB,0.4%,0.3%,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2025-03-01&end=2025-04-01
+2025-03-28T07:30:00-04:00,United States,Personal Income MoM,personal income,FEB,0.8%,0.7%,,,®,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2025-03-01&end=2025-04-01
+2025-03-28T07:30:00-04:00,United States,Personal Spending MoM,personal spending,FEB,0.4%,-0.3%,,,®,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2025-03-01&end=2025-04-01

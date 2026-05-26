@@ -1,0 +1,22 @@
+event_time,country,event,source_event_type,reference,actual,previous,consensus,te_forecast,revised,importance,symbol,source_url
+2024-06-03T10:00:00-04:00,United States,ISM Manufacturing PMI,business confidence,MAY,48.7,49.2,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2024-06-01&end=2024-07-01
+2024-06-04T10:00:00-04:00,United States,JOLTs Job Openings,job offers,APR,8.059M,8.355M,,,®,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2024-06-01&end=2024-07-01
+2024-06-05T10:00:00-04:00,United States,ISM Services PMI,non manufacturing pmi,MAY,53.8,49.4,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2024-06-01&end=2024-07-01
+2024-06-07T08:30:00-04:00,United States,Non Farm Payrolls,non farm payrolls,MAY,272K,165K,,,®,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2024-06-01&end=2024-07-01
+2024-06-07T08:30:00-04:00,United States,Unemployment Rate,unemployment rate,MAY,4%,3.9%,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2024-06-01&end=2024-07-01
+2024-06-12T08:30:00-04:00,United States,Core Inflation Rate MoM,core inflation rate mom,MAY,0.2%,0.3%,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2024-06-01&end=2024-07-01
+2024-06-12T08:30:00-04:00,United States,Core Inflation Rate YoY,core inflation rate,MAY,3.4%,3.6%,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2024-06-01&end=2024-07-01
+2024-06-12T08:30:00-04:00,United States,Inflation Rate MoM,inflation rate mom,MAY,0%,0.3%,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2024-06-01&end=2024-07-01
+2024-06-12T08:30:00-04:00,United States,Inflation Rate YoY,inflation rate,MAY,3.3%,3.4%,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2024-06-01&end=2024-07-01
+2024-06-12T14:00:00-04:00,United States,Fed Interest Rate Decision,interest rate,,5.5%,5.5%,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2024-06-01&end=2024-07-01
+2024-06-12T14:00:00-04:00,United States,FOMC Economic Projections,interest rate,,,,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2024-06-01&end=2024-07-01
+2024-06-12T14:30:00-04:00,United States,Fed Press Conference,interest rate,,,,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2024-06-01&end=2024-07-01
+2024-06-13T08:30:00-04:00,United States,PPI MoM,producer price inflation mom,MAY,-0.2%,0.5%,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2024-06-01&end=2024-07-01
+2024-06-14T10:00:00-04:00,United States,Michigan Consumer Sentiment Prel,consumer confidence,JUN,65.6,69.1,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2024-06-01&end=2024-07-01
+2024-06-18T08:30:00-04:00,United States,Retail Sales MoM,retail sales mom,MAY,0.1%,-0.2%,,,®,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2024-06-01&end=2024-07-01
+2024-06-20T08:30:00-04:00,United States,Building Permits Prel,building permits,MAY,1.386M,1.44M,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2024-06-01&end=2024-07-01
+2024-06-27T08:30:00-04:00,United States,Durable Goods Orders MoM,durable goods orders,MAY,0.1%,0.2%,,,®,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2024-06-01&end=2024-07-01
+2024-06-27T08:30:00-04:00,United States,GDP Growth Rate QoQ Final,gdp growth rate,Q1,1.4%,3.4%,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2024-06-01&end=2024-07-01
+2024-06-28T08:30:00-04:00,United States,Core PCE Price Index MoM,core pce price index mom,MAY,0.1%,0.3%,,,®,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2024-06-01&end=2024-07-01
+2024-06-28T08:30:00-04:00,United States,Personal Income MoM,personal income,MAY,0.5%,0.3%,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2024-06-01&end=2024-07-01
+2024-06-28T08:30:00-04:00,United States,Personal Spending MoM,personal spending,MAY,0.2%,0.1%,,,®,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2024-06-01&end=2024-07-01

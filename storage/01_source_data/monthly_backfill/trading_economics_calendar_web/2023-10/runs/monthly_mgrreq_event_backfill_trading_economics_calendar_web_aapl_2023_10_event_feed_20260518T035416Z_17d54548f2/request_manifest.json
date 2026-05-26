@@ -1,0 +1,7 @@
+{
+  "feed": "07_feed_trading_economics_calendar_web",
+  "month": "2023-10",
+  "persistence": "canonical month-bucketed Trading Economics source rows",
+  "row_count": 21,
+  "source_consolidation_manifest": "/root/projects/trading-storage/storage/01_source_data/monthly_backfill/trading_economics_calendar_web/_manifests/source_consolidation_20260526T074000/manifest.json"
+}

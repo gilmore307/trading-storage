@@ -1,0 +1,3 @@
+event_time,country,event,source_event_type,reference,actual,previous,consensus,te_forecast,revised,importance,symbol,source_url
+2023-08-01T10:00:00-04:00,United States,ISM Manufacturing PMI,business confidence,JUL,46.4,46,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2023-08-01&end=2023-09-01
+2023-08-01T10:00:00-04:00,United States,JOLTs Job Openings,job offers,JUN,9.582M,9.616M,,,®,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2023-08-01&end=2023-09-01

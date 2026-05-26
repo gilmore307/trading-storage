@@ -1,0 +1,19 @@
+{
+  "feed": "07_feed_trading_economics_calendar_web",
+  "runs": [
+    {
+      "error": null,
+      "output_dir": "/root/projects/trading-storage/storage/01_source_data/monthly_backfill/trading_economics_calendar_web/2024-01/runs/replay_replay_execute_te_20260521_2311_rplacq_promotion_replay_candidate_policy_trading_economics_calendar_web_2024_01_72dafa5c91",
+      "outputs": [
+        "/root/projects/trading-storage/storage/01_source_data/monthly_backfill/trading_economics_calendar_web/2024-01/runs/replay_replay_execute_te_20260521_2311_rplacq_promotion_replay_candidate_policy_trading_economics_calendar_web_2024_01_72dafa5c91/saved/trading_economics_calendar_event.csv",
+        "/root/projects/trading-storage/storage/01_source_data/monthly_backfill/trading_economics_calendar_web/2024-01/runs/replay_replay_execute_te_20260521_2311_rplacq_promotion_replay_candidate_policy_trading_economics_calendar_web_2024_01_72dafa5c91/cleaned/trading_economics_calendar_event.jsonl"
+      ],
+      "row_counts": {
+        "trading_economics_calendar_event": 21
+      },
+      "run_id": "replay_replay_execute_te_20260521_2311_rplacq_promotion_replay_candidate_policy_trading_economics_calendar_web_2024_01_72dafa5c91",
+      "status": "succeeded"
+    }
+  ],
+  "task_id": "trading_economics_source_consolidation"
+}

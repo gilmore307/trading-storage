@@ -1,0 +1,7 @@
+event_time,country,event,source_event_type,reference,actual,previous,consensus,te_forecast,revised,importance,symbol,source_url
+2016-01-06T08:30:00-05:00,United States,Balance of Trade,balance of trade,NOV,$-42.37B,$-44.58B,$-44B,,®,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2016-01-01&end=2016-02-01
+2016-01-08T08:30:00-05:00,United States,Non Farm Payrolls,non farm payrolls,DEC,292K,252K,200K,205K,®,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2016-01-01&end=2016-02-01
+2016-01-15T08:30:00-05:00,United States,Retail Sales MoM,retail sales mom,DEC,-0.1%,0.4%,0%,0.3%,®,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2016-01-01&end=2016-02-01
+2016-01-20T08:30:00-05:00,United States,Core Inflation Rate YoY,core inflation rate,DEC,2.1%,2%,2.1%,2.0%,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2016-01-01&end=2016-02-01
+2016-01-20T08:30:00-05:00,United States,Inflation Rate YoY,inflation rate,DEC,0.7%,0.5%,0.8%,0.6%,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2016-01-01&end=2016-02-01
+2016-01-28T08:30:00-05:00,United States,Durable Goods Orders MoM,durable goods orders,DEC,-5.1%,-0.5%,-0.6%,0.1%,®,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2016-01-01&end=2016-02-01

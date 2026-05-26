@@ -1,0 +1,9 @@
+event_time,country,event,source_event_type,reference,actual,previous,consensus,te_forecast,revised,importance,symbol,source_url
+2019-09-04T08:30:00-04:00,United States,Balance of Trade,balance of trade,JUL,$-54B,$-55.5B,,,®,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2019-09-01&end=2019-10-01
+2019-09-06T08:30:00-04:00,United States,Non Farm Payrolls,non farm payrolls,AUG,130K,159K,,,®,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2019-09-01&end=2019-10-01
+2019-09-12T08:30:00-04:00,United States,Core Inflation Rate YoY,core inflation rate,AUG,2.4%,2.2%,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2019-09-01&end=2019-10-01
+2019-09-12T08:30:00-04:00,United States,Inflation Rate YoY,inflation rate,AUG,1.7%,1.8%,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2019-09-01&end=2019-10-01
+2019-09-13T08:30:00-04:00,United States,Retail Sales MoM,retail sales mom,AUG,0.4%,0.8%,,,®,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2019-09-01&end=2019-10-01
+2019-09-27T08:30:00-04:00,United States,Durable Goods Orders MoM,durable goods orders,AUG,0.2%,2%,,,®,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2019-09-01&end=2019-10-01
+2019-09-27T08:30:00-04:00,United States,Personal Income MoM,personal income,AUG,0.4%,0.1%,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2019-09-01&end=2019-10-01
+2019-09-27T08:30:00-04:00,United States,Personal Spending MoM,personal spending,AUG,0.1%,0.5%,,,®,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2019-09-01&end=2019-10-01

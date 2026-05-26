@@ -1,0 +1,24 @@
+event_time,country,event,source_event_type,reference,actual,previous,consensus,te_forecast,revised,importance,symbol,source_url
+2025-01-03T10:00:00-05:00,United States,ISM Manufacturing PMI,business confidence,DEC,49.3,48.4,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2025-01-01&end=2025-02-01
+2025-01-07T10:00:00-05:00,United States,ISM Services PMI,non manufacturing pmi,DEC,54.1,52.1,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2025-01-01&end=2025-02-01
+2025-01-07T10:00:00-05:00,United States,JOLTs Job Openings,job offers,NOV,8.098M,7.839M,,,®,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2025-01-01&end=2025-02-01
+2025-01-08T14:00:00-05:00,United States,FOMC Minutes,interest rate,,,,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2025-01-01&end=2025-02-01
+2025-01-10T08:30:00-05:00,United States,Non Farm Payrolls,non farm payrolls,DEC,256K,212K,,,®,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2025-01-01&end=2025-02-01
+2025-01-10T08:30:00-05:00,United States,Unemployment Rate,unemployment rate,DEC,4.1%,4.2%,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2025-01-01&end=2025-02-01
+2025-01-10T10:00:00-05:00,United States,Michigan Consumer Sentiment Prel,consumer confidence,JAN,73.2,74.0,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2025-01-01&end=2025-02-01
+2025-01-14T08:30:00-05:00,United States,PPI MoM,producer price inflation mom,DEC,0.2%,0.4%,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2025-01-01&end=2025-02-01
+2025-01-15T08:30:00-05:00,United States,Core Inflation Rate MoM,core inflation rate mom,DEC,0.2%,0.3%,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2025-01-01&end=2025-02-01
+2025-01-15T08:30:00-05:00,United States,Core Inflation Rate YoY,core inflation rate,DEC,3.2%,3.3%,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2025-01-01&end=2025-02-01
+2025-01-15T08:30:00-05:00,United States,Inflation Rate MoM,inflation rate mom,DEC,0.4%,0.3%,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2025-01-01&end=2025-02-01
+2025-01-15T08:30:00-05:00,United States,Inflation Rate YoY,inflation rate,DEC,2.9%,2.7%,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2025-01-01&end=2025-02-01
+2025-01-16T08:30:00-05:00,United States,Retail Sales MoM,retail sales mom,DEC,0.4%,0.8%,,,®,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2025-01-01&end=2025-02-01
+2025-01-17T08:30:00-05:00,United States,Building Permits Prel,building permits,DEC,1.483M,1.493M,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2025-01-01&end=2025-02-01
+2025-01-17T08:30:00-05:00,United States,Housing Starts,housing starts,DEC,1.499M,1.294M,,,®,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2025-01-01&end=2025-02-01
+2025-01-24T10:00:00-05:00,United States,Existing Home Sales,existing home sales,DEC,4.24M,4.15M,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2025-01-01&end=2025-02-01
+2025-01-28T08:30:00-05:00,United States,Durable Goods Orders MoM,durable goods orders,DEC,-2.2%,-2%,,,®,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2025-01-01&end=2025-02-01
+2025-01-29T14:00:00-05:00,United States,Fed Interest Rate Decision,interest rate,,4.5%,4.5%,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2025-01-01&end=2025-02-01
+2025-01-29T14:30:00-05:00,United States,Fed Press Conference,interest rate,,,,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2025-01-01&end=2025-02-01
+2025-01-30T08:30:00-05:00,United States,GDP Growth Rate QoQ Adv,gdp growth rate,Q4,2.3%,3.1%,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2025-01-01&end=2025-02-01
+2025-01-31T08:30:00-05:00,United States,Core PCE Price Index MoM,core pce price index mom,DEC,0.2%,0.1%,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2025-01-01&end=2025-02-01
+2025-01-31T08:30:00-05:00,United States,Personal Income MoM,personal income,DEC,0.4%,0.3%,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2025-01-01&end=2025-02-01
+2025-01-31T08:30:00-05:00,United States,Personal Spending MoM,personal spending,DEC,0.7%,0.6%,,,®,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2025-01-01&end=2025-02-01
