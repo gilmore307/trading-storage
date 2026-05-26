@@ -606,6 +606,107 @@
           "warnings": []
         }
       }
+    },
+    {
+      "completed_at": "2026-05-26T17:52:47Z",
+      "error": null,
+      "output_dir": "/root/projects/trading-storage/storage/01_source_data/monthly_backfill/trading_economics_calendar_web/_manifests/recent_refresh_runs/te_recent_calendar_refresh_20260526T175247Z",
+      "outputs": [
+        "/root/projects/trading-storage/storage/01_source_data/monthly_backfill/trading_economics_calendar_web/2026-05/runs/te_recent_calendar_refresh_20260526T175247Z/saved/trading_economics_calendar_event.csv",
+        "/root/projects/trading-storage/storage/01_source_data/monthly_backfill/trading_economics_calendar_web/2026-05/runs/te_recent_calendar_refresh_20260526T175247Z/cleaned/trading_economics_calendar_event.jsonl",
+        "/root/projects/trading-storage/storage/01_source_data/monthly_backfill/trading_economics_calendar_web/2026-06/runs/te_recent_calendar_refresh_20260526T175247Z/saved/trading_economics_calendar_event.csv",
+        "/root/projects/trading-storage/storage/01_source_data/monthly_backfill/trading_economics_calendar_web/2026-06/runs/te_recent_calendar_refresh_20260526T175247Z/cleaned/trading_economics_calendar_event.jsonl"
+      ],
+      "row_counts": {
+        "trading_economics_calendar_event": 298
+      },
+      "run_id": "te_recent_calendar_refresh_20260526T175247Z",
+      "started_at": "2026-05-26T17:52:47Z",
+      "status": "succeeded",
+      "steps": {
+        "clean": {
+          "details": {
+            "columns": [
+              "event_time",
+              "country",
+              "event",
+              "source_event_type",
+              "reference",
+              "actual",
+              "previous",
+              "consensus",
+              "te_forecast",
+              "revised",
+              "importance",
+              "symbol",
+              "source_url"
+            ],
+            "out_of_window_calendar_rows_skipped": 0
+          },
+          "references": [
+            "/root/projects/trading-storage/storage/01_source_data/monthly_backfill/trading_economics_calendar_web/_manifests/recent_refresh_runs/te_recent_calendar_refresh_20260526T175247Z/cleaned/trading_economics_calendar_event.jsonl",
+            "/root/projects/trading-storage/storage/01_source_data/monthly_backfill/trading_economics_calendar_web/_manifests/recent_refresh_runs/te_recent_calendar_refresh_20260526T175247Z/cleaned/schema.json"
+          ],
+          "row_counts": {
+            "trading_economics_calendar_event": 298
+          },
+          "status": "succeeded",
+          "warnings": []
+        },
+        "fetch": {
+          "details": {
+            "source_url": "https://tradingeconomics.com/united-states/calendar"
+          },
+          "references": [
+            "/root/projects/trading-storage/storage/01_source_data/monthly_backfill/trading_economics_calendar_web/_manifests/recent_refresh_runs/te_recent_calendar_refresh_20260526T175247Z/request_manifest.json"
+          ],
+          "row_counts": {
+            "html_pages": 1
+          },
+          "status": "succeeded",
+          "warnings": []
+        },
+        "save": {
+          "details": {
+            "columns": [
+              "event_time",
+              "country",
+              "event",
+              "source_event_type",
+              "reference",
+              "actual",
+              "previous",
+              "consensus",
+              "te_forecast",
+              "revised",
+              "importance",
+              "symbol",
+              "source_url"
+            ],
+            "format": "csv",
+            "monthly_backfill_bucketed_output": true,
+            "monthly_bucket_row_counts": {
+              "2026-05": 84,
+              "2026-06": 214
+            },
+            "monthly_bucket_run_dirs": [
+              "/root/projects/trading-storage/storage/01_source_data/monthly_backfill/trading_economics_calendar_web/2026-05/runs/te_recent_calendar_refresh_20260526T175247Z",
+              "/root/projects/trading-storage/storage/01_source_data/monthly_backfill/trading_economics_calendar_web/2026-06/runs/te_recent_calendar_refresh_20260526T175247Z"
+            ]
+          },
+          "references": [
+            "/root/projects/trading-storage/storage/01_source_data/monthly_backfill/trading_economics_calendar_web/2026-05/runs/te_recent_calendar_refresh_20260526T175247Z/saved/trading_economics_calendar_event.csv",
+            "/root/projects/trading-storage/storage/01_source_data/monthly_backfill/trading_economics_calendar_web/2026-05/runs/te_recent_calendar_refresh_20260526T175247Z/cleaned/trading_economics_calendar_event.jsonl",
+            "/root/projects/trading-storage/storage/01_source_data/monthly_backfill/trading_economics_calendar_web/2026-06/runs/te_recent_calendar_refresh_20260526T175247Z/saved/trading_economics_calendar_event.csv",
+            "/root/projects/trading-storage/storage/01_source_data/monthly_backfill/trading_economics_calendar_web/2026-06/runs/te_recent_calendar_refresh_20260526T175247Z/cleaned/trading_economics_calendar_event.jsonl"
+          ],
+          "row_counts": {
+            "trading_economics_calendar_event": 298
+          },
+          "status": "succeeded",
+          "warnings": []
+        }
+      }
     }
   ],
   "task_id": "trading_economics_recent_calendar_refresh"

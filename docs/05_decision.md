@@ -684,3 +684,31 @@ If formal lifecycle evidence is found inside a transient run/output/staging fold
 - `receipts` and `tombstones` are the ledger; `runs` and `outputs` are runtime context.
 - Formal lifecycle runners should write canonical evidence directly to stable `90_lifecycle` evidence directories whenever possible.
 - Cleanup of transient lifecycle folders remains safe because evidence-shaped files are retained until extracted.
+
+## D027 - Canonical Trading Economics source data is Git-recoverable
+
+Date: 2026-05-26
+Status: Accepted
+
+### Context
+
+Trading Economics macro calendar payloads are provider-window source data and the subscription is no longer available. Chentong accepted a single TE source boundary: macro TE source data should have one canonical file home, while SQL rows, runtime receipts, control-plane filtered artifacts, dashboard read models, and lifecycle files remain derived or operational state.
+
+### Decision
+
+Track only the canonical Trading Economics source-data root in Git:
+
+```text
+storage/01_source_data/monthly_backfill/trading_economics_calendar_web/
+```
+
+Exclude `_manifests/` from Git tracking because it records consolidation routes, original roots, and process evidence rather than the current source payload body.
+
+All other numbered storage roots and TE-derived materializations stay ignored unless a later decision accepts a narrower Git exception.
+
+### Consequences
+
+- Canonical TE source files can be restored through Git history.
+- `_manifests/`, runtime, realtime, replay, source-output, control-plane, model-artifact, execution-artifact, dashboard-cache, and lifecycle paths remain out of Git.
+- SQL TE rows and dashboard TE read models are rebuildable materializations, not source-of-truth data.
+- New TE source refresh files under the canonical root should be committed after secret/path sanity checks.
