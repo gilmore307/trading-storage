@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import sys
 from collections import Counter
 from datetime import UTC, datetime, timedelta
@@ -11,11 +12,11 @@ from pathlib import Path
 from typing import Any, Mapping, Sequence, TextIO
 
 from .artifact_store import now_utc
-from .dashboard_event_calendar import DEFAULT_STORAGE_ROOT, _iso_utc, _parse_utc, _postgres_dsn
 from .dashboard_read_models import materialize_dashboard_read_model
 
 TEMPORAL_EXPLORER_SUMMARY_CONTRACT = "temporal_explorer_summary"
 TEMPORAL_EXPLORER_SCHEMA_REF = f"storage/06_dashboard_cache/schemas/{TEMPORAL_EXPLORER_SUMMARY_CONTRACT}.schema.json"
+DEFAULT_STORAGE_ROOT = Path(os.environ.get("TRADING_STORAGE_ROOT", "/root/projects/trading-storage")) / "storage"
 DEFAULT_SQL_SCHEMA = "trading_data"
 DEFAULT_FRAME = "1D"
 DEFAULT_CENTER_LOOKBACK_DAYS = 14
@@ -31,6 +32,59 @@ SUBSTRATE_TABLES = (
     "calendar_news_event_index",
     "chart_ohlcv_cache",
 )
+
+
+def _parse_utc(value: str | None) -> datetime | None:
+    text = str(value or "").strip()
+    if not text:
+        return None
+    try:
+        parsed = datetime.fromisoformat(text.replace("Z", "+00:00"))
+    except ValueError:
+        return None
+    if parsed.tzinfo is None:
+        parsed = parsed.replace(tzinfo=UTC)
+    return parsed.astimezone(UTC)
+
+
+def _iso_utc(value: datetime) -> str:
+    return value.astimezone(UTC).replace(microsecond=0).isoformat().replace("+00:00", "Z")
+
+
+def _load_secret_values(alias: str) -> Mapping[str, Any]:
+    secret_root = Path(os.environ.get("TRADING_SECRET_ROOT", "/root/secrets"))
+    direct = secret_root / f"{alias}.json"
+    if direct.exists():
+        return json.loads(direct.read_text(encoding="utf-8"))
+    registry_path = secret_root / "registry.json"
+    registry = json.loads(registry_path.read_text(encoding="utf-8"))
+    target = registry.get(alias)
+    if isinstance(target, str):
+        path = Path(target)
+        if not path.is_absolute():
+            path = secret_root / target
+        return json.loads(path.read_text(encoding="utf-8"))
+    if isinstance(target, Mapping):
+        return target
+    raise RuntimeError(f"missing secret alias {alias!r}")
+
+
+def _postgres_dsn() -> str:
+    direct = os.environ.get("TRADING_DATA_POSTGRES_DSN") or os.environ.get("TRADING_STORAGE_POSTGRES_DSN")
+    if direct:
+        return direct
+    values = _load_secret_values(os.environ.get("TRADING_STORAGE_POSTGRES_SECRET_ALIAS", "trading_storage_postgres"))
+    dsn = str(values.get("dsn") or "").strip()
+    if dsn:
+        return dsn
+    host = values.get("host")
+    database = values.get("database") or values.get("dbname")
+    user = values.get("user") or values.get("username")
+    password = values.get("password")
+    port = values.get("port") or 5432
+    if not (host and database and user and password):
+        raise RuntimeError("PostgreSQL Temporal Explorer summary requires dsn or host/database/user/password")
+    return f"postgresql://{user}:{password}@{host}:{port}/{database}"
 
 
 def _frame_delta(frame: str) -> timedelta:
@@ -115,7 +169,7 @@ def _fetch_sql_rows(
                     schema,
                     "calendar_scheduled_event",
                     """
-                    SELECT event_id, event_time, event_date, event_type, event_scope, symbol, country, source_priority, scheduled_known_at, source_url, raw_artifact_ref, metadata_json
+                    SELECT event_id, event_time, event_date, event_type, event_scope, symbol, country, source_priority, scheduled_known_at, raw_artifact_ref, metadata_json
                     FROM {table}
                     WHERE event_date >= %s::date AND event_date < %s::date
                     ORDER BY event_date ASC, event_time ASC NULLS LAST, event_id ASC
@@ -128,7 +182,7 @@ def _fetch_sql_rows(
                     schema,
                     "calendar_event_result",
                     """
-                    SELECT event_id, released_at, available_time, retrieved_at, source_url
+                    SELECT event_id, released_at, available_time, retrieved_at
                     FROM {table}
                     WHERE available_time >= %s AND available_time < %s
                     ORDER BY available_time ASC, event_id ASC
@@ -275,8 +329,8 @@ def _event_payloads(rows: Mapping[str, Sequence[Mapping[str, Any]]]) -> list[dic
                 "source_priority": str(row.get("source_priority") or ""),
                 "summary": _event_detail_summary(row, title),
                 "source_name": _metadata_text(row, "source_name") or str(row.get("source_priority") or ""),
-                "reference_type": _metadata_text(row, "reference_type") or ("source_url" if row.get("source_url") else "artifact"),
-                "reference": _metadata_text(row, "reference") or str(row.get("source_url") or row.get("raw_artifact_ref") or ""),
+                "reference_type": _metadata_text(row, "reference_type") or "artifact",
+                "reference": _metadata_text(row, "reference") or str(row.get("raw_artifact_ref") or ""),
             }
         )
     for row in rows.get("event_results", []):
@@ -296,7 +350,7 @@ def _event_payloads(rows: Mapping[str, Sequence[Mapping[str, Any]]]) -> list[dic
                 "summary": "Accepted Layer 10 event result is available.",
                 "source_name": "calendar_event_result",
                 "reference_type": "artifact",
-                "reference": str(row.get("source_url") or row.get("raw_artifact_ref") or ""),
+                "reference": str(row.get("raw_artifact_ref") or ""),
             }
         )
     for row in rows.get("news_events", []):

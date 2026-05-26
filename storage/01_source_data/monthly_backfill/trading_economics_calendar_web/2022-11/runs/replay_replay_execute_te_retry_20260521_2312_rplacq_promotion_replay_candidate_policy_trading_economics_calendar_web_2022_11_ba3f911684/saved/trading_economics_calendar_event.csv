@@ -1,3 +1,3 @@
-event_time,country,event,source_event_type,reference,actual,previous,consensus,te_forecast,revised,importance,symbol,source_url
-2022-11-01T10:00:00-04:00,United States,ISM Manufacturing PMI,business confidence,OCT,50.2,50.9,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2022-11-01&end=2022-12-01
-2022-11-01T10:00:00-04:00,United States,JOLTs Job Openings,job offers,SEP,10.717M,10.28M,,,®,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2022-11-01&end=2022-12-01
+event_time,country,event,source_event_type,reference,actual,previous,consensus,te_forecast,revised,importance,symbol
+2022-11-01T10:00:00-04:00,United States,ISM Manufacturing PMI,business confidence,OCT,50.2,50.9,,,,3,
+2022-11-01T10:00:00-04:00,United States,JOLTs Job Openings,job offers,SEP,10.717M,10.28M,,,®,3,

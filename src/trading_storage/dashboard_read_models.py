@@ -30,7 +30,6 @@ CLOCK_SKEW = timedelta(minutes=5)
 REFRESHABLE_CONTRACT_TYPES = frozenset(
     {
         "current_system_status_summary",
-        "event_calendar_summary",
         "historical_task_progress_summary",
         "realtime_signal_summary",
         "temporal_explorer_summary",

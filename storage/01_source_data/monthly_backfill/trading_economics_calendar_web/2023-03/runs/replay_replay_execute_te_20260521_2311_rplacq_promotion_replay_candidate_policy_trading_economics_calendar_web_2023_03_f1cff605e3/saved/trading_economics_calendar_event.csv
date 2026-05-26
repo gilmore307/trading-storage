@@ -1,23 +1,23 @@
-event_time,country,event,source_event_type,reference,actual,previous,consensus,te_forecast,revised,importance,symbol,source_url
-2023-03-01T10:00:00-05:00,United States,ISM Manufacturing PMI,business confidence,FEB,47.7,47.4,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2023-03-01&end=2023-04-01
-2023-03-03T10:00:00-05:00,United States,ISM Non-Manufacturing PMI,non manufacturing pmi,FEB,55.1,55.2,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2023-03-01&end=2023-04-01
-2023-03-07T10:00:00-05:00,United States,Fed Chair Powell Testimony,interest rate,,,,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2023-03-01&end=2023-04-01
-2023-03-08T08:30:00-05:00,United States,Balance of Trade,balance of trade,JAN,$-68.3B,$-67.2B,,,®,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2023-03-01&end=2023-04-01
-2023-03-08T10:00:00-05:00,United States,Fed Chair Powell Testimony,interest rate,,,,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2023-03-01&end=2023-04-01
-2023-03-08T10:00:00-05:00,United States,JOLTs Job Openings,job offers,JAN,10.824M,11.234M,,,®,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2023-03-01&end=2023-04-01
-2023-03-10T08:30:00-05:00,United States,Non Farm Payrolls,non farm payrolls,FEB,311K,504K,,,®,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2023-03-01&end=2023-04-01
-2023-03-10T08:30:00-05:00,United States,Unemployment Rate,unemployment rate,FEB,3.6%,3.4%,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2023-03-01&end=2023-04-01
-2023-03-13T08:00:00-04:00,United States,President Biden Speech On Banking System,calendar,,,,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2023-03-01&end=2023-04-01
-2023-03-13T10:30:00-04:00,United States,Closed-door Fed Emergency Meeting,interest rate,,,,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2023-03-01&end=2023-04-01
-2023-03-14T07:30:00-04:00,United States,Core Inflation Rate YoY,core inflation rate,FEB,5.5%,5.6%,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2023-03-01&end=2023-04-01
-2023-03-14T07:30:00-04:00,United States,Inflation Rate YoY,inflation rate,FEB,6%,6.4%,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2023-03-01&end=2023-04-01
-2023-03-15T07:30:00-04:00,United States,PPI MoM,producer price inflation mom,FEB,-0.1%,0.3%,,,®,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2023-03-01&end=2023-04-01
-2023-03-15T07:30:00-04:00,United States,Retail Sales MoM,retail sales mom,FEB,-0.4%,3.2%,,,®,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2023-03-01&end=2023-04-01
-2023-03-16T07:30:00-04:00,United States,Building Permits Prel,building permits,FEB,1.524M,1.339M,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2023-03-01&end=2023-04-01
-2023-03-17T09:00:00-04:00,United States,Michigan Consumer Sentiment Prel,consumer confidence,MAR,63.4,67,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2023-03-01&end=2023-04-01
-2023-03-22T13:00:00-04:00,United States,Fed Interest Rate Decision,interest rate,,5.0%,4.75%,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2023-03-01&end=2023-04-01
-2023-03-22T13:30:00-04:00,United States,Fed Press Conference,interest rate,,,,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2023-03-01&end=2023-04-01
-2023-03-24T07:30:00-04:00,United States,Durable Goods Orders MoM,durable goods orders,FEB,-1%,-5%,,,®,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2023-03-01&end=2023-04-01
-2023-03-31T07:30:00-04:00,United States,Core PCE Price Index MoM,core pce price index mom,FEB,0.3%,0.5%,,,®,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2023-03-01&end=2023-04-01
-2023-03-31T07:30:00-04:00,United States,Personal Income MoM,personal income,FEB,0.3%,0.6%,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2023-03-01&end=2023-04-01
-2023-03-31T07:30:00-04:00,United States,Personal Spending MoM,personal spending,FEB,0.2%,2%,,,®,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2023-03-01&end=2023-04-01
+event_time,country,event,source_event_type,reference,actual,previous,consensus,te_forecast,revised,importance,symbol
+2023-03-01T10:00:00-05:00,United States,ISM Manufacturing PMI,business confidence,FEB,47.7,47.4,,,,3,
+2023-03-03T10:00:00-05:00,United States,ISM Non-Manufacturing PMI,non manufacturing pmi,FEB,55.1,55.2,,,,3,
+2023-03-07T10:00:00-05:00,United States,Fed Chair Powell Testimony,interest rate,,,,,,,3,
+2023-03-08T08:30:00-05:00,United States,Balance of Trade,balance of trade,JAN,$-68.3B,$-67.2B,,,®,3,
+2023-03-08T10:00:00-05:00,United States,Fed Chair Powell Testimony,interest rate,,,,,,,3,
+2023-03-08T10:00:00-05:00,United States,JOLTs Job Openings,job offers,JAN,10.824M,11.234M,,,®,3,
+2023-03-10T08:30:00-05:00,United States,Non Farm Payrolls,non farm payrolls,FEB,311K,504K,,,®,3,
+2023-03-10T08:30:00-05:00,United States,Unemployment Rate,unemployment rate,FEB,3.6%,3.4%,,,,3,
+2023-03-13T08:00:00-04:00,United States,President Biden Speech On Banking System,calendar,,,,,,,3,
+2023-03-13T10:30:00-04:00,United States,Closed-door Fed Emergency Meeting,interest rate,,,,,,,3,
+2023-03-14T07:30:00-04:00,United States,Core Inflation Rate YoY,core inflation rate,FEB,5.5%,5.6%,,,,3,
+2023-03-14T07:30:00-04:00,United States,Inflation Rate YoY,inflation rate,FEB,6%,6.4%,,,,3,
+2023-03-15T07:30:00-04:00,United States,PPI MoM,producer price inflation mom,FEB,-0.1%,0.3%,,,®,3,
+2023-03-15T07:30:00-04:00,United States,Retail Sales MoM,retail sales mom,FEB,-0.4%,3.2%,,,®,3,
+2023-03-16T07:30:00-04:00,United States,Building Permits Prel,building permits,FEB,1.524M,1.339M,,,,3,
+2023-03-17T09:00:00-04:00,United States,Michigan Consumer Sentiment Prel,consumer confidence,MAR,63.4,67,,,,3,
+2023-03-22T13:00:00-04:00,United States,Fed Interest Rate Decision,interest rate,,5.0%,4.75%,,,,3,
+2023-03-22T13:30:00-04:00,United States,Fed Press Conference,interest rate,,,,,,,3,
+2023-03-24T07:30:00-04:00,United States,Durable Goods Orders MoM,durable goods orders,FEB,-1%,-5%,,,®,3,
+2023-03-31T07:30:00-04:00,United States,Core PCE Price Index MoM,core pce price index mom,FEB,0.3%,0.5%,,,®,3,
+2023-03-31T07:30:00-04:00,United States,Personal Income MoM,personal income,FEB,0.3%,0.6%,,,,3,
+2023-03-31T07:30:00-04:00,United States,Personal Spending MoM,personal spending,FEB,0.2%,2%,,,®,3,

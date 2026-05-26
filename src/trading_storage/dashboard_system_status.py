@@ -59,12 +59,16 @@ SYSTEMD_UNIT_FALLBACKS = (
     "trading-manager-historical-scheduler.service",
     "trading-execution-realtime-monitor-loop.service",
     "trading-storage-dashboard-read-model-refresh.service",
-    "trading-data-te-calendar-refresh.service",
     "trading-execution-realtime-runtime-check.service",
     "trading-storage-dashboard-read-model-refresh.timer",
-    "trading-data-te-calendar-refresh.timer",
     "trading-execution-realtime-runtime-check.timer",
     "trading-execution-realtime-runtime-check.path",
+)
+RETIRED_SYSTEMD_UNITS = frozenset(
+    {
+        "trading-data-te-calendar-refresh.service",
+        "trading-data-te-calendar-refresh.timer",
+    }
 )
 FAILED_SYSTEMD_RESULTS = {
     "core-dump",
@@ -180,7 +184,7 @@ def _trading_systemd_unit_names() -> list[str]:
     if rc == 0:
         for line in output.splitlines():
             parts = line.split()
-            if parts and parts[0].startswith("trading-") and "." in parts[0]:
+            if parts and parts[0].startswith("trading-") and "." in parts[0] and parts[0] not in RETIRED_SYSTEMD_UNITS:
                 units.append(parts[0])
     if not units:
         units = list(SYSTEMD_UNIT_FALLBACKS)
@@ -587,60 +591,27 @@ def _source_connection_statuses(
     now_epoch: float,
 ) -> list[dict[str, Any]]:
     connections = _provider_api_statuses()
-    timer = _service_by_unit(services, "trading-data-te-calendar-refresh.timer")
-    worker = _service_by_unit(services, "trading-data-te-calendar-refresh.service")
     te_root = storage_root / "01_source_data/monthly_backfill/trading_economics_calendar_web"
-    receipt = _source_output_status(
-        _latest_matching_file(te_root, "**/completion_receipt.json"),
-        label="Trading Economics Recent Calendar Receipt",
-        kind="trading_economics_calendar_receipt",
+    event_file = _source_output_status(
+        _latest_matching_file(te_root, "**/saved/trading_economics_calendar_event.csv"),
+        label="Trading Economics Canonical Source Snapshot",
+        kind="trading_economics_calendar_storage_snapshot",
         now_epoch=now_epoch,
-        freshness_class="heartbeat",
-        freshness_note="Expected to update when the Trading Economics recent-calendar timer refreshes.",
+        freshness_class="source_snapshot",
+        freshness_note="Canonical TE macro source data is storage-only; website refresh is retired.",
     )
-    timer_healthy = bool(timer.get("healthy")) if timer else False
-    worker_healthy = bool(worker.get("healthy")) if worker else False
-    receipt_available = receipt["status"] == "available"
-    if timer.get("active_state") == "active" and receipt_available:
-        status = "scheduled"
-    elif worker.get("active_state") == "activating":
-        status = "refreshing"
-    elif receipt_available:
+    if event_file["status"] == "available":
         status = "available"
     else:
-        status = "missing_output"
+        status = "missing_snapshot"
     connections.append(
         {
-            "name": "Trading Economics Calendar Web",
-            "kind": "economic_calendar_source",
+            "name": "Trading Economics Storage Snapshot",
+            "kind": "economic_calendar_storage_source",
             "status": status,
-            "healthy": (timer_healthy or worker_healthy) and receipt_available,
-            "service_unit": "trading-data-te-calendar-refresh.service",
-            "timer_unit": "trading-data-te-calendar-refresh.timer",
-            "latest_updated_at_utc": receipt["latest_updated_at_utc"],
-            "age_seconds": receipt["age_seconds"],
-        }
-    )
-    connections.append(
-        {
-            "name": "Trading Economics Calendar Schedule",
-            "kind": "source_refresh_schedule",
-            "status": "scheduled" if timer.get("active_state") == "active" else "disabled" if timer.get("enabled_state") == "disabled" else str(timer.get("active_state") or "unknown"),
-            "healthy": timer_healthy,
-            "unit": "trading-data-te-calendar-refresh.timer",
-            "timer_unit": "trading-data-te-calendar-refresh.timer",
-        }
-    )
-    connections.append(
-        {
-            "name": "Trading Economics Calendar Worker",
-            "kind": "source_refresh_worker",
-            "status": "refreshing" if worker.get("active_state") == "activating" else "idle" if worker.get("unit_type") == "oneshot" and worker.get("result") == "success" else str(worker.get("active_state") or "unknown"),
-            "healthy": worker_healthy,
-            "unit": "trading-data-te-calendar-refresh.service",
-            "service_unit": "trading-data-te-calendar-refresh.service",
-            "latest_updated_at_utc": receipt["latest_updated_at_utc"],
-            "age_seconds": receipt["age_seconds"],
+            "healthy": event_file["status"] == "available",
+            "latest_updated_at_utc": event_file["latest_updated_at_utc"],
+            "age_seconds": event_file["age_seconds"],
         }
     )
     return connections
@@ -806,24 +777,17 @@ def _dashboard_source_outputs(*, storage_root: Path, manager_storage_root: Path,
             execution_note,
         ),
         (
-            "Trading Economics Recent Calendar Receipt",
-            "trading_economics_calendar_receipt",
+            "Trading Economics Canonical Source Receipt",
+            "trading_economics_calendar_source_receipt",
             _latest_matching_file(storage_root / "01_source_data/monthly_backfill/trading_economics_calendar_web", "**/completion_receipt.json"),
-            "heartbeat",
+            "source_snapshot",
             source_note,
         ),
         (
-            "Trading Economics Recent Calendar Events",
-            "trading_economics_calendar_events",
+            "Trading Economics Canonical Source Events",
+            "trading_economics_calendar_source_events",
             _latest_matching_file(storage_root / "01_source_data/monthly_backfill/trading_economics_calendar_web", "**/saved/trading_economics_calendar_event.csv"),
-            "heartbeat",
-            source_note,
-        ),
-        (
-            "Historical TE Calendar Seed Receipt",
-            "trading_economics_historical_seed_receipt",
-            _latest_matching_file(storage_root / "01_source_data/runtime", "source_*_event_risk_governor/te_calendar_historical_seed_*/completion_receipt.json"),
-            "event_driven",
+            "source_snapshot",
             source_note,
         ),
         (
@@ -858,13 +822,6 @@ def _dashboard_source_outputs(*, storage_root: Path, manager_storage_root: Path,
             "Temporal Explorer Read Model",
             "storage_dashboard_temporal_explorer_latest",
             storage_root / "06_dashboard_cache/read_models/temporal_explorer_summary/latest.json",
-            "heartbeat",
-            dashboard_note,
-        ),
-        (
-            "Event Calendar Read Model",
-            "storage_dashboard_event_calendar_latest",
-            storage_root / "06_dashboard_cache/read_models/event_calendar_summary/latest.json",
             "heartbeat",
             dashboard_note,
         ),

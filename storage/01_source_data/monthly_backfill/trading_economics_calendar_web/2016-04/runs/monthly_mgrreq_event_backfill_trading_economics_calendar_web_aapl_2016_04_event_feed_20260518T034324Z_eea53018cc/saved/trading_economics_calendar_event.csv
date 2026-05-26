@@ -1,9 +1,9 @@
-event_time,country,event,source_event_type,reference,actual,previous,consensus,te_forecast,revised,importance,symbol,source_url
-2016-04-01T08:30:00-04:00,United States,Non Farm Payrolls,non farm payrolls,MAR,215K,245K,205K,215K,®,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2016-04-01&end=2016-05-01
-2016-04-05T08:30:00-04:00,United States,Balance of Trade,balance of trade,FEB,$-47.06B,$-45.88B,$ -46.2B,,®,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2016-04-01&end=2016-05-01
-2016-04-13T08:30:00-04:00,United States,Retail Sales MoM,retail sales mom,MAR,-0.3%,0.0%,0.1%,0.3%,®,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2016-04-01&end=2016-05-01
-2016-04-14T08:30:00-04:00,United States,Core Inflation Rate YoY,core inflation rate,MAR,2.2%,2.3%,2.3%,2.3%,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2016-04-01&end=2016-05-01
-2016-04-14T08:30:00-04:00,United States,Inflation Rate YoY,inflation rate,MAR,0.9%,1.0%,1.1%,1.1%,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2016-04-01&end=2016-05-01
-2016-04-26T08:30:00-04:00,United States,Durable Goods Orders MoM,durable goods orders,MAR,0.8%,-3.1%,1.8%,1.02%,®,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2016-04-01&end=2016-05-01
-2016-04-29T08:30:00-04:00,United States,Personal Income (MoM),personal income,MAR,0.4%,0.1%,0.3%,0.3%,®,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2016-04-01&end=2016-05-01
-2016-04-29T08:30:00-04:00,United States,Personal Spending MoM,personal spending,MAR,0.1%,0.2%,0.2%,0.3%,®,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2016-04-01&end=2016-05-01
+event_time,country,event,source_event_type,reference,actual,previous,consensus,te_forecast,revised,importance,symbol
+2016-04-01T08:30:00-04:00,United States,Non Farm Payrolls,non farm payrolls,MAR,215K,245K,205K,215K,®,3,
+2016-04-05T08:30:00-04:00,United States,Balance of Trade,balance of trade,FEB,$-47.06B,$-45.88B,$ -46.2B,,®,3,
+2016-04-13T08:30:00-04:00,United States,Retail Sales MoM,retail sales mom,MAR,-0.3%,0.0%,0.1%,0.3%,®,3,
+2016-04-14T08:30:00-04:00,United States,Core Inflation Rate YoY,core inflation rate,MAR,2.2%,2.3%,2.3%,2.3%,,3,
+2016-04-14T08:30:00-04:00,United States,Inflation Rate YoY,inflation rate,MAR,0.9%,1.0%,1.1%,1.1%,,3,
+2016-04-26T08:30:00-04:00,United States,Durable Goods Orders MoM,durable goods orders,MAR,0.8%,-3.1%,1.8%,1.02%,®,3,
+2016-04-29T08:30:00-04:00,United States,Personal Income (MoM),personal income,MAR,0.4%,0.1%,0.3%,0.3%,®,3,
+2016-04-29T08:30:00-04:00,United States,Personal Spending MoM,personal spending,MAR,0.1%,0.2%,0.2%,0.3%,®,3,

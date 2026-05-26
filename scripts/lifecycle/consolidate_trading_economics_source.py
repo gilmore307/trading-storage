@@ -29,7 +29,6 @@ FIELDS = [
     "revised",
     "importance",
     "symbol",
-    "source_url",
 ]
 ET = ZoneInfo("America/New_York")
 

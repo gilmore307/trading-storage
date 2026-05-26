@@ -1,18 +1,18 @@
-event_time,country,event,source_event_type,reference,actual,previous,consensus,te_forecast,revised,importance,symbol,source_url
-2022-08-01T10:00:00-04:00,United States,ISM Manufacturing PMI,business confidence,JUL,52.8,53,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2022-08-01&end=2022-09-01
-2022-08-02T10:00:00-04:00,United States,JOLTs Job Openings,job offers,JUN,10.698M,11.303M,,,®,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2022-08-01&end=2022-09-01
-2022-08-03T10:00:00-04:00,United States,ISM Non-Manufacturing PMI,non manufacturing pmi,JUL,56.7,55.3,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2022-08-01&end=2022-09-01
-2022-08-04T08:30:00-04:00,United States,Balance of Trade,balance of trade,JUN,$-79.6B,$-84.9B,,,®,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2022-08-01&end=2022-09-01
-2022-08-05T08:30:00-04:00,United States,Non Farm Payrolls,non farm payrolls,JUL,528K,398K,,,®,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2022-08-01&end=2022-09-01
-2022-08-10T08:30:00-04:00,United States,Core Inflation Rate YoY,core inflation rate,JUL,5.9%,5.9%,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2022-08-01&end=2022-09-01
-2022-08-10T08:30:00-04:00,United States,Inflation Rate YoY,inflation rate,JUL,8.5%,9.1%,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2022-08-01&end=2022-09-01
-2022-08-11T08:30:00-04:00,United States,PPI MoM,producer price inflation mom,JUL,-0.5%,1%,,,®,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2022-08-01&end=2022-09-01
-2022-08-12T10:00:00-04:00,United States,Michigan Consumer Sentiment Prel,consumer confidence,AUG,55.1,51.5,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2022-08-01&end=2022-09-01
-2022-08-16T08:30:00-04:00,United States,Building Permits,building permits,JUL,1.674M,1.696M,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2022-08-01&end=2022-09-01
-2022-08-17T08:30:00-04:00,United States,Retail Sales MoM,retail sales mom,JUL,0%,0.8%,,,®,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2022-08-01&end=2022-09-01
-2022-08-17T14:00:00-04:00,United States,FOMC Minutes,interest rate,,,,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2022-08-01&end=2022-09-01
-2022-08-24T08:30:00-04:00,United States,Durable Goods Orders MoM,durable goods orders,JUL,0%,2.2%,,,®,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2022-08-01&end=2022-09-01
-2022-08-26T08:30:00-04:00,United States,Personal Income MoM,personal income,JUL,0.2%,0.7%,,,®,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2022-08-01&end=2022-09-01
-2022-08-26T08:30:00-04:00,United States,Personal Spending MoM,personal spending,JUL,0.1%,1%,,,®,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2022-08-01&end=2022-09-01
-2022-08-26T10:00:00-04:00,United States,Fed Chair Powell Speech,interest rate,,,,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2022-08-01&end=2022-09-01
-2022-08-30T10:00:00-04:00,United States,JOLTs Job Openings,job offers,JUL,11.239M,11.040M,,,®,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2022-08-01&end=2022-09-01
+event_time,country,event,source_event_type,reference,actual,previous,consensus,te_forecast,revised,importance,symbol
+2022-08-01T10:00:00-04:00,United States,ISM Manufacturing PMI,business confidence,JUL,52.8,53,,,,3,
+2022-08-02T10:00:00-04:00,United States,JOLTs Job Openings,job offers,JUN,10.698M,11.303M,,,®,3,
+2022-08-03T10:00:00-04:00,United States,ISM Non-Manufacturing PMI,non manufacturing pmi,JUL,56.7,55.3,,,,3,
+2022-08-04T08:30:00-04:00,United States,Balance of Trade,balance of trade,JUN,$-79.6B,$-84.9B,,,®,3,
+2022-08-05T08:30:00-04:00,United States,Non Farm Payrolls,non farm payrolls,JUL,528K,398K,,,®,3,
+2022-08-10T08:30:00-04:00,United States,Core Inflation Rate YoY,core inflation rate,JUL,5.9%,5.9%,,,,3,
+2022-08-10T08:30:00-04:00,United States,Inflation Rate YoY,inflation rate,JUL,8.5%,9.1%,,,,3,
+2022-08-11T08:30:00-04:00,United States,PPI MoM,producer price inflation mom,JUL,-0.5%,1%,,,®,3,
+2022-08-12T10:00:00-04:00,United States,Michigan Consumer Sentiment Prel,consumer confidence,AUG,55.1,51.5,,,,3,
+2022-08-16T08:30:00-04:00,United States,Building Permits,building permits,JUL,1.674M,1.696M,,,,3,
+2022-08-17T08:30:00-04:00,United States,Retail Sales MoM,retail sales mom,JUL,0%,0.8%,,,®,3,
+2022-08-17T14:00:00-04:00,United States,FOMC Minutes,interest rate,,,,,,,3,
+2022-08-24T08:30:00-04:00,United States,Durable Goods Orders MoM,durable goods orders,JUL,0%,2.2%,,,®,3,
+2022-08-26T08:30:00-04:00,United States,Personal Income MoM,personal income,JUL,0.2%,0.7%,,,®,3,
+2022-08-26T08:30:00-04:00,United States,Personal Spending MoM,personal spending,JUL,0.1%,1%,,,®,3,
+2022-08-26T10:00:00-04:00,United States,Fed Chair Powell Speech,interest rate,,,,,,,3,
+2022-08-30T10:00:00-04:00,United States,JOLTs Job Openings,job offers,JUL,11.239M,11.040M,,,®,3,

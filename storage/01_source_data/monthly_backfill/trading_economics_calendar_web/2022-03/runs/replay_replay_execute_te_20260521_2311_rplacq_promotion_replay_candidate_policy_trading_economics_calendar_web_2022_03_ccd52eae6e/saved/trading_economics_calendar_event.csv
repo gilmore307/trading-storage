@@ -1,18 +1,18 @@
-event_time,country,event,source_event_type,reference,actual,previous,consensus,te_forecast,revised,importance,symbol,source_url
-2022-03-01T10:00:00-05:00,United States,ISM Manufacturing PMI,business confidence,FEB,58.6,57.6,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2022-03-01&end=2022-04-01
-2022-03-03T10:00:00-05:00,United States,Fed Chair Powell Testimony,interest rate,,,,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2022-03-01&end=2022-04-01
-2022-03-03T10:00:00-05:00,United States,ISM Non-Manufacturing PMI,non manufacturing pmi,FEB,56.5,59.9,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2022-03-01&end=2022-04-01
-2022-03-04T08:30:00-05:00,United States,Non Farm Payrolls,non farm payrolls,FEB,678K,481K,,,®,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2022-03-01&end=2022-04-01
-2022-03-08T08:30:00-05:00,United States,Balance of Trade,balance of trade,JAN,$-89.7B,$-82B,,,®,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2022-03-01&end=2022-04-01
-2022-03-09T10:00:00-05:00,United States,JOLTs Job Openings,job offers,JAN,11.263M,11.448M,,,®,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2022-03-01&end=2022-04-01
-2022-03-10T08:30:00-05:00,United States,Core Inflation Rate YoY,core inflation rate,FEB,6.4%,6%,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2022-03-01&end=2022-04-01
-2022-03-10T08:30:00-05:00,United States,Inflation Rate YoY,inflation rate,FEB,7.9%,7.5%,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2022-03-01&end=2022-04-01
-2022-03-11T10:00:00-05:00,United States,Michigan Consumer Sentiment Prel,consumer confidence,MAR,59.7,62.8,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2022-03-01&end=2022-04-01
-2022-03-15T07:30:00-04:00,United States,PPI MoM,producer price inflation mom,FEB,0.8%,1.2%,,,®,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2022-03-01&end=2022-04-01
-2022-03-16T07:30:00-04:00,United States,Retail Sales MoM,retail sales mom,FEB,0.3%,4.9%,,,®,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2022-03-01&end=2022-04-01
-2022-03-16T13:30:00-04:00,United States,Fed Press Conference,interest rate,,,,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2022-03-01&end=2022-04-01
-2022-03-17T07:30:00-04:00,United States,Building Permits,building permits,FEB,1.859M,1.895M,,,®,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2022-03-01&end=2022-04-01
-2022-03-24T07:30:00-04:00,United States,Durable Goods Orders MoM,durable goods orders,FEB,-2.2%,1.6%,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2022-03-01&end=2022-04-01
-2022-03-29T09:00:00-04:00,United States,JOLTs Job Openings,job offers,FEB,11.266M,11.283M,,,®,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2022-03-01&end=2022-04-01
-2022-03-31T07:30:00-04:00,United States,Personal Income MoM,personal income,FEB,0.5%,0.1%,,,®,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2022-03-01&end=2022-04-01
-2022-03-31T07:30:00-04:00,United States,Personal Spending MoM,personal spending,FEB,0.2%,2.7%,,,®,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2022-03-01&end=2022-04-01
+event_time,country,event,source_event_type,reference,actual,previous,consensus,te_forecast,revised,importance,symbol
+2022-03-01T10:00:00-05:00,United States,ISM Manufacturing PMI,business confidence,FEB,58.6,57.6,,,,3,
+2022-03-03T10:00:00-05:00,United States,Fed Chair Powell Testimony,interest rate,,,,,,,3,
+2022-03-03T10:00:00-05:00,United States,ISM Non-Manufacturing PMI,non manufacturing pmi,FEB,56.5,59.9,,,,3,
+2022-03-04T08:30:00-05:00,United States,Non Farm Payrolls,non farm payrolls,FEB,678K,481K,,,®,3,
+2022-03-08T08:30:00-05:00,United States,Balance of Trade,balance of trade,JAN,$-89.7B,$-82B,,,®,3,
+2022-03-09T10:00:00-05:00,United States,JOLTs Job Openings,job offers,JAN,11.263M,11.448M,,,®,3,
+2022-03-10T08:30:00-05:00,United States,Core Inflation Rate YoY,core inflation rate,FEB,6.4%,6%,,,,3,
+2022-03-10T08:30:00-05:00,United States,Inflation Rate YoY,inflation rate,FEB,7.9%,7.5%,,,,3,
+2022-03-11T10:00:00-05:00,United States,Michigan Consumer Sentiment Prel,consumer confidence,MAR,59.7,62.8,,,,3,
+2022-03-15T07:30:00-04:00,United States,PPI MoM,producer price inflation mom,FEB,0.8%,1.2%,,,®,3,
+2022-03-16T07:30:00-04:00,United States,Retail Sales MoM,retail sales mom,FEB,0.3%,4.9%,,,®,3,
+2022-03-16T13:30:00-04:00,United States,Fed Press Conference,interest rate,,,,,,,3,
+2022-03-17T07:30:00-04:00,United States,Building Permits,building permits,FEB,1.859M,1.895M,,,®,3,
+2022-03-24T07:30:00-04:00,United States,Durable Goods Orders MoM,durable goods orders,FEB,-2.2%,1.6%,,,,3,
+2022-03-29T09:00:00-04:00,United States,JOLTs Job Openings,job offers,FEB,11.266M,11.283M,,,®,3,
+2022-03-31T07:30:00-04:00,United States,Personal Income MoM,personal income,FEB,0.5%,0.1%,,,®,3,
+2022-03-31T07:30:00-04:00,United States,Personal Spending MoM,personal spending,FEB,0.2%,2.7%,,,®,3,

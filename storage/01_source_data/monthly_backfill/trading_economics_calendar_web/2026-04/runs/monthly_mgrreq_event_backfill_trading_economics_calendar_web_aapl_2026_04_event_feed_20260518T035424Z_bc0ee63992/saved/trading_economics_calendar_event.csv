@@ -1,32 +1,32 @@
-event_time,country,event,source_event_type,reference,actual,previous,consensus,te_forecast,revised,importance,symbol,source_url
-2026-04-01T08:30:00-04:00,United States,Retail Sales MoM,retail sales mom,FEB,0.6%,-0.1%,,,®,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2026-04-01&end=2026-05-01
-2026-04-01T10:00:00-04:00,United States,ISM Manufacturing PMI,business confidence,MAR,52.7,52.4,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2026-04-01&end=2026-05-01
-2026-04-01T21:00:00-04:00,United States,Us President Trump Speech,calendar,,,,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2026-04-01&end=2026-05-01
-2026-04-03T08:30:00-04:00,United States,Non Farm Payrolls,non farm payrolls,MAR,178K,-133K,,,®,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2026-04-01&end=2026-05-01
-2026-04-03T08:30:00-04:00,United States,Unemployment Rate,unemployment rate,MAR,4.3%,4.4%,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2026-04-01&end=2026-05-01
-2026-04-06T10:00:00-04:00,United States,ISM Services PMI,non manufacturing pmi,MAR,54.0,56.1,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2026-04-01&end=2026-05-01
-2026-04-07T08:30:00-04:00,United States,Durable Goods Orders MoM,durable goods orders,FEB,-1.4%,-0.5%,,,®,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2026-04-01&end=2026-05-01
-2026-04-08T14:00:00-04:00,United States,FOMC Minutes,interest rate,,,,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2026-04-01&end=2026-05-01
-2026-04-09T08:30:00-04:00,United States,Core PCE Price Index MoM,core pce price index mom,FEB,0.4%,0.4%,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2026-04-01&end=2026-05-01
-2026-04-09T08:30:00-04:00,United States,GDP Growth Rate QoQ Final,gdp growth rate,Q4,0.5%,4.4%,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2026-04-01&end=2026-05-01
-2026-04-09T08:30:00-04:00,United States,Personal Income MoM,personal income,FEB,-0.1%,0.4%,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2026-04-01&end=2026-05-01
-2026-04-09T08:30:00-04:00,United States,Personal Spending MoM,personal spending,FEB,0.5%,0.3%,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2026-04-01&end=2026-05-01
-2026-04-10T08:30:00-04:00,United States,Core Inflation Rate MoM,core inflation rate mom,MAR,0.2%,0.2%,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2026-04-01&end=2026-05-01
-2026-04-10T08:30:00-04:00,United States,Core Inflation Rate YoY,core inflation rate,MAR,2.6%,2.5%,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2026-04-01&end=2026-05-01
-2026-04-10T08:30:00-04:00,United States,Inflation Rate MoM,inflation rate mom,MAR,0.9%,0.3%,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2026-04-01&end=2026-05-01
-2026-04-10T08:30:00-04:00,United States,Inflation Rate YoY,inflation rate,MAR,3.3%,2.4%,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2026-04-01&end=2026-05-01
-2026-04-10T10:00:00-04:00,United States,Michigan Consumer Sentiment Prel,consumer confidence,APR,47.6,53.3,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2026-04-01&end=2026-05-01
-2026-04-13T10:00:00-04:00,United States,Existing Home Sales,existing home sales,MAR,3.98M,4.13M,,,®,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2026-04-01&end=2026-05-01
-2026-04-14T08:30:00-04:00,United States,PPI MoM,producer price inflation mom,MAR,0.5%,0.5%,,,®,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2026-04-01&end=2026-05-01
-2026-04-21T08:30:00-04:00,United States,Retail Sales MoM,retail sales mom,MAR,1.7%,0.7%,,,®,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2026-04-01&end=2026-05-01
-2026-04-29T08:30:00-04:00,United States,Building Permits Prel,building permits,FEB,1.538M,1.386M,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2026-04-01&end=2026-05-01
-2026-04-29T08:30:00-04:00,United States,Building Permits Prel,building permits,MAR,1.372M,1.538M,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2026-04-01&end=2026-05-01
-2026-04-29T08:30:00-04:00,United States,Durable Goods Orders MoM,durable goods orders,MAR,0.8%,-1.2%,,,®,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2026-04-01&end=2026-05-01
-2026-04-29T08:30:00-04:00,United States,Housing Starts,housing starts,FEB,1.356M,1.398M,,,®,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2026-04-01&end=2026-05-01
-2026-04-29T08:30:00-04:00,United States,Housing Starts,housing starts,MAR,1.502M,1.356M,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2026-04-01&end=2026-05-01
-2026-04-29T14:00:00-04:00,United States,Fed Interest Rate Decision,interest rate,,3.75%,3.75%,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2026-04-01&end=2026-05-01
-2026-04-29T14:30:00-04:00,United States,Fed Press Conference,interest rate,,,,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2026-04-01&end=2026-05-01
-2026-04-30T08:30:00-04:00,United States,Core PCE Price Index MoM,core pce price index mom,MAR,0.3%,0.4%,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2026-04-01&end=2026-05-01
-2026-04-30T08:30:00-04:00,United States,GDP Growth Rate QoQ Adv,gdp growth rate,Q1,2.0%,0.5%,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2026-04-01&end=2026-05-01
-2026-04-30T08:30:00-04:00,United States,Personal Income MoM,personal income,MAR,0.6%,0%,,,®,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2026-04-01&end=2026-05-01
-2026-04-30T08:30:00-04:00,United States,Personal Spending MoM,personal spending,MAR,0.9%,0.6%,,,®,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2026-04-01&end=2026-05-01
+event_time,country,event,source_event_type,reference,actual,previous,consensus,te_forecast,revised,importance,symbol
+2026-04-01T08:30:00-04:00,United States,Retail Sales MoM,retail sales mom,FEB,0.6%,-0.1%,,,®,3,
+2026-04-01T10:00:00-04:00,United States,ISM Manufacturing PMI,business confidence,MAR,52.7,52.4,,,,3,
+2026-04-01T21:00:00-04:00,United States,Us President Trump Speech,calendar,,,,,,,3,
+2026-04-03T08:30:00-04:00,United States,Non Farm Payrolls,non farm payrolls,MAR,178K,-133K,,,®,3,
+2026-04-03T08:30:00-04:00,United States,Unemployment Rate,unemployment rate,MAR,4.3%,4.4%,,,,3,
+2026-04-06T10:00:00-04:00,United States,ISM Services PMI,non manufacturing pmi,MAR,54.0,56.1,,,,3,
+2026-04-07T08:30:00-04:00,United States,Durable Goods Orders MoM,durable goods orders,FEB,-1.4%,-0.5%,,,®,3,
+2026-04-08T14:00:00-04:00,United States,FOMC Minutes,interest rate,,,,,,,3,
+2026-04-09T08:30:00-04:00,United States,Core PCE Price Index MoM,core pce price index mom,FEB,0.4%,0.4%,,,,3,
+2026-04-09T08:30:00-04:00,United States,GDP Growth Rate QoQ Final,gdp growth rate,Q4,0.5%,4.4%,,,,3,
+2026-04-09T08:30:00-04:00,United States,Personal Income MoM,personal income,FEB,-0.1%,0.4%,,,,3,
+2026-04-09T08:30:00-04:00,United States,Personal Spending MoM,personal spending,FEB,0.5%,0.3%,,,,3,
+2026-04-10T08:30:00-04:00,United States,Core Inflation Rate MoM,core inflation rate mom,MAR,0.2%,0.2%,,,,3,
+2026-04-10T08:30:00-04:00,United States,Core Inflation Rate YoY,core inflation rate,MAR,2.6%,2.5%,,,,3,
+2026-04-10T08:30:00-04:00,United States,Inflation Rate MoM,inflation rate mom,MAR,0.9%,0.3%,,,,3,
+2026-04-10T08:30:00-04:00,United States,Inflation Rate YoY,inflation rate,MAR,3.3%,2.4%,,,,3,
+2026-04-10T10:00:00-04:00,United States,Michigan Consumer Sentiment Prel,consumer confidence,APR,47.6,53.3,,,,3,
+2026-04-13T10:00:00-04:00,United States,Existing Home Sales,existing home sales,MAR,3.98M,4.13M,,,®,3,
+2026-04-14T08:30:00-04:00,United States,PPI MoM,producer price inflation mom,MAR,0.5%,0.5%,,,®,3,
+2026-04-21T08:30:00-04:00,United States,Retail Sales MoM,retail sales mom,MAR,1.7%,0.7%,,,®,3,
+2026-04-29T08:30:00-04:00,United States,Building Permits Prel,building permits,FEB,1.538M,1.386M,,,,3,
+2026-04-29T08:30:00-04:00,United States,Building Permits Prel,building permits,MAR,1.372M,1.538M,,,,3,
+2026-04-29T08:30:00-04:00,United States,Durable Goods Orders MoM,durable goods orders,MAR,0.8%,-1.2%,,,®,3,
+2026-04-29T08:30:00-04:00,United States,Housing Starts,housing starts,FEB,1.356M,1.398M,,,®,3,
+2026-04-29T08:30:00-04:00,United States,Housing Starts,housing starts,MAR,1.502M,1.356M,,,,3,
+2026-04-29T14:00:00-04:00,United States,Fed Interest Rate Decision,interest rate,,3.75%,3.75%,,,,3,
+2026-04-29T14:30:00-04:00,United States,Fed Press Conference,interest rate,,,,,,,3,
+2026-04-30T08:30:00-04:00,United States,Core PCE Price Index MoM,core pce price index mom,MAR,0.3%,0.4%,,,,3,
+2026-04-30T08:30:00-04:00,United States,GDP Growth Rate QoQ Adv,gdp growth rate,Q1,2.0%,0.5%,,,,3,
+2026-04-30T08:30:00-04:00,United States,Personal Income MoM,personal income,MAR,0.6%,0%,,,®,3,
+2026-04-30T08:30:00-04:00,United States,Personal Spending MoM,personal spending,MAR,0.9%,0.6%,,,®,3,

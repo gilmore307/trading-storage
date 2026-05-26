@@ -6,7 +6,6 @@ Executable helpers for storage-hosted dashboard summary/read-model payloads.
 - `prune_dashboard_snapshots.py` plans or applies bounded deletion of dashboard read-model snapshot metadata outside the recent-count hot window while preserving `latest.json`, schemas, index rows, Layer 1/2 data, and SQL.
 - `refresh_historical_task_progress_read_model.py` runs the manager-owned `historical_task_progress_summary` semantic producer and materializes the validated payload under `storage/06_dashboard_cache/`.
 - `refresh_current_system_status_read_model.py` refreshes `current_system_status_summary` from read-only infrastructure observations.
-- `refresh_event_calendar_summary_read_model.py` refreshes the narrow `event_calendar_summary` from accepted SQL event-calendar rows plus Trading Economics source evidence.
 - `refresh_temporal_explorer_summary_read_model.py` refreshes `temporal_explorer_summary`, the primary Timewheel/Temporal Explorer page model.
 - `refresh_realtime_signal_summary_read_model.py` refreshes `realtime_signal_summary` from execution-owned realtime monitor receipts.
 - `refresh_execution_runtime_status_read_model.py` refreshes `execution_realtime_trading_runtime_status` from the execution-owned readiness artifact for WebSocket clients.

@@ -1,14 +1,14 @@
-event_time,country,event,source_event_type,reference,actual,previous,consensus,te_forecast,revised,importance,symbol,source_url
-2025-10-01T10:00:00-04:00,United States,ISM Manufacturing PMI,business confidence,SEP,49.1,48.7,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2025-10-01&end=2025-11-01
-2025-10-03T10:00:00-04:00,United States,ISM Services PMI,non manufacturing pmi,SEP,50.0,52.0,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2025-10-01&end=2025-11-01
-2025-10-08T14:00:00-04:00,United States,FOMC Minutes,interest rate,,,,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2025-10-01&end=2025-11-01
-2025-10-10T10:00:00-04:00,United States,Michigan Consumer Sentiment Prel,consumer confidence,OCT,55.0,55.1,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2025-10-01&end=2025-11-01
-2025-10-14T12:20:00-04:00,United States,Fed Chair Powell Speech,interest rate,,,,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2025-10-01&end=2025-11-01
-2025-10-23T10:00:00-04:00,United States,Existing Home Sales,existing home sales,SEP,4.06M,4M,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2025-10-01&end=2025-11-01
-2025-10-24T08:30:00-04:00,United States,Core Inflation Rate MoM,core inflation rate mom,SEP,0.2%,0.3%,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2025-10-01&end=2025-11-01
-2025-10-24T08:30:00-04:00,United States,Core Inflation Rate YoY,core inflation rate,SEP,3%,3.1%,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2025-10-01&end=2025-11-01
-2025-10-24T08:30:00-04:00,United States,Inflation Rate MoM,inflation rate mom,SEP,0.3%,0.4%,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2025-10-01&end=2025-11-01
-2025-10-24T08:30:00-04:00,United States,Inflation Rate YoY,inflation rate,SEP,3%,2.9%,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2025-10-01&end=2025-11-01
-2025-10-29T14:00:00-04:00,United States,Fed Interest Rate Decision,interest rate,,4.0%,4.25%,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2025-10-01&end=2025-11-01
-2025-10-29T14:30:00-04:00,United States,Fed Press Conference,interest rate,,,,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2025-10-01&end=2025-11-01
-2025-10-30T08:30:00-04:00,United States,GDP Growth Rate QoQ Adv,gdp growth rate,Q3,,3.8%,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2025-10-01&end=2025-11-01
+event_time,country,event,source_event_type,reference,actual,previous,consensus,te_forecast,revised,importance,symbol
+2025-10-01T10:00:00-04:00,United States,ISM Manufacturing PMI,business confidence,SEP,49.1,48.7,,,,3,
+2025-10-03T10:00:00-04:00,United States,ISM Services PMI,non manufacturing pmi,SEP,50.0,52.0,,,,3,
+2025-10-08T14:00:00-04:00,United States,FOMC Minutes,interest rate,,,,,,,3,
+2025-10-10T10:00:00-04:00,United States,Michigan Consumer Sentiment Prel,consumer confidence,OCT,55.0,55.1,,,,3,
+2025-10-14T12:20:00-04:00,United States,Fed Chair Powell Speech,interest rate,,,,,,,3,
+2025-10-23T10:00:00-04:00,United States,Existing Home Sales,existing home sales,SEP,4.06M,4M,,,,3,
+2025-10-24T08:30:00-04:00,United States,Core Inflation Rate MoM,core inflation rate mom,SEP,0.2%,0.3%,,,,3,
+2025-10-24T08:30:00-04:00,United States,Core Inflation Rate YoY,core inflation rate,SEP,3%,3.1%,,,,3,
+2025-10-24T08:30:00-04:00,United States,Inflation Rate MoM,inflation rate mom,SEP,0.3%,0.4%,,,,3,
+2025-10-24T08:30:00-04:00,United States,Inflation Rate YoY,inflation rate,SEP,3%,2.9%,,,,3,
+2025-10-29T14:00:00-04:00,United States,Fed Interest Rate Decision,interest rate,,4.0%,4.25%,,,,3,
+2025-10-29T14:30:00-04:00,United States,Fed Press Conference,interest rate,,,,,,,3,
+2025-10-30T08:30:00-04:00,United States,GDP Growth Rate QoQ Adv,gdp growth rate,Q3,,3.8%,,,,3,

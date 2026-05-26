@@ -1,2 +1,2 @@
-event_time,country,event,source_event_type,reference,actual,previous,consensus,te_forecast,revised,importance,symbol,source_url
-2023-05-01T10:00:00-04:00,United States,ISM Manufacturing PMI,business confidence,APR,47.1,46.3,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2023-05-01&end=2023-06-01
+event_time,country,event,source_event_type,reference,actual,previous,consensus,te_forecast,revised,importance,symbol
+2023-05-01T10:00:00-04:00,United States,ISM Manufacturing PMI,business confidence,APR,47.1,46.3,,,,3,

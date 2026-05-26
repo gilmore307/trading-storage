@@ -1,9 +1,9 @@
-event_time,country,event,source_event_type,reference,actual,previous,consensus,te_forecast,revised,importance,symbol,source_url
-2018-12-06T08:30:00-05:00,United States,Balance of Trade,balance of trade,OCT,$-55.5B,$-54.6B,,,®,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2018-12-01&end=2019-01-01
-2018-12-07T08:30:00-05:00,United States,Non Farm Payrolls,non farm payrolls,NOV,155K,237K,,,®,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2018-12-01&end=2019-01-01
-2018-12-12T08:30:00-05:00,United States,Core Inflation Rate YoY,core inflation rate,NOV,2.2%,2.1%,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2018-12-01&end=2019-01-01
-2018-12-12T08:30:00-05:00,United States,Inflation Rate YoY,inflation rate,NOV,2.2%,2.5%,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2018-12-01&end=2019-01-01
-2018-12-14T08:30:00-05:00,United States,Retail Sales MoM,retail sales mom,NOV,0.2%,1.1%,,,®,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2018-12-01&end=2019-01-01
-2018-12-21T08:30:00-05:00,United States,Durable Goods Orders MoM,durable goods orders,NOV,0.8%,-4.3%,,,®,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2018-12-01&end=2019-01-01
-2018-12-21T10:00:00-05:00,United States,Personal Income MoM,personal income,NOV,0.2%,0.5%,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2018-12-01&end=2019-01-01
-2018-12-21T10:00:00-05:00,United States,Personal Spending MoM,personal spending,NOV,0.4%,0.8%,,,®,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2018-12-01&end=2019-01-01
+event_time,country,event,source_event_type,reference,actual,previous,consensus,te_forecast,revised,importance,symbol
+2018-12-06T08:30:00-05:00,United States,Balance of Trade,balance of trade,OCT,$-55.5B,$-54.6B,,,®,3,
+2018-12-07T08:30:00-05:00,United States,Non Farm Payrolls,non farm payrolls,NOV,155K,237K,,,®,3,
+2018-12-12T08:30:00-05:00,United States,Core Inflation Rate YoY,core inflation rate,NOV,2.2%,2.1%,,,,3,
+2018-12-12T08:30:00-05:00,United States,Inflation Rate YoY,inflation rate,NOV,2.2%,2.5%,,,,3,
+2018-12-14T08:30:00-05:00,United States,Retail Sales MoM,retail sales mom,NOV,0.2%,1.1%,,,®,3,
+2018-12-21T08:30:00-05:00,United States,Durable Goods Orders MoM,durable goods orders,NOV,0.8%,-4.3%,,,®,3,
+2018-12-21T10:00:00-05:00,United States,Personal Income MoM,personal income,NOV,0.2%,0.5%,,,,3,
+2018-12-21T10:00:00-05:00,United States,Personal Spending MoM,personal spending,NOV,0.4%,0.8%,,,®,3,

@@ -1,228 +1,228 @@
-event_time,country,event,source_event_type,reference,actual,previous,consensus,te_forecast,revised,importance,symbol,source_url
-2018-10-01T09:00:00-04:00,United States,Fed Bostic Speech,interest rate,,,,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2018-10-01&end=2018-11-01
-2018-10-01T09:45:00-04:00,United States,Markit Manufacturing PMI Final,manufacturing pmi,SEP,55.6,54.7,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2018-10-01&end=2018-11-01
-2018-10-01T10:00:00-04:00,United States,Construction Spending MoM,construction spending,AUG,0.1%,0.2%,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2018-10-01&end=2018-11-01
-2018-10-01T10:00:00-04:00,United States,ISM Manufacturing Employment,ism manufacturing employment,SEP,58.8,58.5,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2018-10-01&end=2018-11-01
-2018-10-01T10:00:00-04:00,United States,ISM Manufacturing New Orders,ism manufacturing new orders,SEP,61.8,65.1,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2018-10-01&end=2018-11-01
-2018-10-01T10:00:00-04:00,United States,ISM Manufacturing PMI,business confidence,SEP,59.8,61.3,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2018-10-01&end=2018-11-01
-2018-10-01T10:00:00-04:00,United States,ISM Manufacturing Prices,ism manufacturing prices,SEP,66.9,72.1,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2018-10-01&end=2018-11-01
-2018-10-01T11:30:00-04:00,United States,3-Month Bill Auction,3 month bill yield,,2.175%,2.180%,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2018-10-01&end=2018-11-01
-2018-10-01T11:30:00-04:00,United States,6-Month Bill Auction,6 month bill yield,,2.335%,2.320%,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2018-10-01&end=2018-11-01
-2018-10-01T12:45:00-04:00,United States,Fed Rosengren Speech,interest rate,,,,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2018-10-01&end=2018-11-01
-2018-10-02T08:55:00-04:00,United States,Redbook MoM,redbook index,SEP/29,0.3%,0.3%,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2018-10-01&end=2018-11-01
-2018-10-02T08:55:00-04:00,United States,Redbook YoY,redbook index,SEP/29,5.7%,5.8%,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2018-10-01&end=2018-11-01
-2018-10-02T09:45:00-04:00,United States,ISM New York Index,ism new york index,SEP,72.5,76.5,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2018-10-01&end=2018-11-01
-2018-10-02T10:00:00-04:00,United States,Fed Quarles Testimony,interest rate,,,,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2018-10-01&end=2018-11-01
-2018-10-02T11:30:00-04:00,United States,4-Week Bill Auction,4 week bill yield,,2.105%,2.080%,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2018-10-01&end=2018-11-01
-2018-10-02T12:45:00-04:00,United States,Fed Chair Powell Speech,interest rate,,,,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2018-10-01&end=2018-11-01
-2018-10-02T16:29:00-04:00,United States,API Crude Oil Stock Change,api crude oil stock change,SEP/28,0.907M,2.903M,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2018-10-01&end=2018-11-01
-2018-10-02T16:30:00-04:00,United States,Total Vehicle Sales,total vehicle sales,SEP,17.44M,16.72M,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2018-10-01&end=2018-11-01
-2018-10-03T06:30:00-04:00,United States,Fed Evans Speech,interest rate,,,,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2018-10-01&end=2018-11-01
-2018-10-03T07:00:00-04:00,United States,MBA 30-Year Mortgage Rate,mortgage rate,SEP/28,4.96%,4.97%,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2018-10-01&end=2018-11-01
-2018-10-03T07:00:00-04:00,United States,MBA Mortgage Applications,mortgage applications,SEP/28,0%,2.9%,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2018-10-01&end=2018-11-01
-2018-10-03T08:05:00-04:00,United States,Fed Barkin Speech,interest rate,,,,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2018-10-01&end=2018-11-01
-2018-10-03T08:15:00-04:00,United States,ADP Employment Change,adp employment change,SEP,230K,168K,,,®,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2018-10-01&end=2018-11-01
-2018-10-03T09:45:00-04:00,United States,Markit Composite PMI Final,composite pmi,SEP,53.9,54.7,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2018-10-01&end=2018-11-01
-2018-10-03T09:45:00-04:00,United States,Markit Services PMI Final,services pmi,SEP,53.5,54.8,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2018-10-01&end=2018-11-01
-2018-10-03T10:00:00-04:00,United States,ISM Non-Manufacturing Business Activity,ism non manufacturing business activity,SEP,65.2,60.7,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2018-10-01&end=2018-11-01
-2018-10-03T10:00:00-04:00,United States,ISM Non-Manufacturing Employment,ism non manufacturing employment,SEP,62.4,56.7,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2018-10-01&end=2018-11-01
-2018-10-03T10:00:00-04:00,United States,ISM Non-Manufacturing New Orders,ism non manufacturing new orders,SEP,61.6,60.4,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2018-10-01&end=2018-11-01
-2018-10-03T10:00:00-04:00,United States,ISM Non-Manufacturing PMI,non manufacturing pmi,SEP,61.6,58.5,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2018-10-01&end=2018-11-01
-2018-10-03T10:00:00-04:00,United States,ISM Non-Manufacturing Prices,ism non manufacturing prices,SEP,64.2,62.8,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2018-10-01&end=2018-11-01
-2018-10-03T10:30:00-04:00,United States,EIA Crude Oil Stocks Change,crude oil stocks change,SEP/28,7.975M,1.852M,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2018-10-01&end=2018-11-01
-2018-10-03T10:30:00-04:00,United States,EIA Gasoline Stocks Change,gasoline stocks change,SEP/28,-0.459M,1.53M,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2018-10-01&end=2018-11-01
-2018-10-03T14:00:00-04:00,United States,Fed Brainard Speech,interest rate,,,,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2018-10-01&end=2018-11-01
-2018-10-03T14:15:00-04:00,United States,Fed Mester Speech,interest rate,,,,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2018-10-01&end=2018-11-01
-2018-10-03T16:00:00-04:00,United States,Fed Chair Powell Speech,interest rate,,,,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2018-10-01&end=2018-11-01
-2018-10-04T07:30:00-04:00,United States,Challenger Job Cuts,challenger job cuts,SEP,55.3K,38.472K,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2018-10-01&end=2018-11-01
-2018-10-04T08:30:00-04:00,United States,Initial Jobless Claims,initial jobless claims,SEP/29,207K,215K,,,®,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2018-10-01&end=2018-11-01
-2018-10-04T08:30:00-04:00,United States,Continuing Jobless Claims,continuing jobless claims,SEP/22,1650K,1663K,,,®,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2018-10-01&end=2018-11-01
-2018-10-04T09:15:00-04:00,United States,Fed Quarles Speech,interest rate,,,,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2018-10-01&end=2018-11-01
-2018-10-04T10:00:00-04:00,United States,Factory Orders MoM,factory orders,AUG,2.3%,-0.5%,,,®,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2018-10-01&end=2018-11-01
-2018-10-04T10:00:00-04:00,United States,Factory Orders ex Transportation,factory orders ex transportation,AUG,0.1%,0.1%,,,®,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2018-10-01&end=2018-11-01
-2018-10-04T10:30:00-04:00,United States,EIA Natural Gas Stocks Change,natural gas stocks change,SEP/28,98Bcf,46Bcf,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2018-10-01&end=2018-11-01
-2018-10-05T08:30:00-04:00,United States,Balance of Trade,balance of trade,AUG,$-53.2B,$-50B,,,®,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2018-10-01&end=2018-11-01
-2018-10-05T08:30:00-04:00,United States,Non Farm Payrolls,non farm payrolls,SEP,134K,270K,,,®,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2018-10-01&end=2018-11-01
-2018-10-05T08:30:00-04:00,United States,Unemployment Rate,unemployment rate,SEP,3.7%,3.9%,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2018-10-01&end=2018-11-01
-2018-10-05T08:30:00-04:00,United States,Average Hourly Earnings MoM,average hourly earnings,SEP,0.3%,0.3%,,,®,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2018-10-01&end=2018-11-01
-2018-10-05T08:30:00-04:00,United States,Average Hourly Earnings YoY,average hourly earnings yoy,SEP,2.8%,2.9%,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2018-10-01&end=2018-11-01
-2018-10-05T08:30:00-04:00,United States,Average Weekly Hours,average weekly hours,SEP,34.5,34.5,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2018-10-01&end=2018-11-01
-2018-10-05T08:30:00-04:00,United States,Exports,exports,AUG,$209.43B,$211.08B,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2018-10-01&end=2018-11-01
-2018-10-05T08:30:00-04:00,United States,Government Payrolls,government payrolls,SEP,13K,16K,,,®,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2018-10-01&end=2018-11-01
-2018-10-05T08:30:00-04:00,United States,Imports,imports,AUG,$262.67B,$261.1B,,,®,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2018-10-01&end=2018-11-01
-2018-10-05T08:30:00-04:00,United States,Manufacturing Payrolls,manufacturing payrolls,SEP,18K,5K,,,®,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2018-10-01&end=2018-11-01
-2018-10-05T08:30:00-04:00,United States,Nonfarm Payrolls Private,nonfarm payrolls private,SEP,121K,254K,,,®,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2018-10-01&end=2018-11-01
-2018-10-05T08:30:00-04:00,United States,Participation Rate,labor force participation rate,SEP,62.7%,62.7%,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2018-10-01&end=2018-11-01
-2018-10-05T12:30:00-04:00,United States,Fed Bostic Speech,interest rate,,,,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2018-10-01&end=2018-11-01
-2018-10-05T13:00:00-04:00,United States,Baker Hughes Oil Rig Count,crude oil rigs,OCT/05,861,863,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2018-10-01&end=2018-11-01
-2018-10-05T15:00:00-04:00,United States,Consumer Credit Change,consumer credit,AUG,$20.08B,$16.6B,,,®,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2018-10-01&end=2018-11-01
-2018-10-09T06:00:00-04:00,United States,NFIB Business Optimism Index,nfib business optimism index,SEP,107.9,108.8,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2018-10-01&end=2018-11-01
-2018-10-09T08:55:00-04:00,United States,Redbook MoM,redbook index,OCT/06,0.4%,0.3%,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2018-10-01&end=2018-11-01
-2018-10-09T08:55:00-04:00,United States,Redbook YoY,redbook index,OCT/06,6.5%,5.7%,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2018-10-01&end=2018-11-01
-2018-10-09T10:00:00-04:00,United States,Fed Evans Speech,interest rate,,,,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2018-10-01&end=2018-11-01
-2018-10-09T10:00:00-04:00,United States,IBD/TIPP Economic Optimism,economic optimism index,OCT,57.8,55.7,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2018-10-01&end=2018-11-01
-2018-10-09T11:00:00-04:00,United States,Consumer Inflation Expectations,inflation expectations,SEP,3%,3%,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2018-10-01&end=2018-11-01
-2018-10-09T11:30:00-04:00,United States,3-Month Bill Auction,3 month bill yield,,2.220%,2.175%,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2018-10-01&end=2018-11-01
-2018-10-09T11:30:00-04:00,United States,6-Month Bill Auction,6 month bill yield,,2.380%,2.335%,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2018-10-01&end=2018-11-01
-2018-10-09T13:00:00-04:00,United States,4-Week Bill Auction,4 week bill yield,,2.135%,2.105%,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2018-10-01&end=2018-11-01
-2018-10-09T13:00:00-04:00,United States,52-Week Bill Auction,52 week bill yield,,2.580%,2.465%,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2018-10-01&end=2018-11-01
-2018-10-09T21:15:00-04:00,United States,Fed Williams Speech,interest rate,,,,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2018-10-01&end=2018-11-01
-2018-10-09T22:35:00-04:00,United States,Fed Williams Speech,interest rate,,,,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2018-10-01&end=2018-11-01
-2018-10-10T07:00:00-04:00,United States,MBA 30-Year Mortgage Rate,mortgage rate,OCT/05,5.05%,4.96%,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2018-10-01&end=2018-11-01
-2018-10-10T07:00:00-04:00,United States,MBA Mortgage Applications,mortgage applications,OCT/05,-1.7%,0%,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2018-10-01&end=2018-11-01
-2018-10-10T08:30:00-04:00,United States,PPI MoM,producer price inflation mom,SEP,0.2%,-0.1%,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2018-10-01&end=2018-11-01
-2018-10-10T08:30:00-04:00,United States,Core PPI MoM,core producer prices mom,SEP,0.2%,-0.1%,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2018-10-01&end=2018-11-01
-2018-10-10T08:30:00-04:00,United States,Core PPI YoY,core producer prices yoy,SEP,2.5%,2.3%,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2018-10-01&end=2018-11-01
-2018-10-10T08:30:00-04:00,United States,PPI YoY,producer prices change,SEP,2.6%,2.8%,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2018-10-01&end=2018-11-01
-2018-10-10T10:00:00-04:00,United States,Wholesale Inventories MoM,wholesale inventories,AUG,1%,0.6%,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2018-10-01&end=2018-11-01
-2018-10-10T11:30:00-04:00,United States,3-Year Note Auction,3 year note yield,,2.989%,2.821%,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2018-10-01&end=2018-11-01
-2018-10-10T12:15:00-04:00,United States,Fed Evans Speech,interest rate,,,,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2018-10-01&end=2018-11-01
-2018-10-10T13:00:00-04:00,United States,10-Year Note Auction,government bond 10y,,3.225%,2.957%,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2018-10-01&end=2018-11-01
-2018-10-10T16:30:00-04:00,United States,API Crude Oil Stock Change,api crude oil stock change,OCT/05,9.75M,0.907M,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2018-10-01&end=2018-11-01
-2018-10-10T18:00:00-04:00,United States,Fed Bostic Speech,interest rate,,,,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2018-10-01&end=2018-11-01
-2018-10-11T08:30:00-04:00,United States,Core Inflation Rate YoY,core inflation rate,SEP,2.2%,2.2%,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2018-10-01&end=2018-11-01
-2018-10-11T08:30:00-04:00,United States,Inflation Rate YoY,inflation rate,SEP,2.3%,2.7%,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2018-10-01&end=2018-11-01
-2018-10-11T08:30:00-04:00,United States,Core Inflation Rate MoM,core inflation rate mom,SEP,0.1%,0.1%,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2018-10-01&end=2018-11-01
-2018-10-11T08:30:00-04:00,United States,Inflation Rate MoM,inflation rate mom,SEP,0.1%,0.2%,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2018-10-01&end=2018-11-01
-2018-10-11T08:30:00-04:00,United States,Initial Jobless Claims,initial jobless claims,OCT/06,214K,207K,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2018-10-01&end=2018-11-01
-2018-10-11T08:30:00-04:00,United States,Continuing Jobless Claims,continuing jobless claims,SEP/29,1660K,1656K,,,®,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2018-10-01&end=2018-11-01
-2018-10-11T10:30:00-04:00,United States,EIA Natural Gas Stocks Change,natural gas stocks change,OCT/05,90Bcf,98Bcf,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2018-10-01&end=2018-11-01
-2018-10-11T11:00:00-04:00,United States,EIA Crude Oil Stocks Change,crude oil stocks change,OCT/05,5.987M,7.975M,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2018-10-01&end=2018-11-01
-2018-10-11T11:00:00-04:00,United States,EIA Gasoline Stocks Change,gasoline stocks change,OCT/05,0.951M,-0.459M,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2018-10-01&end=2018-11-01
-2018-10-11T12:00:00-04:00,United States,Wasde Report,calendar,,,,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2018-10-01&end=2018-11-01
-2018-10-11T13:00:00-04:00,United States,30-Year Bond Auction,30 year bond yield,,3.344%,3.088%,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2018-10-01&end=2018-11-01
-2018-10-12T08:30:00-04:00,United States,Export Prices MoM,export prices mom,SEP,0%,-0.2%,,,®,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2018-10-01&end=2018-11-01
-2018-10-12T08:30:00-04:00,United States,Export Prices YoY,export prices yoy,SEP,2.7%,3.6%,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2018-10-01&end=2018-11-01
-2018-10-12T08:30:00-04:00,United States,Import Prices MoM,import prices mom,SEP,0.5%,-0.4%,,,®,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2018-10-01&end=2018-11-01
-2018-10-12T08:30:00-04:00,United States,Import Prices YoY,import prices yoy,SEP,3.5%,3.7%,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2018-10-01&end=2018-11-01
-2018-10-12T09:30:00-04:00,United States,Fed Evans Speech,interest rate,,,,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2018-10-01&end=2018-11-01
-2018-10-12T10:00:00-04:00,United States,Michigan 5 Year Inflation Expectations Prel,michigan 5 year inflation expectations,OCT,2.3%,2.5%,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2018-10-01&end=2018-11-01
-2018-10-12T10:00:00-04:00,United States,Michigan Consumer Expectations Prel,michigan consumer expectations,OCT,89.1,90.5,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2018-10-01&end=2018-11-01
-2018-10-12T10:00:00-04:00,United States,Michigan Consumer Sentiment Prel,consumer confidence,OCT,99,100.1,100.4,98,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2018-10-01&end=2018-11-01
-2018-10-12T10:00:00-04:00,United States,Michigan Current Conditions Prel,michigan current economic conditions,OCT,114.4,115.2,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2018-10-01&end=2018-11-01
-2018-10-12T10:00:00-04:00,United States,Michigan Inflation Expectations Prel,michigan inflation expectations,OCT,2.8%,2.7%,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2018-10-01&end=2018-11-01
-2018-10-12T12:30:00-04:00,United States,Fed Bostic Speech,interest rate,,,,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2018-10-01&end=2018-11-01
-2018-10-12T13:00:00-04:00,United States,Baker Hughes Oil Rig Count,crude oil rigs,OCT/12,869,861,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2018-10-01&end=2018-11-01
-2018-10-15T08:30:00-04:00,United States,Retail Sales MoM,retail sales mom,SEP,0.1%,0.1%,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2018-10-01&end=2018-11-01
-2018-10-15T08:30:00-04:00,United States,NY Empire State Manufacturing Index,ny empire state manufacturing index,OCT,21.10,19,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2018-10-01&end=2018-11-01
-2018-10-15T08:30:00-04:00,United States,Retail Sales Ex Autos MoM,retail sales ex autos,SEP,-0.1%,0.2%,,,®,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2018-10-01&end=2018-11-01
-2018-10-15T08:30:00-04:00,United States,Retail Sales YoY,retail sales yoy,SEP,4.7%,6.5%,,,®,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2018-10-01&end=2018-11-01
-2018-10-15T10:00:00-04:00,United States,Business Inventories MoM,business inventories,AUG,0.5%,0.7%,,,®,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2018-10-01&end=2018-11-01
-2018-10-15T11:30:00-04:00,United States,3-Month Bill Auction,3 month bill yield,,2.270%,2.220%,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2018-10-01&end=2018-11-01
-2018-10-15T11:30:00-04:00,United States,6-Month Bill Auction,6 month bill yield,,2.415%,2.380%,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2018-10-01&end=2018-11-01
-2018-10-15T15:00:00-04:00,United States,Monthly Budget Statement,government budget value,SEP,$119B,$-214B,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2018-10-01&end=2018-11-01
-2018-10-16T08:55:00-04:00,United States,Redbook MoM,redbook index,OCT/13,0.1%,0.4%,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2018-10-01&end=2018-11-01
-2018-10-16T08:55:00-04:00,United States,Redbook YoY,redbook index,OCT/13,5.8%,6.5%,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2018-10-01&end=2018-11-01
-2018-10-16T09:15:00-04:00,United States,Industrial Production MoM,industrial production mom,SEP,0.3%,0.4%,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2018-10-01&end=2018-11-01
-2018-10-16T09:15:00-04:00,United States,Industrial Production YoY,industrial production,SEP,5.1%,4.9%,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2018-10-01&end=2018-11-01
-2018-10-16T09:15:00-04:00,United States,Capacity Utilization,capacity utilization,SEP,78.1%,78.1%,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2018-10-01&end=2018-11-01
-2018-10-16T09:15:00-04:00,United States,Manufacturing Production YoY,manufacturing production,SEP,3.5%,3.1%,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2018-10-01&end=2018-11-01
-2018-10-16T10:00:00-04:00,United States,JOLTs Job Openings,job offers,AUG,7.136M,7.077M,,,®,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2018-10-01&end=2018-11-01
-2018-10-16T10:00:00-04:00,United States,NAHB Housing Market Index,nahb housing market index,OCT,68,67,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2018-10-01&end=2018-11-01
-2018-10-16T11:30:00-04:00,United States,4-Week Bill Auction,4 week bill yield,,2.155%,2.135%,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2018-10-01&end=2018-11-01
-2018-10-16T16:00:00-04:00,United States,Foreign Bond Investment,foreign bond investment,AUG,$63.1B,$18.9B,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2018-10-01&end=2018-11-01
-2018-10-16T16:00:00-04:00,United States,Net Long-term TIC Flows,net long-term tic flows,AUG,$131.8B,$66.7B,,,®,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2018-10-01&end=2018-11-01
-2018-10-16T16:00:00-04:00,United States,Overall Net Capital Flows,capital flows,AUG,$108.2B,$42.7B,,,®,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2018-10-01&end=2018-11-01
-2018-10-16T16:15:00-04:00,United States,Fed Daly Speech,interest rate,,,,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2018-10-01&end=2018-11-01
-2018-10-16T16:30:00-04:00,United States,API Crude Oil Stock Change,api crude oil stock change,OCT/12,-2.1M,9.75M,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2018-10-01&end=2018-11-01
-2018-10-17T07:00:00-04:00,United States,MBA 30-Year Mortgage Rate,mortgage rate,OCT/12,5.1%,5.05%,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2018-10-01&end=2018-11-01
-2018-10-17T07:00:00-04:00,United States,MBA Mortgage Applications,mortgage applications,OCT/12,-7.1%,-1.7%,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2018-10-01&end=2018-11-01
-2018-10-17T08:30:00-04:00,United States,Building Permits,building permits,SEP,1.241M,1.249M,,,®,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2018-10-01&end=2018-11-01
-2018-10-17T08:30:00-04:00,United States,Building Permits MoM,building permits mom,SEP,-0.6%,-5.7%,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2018-10-01&end=2018-11-01
-2018-10-17T08:30:00-04:00,United States,Housing Starts,housing starts,SEP,1.201M,1.268M,,,®,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2018-10-01&end=2018-11-01
-2018-10-17T08:30:00-04:00,United States,Housing Starts MoM,housing starts mom,SEP,-5.3%,7.1%,,,®,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2018-10-01&end=2018-11-01
-2018-10-17T10:30:00-04:00,United States,EIA Crude Oil Stocks Change,crude oil stocks change,OCT/12,6.49M,5.987M,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2018-10-01&end=2018-11-01
-2018-10-17T10:30:00-04:00,United States,EIA Gasoline Stocks Change,gasoline stocks change,OCT/12,-2.016M,0.951M,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2018-10-01&end=2018-11-01
-2018-10-17T12:10:00-04:00,United States,Fed Brainard Speech,interest rate,,,,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2018-10-01&end=2018-11-01
-2018-10-17T14:00:00-04:00,United States,FOMC Minutes,interest rate,,,,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2018-10-01&end=2018-11-01
-2018-10-18T08:30:00-04:00,United States,Initial Jobless Claims,initial jobless claims,OCT/13,210K,215K,,,®,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2018-10-01&end=2018-11-01
-2018-10-18T08:30:00-04:00,United States,Philadelphia Fed Manufacturing Index,philadelphia fed manufacturing index,OCT,22.2,22.9,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2018-10-01&end=2018-11-01
-2018-10-18T08:30:00-04:00,United States,Continuing Jobless Claims,continuing jobless claims,OCT/06,1640K,1653K,,,®,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2018-10-01&end=2018-11-01
-2018-10-18T09:00:00-04:00,United States,Fed Bullard Speech,interest rate,,,,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2018-10-01&end=2018-11-01
-2018-10-18T10:00:00-04:00,United States,Cb Leading Index Mom,calendar,SEP,0.5%,0.4%,0.5%,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2018-10-01&end=2018-11-01
-2018-10-18T10:30:00-04:00,United States,EIA Natural Gas Stocks Change,natural gas stocks change,OCT/12,81Bcf,90Bcf,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2018-10-01&end=2018-11-01
-2018-10-18T12:15:00-04:00,United States,Fed Quarles Speech,interest rate,,,,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2018-10-01&end=2018-11-01
-2018-10-19T09:00:00-04:00,United States,Fed Kaplan Speech,interest rate,,,,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2018-10-01&end=2018-11-01
-2018-10-19T10:00:00-04:00,United States,Existing Home Sales,existing home sales,SEP,5.15M,5.33M,,,®,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2018-10-01&end=2018-11-01
-2018-10-19T10:00:00-04:00,United States,Existing Home Sales MoM,existing home sales mom,SEP,-3.4%,-0.2%,,,®,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2018-10-01&end=2018-11-01
-2018-10-19T12:00:00-04:00,United States,Fed Bostic Speech,interest rate,,,,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2018-10-01&end=2018-11-01
-2018-10-19T13:00:00-04:00,United States,Baker Hughes Oil Rig Count,crude oil rigs,OCT/19,873,869,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2018-10-01&end=2018-11-01
-2018-10-20T11:30:00-04:00,United States,Fed Bostic Speech,interest rate,,,,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2018-10-01&end=2018-11-01
-2018-10-22T08:30:00-04:00,United States,Chicago Fed National Activity Index,chicago fed national activity index,SEP,0.17,0.27,,,®,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2018-10-01&end=2018-11-01
-2018-10-22T11:30:00-04:00,United States,3-Month Bill Auction,3 month bill yield,,2.300%,2.270%,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2018-10-01&end=2018-11-01
-2018-10-22T11:30:00-04:00,United States,6-Month Bill Auction,6 month bill yield,,2.425%,2.415%,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2018-10-01&end=2018-11-01
-2018-10-23T08:55:00-04:00,United States,Redbook MoM,redbook index,OCT/20,0%,0.1%,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2018-10-01&end=2018-11-01
-2018-10-23T08:55:00-04:00,United States,Redbook YoY,redbook index,OCT/20,5.5%,5.8%,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2018-10-01&end=2018-11-01
-2018-10-23T09:30:00-04:00,United States,Fed Kashkari Speech,interest rate,,,,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2018-10-01&end=2018-11-01
-2018-10-23T10:00:00-04:00,United States,Richmond Fed Manufacturing Index,richmond fed manufacturing index,OCT,15,29,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2018-10-01&end=2018-11-01
-2018-10-23T11:30:00-04:00,United States,4-Week Bill Auction,4 week bill yield,,2.180%,2.155%,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2018-10-01&end=2018-11-01
-2018-10-23T13:00:00-04:00,United States,2-Year Note Auction,2 year note yield,,2.880%,2.829%,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2018-10-01&end=2018-11-01
-2018-10-23T13:30:00-04:00,United States,Fed Bostic Speech,interest rate,,,,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2018-10-01&end=2018-11-01
-2018-10-23T16:30:00-04:00,United States,API Crude Oil Stock Change,api crude oil stock change,OCT/19,9.88M,-2.1M,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2018-10-01&end=2018-11-01
-2018-10-23T18:15:00-04:00,United States,Fed Evans Speech,interest rate,,,,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2018-10-01&end=2018-11-01
-2018-10-24T07:00:00-04:00,United States,MBA 30-Year Mortgage Rate,mortgage rate,OCT/19,5.11%,5.1%,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2018-10-01&end=2018-11-01
-2018-10-24T07:00:00-04:00,United States,MBA Mortgage Applications,mortgage applications,OCT/19,4.9%,-7.1%,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2018-10-01&end=2018-11-01
-2018-10-24T09:00:00-04:00,United States,House Price Index MoM,house price index mom,AUG,0.3%,0.2%,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2018-10-01&end=2018-11-01
-2018-10-24T09:45:00-04:00,United States,Markit Composite PMI Flash,composite pmi,OCT,54.8,53.9,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2018-10-01&end=2018-11-01
-2018-10-24T09:45:00-04:00,United States,Markit Manufacturing PMI Flash,manufacturing pmi,OCT,55.9,55.6,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2018-10-01&end=2018-11-01
-2018-10-24T09:45:00-04:00,United States,Markit Services PMI Flash,services pmi,OCT,54.7,53.5,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2018-10-01&end=2018-11-01
-2018-10-24T10:00:00-04:00,United States,New Home Sales,new home sales,SEP,0.553M,0.585M,,,®,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2018-10-01&end=2018-11-01
-2018-10-24T10:00:00-04:00,United States,New Home Sales MoM,new home sales mom,SEP,-5.5%,-3%,,,®,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2018-10-01&end=2018-11-01
-2018-10-24T10:30:00-04:00,United States,EIA Crude Oil Stocks Change,crude oil stocks change,OCT/19,6.346M,6.49M,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2018-10-01&end=2018-11-01
-2018-10-24T10:30:00-04:00,United States,EIA Gasoline Stocks Change,gasoline stocks change,OCT/19,-4.826M,-2.016M,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2018-10-01&end=2018-11-01
-2018-10-24T11:30:00-04:00,United States,Fed Bullard Speech,interest rate,,,,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2018-10-01&end=2018-11-01
-2018-10-24T12:30:00-04:00,United States,Fed Mester Speech,interest rate,,,,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2018-10-01&end=2018-11-01
-2018-10-24T13:00:00-04:00,United States,5-Year Note Auction,5 year note yield,,2.977%,2.997%,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2018-10-01&end=2018-11-01
-2018-10-24T14:00:00-04:00,United States,Fed Bostic Speech,interest rate,,,,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2018-10-01&end=2018-11-01
-2018-10-24T14:00:00-04:00,United States,Fed Beige Book,interest rate,,,,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2018-10-01&end=2018-11-01
-2018-10-25T08:30:00-04:00,United States,Durable Goods Orders MoM,durable goods orders,SEP,0.8%,4.6%,,,®,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2018-10-01&end=2018-11-01
-2018-10-25T08:30:00-04:00,United States,Durable Goods Orders Ex Transp MoM,durable goods orders ex transportation,SEP,0.1%,0.3%,,,®,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2018-10-01&end=2018-11-01
-2018-10-25T08:30:00-04:00,United States,Goods Trade Balance Adv,goods trade balance,SEP,$-76.04B,$-75.46B,,,®,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2018-10-01&end=2018-11-01
-2018-10-25T08:30:00-04:00,United States,Initial Jobless Claims,initial jobless claims,OCT/20,215K,210K,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2018-10-01&end=2018-11-01
-2018-10-25T08:30:00-04:00,United States,Wholesale Inventories MoM Adv,wholesale inventories,SEP,0.3%,0.9%,,,®,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2018-10-01&end=2018-11-01
-2018-10-25T08:30:00-04:00,United States,Continuing Jobless Claims,continuing jobless claims,OCT/13,1636K,1641K,,,®,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2018-10-01&end=2018-11-01
-2018-10-25T08:30:00-04:00,United States,Durable Goods Orders ex Defense MoM,durable goods orders ex defense,SEP,-0.6%,2.5%,,,®,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2018-10-01&end=2018-11-01
-2018-10-25T10:00:00-04:00,United States,Pending Home Sales MoM,pending home sales mom,SEP,0.5%,-1.9%,,,®,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2018-10-01&end=2018-11-01
-2018-10-25T10:00:00-04:00,United States,Pending Home Sales YoY,pending home sales,SEP,-1%,-2.4%,,,®,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2018-10-01&end=2018-11-01
-2018-10-25T10:30:00-04:00,United States,EIA Natural Gas Stocks Change,natural gas stocks change,OCT/19,58Bcf,81Bcf,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2018-10-01&end=2018-11-01
-2018-10-25T11:00:00-04:00,United States,Kansas Fed Manufacturing Index,kansas fed manufacturing index,OCT,5.0,10.0,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2018-10-01&end=2018-11-01
-2018-10-25T12:15:00-04:00,United States,Fed Clarida Speech,interest rate,,,,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2018-10-01&end=2018-11-01
-2018-10-25T13:00:00-04:00,United States,7-Year Note Auction,7 year note yield,,3.074%,3.034%,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2018-10-01&end=2018-11-01
-2018-10-25T17:30:00-04:00,United States,Fed Mester Speech,interest rate,,,,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2018-10-01&end=2018-11-01
-2018-10-25T21:00:00-04:00,United States,Fed Mester Speech,interest rate,,,,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2018-10-01&end=2018-11-01
-2018-10-26T08:30:00-04:00,United States,GDP Growth Rate QoQ Adv,gdp growth rate,Q3,3.5%,4.2%,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2018-10-01&end=2018-11-01
-2018-10-26T08:30:00-04:00,United States,GDP Price Index QoQ Adv,gdp deflator,Q3,1.4%,3.3%,2.1%,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2018-10-01&end=2018-11-01
-2018-10-26T08:30:00-04:00,United States,Core PCE Prices QoQ Adv,core pce prices qoq,Q3,1.6%,2.1%,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2018-10-01&end=2018-11-01
-2018-10-26T08:30:00-04:00,United States,PCE Prices QoQ Adv,pce prices qoq,Q3,1.6%,2%,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2018-10-01&end=2018-11-01
-2018-10-26T10:00:00-04:00,United States,Michigan 5 Year Inflation Expectations Final,michigan 5 year inflation expectations,OCT,2.4%,2.5%,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2018-10-01&end=2018-11-01
-2018-10-26T10:00:00-04:00,United States,Michigan Consumer Expectations Final,michigan consumer expectations,OCT,89.3,89.1,,,®,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2018-10-01&end=2018-11-01
-2018-10-26T10:00:00-04:00,United States,Michigan Consumer Sentiment Final,consumer confidence,OCT,98.6,100.1,99,99,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2018-10-01&end=2018-11-01
-2018-10-26T10:00:00-04:00,United States,Michigan Current Conditions Final,michigan current economic conditions,OCT,113.1,114.4,,,®,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2018-10-01&end=2018-11-01
-2018-10-26T10:00:00-04:00,United States,Michigan Inflation Expectations Final,michigan inflation expectations,OCT,2.9%,2.7%,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2018-10-01&end=2018-11-01
-2018-10-26T13:00:00-04:00,United States,Baker Hughes Oil Rig Count,crude oil rigs,OCT/26,875,873,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2018-10-01&end=2018-11-01
-2018-10-29T08:30:00-04:00,United States,Personal Income MoM,personal income,SEP,0.2%,0.4%,,,®,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2018-10-01&end=2018-11-01
-2018-10-29T08:30:00-04:00,United States,Personal Spending MoM,personal spending,SEP,0.4%,0.5%,,,®,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2018-10-01&end=2018-11-01
-2018-10-29T08:30:00-04:00,United States,PCE Price Index MoM,pce price index monthly change,SEP,0.1%,0.1%,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2018-10-01&end=2018-11-01
-2018-10-29T08:30:00-04:00,United States,PCE Price Index YoY,pce price index annual change,SEP,2%,2.2%,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2018-10-01&end=2018-11-01
-2018-10-29T08:30:00-04:00,United States,Core PCE Price Index MoM,core pce price index mom,SEP,0.2%,0%,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2018-10-01&end=2018-11-01
-2018-10-29T08:30:00-04:00,United States,Core PCE Price Index YoY,core pce price index annual change,SEP,2%,2%,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2018-10-01&end=2018-11-01
-2018-10-29T09:45:00-04:00,United States,Fed Evans Speech,interest rate,,,,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2018-10-01&end=2018-11-01
-2018-10-29T10:30:00-04:00,United States,Dallas Fed Manufacturing Index,dallas fed manufacturing index,OCT,29.4,28.1,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2018-10-01&end=2018-11-01
-2018-10-29T11:30:00-04:00,United States,3-Month Bill Auction,3 month bill yield,,2.305%,2.300%,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2018-10-01&end=2018-11-01
-2018-10-29T11:30:00-04:00,United States,6-Month Bill Auction,6 month bill yield,,2.430%,2.425%,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2018-10-01&end=2018-11-01
-2018-10-30T08:55:00-04:00,United States,Redbook MoM,redbook index,OCT/27,0.1%,0%,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2018-10-01&end=2018-11-01
-2018-10-30T08:55:00-04:00,United States,Redbook YoY,redbook index,OCT/27,5.9%,5.5%,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2018-10-01&end=2018-11-01
-2018-10-30T09:00:00-04:00,United States,S&P/Case-Shiller Home Price MoM,case shiller home price index mom,AUG,0%,0.3%,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2018-10-01&end=2018-11-01
-2018-10-30T09:00:00-04:00,United States,S&P/Case-Shiller Home Price YoY,case shiller home price index yoy,AUG,5.5%,5.9%,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2018-10-01&end=2018-11-01
-2018-10-30T10:00:00-04:00,United States,Cb Consumer Confidence,calendar,OCT,137.9,135.3,136.0,,®,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2018-10-01&end=2018-11-01
-2018-10-30T11:30:00-04:00,United States,4-Week Bill Auction,4 week bill yield,,2.165%,2.18%,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2018-10-01&end=2018-11-01
-2018-10-30T16:30:00-04:00,United States,API Crude Oil Stock Change,api crude oil stock change,OCT/26,5.7M,9.88M,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2018-10-01&end=2018-11-01
-2018-10-31T07:00:00-04:00,United States,MBA 30-Year Mortgage Rate,mortgage rate,OCT/26,5.11%,5.11%,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2018-10-01&end=2018-11-01
-2018-10-31T07:00:00-04:00,United States,MBA Mortgage Applications,mortgage applications,OCT/26,-2.5%,4.9%,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2018-10-01&end=2018-11-01
-2018-10-31T08:15:00-04:00,United States,ADP Employment Change,adp employment change,OCT,227K,218K,,,®,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2018-10-01&end=2018-11-01
-2018-10-31T08:30:00-04:00,United States,Employment Cost - Benefits QoQ,employment cost index benefits,Q3,0.4%,0.9%,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2018-10-01&end=2018-11-01
-2018-10-31T08:30:00-04:00,United States,Employment Cost - Wages QoQ,employment cost index wages,Q3,0.9%,0.5%,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2018-10-01&end=2018-11-01
-2018-10-31T08:30:00-04:00,United States,Employment Cost Index QoQ,employment cost index,Q3,0.8%,0.6%,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2018-10-01&end=2018-11-01
-2018-10-31T09:50:00-04:00,United States,Chicago PMI,chicago pmi,OCT,58.4,60.4,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2018-10-01&end=2018-11-01
-2018-10-31T10:30:00-04:00,United States,EIA Crude Oil Stocks Change,crude oil stocks change,OCT/26,3.217M,6.346M,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2018-10-01&end=2018-11-01
-2018-10-31T10:30:00-04:00,United States,EIA Gasoline Stocks Change,gasoline stocks change,OCT/26,-3.161M,-4.826M,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2018-10-01&end=2018-11-01
+event_time,country,event,source_event_type,reference,actual,previous,consensus,te_forecast,revised,importance,symbol
+2018-10-01T09:00:00-04:00,United States,Fed Bostic Speech,interest rate,,,,,,,3,
+2018-10-01T09:45:00-04:00,United States,Markit Manufacturing PMI Final,manufacturing pmi,SEP,55.6,54.7,,,,3,
+2018-10-01T10:00:00-04:00,United States,Construction Spending MoM,construction spending,AUG,0.1%,0.2%,,,,3,
+2018-10-01T10:00:00-04:00,United States,ISM Manufacturing Employment,ism manufacturing employment,SEP,58.8,58.5,,,,3,
+2018-10-01T10:00:00-04:00,United States,ISM Manufacturing New Orders,ism manufacturing new orders,SEP,61.8,65.1,,,,3,
+2018-10-01T10:00:00-04:00,United States,ISM Manufacturing PMI,business confidence,SEP,59.8,61.3,,,,3,
+2018-10-01T10:00:00-04:00,United States,ISM Manufacturing Prices,ism manufacturing prices,SEP,66.9,72.1,,,,3,
+2018-10-01T11:30:00-04:00,United States,3-Month Bill Auction,3 month bill yield,,2.175%,2.180%,,,,3,
+2018-10-01T11:30:00-04:00,United States,6-Month Bill Auction,6 month bill yield,,2.335%,2.320%,,,,3,
+2018-10-01T12:45:00-04:00,United States,Fed Rosengren Speech,interest rate,,,,,,,3,
+2018-10-02T08:55:00-04:00,United States,Redbook MoM,redbook index,SEP/29,0.3%,0.3%,,,,3,
+2018-10-02T08:55:00-04:00,United States,Redbook YoY,redbook index,SEP/29,5.7%,5.8%,,,,3,
+2018-10-02T09:45:00-04:00,United States,ISM New York Index,ism new york index,SEP,72.5,76.5,,,,3,
+2018-10-02T10:00:00-04:00,United States,Fed Quarles Testimony,interest rate,,,,,,,3,
+2018-10-02T11:30:00-04:00,United States,4-Week Bill Auction,4 week bill yield,,2.105%,2.080%,,,,3,
+2018-10-02T12:45:00-04:00,United States,Fed Chair Powell Speech,interest rate,,,,,,,3,
+2018-10-02T16:29:00-04:00,United States,API Crude Oil Stock Change,api crude oil stock change,SEP/28,0.907M,2.903M,,,,3,
+2018-10-02T16:30:00-04:00,United States,Total Vehicle Sales,total vehicle sales,SEP,17.44M,16.72M,,,,3,
+2018-10-03T06:30:00-04:00,United States,Fed Evans Speech,interest rate,,,,,,,3,
+2018-10-03T07:00:00-04:00,United States,MBA 30-Year Mortgage Rate,mortgage rate,SEP/28,4.96%,4.97%,,,,3,
+2018-10-03T07:00:00-04:00,United States,MBA Mortgage Applications,mortgage applications,SEP/28,0%,2.9%,,,,3,
+2018-10-03T08:05:00-04:00,United States,Fed Barkin Speech,interest rate,,,,,,,3,
+2018-10-03T08:15:00-04:00,United States,ADP Employment Change,adp employment change,SEP,230K,168K,,,®,3,
+2018-10-03T09:45:00-04:00,United States,Markit Composite PMI Final,composite pmi,SEP,53.9,54.7,,,,3,
+2018-10-03T09:45:00-04:00,United States,Markit Services PMI Final,services pmi,SEP,53.5,54.8,,,,3,
+2018-10-03T10:00:00-04:00,United States,ISM Non-Manufacturing Business Activity,ism non manufacturing business activity,SEP,65.2,60.7,,,,3,
+2018-10-03T10:00:00-04:00,United States,ISM Non-Manufacturing Employment,ism non manufacturing employment,SEP,62.4,56.7,,,,3,
+2018-10-03T10:00:00-04:00,United States,ISM Non-Manufacturing New Orders,ism non manufacturing new orders,SEP,61.6,60.4,,,,3,
+2018-10-03T10:00:00-04:00,United States,ISM Non-Manufacturing PMI,non manufacturing pmi,SEP,61.6,58.5,,,,3,
+2018-10-03T10:00:00-04:00,United States,ISM Non-Manufacturing Prices,ism non manufacturing prices,SEP,64.2,62.8,,,,3,
+2018-10-03T10:30:00-04:00,United States,EIA Crude Oil Stocks Change,crude oil stocks change,SEP/28,7.975M,1.852M,,,,3,
+2018-10-03T10:30:00-04:00,United States,EIA Gasoline Stocks Change,gasoline stocks change,SEP/28,-0.459M,1.53M,,,,3,
+2018-10-03T14:00:00-04:00,United States,Fed Brainard Speech,interest rate,,,,,,,3,
+2018-10-03T14:15:00-04:00,United States,Fed Mester Speech,interest rate,,,,,,,3,
+2018-10-03T16:00:00-04:00,United States,Fed Chair Powell Speech,interest rate,,,,,,,3,
+2018-10-04T07:30:00-04:00,United States,Challenger Job Cuts,challenger job cuts,SEP,55.3K,38.472K,,,,3,
+2018-10-04T08:30:00-04:00,United States,Initial Jobless Claims,initial jobless claims,SEP/29,207K,215K,,,®,3,
+2018-10-04T08:30:00-04:00,United States,Continuing Jobless Claims,continuing jobless claims,SEP/22,1650K,1663K,,,®,3,
+2018-10-04T09:15:00-04:00,United States,Fed Quarles Speech,interest rate,,,,,,,3,
+2018-10-04T10:00:00-04:00,United States,Factory Orders MoM,factory orders,AUG,2.3%,-0.5%,,,®,3,
+2018-10-04T10:00:00-04:00,United States,Factory Orders ex Transportation,factory orders ex transportation,AUG,0.1%,0.1%,,,®,3,
+2018-10-04T10:30:00-04:00,United States,EIA Natural Gas Stocks Change,natural gas stocks change,SEP/28,98Bcf,46Bcf,,,,3,
+2018-10-05T08:30:00-04:00,United States,Balance of Trade,balance of trade,AUG,$-53.2B,$-50B,,,®,3,
+2018-10-05T08:30:00-04:00,United States,Non Farm Payrolls,non farm payrolls,SEP,134K,270K,,,®,3,
+2018-10-05T08:30:00-04:00,United States,Unemployment Rate,unemployment rate,SEP,3.7%,3.9%,,,,3,
+2018-10-05T08:30:00-04:00,United States,Average Hourly Earnings MoM,average hourly earnings,SEP,0.3%,0.3%,,,®,3,
+2018-10-05T08:30:00-04:00,United States,Average Hourly Earnings YoY,average hourly earnings yoy,SEP,2.8%,2.9%,,,,3,
+2018-10-05T08:30:00-04:00,United States,Average Weekly Hours,average weekly hours,SEP,34.5,34.5,,,,3,
+2018-10-05T08:30:00-04:00,United States,Exports,exports,AUG,$209.43B,$211.08B,,,,3,
+2018-10-05T08:30:00-04:00,United States,Government Payrolls,government payrolls,SEP,13K,16K,,,®,3,
+2018-10-05T08:30:00-04:00,United States,Imports,imports,AUG,$262.67B,$261.1B,,,®,3,
+2018-10-05T08:30:00-04:00,United States,Manufacturing Payrolls,manufacturing payrolls,SEP,18K,5K,,,®,3,
+2018-10-05T08:30:00-04:00,United States,Nonfarm Payrolls Private,nonfarm payrolls private,SEP,121K,254K,,,®,3,
+2018-10-05T08:30:00-04:00,United States,Participation Rate,labor force participation rate,SEP,62.7%,62.7%,,,,3,
+2018-10-05T12:30:00-04:00,United States,Fed Bostic Speech,interest rate,,,,,,,3,
+2018-10-05T13:00:00-04:00,United States,Baker Hughes Oil Rig Count,crude oil rigs,OCT/05,861,863,,,,3,
+2018-10-05T15:00:00-04:00,United States,Consumer Credit Change,consumer credit,AUG,$20.08B,$16.6B,,,®,3,
+2018-10-09T06:00:00-04:00,United States,NFIB Business Optimism Index,nfib business optimism index,SEP,107.9,108.8,,,,3,
+2018-10-09T08:55:00-04:00,United States,Redbook MoM,redbook index,OCT/06,0.4%,0.3%,,,,3,
+2018-10-09T08:55:00-04:00,United States,Redbook YoY,redbook index,OCT/06,6.5%,5.7%,,,,3,
+2018-10-09T10:00:00-04:00,United States,Fed Evans Speech,interest rate,,,,,,,3,
+2018-10-09T10:00:00-04:00,United States,IBD/TIPP Economic Optimism,economic optimism index,OCT,57.8,55.7,,,,3,
+2018-10-09T11:00:00-04:00,United States,Consumer Inflation Expectations,inflation expectations,SEP,3%,3%,,,,3,
+2018-10-09T11:30:00-04:00,United States,3-Month Bill Auction,3 month bill yield,,2.220%,2.175%,,,,3,
+2018-10-09T11:30:00-04:00,United States,6-Month Bill Auction,6 month bill yield,,2.380%,2.335%,,,,3,
+2018-10-09T13:00:00-04:00,United States,4-Week Bill Auction,4 week bill yield,,2.135%,2.105%,,,,3,
+2018-10-09T13:00:00-04:00,United States,52-Week Bill Auction,52 week bill yield,,2.580%,2.465%,,,,3,
+2018-10-09T21:15:00-04:00,United States,Fed Williams Speech,interest rate,,,,,,,3,
+2018-10-09T22:35:00-04:00,United States,Fed Williams Speech,interest rate,,,,,,,3,
+2018-10-10T07:00:00-04:00,United States,MBA 30-Year Mortgage Rate,mortgage rate,OCT/05,5.05%,4.96%,,,,3,
+2018-10-10T07:00:00-04:00,United States,MBA Mortgage Applications,mortgage applications,OCT/05,-1.7%,0%,,,,3,
+2018-10-10T08:30:00-04:00,United States,PPI MoM,producer price inflation mom,SEP,0.2%,-0.1%,,,,3,
+2018-10-10T08:30:00-04:00,United States,Core PPI MoM,core producer prices mom,SEP,0.2%,-0.1%,,,,3,
+2018-10-10T08:30:00-04:00,United States,Core PPI YoY,core producer prices yoy,SEP,2.5%,2.3%,,,,3,
+2018-10-10T08:30:00-04:00,United States,PPI YoY,producer prices change,SEP,2.6%,2.8%,,,,3,
+2018-10-10T10:00:00-04:00,United States,Wholesale Inventories MoM,wholesale inventories,AUG,1%,0.6%,,,,3,
+2018-10-10T11:30:00-04:00,United States,3-Year Note Auction,3 year note yield,,2.989%,2.821%,,,,3,
+2018-10-10T12:15:00-04:00,United States,Fed Evans Speech,interest rate,,,,,,,3,
+2018-10-10T13:00:00-04:00,United States,10-Year Note Auction,government bond 10y,,3.225%,2.957%,,,,3,
+2018-10-10T16:30:00-04:00,United States,API Crude Oil Stock Change,api crude oil stock change,OCT/05,9.75M,0.907M,,,,3,
+2018-10-10T18:00:00-04:00,United States,Fed Bostic Speech,interest rate,,,,,,,3,
+2018-10-11T08:30:00-04:00,United States,Core Inflation Rate YoY,core inflation rate,SEP,2.2%,2.2%,,,,3,
+2018-10-11T08:30:00-04:00,United States,Inflation Rate YoY,inflation rate,SEP,2.3%,2.7%,,,,3,
+2018-10-11T08:30:00-04:00,United States,Core Inflation Rate MoM,core inflation rate mom,SEP,0.1%,0.1%,,,,3,
+2018-10-11T08:30:00-04:00,United States,Inflation Rate MoM,inflation rate mom,SEP,0.1%,0.2%,,,,3,
+2018-10-11T08:30:00-04:00,United States,Initial Jobless Claims,initial jobless claims,OCT/06,214K,207K,,,,3,
+2018-10-11T08:30:00-04:00,United States,Continuing Jobless Claims,continuing jobless claims,SEP/29,1660K,1656K,,,®,3,
+2018-10-11T10:30:00-04:00,United States,EIA Natural Gas Stocks Change,natural gas stocks change,OCT/05,90Bcf,98Bcf,,,,3,
+2018-10-11T11:00:00-04:00,United States,EIA Crude Oil Stocks Change,crude oil stocks change,OCT/05,5.987M,7.975M,,,,3,
+2018-10-11T11:00:00-04:00,United States,EIA Gasoline Stocks Change,gasoline stocks change,OCT/05,0.951M,-0.459M,,,,3,
+2018-10-11T12:00:00-04:00,United States,Wasde Report,calendar,,,,,,,3,
+2018-10-11T13:00:00-04:00,United States,30-Year Bond Auction,30 year bond yield,,3.344%,3.088%,,,,3,
+2018-10-12T08:30:00-04:00,United States,Export Prices MoM,export prices mom,SEP,0%,-0.2%,,,®,3,
+2018-10-12T08:30:00-04:00,United States,Export Prices YoY,export prices yoy,SEP,2.7%,3.6%,,,,3,
+2018-10-12T08:30:00-04:00,United States,Import Prices MoM,import prices mom,SEP,0.5%,-0.4%,,,®,3,
+2018-10-12T08:30:00-04:00,United States,Import Prices YoY,import prices yoy,SEP,3.5%,3.7%,,,,3,
+2018-10-12T09:30:00-04:00,United States,Fed Evans Speech,interest rate,,,,,,,3,
+2018-10-12T10:00:00-04:00,United States,Michigan 5 Year Inflation Expectations Prel,michigan 5 year inflation expectations,OCT,2.3%,2.5%,,,,3,
+2018-10-12T10:00:00-04:00,United States,Michigan Consumer Expectations Prel,michigan consumer expectations,OCT,89.1,90.5,,,,3,
+2018-10-12T10:00:00-04:00,United States,Michigan Consumer Sentiment Prel,consumer confidence,OCT,99,100.1,100.4,98,,3,
+2018-10-12T10:00:00-04:00,United States,Michigan Current Conditions Prel,michigan current economic conditions,OCT,114.4,115.2,,,,3,
+2018-10-12T10:00:00-04:00,United States,Michigan Inflation Expectations Prel,michigan inflation expectations,OCT,2.8%,2.7%,,,,3,
+2018-10-12T12:30:00-04:00,United States,Fed Bostic Speech,interest rate,,,,,,,3,
+2018-10-12T13:00:00-04:00,United States,Baker Hughes Oil Rig Count,crude oil rigs,OCT/12,869,861,,,,3,
+2018-10-15T08:30:00-04:00,United States,Retail Sales MoM,retail sales mom,SEP,0.1%,0.1%,,,,3,
+2018-10-15T08:30:00-04:00,United States,NY Empire State Manufacturing Index,ny empire state manufacturing index,OCT,21.10,19,,,,3,
+2018-10-15T08:30:00-04:00,United States,Retail Sales Ex Autos MoM,retail sales ex autos,SEP,-0.1%,0.2%,,,®,3,
+2018-10-15T08:30:00-04:00,United States,Retail Sales YoY,retail sales yoy,SEP,4.7%,6.5%,,,®,3,
+2018-10-15T10:00:00-04:00,United States,Business Inventories MoM,business inventories,AUG,0.5%,0.7%,,,®,3,
+2018-10-15T11:30:00-04:00,United States,3-Month Bill Auction,3 month bill yield,,2.270%,2.220%,,,,3,
+2018-10-15T11:30:00-04:00,United States,6-Month Bill Auction,6 month bill yield,,2.415%,2.380%,,,,3,
+2018-10-15T15:00:00-04:00,United States,Monthly Budget Statement,government budget value,SEP,$119B,$-214B,,,,3,
+2018-10-16T08:55:00-04:00,United States,Redbook MoM,redbook index,OCT/13,0.1%,0.4%,,,,3,
+2018-10-16T08:55:00-04:00,United States,Redbook YoY,redbook index,OCT/13,5.8%,6.5%,,,,3,
+2018-10-16T09:15:00-04:00,United States,Industrial Production MoM,industrial production mom,SEP,0.3%,0.4%,,,,3,
+2018-10-16T09:15:00-04:00,United States,Industrial Production YoY,industrial production,SEP,5.1%,4.9%,,,,3,
+2018-10-16T09:15:00-04:00,United States,Capacity Utilization,capacity utilization,SEP,78.1%,78.1%,,,,3,
+2018-10-16T09:15:00-04:00,United States,Manufacturing Production YoY,manufacturing production,SEP,3.5%,3.1%,,,,3,
+2018-10-16T10:00:00-04:00,United States,JOLTs Job Openings,job offers,AUG,7.136M,7.077M,,,®,3,
+2018-10-16T10:00:00-04:00,United States,NAHB Housing Market Index,nahb housing market index,OCT,68,67,,,,3,
+2018-10-16T11:30:00-04:00,United States,4-Week Bill Auction,4 week bill yield,,2.155%,2.135%,,,,3,
+2018-10-16T16:00:00-04:00,United States,Foreign Bond Investment,foreign bond investment,AUG,$63.1B,$18.9B,,,,3,
+2018-10-16T16:00:00-04:00,United States,Net Long-term TIC Flows,net long-term tic flows,AUG,$131.8B,$66.7B,,,®,3,
+2018-10-16T16:00:00-04:00,United States,Overall Net Capital Flows,capital flows,AUG,$108.2B,$42.7B,,,®,3,
+2018-10-16T16:15:00-04:00,United States,Fed Daly Speech,interest rate,,,,,,,3,
+2018-10-16T16:30:00-04:00,United States,API Crude Oil Stock Change,api crude oil stock change,OCT/12,-2.1M,9.75M,,,,3,
+2018-10-17T07:00:00-04:00,United States,MBA 30-Year Mortgage Rate,mortgage rate,OCT/12,5.1%,5.05%,,,,3,
+2018-10-17T07:00:00-04:00,United States,MBA Mortgage Applications,mortgage applications,OCT/12,-7.1%,-1.7%,,,,3,
+2018-10-17T08:30:00-04:00,United States,Building Permits,building permits,SEP,1.241M,1.249M,,,®,3,
+2018-10-17T08:30:00-04:00,United States,Building Permits MoM,building permits mom,SEP,-0.6%,-5.7%,,,,3,
+2018-10-17T08:30:00-04:00,United States,Housing Starts,housing starts,SEP,1.201M,1.268M,,,®,3,
+2018-10-17T08:30:00-04:00,United States,Housing Starts MoM,housing starts mom,SEP,-5.3%,7.1%,,,®,3,
+2018-10-17T10:30:00-04:00,United States,EIA Crude Oil Stocks Change,crude oil stocks change,OCT/12,6.49M,5.987M,,,,3,
+2018-10-17T10:30:00-04:00,United States,EIA Gasoline Stocks Change,gasoline stocks change,OCT/12,-2.016M,0.951M,,,,3,
+2018-10-17T12:10:00-04:00,United States,Fed Brainard Speech,interest rate,,,,,,,3,
+2018-10-17T14:00:00-04:00,United States,FOMC Minutes,interest rate,,,,,,,3,
+2018-10-18T08:30:00-04:00,United States,Initial Jobless Claims,initial jobless claims,OCT/13,210K,215K,,,®,3,
+2018-10-18T08:30:00-04:00,United States,Philadelphia Fed Manufacturing Index,philadelphia fed manufacturing index,OCT,22.2,22.9,,,,3,
+2018-10-18T08:30:00-04:00,United States,Continuing Jobless Claims,continuing jobless claims,OCT/06,1640K,1653K,,,®,3,
+2018-10-18T09:00:00-04:00,United States,Fed Bullard Speech,interest rate,,,,,,,3,
+2018-10-18T10:00:00-04:00,United States,Cb Leading Index Mom,calendar,SEP,0.5%,0.4%,0.5%,,,3,
+2018-10-18T10:30:00-04:00,United States,EIA Natural Gas Stocks Change,natural gas stocks change,OCT/12,81Bcf,90Bcf,,,,3,
+2018-10-18T12:15:00-04:00,United States,Fed Quarles Speech,interest rate,,,,,,,3,
+2018-10-19T09:00:00-04:00,United States,Fed Kaplan Speech,interest rate,,,,,,,3,
+2018-10-19T10:00:00-04:00,United States,Existing Home Sales,existing home sales,SEP,5.15M,5.33M,,,®,3,
+2018-10-19T10:00:00-04:00,United States,Existing Home Sales MoM,existing home sales mom,SEP,-3.4%,-0.2%,,,®,3,
+2018-10-19T12:00:00-04:00,United States,Fed Bostic Speech,interest rate,,,,,,,3,
+2018-10-19T13:00:00-04:00,United States,Baker Hughes Oil Rig Count,crude oil rigs,OCT/19,873,869,,,,3,
+2018-10-20T11:30:00-04:00,United States,Fed Bostic Speech,interest rate,,,,,,,3,
+2018-10-22T08:30:00-04:00,United States,Chicago Fed National Activity Index,chicago fed national activity index,SEP,0.17,0.27,,,®,3,
+2018-10-22T11:30:00-04:00,United States,3-Month Bill Auction,3 month bill yield,,2.300%,2.270%,,,,3,
+2018-10-22T11:30:00-04:00,United States,6-Month Bill Auction,6 month bill yield,,2.425%,2.415%,,,,3,
+2018-10-23T08:55:00-04:00,United States,Redbook MoM,redbook index,OCT/20,0%,0.1%,,,,3,
+2018-10-23T08:55:00-04:00,United States,Redbook YoY,redbook index,OCT/20,5.5%,5.8%,,,,3,
+2018-10-23T09:30:00-04:00,United States,Fed Kashkari Speech,interest rate,,,,,,,3,
+2018-10-23T10:00:00-04:00,United States,Richmond Fed Manufacturing Index,richmond fed manufacturing index,OCT,15,29,,,,3,
+2018-10-23T11:30:00-04:00,United States,4-Week Bill Auction,4 week bill yield,,2.180%,2.155%,,,,3,
+2018-10-23T13:00:00-04:00,United States,2-Year Note Auction,2 year note yield,,2.880%,2.829%,,,,3,
+2018-10-23T13:30:00-04:00,United States,Fed Bostic Speech,interest rate,,,,,,,3,
+2018-10-23T16:30:00-04:00,United States,API Crude Oil Stock Change,api crude oil stock change,OCT/19,9.88M,-2.1M,,,,3,
+2018-10-23T18:15:00-04:00,United States,Fed Evans Speech,interest rate,,,,,,,3,
+2018-10-24T07:00:00-04:00,United States,MBA 30-Year Mortgage Rate,mortgage rate,OCT/19,5.11%,5.1%,,,,3,
+2018-10-24T07:00:00-04:00,United States,MBA Mortgage Applications,mortgage applications,OCT/19,4.9%,-7.1%,,,,3,
+2018-10-24T09:00:00-04:00,United States,House Price Index MoM,house price index mom,AUG,0.3%,0.2%,,,,3,
+2018-10-24T09:45:00-04:00,United States,Markit Composite PMI Flash,composite pmi,OCT,54.8,53.9,,,,3,
+2018-10-24T09:45:00-04:00,United States,Markit Manufacturing PMI Flash,manufacturing pmi,OCT,55.9,55.6,,,,3,
+2018-10-24T09:45:00-04:00,United States,Markit Services PMI Flash,services pmi,OCT,54.7,53.5,,,,3,
+2018-10-24T10:00:00-04:00,United States,New Home Sales,new home sales,SEP,0.553M,0.585M,,,®,3,
+2018-10-24T10:00:00-04:00,United States,New Home Sales MoM,new home sales mom,SEP,-5.5%,-3%,,,®,3,
+2018-10-24T10:30:00-04:00,United States,EIA Crude Oil Stocks Change,crude oil stocks change,OCT/19,6.346M,6.49M,,,,3,
+2018-10-24T10:30:00-04:00,United States,EIA Gasoline Stocks Change,gasoline stocks change,OCT/19,-4.826M,-2.016M,,,,3,
+2018-10-24T11:30:00-04:00,United States,Fed Bullard Speech,interest rate,,,,,,,3,
+2018-10-24T12:30:00-04:00,United States,Fed Mester Speech,interest rate,,,,,,,3,
+2018-10-24T13:00:00-04:00,United States,5-Year Note Auction,5 year note yield,,2.977%,2.997%,,,,3,
+2018-10-24T14:00:00-04:00,United States,Fed Bostic Speech,interest rate,,,,,,,3,
+2018-10-24T14:00:00-04:00,United States,Fed Beige Book,interest rate,,,,,,,3,
+2018-10-25T08:30:00-04:00,United States,Durable Goods Orders MoM,durable goods orders,SEP,0.8%,4.6%,,,®,3,
+2018-10-25T08:30:00-04:00,United States,Durable Goods Orders Ex Transp MoM,durable goods orders ex transportation,SEP,0.1%,0.3%,,,®,3,
+2018-10-25T08:30:00-04:00,United States,Goods Trade Balance Adv,goods trade balance,SEP,$-76.04B,$-75.46B,,,®,3,
+2018-10-25T08:30:00-04:00,United States,Initial Jobless Claims,initial jobless claims,OCT/20,215K,210K,,,,3,
+2018-10-25T08:30:00-04:00,United States,Wholesale Inventories MoM Adv,wholesale inventories,SEP,0.3%,0.9%,,,®,3,
+2018-10-25T08:30:00-04:00,United States,Continuing Jobless Claims,continuing jobless claims,OCT/13,1636K,1641K,,,®,3,
+2018-10-25T08:30:00-04:00,United States,Durable Goods Orders ex Defense MoM,durable goods orders ex defense,SEP,-0.6%,2.5%,,,®,3,
+2018-10-25T10:00:00-04:00,United States,Pending Home Sales MoM,pending home sales mom,SEP,0.5%,-1.9%,,,®,3,
+2018-10-25T10:00:00-04:00,United States,Pending Home Sales YoY,pending home sales,SEP,-1%,-2.4%,,,®,3,
+2018-10-25T10:30:00-04:00,United States,EIA Natural Gas Stocks Change,natural gas stocks change,OCT/19,58Bcf,81Bcf,,,,3,
+2018-10-25T11:00:00-04:00,United States,Kansas Fed Manufacturing Index,kansas fed manufacturing index,OCT,5.0,10.0,,,,3,
+2018-10-25T12:15:00-04:00,United States,Fed Clarida Speech,interest rate,,,,,,,3,
+2018-10-25T13:00:00-04:00,United States,7-Year Note Auction,7 year note yield,,3.074%,3.034%,,,,3,
+2018-10-25T17:30:00-04:00,United States,Fed Mester Speech,interest rate,,,,,,,3,
+2018-10-25T21:00:00-04:00,United States,Fed Mester Speech,interest rate,,,,,,,3,
+2018-10-26T08:30:00-04:00,United States,GDP Growth Rate QoQ Adv,gdp growth rate,Q3,3.5%,4.2%,,,,3,
+2018-10-26T08:30:00-04:00,United States,GDP Price Index QoQ Adv,gdp deflator,Q3,1.4%,3.3%,2.1%,,,3,
+2018-10-26T08:30:00-04:00,United States,Core PCE Prices QoQ Adv,core pce prices qoq,Q3,1.6%,2.1%,,,,3,
+2018-10-26T08:30:00-04:00,United States,PCE Prices QoQ Adv,pce prices qoq,Q3,1.6%,2%,,,,3,
+2018-10-26T10:00:00-04:00,United States,Michigan 5 Year Inflation Expectations Final,michigan 5 year inflation expectations,OCT,2.4%,2.5%,,,,3,
+2018-10-26T10:00:00-04:00,United States,Michigan Consumer Expectations Final,michigan consumer expectations,OCT,89.3,89.1,,,®,3,
+2018-10-26T10:00:00-04:00,United States,Michigan Consumer Sentiment Final,consumer confidence,OCT,98.6,100.1,99,99,,3,
+2018-10-26T10:00:00-04:00,United States,Michigan Current Conditions Final,michigan current economic conditions,OCT,113.1,114.4,,,®,3,
+2018-10-26T10:00:00-04:00,United States,Michigan Inflation Expectations Final,michigan inflation expectations,OCT,2.9%,2.7%,,,,3,
+2018-10-26T13:00:00-04:00,United States,Baker Hughes Oil Rig Count,crude oil rigs,OCT/26,875,873,,,,3,
+2018-10-29T08:30:00-04:00,United States,Personal Income MoM,personal income,SEP,0.2%,0.4%,,,®,3,
+2018-10-29T08:30:00-04:00,United States,Personal Spending MoM,personal spending,SEP,0.4%,0.5%,,,®,3,
+2018-10-29T08:30:00-04:00,United States,PCE Price Index MoM,pce price index monthly change,SEP,0.1%,0.1%,,,,3,
+2018-10-29T08:30:00-04:00,United States,PCE Price Index YoY,pce price index annual change,SEP,2%,2.2%,,,,3,
+2018-10-29T08:30:00-04:00,United States,Core PCE Price Index MoM,core pce price index mom,SEP,0.2%,0%,,,,3,
+2018-10-29T08:30:00-04:00,United States,Core PCE Price Index YoY,core pce price index annual change,SEP,2%,2%,,,,3,
+2018-10-29T09:45:00-04:00,United States,Fed Evans Speech,interest rate,,,,,,,3,
+2018-10-29T10:30:00-04:00,United States,Dallas Fed Manufacturing Index,dallas fed manufacturing index,OCT,29.4,28.1,,,,3,
+2018-10-29T11:30:00-04:00,United States,3-Month Bill Auction,3 month bill yield,,2.305%,2.300%,,,,3,
+2018-10-29T11:30:00-04:00,United States,6-Month Bill Auction,6 month bill yield,,2.430%,2.425%,,,,3,
+2018-10-30T08:55:00-04:00,United States,Redbook MoM,redbook index,OCT/27,0.1%,0%,,,,3,
+2018-10-30T08:55:00-04:00,United States,Redbook YoY,redbook index,OCT/27,5.9%,5.5%,,,,3,
+2018-10-30T09:00:00-04:00,United States,S&P/Case-Shiller Home Price MoM,case shiller home price index mom,AUG,0%,0.3%,,,,3,
+2018-10-30T09:00:00-04:00,United States,S&P/Case-Shiller Home Price YoY,case shiller home price index yoy,AUG,5.5%,5.9%,,,,3,
+2018-10-30T10:00:00-04:00,United States,Cb Consumer Confidence,calendar,OCT,137.9,135.3,136.0,,®,3,
+2018-10-30T11:30:00-04:00,United States,4-Week Bill Auction,4 week bill yield,,2.165%,2.18%,,,,3,
+2018-10-30T16:30:00-04:00,United States,API Crude Oil Stock Change,api crude oil stock change,OCT/26,5.7M,9.88M,,,,3,
+2018-10-31T07:00:00-04:00,United States,MBA 30-Year Mortgage Rate,mortgage rate,OCT/26,5.11%,5.11%,,,,3,
+2018-10-31T07:00:00-04:00,United States,MBA Mortgage Applications,mortgage applications,OCT/26,-2.5%,4.9%,,,,3,
+2018-10-31T08:15:00-04:00,United States,ADP Employment Change,adp employment change,OCT,227K,218K,,,®,3,
+2018-10-31T08:30:00-04:00,United States,Employment Cost - Benefits QoQ,employment cost index benefits,Q3,0.4%,0.9%,,,,3,
+2018-10-31T08:30:00-04:00,United States,Employment Cost - Wages QoQ,employment cost index wages,Q3,0.9%,0.5%,,,,3,
+2018-10-31T08:30:00-04:00,United States,Employment Cost Index QoQ,employment cost index,Q3,0.8%,0.6%,,,,3,
+2018-10-31T09:50:00-04:00,United States,Chicago PMI,chicago pmi,OCT,58.4,60.4,,,,3,
+2018-10-31T10:30:00-04:00,United States,EIA Crude Oil Stocks Change,crude oil stocks change,OCT/26,3.217M,6.346M,,,,3,
+2018-10-31T10:30:00-04:00,United States,EIA Gasoline Stocks Change,gasoline stocks change,OCT/26,-3.161M,-4.826M,,,,3,

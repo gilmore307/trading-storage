@@ -1,2 +1,2 @@
-event_time,country,event,source_event_type,reference,actual,previous,consensus,te_forecast,revised,importance,symbol,source_url
-2022-09-01T10:00:00-04:00,United States,ISM Manufacturing PMI,business confidence,AUG,52.8,52.8,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2022-09-01&end=2022-10-01
+event_time,country,event,source_event_type,reference,actual,previous,consensus,te_forecast,revised,importance,symbol
+2022-09-01T10:00:00-04:00,United States,ISM Manufacturing PMI,business confidence,AUG,52.8,52.8,,,,3,

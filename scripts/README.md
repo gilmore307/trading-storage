@@ -6,7 +6,6 @@ Executable storage maintenance and artifact helpers live here. Scripts may impor
 
 - `dashboard/materialize_read_model.py` validates a dashboard read-model common envelope and writes storage-owned snapshot/latest/schema/index files under `storage/06_dashboard_cache/`.
 - `dashboard/refresh_historical_task_progress_read_model.py` runs the manager-owned `historical_task_progress_summary` producer and materializes the validated payload into the accepted storage layout.
-- `dashboard/refresh_event_calendar_summary_read_model.py` builds the narrow event calendar summary from accepted SQL event rows and storage-local Trading Economics source evidence.
 - `dashboard/refresh_temporal_explorer_summary_read_model.py` builds the primary Timewheel/Temporal Explorer summary from calendar substrate tables and chart cache.
 - `dashboard/refresh_realtime_signal_summary_read_model.py` builds the execution-owned realtime signal summary from monitor receipts and materializes the validated payload into the accepted storage layout.
 - `dashboard/refresh_execution_runtime_status_read_model.py` builds the execution realtime runtime status read model from the execution-owned readiness artifact for WebSocket clients.
@@ -20,9 +19,6 @@ PYTHONPATH=src python3 scripts/dashboard/materialize_read_model.py summary.json 
 
 PYTHONPATH=src python3 scripts/dashboard/refresh_historical_task_progress_read_model.py \
   --trading-manager-root /root/projects/trading-manager \
-  --storage-root storage
-
-PYTHONPATH=src python3 scripts/dashboard/refresh_event_calendar_summary_read_model.py \
   --storage-root storage
 
 PYTHONPATH=src python3 scripts/dashboard/refresh_temporal_explorer_summary_read_model.py \

@@ -1,22 +1,22 @@
-event_time,country,event,source_event_type,reference,actual,previous,consensus,te_forecast,revised,importance,symbol,source_url
-2024-04-01T10:00:00-04:00,United States,ISM Manufacturing PMI,business confidence,MAR,50.3,47.8,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2024-04-01&end=2024-05-01
-2024-04-02T10:00:00-04:00,United States,JOLTs Job Openings,job offers,FEB,8.756M,8.748M,,,®,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2024-04-01&end=2024-05-01
-2024-04-03T10:00:00-04:00,United States,ISM Services PMI,non manufacturing pmi,MAR,51.4,52.6,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2024-04-01&end=2024-05-01
-2024-04-03T12:10:00-04:00,United States,Fed Chair Powell Speech,interest rate,,,,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2024-04-01&end=2024-05-01
-2024-04-05T08:30:00-04:00,United States,Non Farm Payrolls,non farm payrolls,MAR,303K,270K,,,®,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2024-04-01&end=2024-05-01
-2024-04-05T08:30:00-04:00,United States,Unemployment Rate,unemployment rate,MAR,3.8%,3.9%,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2024-04-01&end=2024-05-01
-2024-04-10T08:30:00-04:00,United States,Core Inflation Rate MoM,core inflation rate mom,MAR,0.4%,0.4%,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2024-04-01&end=2024-05-01
-2024-04-10T08:30:00-04:00,United States,Core Inflation Rate YoY,core inflation rate,MAR,3.8%,3.8%,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2024-04-01&end=2024-05-01
-2024-04-10T08:30:00-04:00,United States,Inflation Rate MoM,inflation rate mom,MAR,0.4%,0.4%,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2024-04-01&end=2024-05-01
-2024-04-10T08:30:00-04:00,United States,Inflation Rate YoY,inflation rate,MAR,3.5%,3.2%,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2024-04-01&end=2024-05-01
-2024-04-10T14:00:00-04:00,United States,FOMC Minutes,interest rate,,,,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2024-04-01&end=2024-05-01
-2024-04-11T08:30:00-04:00,United States,PPI MoM,producer price inflation mom,MAR,0.2%,0.6%,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2024-04-01&end=2024-05-01
-2024-04-12T10:00:00-04:00,United States,Michigan Consumer Sentiment Prel,consumer confidence,APR,77.9,79.4,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2024-04-01&end=2024-05-01
-2024-04-15T08:30:00-04:00,United States,Retail Sales MoM,retail sales mom,MAR,0.7%,0.9%,,,®,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2024-04-01&end=2024-05-01
-2024-04-16T08:30:00-04:00,United States,Building Permits Prel,building permits,MAR,1.458M,1.523M,,,®,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2024-04-01&end=2024-05-01
-2024-04-16T13:15:00-04:00,United States,Fed Chair Powell Speech,interest rate,,,,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2024-04-01&end=2024-05-01
-2024-04-24T08:30:00-04:00,United States,Durable Goods Orders MoM,durable goods orders,MAR,2.6%,0.7%,,,®,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2024-04-01&end=2024-05-01
-2024-04-25T08:30:00-04:00,United States,GDP Growth Rate QoQ Adv,gdp growth rate,Q1,1.6%,3.4%,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2024-04-01&end=2024-05-01
-2024-04-26T08:30:00-04:00,United States,Core PCE Price Index MoM,core pce price index mom,MAR,0.3%,0.3%,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2024-04-01&end=2024-05-01
-2024-04-26T08:30:00-04:00,United States,Personal Income MoM,personal income,MAR,0.5%,0.3%,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2024-04-01&end=2024-05-01
-2024-04-26T08:30:00-04:00,United States,Personal Spending MoM,personal spending,MAR,0.8%,0.8%,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2024-04-01&end=2024-05-01
+event_time,country,event,source_event_type,reference,actual,previous,consensus,te_forecast,revised,importance,symbol
+2024-04-01T10:00:00-04:00,United States,ISM Manufacturing PMI,business confidence,MAR,50.3,47.8,,,,3,
+2024-04-02T10:00:00-04:00,United States,JOLTs Job Openings,job offers,FEB,8.756M,8.748M,,,®,3,
+2024-04-03T10:00:00-04:00,United States,ISM Services PMI,non manufacturing pmi,MAR,51.4,52.6,,,,3,
+2024-04-03T12:10:00-04:00,United States,Fed Chair Powell Speech,interest rate,,,,,,,3,
+2024-04-05T08:30:00-04:00,United States,Non Farm Payrolls,non farm payrolls,MAR,303K,270K,,,®,3,
+2024-04-05T08:30:00-04:00,United States,Unemployment Rate,unemployment rate,MAR,3.8%,3.9%,,,,3,
+2024-04-10T08:30:00-04:00,United States,Core Inflation Rate MoM,core inflation rate mom,MAR,0.4%,0.4%,,,,3,
+2024-04-10T08:30:00-04:00,United States,Core Inflation Rate YoY,core inflation rate,MAR,3.8%,3.8%,,,,3,
+2024-04-10T08:30:00-04:00,United States,Inflation Rate MoM,inflation rate mom,MAR,0.4%,0.4%,,,,3,
+2024-04-10T08:30:00-04:00,United States,Inflation Rate YoY,inflation rate,MAR,3.5%,3.2%,,,,3,
+2024-04-10T14:00:00-04:00,United States,FOMC Minutes,interest rate,,,,,,,3,
+2024-04-11T08:30:00-04:00,United States,PPI MoM,producer price inflation mom,MAR,0.2%,0.6%,,,,3,
+2024-04-12T10:00:00-04:00,United States,Michigan Consumer Sentiment Prel,consumer confidence,APR,77.9,79.4,,,,3,
+2024-04-15T08:30:00-04:00,United States,Retail Sales MoM,retail sales mom,MAR,0.7%,0.9%,,,®,3,
+2024-04-16T08:30:00-04:00,United States,Building Permits Prel,building permits,MAR,1.458M,1.523M,,,®,3,
+2024-04-16T13:15:00-04:00,United States,Fed Chair Powell Speech,interest rate,,,,,,,3,
+2024-04-24T08:30:00-04:00,United States,Durable Goods Orders MoM,durable goods orders,MAR,2.6%,0.7%,,,®,3,
+2024-04-25T08:30:00-04:00,United States,GDP Growth Rate QoQ Adv,gdp growth rate,Q1,1.6%,3.4%,,,,3,
+2024-04-26T08:30:00-04:00,United States,Core PCE Price Index MoM,core pce price index mom,MAR,0.3%,0.3%,,,,3,
+2024-04-26T08:30:00-04:00,United States,Personal Income MoM,personal income,MAR,0.5%,0.3%,,,,3,
+2024-04-26T08:30:00-04:00,United States,Personal Spending MoM,personal spending,MAR,0.8%,0.8%,,,,3,

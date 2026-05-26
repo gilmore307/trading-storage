@@ -1,2 +1,2 @@
-event_time,country,event,source_event_type,reference,actual,previous,consensus,te_forecast,revised,importance,symbol,source_url
-2019-02-01T08:30:00-05:00,United States,Non Farm Payrolls,non farm payrolls,JAN,304K,222K,,,®,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2019-02-01&end=2019-03-01
+event_time,country,event,source_event_type,reference,actual,previous,consensus,te_forecast,revised,importance,symbol
+2019-02-01T08:30:00-05:00,United States,Non Farm Payrolls,non farm payrolls,JAN,304K,222K,,,®,3,

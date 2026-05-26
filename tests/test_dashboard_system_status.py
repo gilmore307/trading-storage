@@ -49,9 +49,7 @@ class DashboardSystemStatusTests(unittest.TestCase):
                     "Alpaca Market Data API",
                     "OKX Market Data API",
                     "ThetaData Options API",
-                    "Trading Economics Calendar Web",
-                    "Trading Economics Calendar Schedule",
-                    "Trading Economics Calendar Worker",
+                    "Trading Economics Storage Snapshot",
                 ],
             )
             self.assertTrue(all("status" in api and "healthy" in api for api in chart["apis"]))
@@ -87,15 +85,13 @@ class DashboardSystemStatusTests(unittest.TestCase):
                     "Execution Runtime Status",
                     "Latest Realtime Monitor Receipt",
                     "Latest Realtime Monitor Cycle",
-                    "Trading Economics Recent Calendar Receipt",
-                    "Trading Economics Recent Calendar Events",
-                    "Historical TE Calendar Seed Receipt",
+                    "Trading Economics Canonical Source Receipt",
+                    "Trading Economics Canonical Source Events",
                     "Dashboard Read Model Index",
                     "Status Read Model",
                     "Historical Task Progress Read Model",
                     "Realtime Signal Summary Read Model",
                     "Temporal Explorer Read Model",
-                    "Event Calendar Read Model",
                     "Execution Runtime Read Model",
                 ],
             )
@@ -268,7 +264,6 @@ class DashboardSystemStatusTests(unittest.TestCase):
             units,
             [
                 "trading-dashboard-web.service",
-                "trading-data-te-calendar-refresh.timer",
                 "trading-execution-realtime-runtime-check.path",
             ],
         )

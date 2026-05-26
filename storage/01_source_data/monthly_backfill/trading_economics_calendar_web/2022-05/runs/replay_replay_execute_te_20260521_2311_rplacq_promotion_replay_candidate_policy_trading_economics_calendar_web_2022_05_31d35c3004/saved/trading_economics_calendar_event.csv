@@ -1,18 +1,18 @@
-event_time,country,event,source_event_type,reference,actual,previous,consensus,te_forecast,revised,importance,symbol,source_url
-2022-05-02T10:00:00-04:00,United States,ISM Manufacturing PMI,business confidence,APR,55.4,57.1,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2022-05-01&end=2022-06-01
-2022-05-03T10:00:00-04:00,United States,JOLTs Job Openings,job offers,MAR,11.549M,11.344M,,,®,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2022-05-01&end=2022-06-01
-2022-05-04T08:30:00-04:00,United States,Balance of Trade,balance of trade,MAR,$-109.8B,$-89.8B,,,®,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2022-05-01&end=2022-06-01
-2022-05-04T10:00:00-04:00,United States,ISM Non-Manufacturing PMI,non manufacturing pmi,APR,57.1,58.3,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2022-05-01&end=2022-06-01
-2022-05-04T14:30:00-04:00,United States,Fed Press Conference,interest rate,,,,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2022-05-01&end=2022-06-01
-2022-05-06T08:30:00-04:00,United States,Non Farm Payrolls,non farm payrolls,APR,428K,428K,,,®,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2022-05-01&end=2022-06-01
-2022-05-11T08:30:00-04:00,United States,Core Inflation Rate YoY,core inflation rate,APR,6.2%,6.5%,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2022-05-01&end=2022-06-01
-2022-05-11T08:30:00-04:00,United States,Inflation Rate YoY,inflation rate,APR,8.3%,8.5%,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2022-05-01&end=2022-06-01
-2022-05-12T08:30:00-04:00,United States,PPI MoM,producer price inflation mom,APR,0.5%,1.6%,,,®,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2022-05-01&end=2022-06-01
-2022-05-13T10:00:00-04:00,United States,Michigan Consumer Sentiment Prel,consumer confidence,MAY,59.1,65.2,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2022-05-01&end=2022-06-01
-2022-05-17T08:30:00-04:00,United States,Retail Sales MoM,retail sales mom,APR,0.9%,1.4%,,,®,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2022-05-01&end=2022-06-01
-2022-05-17T14:00:00-04:00,United States,Fed Chair Powell Speech,interest rate,,,,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2022-05-01&end=2022-06-01
-2022-05-18T08:30:00-04:00,United States,Building Permits,building permits,APR,1.819M,1.879M,,,®,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2022-05-01&end=2022-06-01
-2022-05-25T08:30:00-04:00,United States,Durable Goods Orders MoM,durable goods orders,APR,0.4%,0.6%,,,®,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2022-05-01&end=2022-06-01
-2022-05-25T14:00:00-04:00,United States,FOMC Minutes,interest rate,,,,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2022-05-01&end=2022-06-01
-2022-05-27T08:30:00-04:00,United States,Personal Income MoM,personal income,APR,0.4%,0.5%,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2022-05-01&end=2022-06-01
-2022-05-27T08:30:00-04:00,United States,Personal Spending MoM,personal spending,APR,0.9%,1.4%,,,®,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2022-05-01&end=2022-06-01
+event_time,country,event,source_event_type,reference,actual,previous,consensus,te_forecast,revised,importance,symbol
+2022-05-02T10:00:00-04:00,United States,ISM Manufacturing PMI,business confidence,APR,55.4,57.1,,,,3,
+2022-05-03T10:00:00-04:00,United States,JOLTs Job Openings,job offers,MAR,11.549M,11.344M,,,®,3,
+2022-05-04T08:30:00-04:00,United States,Balance of Trade,balance of trade,MAR,$-109.8B,$-89.8B,,,®,3,
+2022-05-04T10:00:00-04:00,United States,ISM Non-Manufacturing PMI,non manufacturing pmi,APR,57.1,58.3,,,,3,
+2022-05-04T14:30:00-04:00,United States,Fed Press Conference,interest rate,,,,,,,3,
+2022-05-06T08:30:00-04:00,United States,Non Farm Payrolls,non farm payrolls,APR,428K,428K,,,®,3,
+2022-05-11T08:30:00-04:00,United States,Core Inflation Rate YoY,core inflation rate,APR,6.2%,6.5%,,,,3,
+2022-05-11T08:30:00-04:00,United States,Inflation Rate YoY,inflation rate,APR,8.3%,8.5%,,,,3,
+2022-05-12T08:30:00-04:00,United States,PPI MoM,producer price inflation mom,APR,0.5%,1.6%,,,®,3,
+2022-05-13T10:00:00-04:00,United States,Michigan Consumer Sentiment Prel,consumer confidence,MAY,59.1,65.2,,,,3,
+2022-05-17T08:30:00-04:00,United States,Retail Sales MoM,retail sales mom,APR,0.9%,1.4%,,,®,3,
+2022-05-17T14:00:00-04:00,United States,Fed Chair Powell Speech,interest rate,,,,,,,3,
+2022-05-18T08:30:00-04:00,United States,Building Permits,building permits,APR,1.819M,1.879M,,,®,3,
+2022-05-25T08:30:00-04:00,United States,Durable Goods Orders MoM,durable goods orders,APR,0.4%,0.6%,,,®,3,
+2022-05-25T14:00:00-04:00,United States,FOMC Minutes,interest rate,,,,,,,3,
+2022-05-27T08:30:00-04:00,United States,Personal Income MoM,personal income,APR,0.4%,0.5%,,,,3,
+2022-05-27T08:30:00-04:00,United States,Personal Spending MoM,personal spending,APR,0.9%,1.4%,,,®,3,

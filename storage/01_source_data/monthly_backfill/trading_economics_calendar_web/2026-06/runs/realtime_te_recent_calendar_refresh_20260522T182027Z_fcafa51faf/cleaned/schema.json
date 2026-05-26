@@ -12,7 +12,6 @@
     "te_forecast",
     "revised",
     "importance",
-    "symbol",
-    "source_url"
+    "symbol"
   ]
 }

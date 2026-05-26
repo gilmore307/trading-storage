@@ -32,8 +32,7 @@
               "te_forecast",
               "revised",
               "importance",
-              "symbol",
-              "source_url"
+              "symbol"
             ],
             "out_of_window_calendar_rows_skipped": 0
           },
@@ -48,9 +47,7 @@
           "warnings": []
         },
         "fetch": {
-          "details": {
-            "source_url": "https://tradingeconomics.com/united-states/calendar"
-          },
+          "details": {},
           "references": [
             "/root/projects/trading-storage/storage/01_source_data/monthly_backfill/trading_economics_calendar_web/_manifests/recent_refresh_runs/te_recent_calendar_refresh_20260526T115151Z/request_manifest.json"
           ],
@@ -74,8 +71,7 @@
               "te_forecast",
               "revised",
               "importance",
-              "symbol",
-              "source_url"
+              "symbol"
             ],
             "format": "csv",
             "monthly_backfill_bucketed_output": true,
@@ -133,8 +129,7 @@
               "te_forecast",
               "revised",
               "importance",
-              "symbol",
-              "source_url"
+              "symbol"
             ],
             "out_of_window_calendar_rows_skipped": 0
           },
@@ -149,9 +144,7 @@
           "warnings": []
         },
         "fetch": {
-          "details": {
-            "source_url": "https://tradingeconomics.com/united-states/calendar"
-          },
+          "details": {},
           "references": [
             "/root/projects/trading-storage/storage/01_source_data/monthly_backfill/trading_economics_calendar_web/_manifests/recent_refresh_runs/te_recent_calendar_refresh_20260526T125157Z/request_manifest.json"
           ],
@@ -175,8 +168,7 @@
               "te_forecast",
               "revised",
               "importance",
-              "symbol",
-              "source_url"
+              "symbol"
             ],
             "format": "csv",
             "monthly_backfill_bucketed_output": true,
@@ -234,8 +226,7 @@
               "te_forecast",
               "revised",
               "importance",
-              "symbol",
-              "source_url"
+              "symbol"
             ],
             "out_of_window_calendar_rows_skipped": 0
           },
@@ -250,9 +241,7 @@
           "warnings": []
         },
         "fetch": {
-          "details": {
-            "source_url": "https://tradingeconomics.com/united-states/calendar"
-          },
+          "details": {},
           "references": [
             "/root/projects/trading-storage/storage/01_source_data/monthly_backfill/trading_economics_calendar_web/_manifests/recent_refresh_runs/te_recent_calendar_refresh_20260526T135158Z/request_manifest.json"
           ],
@@ -276,8 +265,7 @@
               "te_forecast",
               "revised",
               "importance",
-              "symbol",
-              "source_url"
+              "symbol"
             ],
             "format": "csv",
             "monthly_backfill_bucketed_output": true,
@@ -335,8 +323,7 @@
               "te_forecast",
               "revised",
               "importance",
-              "symbol",
-              "source_url"
+              "symbol"
             ],
             "out_of_window_calendar_rows_skipped": 0
           },
@@ -351,9 +338,7 @@
           "warnings": []
         },
         "fetch": {
-          "details": {
-            "source_url": "https://tradingeconomics.com/united-states/calendar"
-          },
+          "details": {},
           "references": [
             "/root/projects/trading-storage/storage/01_source_data/monthly_backfill/trading_economics_calendar_web/_manifests/recent_refresh_runs/te_recent_calendar_refresh_20260526T145207Z/request_manifest.json"
           ],
@@ -377,8 +362,7 @@
               "te_forecast",
               "revised",
               "importance",
-              "symbol",
-              "source_url"
+              "symbol"
             ],
             "format": "csv",
             "monthly_backfill_bucketed_output": true,

@@ -1,24 +1,24 @@
-event_time,country,event,source_event_type,reference,actual,previous,consensus,te_forecast,revised,importance,symbol,source_url
-2025-02-03T10:00:00-05:00,United States,ISM Manufacturing PMI,business confidence,JAN,50.9,49.2,,,®,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2025-02-01&end=2025-03-01
-2025-02-04T10:00:00-05:00,United States,JOLTs Job Openings,job offers,DEC,7.6M,8.156M,,,®,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2025-02-01&end=2025-03-01
-2025-02-05T10:00:00-05:00,United States,ISM Services PMI,non manufacturing pmi,JAN,52.8,54.0,,,®,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2025-02-01&end=2025-03-01
-2025-02-07T08:30:00-05:00,United States,Non Farm Payrolls,non farm payrolls,JAN,143K,307K,,,®,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2025-02-01&end=2025-03-01
-2025-02-07T08:30:00-05:00,United States,Unemployment Rate,unemployment rate,JAN,4%,4.1%,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2025-02-01&end=2025-03-01
-2025-02-07T10:00:00-05:00,United States,Michigan Consumer Sentiment Prel,consumer confidence,FEB,67.8,71.1,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2025-02-01&end=2025-03-01
-2025-02-11T10:00:00-05:00,United States,Fed Chair Powell Testimony,interest rate,,,,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2025-02-01&end=2025-03-01
-2025-02-12T08:30:00-05:00,United States,Core Inflation Rate MoM,core inflation rate mom,JAN,0.4%,0.2%,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2025-02-01&end=2025-03-01
-2025-02-12T08:30:00-05:00,United States,Core Inflation Rate YoY,core inflation rate,JAN,3.3%,3.2%,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2025-02-01&end=2025-03-01
-2025-02-12T08:30:00-05:00,United States,Inflation Rate MoM,inflation rate mom,JAN,0.5%,0.4%,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2025-02-01&end=2025-03-01
-2025-02-12T08:30:00-05:00,United States,Inflation Rate YoY,inflation rate,JAN,3%,2.9%,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2025-02-01&end=2025-03-01
-2025-02-12T10:00:00-05:00,United States,Fed Chair Powell Testimony,interest rate,,,,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2025-02-01&end=2025-03-01
-2025-02-13T08:30:00-05:00,United States,PPI MoM,producer price inflation mom,JAN,0.4%,0.5%,,,®,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2025-02-01&end=2025-03-01
-2025-02-14T08:30:00-05:00,United States,Retail Sales MoM,retail sales mom,JAN,-0.9%,0.7%,,,®,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2025-02-01&end=2025-03-01
-2025-02-19T08:30:00-05:00,United States,Building Permits Prel,building permits,JAN,1.483M,1.482M,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2025-02-01&end=2025-03-01
-2025-02-19T08:30:00-05:00,United States,Housing Starts,housing starts,JAN,1.366M,1.515M,,,®,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2025-02-01&end=2025-03-01
-2025-02-19T14:00:00-05:00,United States,FOMC Minutes,interest rate,,,,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2025-02-01&end=2025-03-01
-2025-02-21T10:00:00-05:00,United States,Existing Home Sales,existing home sales,JAN,4.08M,4.29M,,,®,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2025-02-01&end=2025-03-01
-2025-02-27T08:30:00-05:00,United States,Durable Goods Orders MoM,durable goods orders,JAN,3.1%,-1.8%,,,®,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2025-02-01&end=2025-03-01
-2025-02-27T08:30:00-05:00,United States,GDP Growth Rate QoQ 2nd Est,gdp growth rate,Q4,2.3%,3.1%,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2025-02-01&end=2025-03-01
-2025-02-28T08:30:00-05:00,United States,Core PCE Price Index MoM,core pce price index mom,JAN,0.3%,0.2%,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2025-02-01&end=2025-03-01
-2025-02-28T08:30:00-05:00,United States,Personal Income MoM,personal income,JAN,0.9%,0.4%,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2025-02-01&end=2025-03-01
-2025-02-28T08:30:00-05:00,United States,Personal Spending MoM,personal spending,JAN,-0.2%,0.8%,,,®,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2025-02-01&end=2025-03-01
+event_time,country,event,source_event_type,reference,actual,previous,consensus,te_forecast,revised,importance,symbol
+2025-02-03T10:00:00-05:00,United States,ISM Manufacturing PMI,business confidence,JAN,50.9,49.2,,,®,3,
+2025-02-04T10:00:00-05:00,United States,JOLTs Job Openings,job offers,DEC,7.6M,8.156M,,,®,3,
+2025-02-05T10:00:00-05:00,United States,ISM Services PMI,non manufacturing pmi,JAN,52.8,54.0,,,®,3,
+2025-02-07T08:30:00-05:00,United States,Non Farm Payrolls,non farm payrolls,JAN,143K,307K,,,®,3,
+2025-02-07T08:30:00-05:00,United States,Unemployment Rate,unemployment rate,JAN,4%,4.1%,,,,3,
+2025-02-07T10:00:00-05:00,United States,Michigan Consumer Sentiment Prel,consumer confidence,FEB,67.8,71.1,,,,3,
+2025-02-11T10:00:00-05:00,United States,Fed Chair Powell Testimony,interest rate,,,,,,,3,
+2025-02-12T08:30:00-05:00,United States,Core Inflation Rate MoM,core inflation rate mom,JAN,0.4%,0.2%,,,,3,
+2025-02-12T08:30:00-05:00,United States,Core Inflation Rate YoY,core inflation rate,JAN,3.3%,3.2%,,,,3,
+2025-02-12T08:30:00-05:00,United States,Inflation Rate MoM,inflation rate mom,JAN,0.5%,0.4%,,,,3,
+2025-02-12T08:30:00-05:00,United States,Inflation Rate YoY,inflation rate,JAN,3%,2.9%,,,,3,
+2025-02-12T10:00:00-05:00,United States,Fed Chair Powell Testimony,interest rate,,,,,,,3,
+2025-02-13T08:30:00-05:00,United States,PPI MoM,producer price inflation mom,JAN,0.4%,0.5%,,,®,3,
+2025-02-14T08:30:00-05:00,United States,Retail Sales MoM,retail sales mom,JAN,-0.9%,0.7%,,,®,3,
+2025-02-19T08:30:00-05:00,United States,Building Permits Prel,building permits,JAN,1.483M,1.482M,,,,3,
+2025-02-19T08:30:00-05:00,United States,Housing Starts,housing starts,JAN,1.366M,1.515M,,,®,3,
+2025-02-19T14:00:00-05:00,United States,FOMC Minutes,interest rate,,,,,,,3,
+2025-02-21T10:00:00-05:00,United States,Existing Home Sales,existing home sales,JAN,4.08M,4.29M,,,®,3,
+2025-02-27T08:30:00-05:00,United States,Durable Goods Orders MoM,durable goods orders,JAN,3.1%,-1.8%,,,®,3,
+2025-02-27T08:30:00-05:00,United States,GDP Growth Rate QoQ 2nd Est,gdp growth rate,Q4,2.3%,3.1%,,,,3,
+2025-02-28T08:30:00-05:00,United States,Core PCE Price Index MoM,core pce price index mom,JAN,0.3%,0.2%,,,,3,
+2025-02-28T08:30:00-05:00,United States,Personal Income MoM,personal income,JAN,0.9%,0.4%,,,,3,
+2025-02-28T08:30:00-05:00,United States,Personal Spending MoM,personal spending,JAN,-0.2%,0.8%,,,®,3,

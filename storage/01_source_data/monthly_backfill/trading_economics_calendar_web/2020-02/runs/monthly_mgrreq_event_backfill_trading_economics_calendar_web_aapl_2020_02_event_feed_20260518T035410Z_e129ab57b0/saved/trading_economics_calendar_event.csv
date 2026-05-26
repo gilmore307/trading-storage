@@ -1,10 +1,10 @@
-event_time,country,event,source_event_type,reference,actual,previous,consensus,te_forecast,revised,importance,symbol,source_url
-2020-02-05T08:30:00-05:00,United States,Balance of Trade,balance of trade,DEC,$-48.9B,$-43.7B,,,®,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2020-02-01&end=2020-03-01
-2020-02-07T08:30:00-05:00,United States,Non Farm Payrolls,non farm payrolls,JAN,225K,147K,,,®,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2020-02-01&end=2020-03-01
-2020-02-13T08:30:00-05:00,United States,Core Inflation Rate YoY,core inflation rate,JAN,2.3%,2.3%,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2020-02-01&end=2020-03-01
-2020-02-13T08:30:00-05:00,United States,Inflation Rate YoY,inflation rate,JAN,2.5%,2.3%,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2020-02-01&end=2020-03-01
-2020-02-14T08:30:00-05:00,United States,Retail Sales MoM,retail sales mom,JAN,0.3%,0.2%,,,®,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2020-02-01&end=2020-03-01
-2020-02-26T18:00:00-05:00,United States,President Trump Speech,calendar,,,,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2020-02-01&end=2020-03-01
-2020-02-27T08:30:00-05:00,United States,Durable Goods Orders MoM,durable goods orders,JAN,-0.2%,2.9%,,,®,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2020-02-01&end=2020-03-01
-2020-02-28T08:30:00-05:00,United States,Personal Income MoM,personal income,JAN,0.6%,0.1%,,,®,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2020-02-01&end=2020-03-01
-2020-02-28T08:30:00-05:00,United States,Personal Spending MoM,personal spending,JAN,0.2%,0.4%,,,®,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2020-02-01&end=2020-03-01
+event_time,country,event,source_event_type,reference,actual,previous,consensus,te_forecast,revised,importance,symbol
+2020-02-05T08:30:00-05:00,United States,Balance of Trade,balance of trade,DEC,$-48.9B,$-43.7B,,,®,3,
+2020-02-07T08:30:00-05:00,United States,Non Farm Payrolls,non farm payrolls,JAN,225K,147K,,,®,3,
+2020-02-13T08:30:00-05:00,United States,Core Inflation Rate YoY,core inflation rate,JAN,2.3%,2.3%,,,,3,
+2020-02-13T08:30:00-05:00,United States,Inflation Rate YoY,inflation rate,JAN,2.5%,2.3%,,,,3,
+2020-02-14T08:30:00-05:00,United States,Retail Sales MoM,retail sales mom,JAN,0.3%,0.2%,,,®,3,
+2020-02-26T18:00:00-05:00,United States,President Trump Speech,calendar,,,,,,,3,
+2020-02-27T08:30:00-05:00,United States,Durable Goods Orders MoM,durable goods orders,JAN,-0.2%,2.9%,,,®,3,
+2020-02-28T08:30:00-05:00,United States,Personal Income MoM,personal income,JAN,0.6%,0.1%,,,®,3,
+2020-02-28T08:30:00-05:00,United States,Personal Spending MoM,personal spending,JAN,0.2%,0.4%,,,®,3,

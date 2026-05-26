@@ -1,275 +1,275 @@
-event_time,country,event,source_event_type,reference,actual,previous,consensus,te_forecast,revised,importance,symbol,source_url
-2025-10-01T07:00:00-04:00,United States,MBA 30-Year Mortgage Rate,mortgage rate,SEP/26,6.46%,6.34%,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2025-10-01&end=2025-11-01
-2025-10-01T07:00:00-04:00,United States,MBA Mortgage Applications,mortgage applications,SEP/26,-12.7%,0.6%,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2025-10-01&end=2025-11-01
-2025-10-01T07:00:00-04:00,United States,MBA Mortgage Market Index,mba mortgage market index,SEP/26,339.1,388.3,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2025-10-01&end=2025-11-01
-2025-10-01T07:00:00-04:00,United States,MBA Mortgage Refinance Index,mba mortgage refinance index,SEP/26,1278.6,1609.8,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2025-10-01&end=2025-11-01
-2025-10-01T07:00:00-04:00,United States,MBA Purchase Index,mba purchase index,SEP/26,172.7,174.5,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2025-10-01&end=2025-11-01
-2025-10-01T08:15:00-04:00,United States,ADP Employment Change,adp employment change,SEP,-32K,-3K,,,®,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2025-10-01&end=2025-11-01
-2025-10-01T09:45:00-04:00,United States,S&P Global Manufacturing PMI Final,manufacturing pmi,SEP,52.0,53.0,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2025-10-01&end=2025-11-01
-2025-10-01T10:00:00-04:00,United States,ISM Manufacturing PMI,business confidence,SEP,49.1,48.7,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2025-10-01&end=2025-11-01
-2025-10-01T10:00:00-04:00,United States,ISM Manufacturing Employment,ism manufacturing employment,SEP,45.3,43.8,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2025-10-01&end=2025-11-01
-2025-10-01T10:00:00-04:00,United States,ISM Manufacturing New Orders,ism manufacturing new orders,SEP,48.9,51.4,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2025-10-01&end=2025-11-01
-2025-10-01T10:00:00-04:00,United States,ISM Manufacturing Prices,ism manufacturing prices,SEP,61.9,63.7,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2025-10-01&end=2025-11-01
-2025-10-01T10:30:00-04:00,United States,EIA Crude Oil Stocks Change,crude oil stocks change,SEP/26,1.792M,-0.607M,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2025-10-01&end=2025-11-01
-2025-10-01T10:30:00-04:00,United States,EIA Gasoline Stocks Change,gasoline stocks change,SEP/26,4.125M,-1.081M,,,®,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2025-10-01&end=2025-11-01
-2025-10-01T10:30:00-04:00,United States,EIA Crude Oil Imports Change,crude oil imports,SEP/26,0.071M,1.596M,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2025-10-01&end=2025-11-01
-2025-10-01T10:30:00-04:00,United States,EIA Cushing Crude Oil Stocks Change,cushing crude oil stocks,SEP/26,-0.271M,0.177M,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2025-10-01&end=2025-11-01
-2025-10-01T10:30:00-04:00,United States,EIA Distillate Fuel Production Change,distillate fuel production,SEP/26,-0.025M,0.029M,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2025-10-01&end=2025-11-01
-2025-10-01T10:30:00-04:00,United States,EIA Distillate Stocks Change,distillate stocks,SEP/26,0.578M,-1.685M,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2025-10-01&end=2025-11-01
-2025-10-01T10:30:00-04:00,United States,EIA Gasoline Production Change,gasoline production,SEP/26,-0.363M,0.3M,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2025-10-01&end=2025-11-01
-2025-10-01T10:30:00-04:00,United States,EIA Heating Oil Stocks Change,heating oil stocks,SEP/26,0.187M,-0.189M,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2025-10-01&end=2025-11-01
-2025-10-01T10:30:00-04:00,United States,EIA Refinery Crude Runs Change,refinery crude runs,SEP/26,-0.308M,0.052M,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2025-10-01&end=2025-11-01
-2025-10-01T11:30:00-04:00,United States,17-Week Bill Auction,17 week bill yield,,3.785%,3.805%,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2025-10-01&end=2025-11-01
-2025-10-01T19:00:00-04:00,United States,Total Vehicle Sales,total vehicle sales,SEP,16.4M,16.1M,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2025-10-01&end=2025-11-01
-2025-10-02T07:30:00-04:00,United States,Challenger Job Cuts,challenger job cuts,SEP,54.064K,85.979K,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2025-10-01&end=2025-11-01
-2025-10-02T10:30:00-04:00,United States,Fed Logan Speech,interest rate,,,,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2025-10-01&end=2025-11-01
-2025-10-02T10:30:00-04:00,United States,EIA Natural Gas Stocks Change,natural gas stocks change,SEP/26,53Bcf,75Bcf,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2025-10-01&end=2025-11-01
-2025-10-02T11:30:00-04:00,United States,4-Week Bill Auction,4 week bill yield,,4.060%,4.080%,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2025-10-01&end=2025-11-01
-2025-10-02T11:30:00-04:00,United States,8-Week Bill Auction,8 week bill yield,,3.960%,4.000%,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2025-10-01&end=2025-11-01
-2025-10-02T12:00:00-04:00,United States,15-Year Mortgage Rate,15 year mortgage rate,OCT/02,5.55%,5.49%,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2025-10-01&end=2025-11-01
-2025-10-02T12:00:00-04:00,United States,30-Year Mortgage Rate,30 year mortgage rate,OCT/02,6.34%,6.3%,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2025-10-01&end=2025-11-01
-2025-10-02T16:30:00-04:00,United States,Fed Balance Sheet,central bank balance sheet,OCT/01,$6.59T,$6.61T,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2025-10-01&end=2025-11-01
-2025-10-03T06:05:00-04:00,United States,Fed Williams Speech,interest rate,,,,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2025-10-01&end=2025-11-01
-2025-10-03T09:45:00-04:00,United States,S&P Global Composite PMI Final,composite pmi,SEP,53.9,54.6,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2025-10-01&end=2025-11-01
-2025-10-03T09:45:00-04:00,United States,S&P Global Services PMI Final,services pmi,SEP,54.2,54.5,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2025-10-01&end=2025-11-01
-2025-10-03T10:00:00-04:00,United States,ISM Services PMI,non manufacturing pmi,SEP,50.0,52.0,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2025-10-01&end=2025-11-01
-2025-10-03T10:00:00-04:00,United States,ISM Services Business Activity,ism non manufacturing business activity,SEP,49.9,55.0,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2025-10-01&end=2025-11-01
-2025-10-03T10:00:00-04:00,United States,ISM Services Employment,ism non manufacturing employment,SEP,47.2,46.5,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2025-10-01&end=2025-11-01
-2025-10-03T10:00:00-04:00,United States,ISM Services New Orders,ism non manufacturing new orders,SEP,50.4,56.0,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2025-10-01&end=2025-11-01
-2025-10-03T10:00:00-04:00,United States,ISM Services Prices,ism non manufacturing prices,SEP,69.4,69.2,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2025-10-01&end=2025-11-01
-2025-10-03T13:00:00-04:00,United States,Baker Hughes Oil Rig Count,crude oil rigs,OCT/03,422,424,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2025-10-01&end=2025-11-01
-2025-10-03T13:00:00-04:00,United States,Baker Hughes Total Rigs Count,total rigs,OCT/03,549,549,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2025-10-01&end=2025-11-01
-2025-10-03T13:30:00-04:00,United States,Fed Logan Speech,interest rate,,,,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2025-10-01&end=2025-11-01
-2025-10-03T13:40:00-04:00,United States,Fed Jefferson Speech,interest rate,,,,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2025-10-01&end=2025-11-01
-2025-10-06T11:30:00-04:00,United States,3-Month Bill Auction,3 month bill yield,,3.850%,3.860%,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2025-10-01&end=2025-11-01
-2025-10-06T11:30:00-04:00,United States,6-Month Bill Auction,6 month bill yield,,3.695%,3.715%,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2025-10-01&end=2025-11-01
-2025-10-07T06:05:00-04:00,United States,LMI Logistics Managers Index,lmi logistics managers index,SEP,57.4,59.3,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2025-10-01&end=2025-11-01
-2025-10-07T08:55:00-04:00,United States,Redbook YoY,redbook index,OCT/04,5.8%,5.9%,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2025-10-01&end=2025-11-01
-2025-10-07T09:00:00-04:00,United States,Used Car Prices MoM,used car prices mom,SEP,-0.2%,0%,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2025-10-01&end=2025-11-01
-2025-10-07T09:00:00-04:00,United States,Used Car Prices YoY,used car prices yoy,SEP,2%,1.7%,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2025-10-01&end=2025-11-01
-2025-10-07T10:00:00-04:00,United States,Fed Bostic Speech,interest rate,,,,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2025-10-01&end=2025-11-01
-2025-10-07T10:05:00-04:00,United States,Fed Bowman Speech,interest rate,,,,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2025-10-01&end=2025-11-01
-2025-10-07T10:10:00-04:00,United States,RCM/TIPP Economic Optimism Index,economic optimism index,OCT,48.3,48.7,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2025-10-01&end=2025-11-01
-2025-10-07T10:30:00-04:00,United States,Fed Miran Speech,interest rate,,,,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2025-10-01&end=2025-11-01
-2025-10-07T11:00:00-04:00,United States,Consumer Inflation Expectations,inflation expectations,SEP,3.4%,3.2%,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2025-10-01&end=2025-11-01
-2025-10-07T11:30:00-04:00,United States,Fed Kashkari Speech,interest rate,,,,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2025-10-01&end=2025-11-01
-2025-10-07T13:00:00-04:00,United States,3-Year Note Auction,3 year note yield,,3.576%,3.485%,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2025-10-01&end=2025-11-01
-2025-10-07T15:00:00-04:00,United States,Consumer Credit Change,consumer credit,AUG,$0.36B,$18.05B,,,®,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2025-10-01&end=2025-11-01
-2025-10-07T16:05:00-04:00,United States,Fed Miran Speech,interest rate,,,,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2025-10-01&end=2025-11-01
-2025-10-07T16:30:00-04:00,United States,API Crude Oil Stock Change,api crude oil stock change,OCT/03,2.78M,-3.674M,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2025-10-01&end=2025-11-01
-2025-10-08T07:00:00-04:00,United States,MBA 30-Year Mortgage Rate,mortgage rate,OCT/03,6.43%,6.46%,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2025-10-01&end=2025-11-01
-2025-10-08T07:00:00-04:00,United States,MBA Mortgage Applications,mortgage applications,OCT/03,-4.7%,-12.7%,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2025-10-01&end=2025-11-01
-2025-10-08T07:00:00-04:00,United States,MBA Mortgage Market Index,mba mortgage market index,OCT/03,323.1,339.1,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2025-10-01&end=2025-11-01
-2025-10-08T07:00:00-04:00,United States,MBA Mortgage Refinance Index,mba mortgage refinance index,OCT/03,1180.2,1278.6,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2025-10-01&end=2025-11-01
-2025-10-08T07:00:00-04:00,United States,MBA Purchase Index,mba purchase index,OCT/03,170.6,172.7,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2025-10-01&end=2025-11-01
-2025-10-08T09:20:00-04:00,United States,Fed Musalem Speech,interest rate,,,,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2025-10-01&end=2025-11-01
-2025-10-08T09:30:00-04:00,United States,Fed Barr Speech,interest rate,,,,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2025-10-01&end=2025-11-01
-2025-10-08T10:30:00-04:00,United States,EIA Crude Oil Stocks Change,crude oil stocks change,OCT/03,3.715M,1.792M,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2025-10-01&end=2025-11-01
-2025-10-08T10:30:00-04:00,United States,EIA Gasoline Stocks Change,gasoline stocks change,OCT/03,-1.6M,4.125M,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2025-10-01&end=2025-11-01
-2025-10-08T10:30:00-04:00,United States,EIA Crude Oil Imports Change,crude oil imports,OCT/03,0.731M,0.071M,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2025-10-01&end=2025-11-01
-2025-10-08T10:30:00-04:00,United States,EIA Cushing Crude Oil Stocks Change,cushing crude oil stocks,OCT/03,-0.763M,-0.271M,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2025-10-01&end=2025-11-01
-2025-10-08T10:30:00-04:00,United States,EIA Distillate Fuel Production Change,distillate fuel production,OCT/03,0.21M,-0.025M,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2025-10-01&end=2025-11-01
-2025-10-08T10:30:00-04:00,United States,EIA Distillate Stocks Change,distillate stocks,OCT/03,-2.018M,0.578M,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2025-10-01&end=2025-11-01
-2025-10-08T10:30:00-04:00,United States,EIA Gasoline Production Change,gasoline production,OCT/03,0.409M,-0.363M,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2025-10-01&end=2025-11-01
-2025-10-08T10:30:00-04:00,United States,EIA Heating Oil Stocks Change,heating oil stocks,OCT/03,-0.06M,0.187M,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2025-10-01&end=2025-11-01
-2025-10-08T10:30:00-04:00,United States,EIA Refinery Crude Runs Change,refinery crude runs,OCT/03,0.129M,-0.308M,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2025-10-01&end=2025-11-01
-2025-10-08T11:30:00-04:00,United States,17-Week Bill Auction,17 week bill yield,,3.775%,3.785%,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2025-10-01&end=2025-11-01
-2025-10-08T13:00:00-04:00,United States,10-Year Note Auction,government bond 10y,,4.117%,4.033%,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2025-10-01&end=2025-11-01
-2025-10-08T14:00:00-04:00,United States,FOMC Minutes,interest rate,,,,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2025-10-01&end=2025-11-01
-2025-10-08T15:15:00-04:00,United States,Fed Kashkari Speech,interest rate,,,,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2025-10-01&end=2025-11-01
-2025-10-08T17:45:00-04:00,United States,Fed Barr Speech,interest rate,,,,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2025-10-01&end=2025-11-01
-2025-10-09T08:30:00-04:00,United States,Fed Chair Powell Speech,interest rate,,,,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2025-10-01&end=2025-11-01
-2025-10-09T08:35:00-04:00,United States,Fed Bowman Speech,interest rate,,,,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2025-10-01&end=2025-11-01
-2025-10-09T10:30:00-04:00,United States,EIA Natural Gas Stocks Change,natural gas stocks change,OCT/03,80Bcf,53Bcf,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2025-10-01&end=2025-11-01
-2025-10-09T11:30:00-04:00,United States,4-Week Bill Auction,4 week bill yield,,4.030%,4.060%,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2025-10-01&end=2025-11-01
-2025-10-09T11:30:00-04:00,United States,8-Week Bill Auction,8 week bill yield,,3.955%,3.960%,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2025-10-01&end=2025-11-01
-2025-10-09T12:00:00-04:00,United States,15-Year Mortgage Rate,15 year mortgage rate,OCT/09,5.53%,5.55%,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2025-10-01&end=2025-11-01
-2025-10-09T12:00:00-04:00,United States,30-Year Mortgage Rate,30 year mortgage rate,OCT/09,6.30%,6.34%,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2025-10-01&end=2025-11-01
-2025-10-09T12:45:00-04:00,United States,Fed Barr Speech,interest rate,,,,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2025-10-01&end=2025-11-01
-2025-10-09T13:00:00-04:00,United States,30-Year Bond Auction,30 year bond yield,,4.734%,4.651%,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2025-10-01&end=2025-11-01
-2025-10-09T15:45:00-04:00,United States,Fed Bowman Speech,interest rate,,,,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2025-10-01&end=2025-11-01
-2025-10-09T16:30:00-04:00,United States,Fed Balance Sheet,central bank balance sheet,OCT/08,$6.59T,$6.59T,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2025-10-01&end=2025-11-01
-2025-10-10T09:45:00-04:00,United States,Fed Goolsbee Speech,interest rate,,,,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2025-10-01&end=2025-11-01
-2025-10-10T10:00:00-04:00,United States,Michigan Consumer Sentiment Prel,consumer confidence,OCT,55.0,55.1,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2025-10-01&end=2025-11-01
-2025-10-10T10:00:00-04:00,United States,Michigan 5 Year Inflation Expectations Prel,michigan 5 year inflation expectations,OCT,3.7%,3.7%,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2025-10-01&end=2025-11-01
-2025-10-10T10:00:00-04:00,United States,Michigan Consumer Expectations Prel,michigan consumer expectations,OCT,51.2,51.7,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2025-10-01&end=2025-11-01
-2025-10-10T10:00:00-04:00,United States,Michigan Current Conditions Prel,michigan current economic conditions,OCT,61.0,60.4,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2025-10-01&end=2025-11-01
-2025-10-10T10:00:00-04:00,United States,Michigan Inflation Expectations Prel,michigan inflation expectations,OCT,4.6%,4.7%,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2025-10-01&end=2025-11-01
-2025-10-10T13:00:00-04:00,United States,Fed Musalem Speech,interest rate,,,,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2025-10-01&end=2025-11-01
-2025-10-10T13:00:00-04:00,United States,Baker Hughes Oil Rig Count,crude oil rigs,OCT/10,418,422,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2025-10-01&end=2025-11-01
-2025-10-10T13:00:00-04:00,United States,Baker Hughes Total Rigs Count,total rigs,OCT/10,547,549,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2025-10-01&end=2025-11-01
-2025-10-13T12:55:00-04:00,United States,Fed Paulson Speech,interest rate,,,,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2025-10-01&end=2025-11-01
-2025-10-14T06:00:00-04:00,United States,NFIB Business Optimism Index,nfib business optimism index,SEP,98.8,100.8,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2025-10-01&end=2025-11-01
-2025-10-14T08:45:00-04:00,United States,Fed Bowman Speech,interest rate,,,,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2025-10-01&end=2025-11-01
-2025-10-14T08:55:00-04:00,United States,Redbook YoY,redbook index,OCT/11,5.9%,5.8%,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2025-10-01&end=2025-11-01
-2025-10-14T11:30:00-04:00,United States,3-Month Bill Auction,3 month bill yield,,3.845%,3.850%,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2025-10-01&end=2025-11-01
-2025-10-14T11:30:00-04:00,United States,6-Month Bill Auction,6 month bill yield,,3.685%,3.695%,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2025-10-01&end=2025-11-01
-2025-10-14T12:20:00-04:00,United States,Fed Chair Powell Speech,interest rate,,,,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2025-10-01&end=2025-11-01
-2025-10-14T15:25:00-04:00,United States,Fed Waller Speech,interest rate,,,,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2025-10-01&end=2025-11-01
-2025-10-14T15:30:00-04:00,United States,Fed Collins Speech,interest rate,,,,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2025-10-01&end=2025-11-01
-2025-10-15T07:00:00-04:00,United States,MBA 30-Year Mortgage Rate,mortgage rate,OCT/10,6.42%,6.43%,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2025-10-01&end=2025-11-01
-2025-10-15T07:00:00-04:00,United States,MBA Mortgage Applications,mortgage applications,OCT/10,-1.8%,-4.7%,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2025-10-01&end=2025-11-01
-2025-10-15T07:00:00-04:00,United States,MBA Mortgage Market Index,mba mortgage market index,OCT/10,317.2,323.1,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2025-10-01&end=2025-11-01
-2025-10-15T07:00:00-04:00,United States,MBA Mortgage Refinance Index,mba mortgage refinance index,OCT/10,1168.0,1180.2,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2025-10-01&end=2025-11-01
-2025-10-15T07:00:00-04:00,United States,MBA Purchase Index,mba purchase index,OCT/10,166.0,170.6,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2025-10-01&end=2025-11-01
-2025-10-15T08:30:00-04:00,United States,NY Empire State Manufacturing Index,ny empire state manufacturing index,OCT,10.70,-8.70,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2025-10-01&end=2025-11-01
-2025-10-15T11:30:00-04:00,United States,17-Week Bill Auction,17 week bill yield,,3.810%,3.775%,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2025-10-01&end=2025-11-01
-2025-10-15T12:00:00-04:00,United States,Nopa Crush Report,calendar,,,,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2025-10-01&end=2025-11-01
-2025-10-15T12:10:00-04:00,United States,Fed Bostic Speech,interest rate,,,,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2025-10-01&end=2025-11-01
-2025-10-15T12:30:00-04:00,United States,Fed Miran Speech,interest rate,,,,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2025-10-01&end=2025-11-01
-2025-10-15T13:00:00-04:00,United States,Fed Waller Speech,interest rate,,,,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2025-10-01&end=2025-11-01
-2025-10-15T14:00:00-04:00,United States,Fed Beige Book,interest rate,,,,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2025-10-01&end=2025-11-01
-2025-10-15T14:30:00-04:00,United States,Fed Schmid Speech,interest rate,,,,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2025-10-01&end=2025-11-01
-2025-10-16T08:00:00-04:00,United States,Fed Barkin Speech,interest rate,,,,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2025-10-01&end=2025-11-01
-2025-10-16T08:30:00-04:00,United States,Philadelphia Fed Manufacturing Index,philadelphia fed manufacturing index,OCT,-12.8,23.2,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2025-10-01&end=2025-11-01
-2025-10-16T08:30:00-04:00,United States,Philly Fed Business Conditions,philly fed business conditions,OCT,36.2,31.5,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2025-10-01&end=2025-11-01
-2025-10-16T08:30:00-04:00,United States,Philly Fed CAPEX Index,philly fed capex index,OCT,25.20,12.50,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2025-10-01&end=2025-11-01
-2025-10-16T08:30:00-04:00,United States,Philly Fed Employment,philly fed employment,OCT,4.6,5.6,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2025-10-01&end=2025-11-01
-2025-10-16T08:30:00-04:00,United States,Philly Fed New Orders,philly fed new orders,OCT,18.2,12.4,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2025-10-01&end=2025-11-01
-2025-10-16T08:30:00-04:00,United States,Philly Fed Prices Paid,philly fed prices paid,OCT,49.20,46.80,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2025-10-01&end=2025-11-01
-2025-10-16T09:00:00-04:00,United States,Fed Barr Speech,interest rate,,,,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2025-10-01&end=2025-11-01
-2025-10-16T09:00:00-04:00,United States,Fed Miran Speech,interest rate,,,,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2025-10-01&end=2025-11-01
-2025-10-16T09:00:00-04:00,United States,Fed Waller Speech,interest rate,,,,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2025-10-01&end=2025-11-01
-2025-10-16T10:00:00-04:00,United States,Fed Bowman Speech,interest rate,,,,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2025-10-01&end=2025-11-01
-2025-10-16T10:00:00-04:00,United States,NAHB Housing Market Index,nahb housing market index,OCT,37,32,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2025-10-01&end=2025-11-01
-2025-10-16T10:30:00-04:00,United States,EIA Natural Gas Stocks Change,natural gas stocks change,OCT/10,80Bcf,80Bcf,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2025-10-01&end=2025-11-01
-2025-10-16T11:30:00-04:00,United States,4-Week Bill Auction,4 week bill yield,,4.030%,4.030%,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2025-10-01&end=2025-11-01
-2025-10-16T11:30:00-04:00,United States,8-Week Bill Auction,8 week bill yield,,3.960%,3.955%,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2025-10-01&end=2025-11-01
-2025-10-16T12:00:00-04:00,United States,EIA Crude Oil Stocks Change,crude oil stocks change,OCT/10,3.524M,3.715M,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2025-10-01&end=2025-11-01
-2025-10-16T12:00:00-04:00,United States,EIA Gasoline Stocks Change,gasoline stocks change,OCT/10,-0.267M,-1.601M,,,®,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2025-10-01&end=2025-11-01
-2025-10-16T12:00:00-04:00,United States,15-Year Mortgage Rate,15 year mortgage rate,OCT/16,5.52%,5.53%,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2025-10-01&end=2025-11-01
-2025-10-16T12:00:00-04:00,United States,30-Year Mortgage Rate,30 year mortgage rate,OCT/16,6.27%,6.30%,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2025-10-01&end=2025-11-01
-2025-10-16T12:00:00-04:00,United States,EIA Crude Oil Imports Change,crude oil imports,OCT/10,-1.754M,0.731M,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2025-10-01&end=2025-11-01
-2025-10-16T12:00:00-04:00,United States,EIA Cushing Crude Oil Stocks Change,cushing crude oil stocks,OCT/10,-0.703M,-0.763M,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2025-10-01&end=2025-11-01
-2025-10-16T12:00:00-04:00,United States,EIA Distillate Fuel Production Change,distillate fuel production,OCT/10,-0.577M,0.21M,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2025-10-01&end=2025-11-01
-2025-10-16T12:00:00-04:00,United States,EIA Distillate Stocks Change,distillate stocks,OCT/10,-4.529M,-2.018M,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2025-10-01&end=2025-11-01
-2025-10-16T12:00:00-04:00,United States,EIA Gasoline Production Change,gasoline production,OCT/10,-0.394M,0.409M,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2025-10-01&end=2025-11-01
-2025-10-16T12:00:00-04:00,United States,EIA Heating Oil Stocks Change,heating oil stocks,OCT/10,-0.519M,-0.06M,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2025-10-01&end=2025-11-01
-2025-10-16T12:00:00-04:00,United States,EIA Refinery Crude Runs Change,refinery crude runs,OCT/10,-1.167M,0.129M,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2025-10-01&end=2025-11-01
-2025-10-16T12:45:00-04:00,United States,Fed Barkin Speech,interest rate,,,,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2025-10-01&end=2025-11-01
-2025-10-16T13:00:00-04:00,United States,API Crude Oil Stock Change,api crude oil stock change,OCT/10,3.524M,2.78M,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2025-10-01&end=2025-11-01
-2025-10-16T14:00:00-04:00,United States,Monthly Budget Statement,government budget value,SEP,$198B,$-345B,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2025-10-01&end=2025-11-01
-2025-10-16T16:15:00-04:00,United States,Fed Miran Speech,interest rate,,,,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2025-10-01&end=2025-11-01
-2025-10-16T16:30:00-04:00,United States,Fed Balance Sheet,central bank balance sheet,OCT/15,$6.59T,$6.59T,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2025-10-01&end=2025-11-01
-2025-10-16T18:00:00-04:00,United States,Fed Kashkari Speech,interest rate,,,,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2025-10-01&end=2025-11-01
-2025-10-17T12:15:00-04:00,United States,Fed Musalem Speech,interest rate,,,,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2025-10-01&end=2025-11-01
-2025-10-17T13:00:00-04:00,United States,Baker Hughes Oil Rig Count,crude oil rigs,OCT/17,418,418,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2025-10-01&end=2025-11-01
-2025-10-17T13:00:00-04:00,United States,Baker Hughes Total Rigs Count,total rigs,OCT/17,548,547,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2025-10-01&end=2025-11-01
-2025-10-20T11:30:00-04:00,United States,3-Month Bill Auction,3 month bill yield,,3.810%,3.845%,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2025-10-01&end=2025-11-01
-2025-10-20T11:30:00-04:00,United States,6-Month Bill Auction,6 month bill yield,,3.660%,3.685%,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2025-10-01&end=2025-11-01
-2025-10-21T08:55:00-04:00,United States,Redbook YoY,redbook index,OCT/18,5%,5.9%,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2025-10-01&end=2025-11-01
-2025-10-21T09:00:00-04:00,United States,Fed Waller Speech,interest rate,,,,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2025-10-01&end=2025-11-01
-2025-10-21T10:30:00-04:00,United States,Ny Fed Treasury Purchases 1 To 2.5 Yrs,calendar,,,,$75 million,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2025-10-01&end=2025-11-01
-2025-10-21T15:30:00-04:00,United States,Fed Waller Speech,interest rate,,,,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2025-10-01&end=2025-11-01
-2025-10-21T16:30:00-04:00,United States,API Crude Oil Stock Change,api crude oil stock change,OCT/17,-2.98M,3.524M,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2025-10-01&end=2025-11-01
-2025-10-22T07:00:00-04:00,United States,MBA 30-Year Mortgage Rate,mortgage rate,OCT/17,6.37%,6.42%,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2025-10-01&end=2025-11-01
-2025-10-22T07:00:00-04:00,United States,MBA Mortgage Applications,mortgage applications,OCT/17,-0.3%,-1.8%,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2025-10-01&end=2025-11-01
-2025-10-22T07:00:00-04:00,United States,MBA Mortgage Market Index,mba mortgage market index,OCT/17,316.2,317.2,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2025-10-01&end=2025-11-01
-2025-10-22T07:00:00-04:00,United States,MBA Mortgage Refinance Index,mba mortgage refinance index,OCT/17,1214.7,1168.0,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2025-10-01&end=2025-11-01
-2025-10-22T07:00:00-04:00,United States,MBA Purchase Index,mba purchase index,OCT/17,157.3,166.0,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2025-10-01&end=2025-11-01
-2025-10-22T10:30:00-04:00,United States,EIA Crude Oil Stocks Change,crude oil stocks change,OCT/17,-0.961M,3.524M,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2025-10-01&end=2025-11-01
-2025-10-22T10:30:00-04:00,United States,EIA Gasoline Stocks Change,gasoline stocks change,OCT/17,-2.147M,-0.267M,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2025-10-01&end=2025-11-01
-2025-10-22T10:30:00-04:00,United States,EIA Crude Oil Imports Change,crude oil imports,OCT/17,0.656M,-1.754M,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2025-10-01&end=2025-11-01
-2025-10-22T10:30:00-04:00,United States,EIA Cushing Crude Oil Stocks Change,cushing crude oil stocks,OCT/17,-0.77M,-0.703M,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2025-10-01&end=2025-11-01
-2025-10-22T10:30:00-04:00,United States,EIA Distillate Fuel Production Change,distillate fuel production,OCT/17,0.04M,-0.577M,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2025-10-01&end=2025-11-01
-2025-10-22T10:30:00-04:00,United States,EIA Distillate Stocks Change,distillate stocks,OCT/17,-1.479M,-4.529M,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2025-10-01&end=2025-11-01
-2025-10-22T10:30:00-04:00,United States,EIA Gasoline Production Change,gasoline production,OCT/17,0.235M,-0.394M,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2025-10-01&end=2025-11-01
-2025-10-22T10:30:00-04:00,United States,EIA Heating Oil Stocks Change,heating oil stocks,OCT/17,0.088M,-0.519M,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2025-10-01&end=2025-11-01
-2025-10-22T10:30:00-04:00,United States,EIA Refinery Crude Runs Change,refinery crude runs,OCT/17,0.6M,-1.167M,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2025-10-01&end=2025-11-01
-2025-10-22T11:30:00-04:00,United States,17-Week Bill Auction,17 week bill yield,,3.735%,3.810%,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2025-10-01&end=2025-11-01
-2025-10-22T13:00:00-04:00,United States,20-Year Bond Auction,20 year bond yield,,4.506%,4.613%,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2025-10-01&end=2025-11-01
-2025-10-23T10:00:00-04:00,United States,Existing Home Sales,existing home sales,SEP,4.06M,4M,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2025-10-01&end=2025-11-01
-2025-10-23T10:00:00-04:00,United States,Existing Home Sales MoM,existing home sales mom,SEP,1.5%,-0.2%,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2025-10-01&end=2025-11-01
-2025-10-23T10:30:00-04:00,United States,EIA Natural Gas Stocks Change,natural gas stocks change,OCT/17,87Bcf,80Bcf,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2025-10-01&end=2025-11-01
-2025-10-23T11:00:00-04:00,United States,Kansas Fed Composite Index,kansas fed composite index,OCT,6,4,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2025-10-01&end=2025-11-01
-2025-10-23T11:00:00-04:00,United States,Kansas Fed Manufacturing Index,kansas fed manufacturing index,OCT,15,4,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2025-10-01&end=2025-11-01
-2025-10-23T11:30:00-04:00,United States,4-Week Bill Auction,4 week bill yield,,3.945%,4.030%,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2025-10-01&end=2025-11-01
-2025-10-23T11:30:00-04:00,United States,8-Week Bill Auction,8 week bill yield,,3.900%,3.960%,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2025-10-01&end=2025-11-01
-2025-10-23T12:00:00-04:00,United States,15-Year Mortgage Rate,15 year mortgage rate,OCT/23,5.44%,5.52%,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2025-10-01&end=2025-11-01
-2025-10-23T12:00:00-04:00,United States,30-Year Mortgage Rate,30 year mortgage rate,OCT/23,6.19%,6.27%,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2025-10-01&end=2025-11-01
-2025-10-23T13:00:00-04:00,United States,5-Year TIPS Auction,5 year tips yield,,1.182%,1.650%,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2025-10-01&end=2025-11-01
-2025-10-23T16:30:00-04:00,United States,Fed Balance Sheet,central bank balance sheet,OCT/22,$6.59T,$6.59T,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2025-10-01&end=2025-11-01
-2025-10-24T08:30:00-04:00,United States,Core Inflation Rate MoM,core inflation rate mom,SEP,0.2%,0.3%,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2025-10-01&end=2025-11-01
-2025-10-24T08:30:00-04:00,United States,Core Inflation Rate YoY,core inflation rate,SEP,3%,3.1%,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2025-10-01&end=2025-11-01
-2025-10-24T08:30:00-04:00,United States,Inflation Rate MoM,inflation rate mom,SEP,0.3%,0.4%,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2025-10-01&end=2025-11-01
-2025-10-24T08:30:00-04:00,United States,Inflation Rate YoY,inflation rate,SEP,3%,2.9%,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2025-10-01&end=2025-11-01
-2025-10-24T08:30:00-04:00,United States,CPI,consumer price index cpi,SEP,324.80,323.98,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2025-10-01&end=2025-11-01
-2025-10-24T08:30:00-04:00,United States,CPI s.a,cpi seasonally adjusted,SEP,324.368,323.364,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2025-10-01&end=2025-11-01
-2025-10-24T09:00:00-04:00,United States,Building Permits Final,building permits,SEP,,1.33M,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2025-10-01&end=2025-11-01
-2025-10-24T09:00:00-04:00,United States,Building Permits MoM Final,building permits mom,SEP,,-2.3%,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2025-10-01&end=2025-11-01
-2025-10-24T09:45:00-04:00,United States,S&P Global Composite PMI Flash,composite pmi,OCT,54.8,53.9,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2025-10-01&end=2025-11-01
-2025-10-24T09:45:00-04:00,United States,S&P Global Manufacturing PMI Flash,manufacturing pmi,OCT,52.2,52.0,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2025-10-01&end=2025-11-01
-2025-10-24T09:45:00-04:00,United States,S&P Global Services PMI Flash,services pmi,OCT,55.2,54.2,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2025-10-01&end=2025-11-01
-2025-10-24T10:00:00-04:00,United States,Michigan Consumer Sentiment Final,consumer confidence,OCT,53.6,55.1,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2025-10-01&end=2025-11-01
-2025-10-24T10:00:00-04:00,United States,Michigan 5 Year Inflation Expectations Final,michigan 5 year inflation expectations,OCT,3.9%,3.7%,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2025-10-01&end=2025-11-01
-2025-10-24T10:00:00-04:00,United States,Michigan Consumer Expectations Final,michigan consumer expectations,OCT,50.3,51.7,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2025-10-01&end=2025-11-01
-2025-10-24T10:00:00-04:00,United States,Michigan Current Conditions Final,michigan current economic conditions,OCT,58.6,60.4,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2025-10-01&end=2025-11-01
-2025-10-24T10:00:00-04:00,United States,Michigan Inflation Expectations Final,michigan inflation expectations,OCT,4.6%,4.7%,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2025-10-01&end=2025-11-01
-2025-10-24T13:00:00-04:00,United States,Baker Hughes Oil Rig Count,crude oil rigs,OCT/24,420,418,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2025-10-01&end=2025-11-01
-2025-10-24T13:00:00-04:00,United States,Baker Hughes Total Rigs Count,total rigs,OCT/24,550,548,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2025-10-01&end=2025-11-01
-2025-10-27T10:30:00-04:00,United States,Dallas Fed Manufacturing Index,dallas fed manufacturing index,OCT,-5.0,-8.7,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2025-10-01&end=2025-11-01
-2025-10-27T11:30:00-04:00,United States,2-Year Note Auction,2 year note yield,,3.504%,3.561%,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2025-10-01&end=2025-11-01
-2025-10-27T11:30:00-04:00,United States,6-Month Bill Auction,6 month bill yield,,3.640%,3.660%,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2025-10-01&end=2025-11-01
-2025-10-27T13:00:00-04:00,United States,3-Month Bill Auction,3 month bill yield,,3.730%,3.810%,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2025-10-01&end=2025-11-01
-2025-10-27T13:00:00-04:00,United States,5-Year Note Auction,5 year note yield,,3.625%,3.710%,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2025-10-01&end=2025-11-01
-2025-10-28T08:15:00-04:00,United States,ADP Employment Change Weekly,adp employment change weekly,,14.25K,,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2025-10-01&end=2025-11-01
-2025-10-28T08:55:00-04:00,United States,Redbook YoY,redbook index,OCT/25,5.2%,5%,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2025-10-01&end=2025-11-01
-2025-10-28T09:00:00-04:00,United States,S&P/Case-Shiller Home Price YoY,case shiller home price index yoy,AUG,1.6%,1.8%,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2025-10-01&end=2025-11-01
-2025-10-28T09:00:00-04:00,United States,House Price Index,housing index,AUG,435.3,433.6,,,®,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2025-10-01&end=2025-11-01
-2025-10-28T09:00:00-04:00,United States,House Price Index MoM,house price index mom,AUG,0.4%,0%,,,®,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2025-10-01&end=2025-11-01
-2025-10-28T09:00:00-04:00,United States,House Price Index YoY,house price index yoy,AUG,2.3%,2.4%,,,®,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2025-10-01&end=2025-11-01
-2025-10-28T09:00:00-04:00,United States,S&P/Case-Shiller Home Price MoM,case shiller home price index mom,AUG,-0.6%,-0.3%,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2025-10-01&end=2025-11-01
-2025-10-28T10:00:00-04:00,United States,Cb Consumer Confidence,calendar,OCT,94.6,95.6,93.2,93,®,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2025-10-01&end=2025-11-01
-2025-10-28T10:00:00-04:00,United States,Richmond Fed Manufacturing Index,richmond fed manufacturing index,OCT,-4,-17,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2025-10-01&end=2025-11-01
-2025-10-28T10:00:00-04:00,United States,Richmond Fed Manufacturing Shipments Index,richmond fed manufacturing shipments,OCT,4,-20,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2025-10-01&end=2025-11-01
-2025-10-28T10:00:00-04:00,United States,Richmond Fed Services Revenues Index,richmond fed services index,OCT,4,1,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2025-10-01&end=2025-11-01
-2025-10-28T10:30:00-04:00,United States,Dallas Fed Services Index,dallas fed services index,OCT,-9.4,-5.6,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2025-10-01&end=2025-11-01
-2025-10-28T10:30:00-04:00,United States,Dallas Fed Services Revenues Index,dallas fed services revenues index,OCT,-6.4,-2.4,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2025-10-01&end=2025-11-01
-2025-10-28T11:30:00-04:00,United States,52-Week Bill Auction,52 week bill yield,,3.445%,3.540%,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2025-10-01&end=2025-11-01
-2025-10-28T13:00:00-04:00,United States,7-Year Note Auction,7 year note yield,,3.790%,3.953%,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2025-10-01&end=2025-11-01
-2025-10-28T13:00:00-04:00,United States,Money Supply,money supply m2,SEP,$22.21T,$22.11T,,,®,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2025-10-01&end=2025-11-01
-2025-10-28T16:30:00-04:00,United States,API Crude Oil Stock Change,api crude oil stock change,OCT/24,-4M,-2.98M,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2025-10-01&end=2025-11-01
-2025-10-29T07:00:00-04:00,United States,MBA 30-Year Mortgage Rate,mortgage rate,OCT/24,6.3%,6.37%,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2025-10-01&end=2025-11-01
-2025-10-29T07:00:00-04:00,United States,MBA Mortgage Applications,mortgage applications,OCT/24,7.1%,-0.3%,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2025-10-01&end=2025-11-01
-2025-10-29T07:00:00-04:00,United States,MBA Mortgage Market Index,mba mortgage market index,OCT/24,338.7,316.2,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2025-10-01&end=2025-11-01
-2025-10-29T07:00:00-04:00,United States,MBA Mortgage Refinance Index,mba mortgage refinance index,OCT/24,1327.8,1214.7,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2025-10-01&end=2025-11-01
-2025-10-29T07:00:00-04:00,United States,MBA Purchase Index,mba purchase index,OCT/24,164.3,157.3,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2025-10-01&end=2025-11-01
-2025-10-29T08:30:00-04:00,United States,Goods Trade Balance Adv,goods trade balance,SEP,,$-85.5B,,,®,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2025-10-01&end=2025-11-01
-2025-10-29T08:30:00-04:00,United States,Retail Inventories Ex Autos MoM Adv,retail inventories ex autos,SEP,,,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2025-10-01&end=2025-11-01
-2025-10-29T08:30:00-04:00,United States,Wholesale Inventories MoM Adv,wholesale inventories,SEP,,0%,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2025-10-01&end=2025-11-01
-2025-10-29T10:00:00-04:00,United States,Pending Home Sales MoM,pending home sales mom,SEP,0%,4.2%,,,®,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2025-10-01&end=2025-11-01
-2025-10-29T10:00:00-04:00,United States,Pending Home Sales YoY,pending home sales,SEP,-0.9%,3.8%,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2025-10-01&end=2025-11-01
-2025-10-29T10:30:00-04:00,United States,EIA Crude Oil Stocks Change,crude oil stocks change,OCT/24,-6.858M,-0.961M,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2025-10-01&end=2025-11-01
-2025-10-29T10:30:00-04:00,United States,EIA Gasoline Stocks Change,gasoline stocks change,OCT/24,-5.941M,-2.147M,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2025-10-01&end=2025-11-01
-2025-10-29T10:30:00-04:00,United States,EIA Crude Oil Imports Change,crude oil imports,OCT/24,-1.025M,0.656M,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2025-10-01&end=2025-11-01
-2025-10-29T10:30:00-04:00,United States,EIA Cushing Crude Oil Stocks Change,cushing crude oil stocks,OCT/24,1.334M,-0.77M,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2025-10-01&end=2025-11-01
-2025-10-29T10:30:00-04:00,United States,EIA Distillate Fuel Production Change,distillate fuel production,OCT/24,-0.134M,0.04M,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2025-10-01&end=2025-11-01
-2025-10-29T10:30:00-04:00,United States,EIA Distillate Stocks Change,distillate stocks,OCT/24,-3.362M,-1.479M,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2025-10-01&end=2025-11-01
-2025-10-29T10:30:00-04:00,United States,EIA Gasoline Production Change,gasoline production,OCT/24,-0.004M,0.235M,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2025-10-01&end=2025-11-01
-2025-10-29T10:30:00-04:00,United States,EIA Heating Oil Stocks Change,heating oil stocks,OCT/24,0.049M,0.088M,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2025-10-01&end=2025-11-01
-2025-10-29T10:30:00-04:00,United States,EIA Refinery Crude Runs Change,refinery crude runs,OCT/24,-0.511M,0.6M,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2025-10-01&end=2025-11-01
-2025-10-29T11:30:00-04:00,United States,17-Week Bill Auction,17 week bill yield,,3.705%,3.735%,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2025-10-01&end=2025-11-01
-2025-10-29T11:30:00-04:00,United States,2-Year Frn Auction,calendar,,0.190%,0.200%,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2025-10-01&end=2025-11-01
-2025-10-29T14:00:00-04:00,United States,Fed Interest Rate Decision,interest rate,,4.0%,4.25%,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2025-10-01&end=2025-11-01
-2025-10-29T14:30:00-04:00,United States,Fed Press Conference,interest rate,,,,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2025-10-01&end=2025-11-01
-2025-10-30T08:30:00-04:00,United States,GDP Growth Rate QoQ Adv,gdp growth rate,Q3,,3.8%,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2025-10-01&end=2025-11-01
-2025-10-30T08:30:00-04:00,United States,GDP Price Index QoQ Adv,gdp deflator,Q3,,2.1%,2.8%,2.5%,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2025-10-01&end=2025-11-01
-2025-10-30T08:30:00-04:00,United States,Core PCE Prices QoQ Adv,core pce prices qoq,Q3,,2.6%,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2025-10-01&end=2025-11-01
-2025-10-30T08:30:00-04:00,United States,GDP Sales QoQ Adv,gdp sales qoq,Q3,,7.5%,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2025-10-01&end=2025-11-01
-2025-10-30T08:30:00-04:00,United States,PCE Prices QoQ Adv,pce prices qoq,Q3,,2.1%,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2025-10-01&end=2025-11-01
-2025-10-30T08:30:00-04:00,United States,Real Consumer Spending QoQ Adv,real consumer spending,Q3,,2.5%,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2025-10-01&end=2025-11-01
-2025-10-30T09:55:00-04:00,United States,Fed Bowman Speech,interest rate,,,,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2025-10-01&end=2025-11-01
-2025-10-30T10:30:00-04:00,United States,EIA Natural Gas Stocks Change,natural gas stocks change,OCT/24,74Bcf,87Bcf,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2025-10-01&end=2025-11-01
-2025-10-30T10:30:00-04:00,United States,Ny Fed Treasury Purchases Tips 7.5 To 30 Yrs,calendar,,,,$25 million,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2025-10-01&end=2025-11-01
-2025-10-30T11:30:00-04:00,United States,4-Week Bill Auction,4 week bill yield,,3.910%,3.945%,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2025-10-01&end=2025-11-01
-2025-10-30T11:30:00-04:00,United States,8-Week Bill Auction,8 week bill yield,,3.890%,3.900%,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2025-10-01&end=2025-11-01
-2025-10-30T12:00:00-04:00,United States,15-Year Mortgage Rate,15 year mortgage rate,OCT/30,5.41%,5.44%,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2025-10-01&end=2025-11-01
-2025-10-30T12:00:00-04:00,United States,30-Year Mortgage Rate,30 year mortgage rate,OCT/30,6.17%,6.19%,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2025-10-01&end=2025-11-01
-2025-10-30T13:15:00-04:00,United States,Fed Logan Speech,interest rate,,,,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2025-10-01&end=2025-11-01
-2025-10-30T16:30:00-04:00,United States,Fed Balance Sheet,central bank balance sheet,OCT/29,$6.59T,$6.59T,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2025-10-01&end=2025-11-01
-2025-10-31T09:30:00-04:00,United States,Fed Logan Speech,interest rate,,,,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2025-10-01&end=2025-11-01
-2025-10-31T09:45:00-04:00,United States,Chicago PMI,chicago pmi,OCT,43.8,40.6,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2025-10-01&end=2025-11-01
-2025-10-31T12:00:00-04:00,United States,Fed Bostic Speech,interest rate,,,,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2025-10-01&end=2025-11-01
-2025-10-31T12:00:00-04:00,United States,Fed Hammack Speech,interest rate,,,,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2025-10-01&end=2025-11-01
-2025-10-31T13:00:00-04:00,United States,Baker Hughes Oil Rig Count,crude oil rigs,OCT/31,414,420,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2025-10-01&end=2025-11-01
-2025-10-31T13:00:00-04:00,United States,Baker Hughes Total Rigs Count,total rigs,OCT/31,546,550,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2025-10-01&end=2025-11-01
+event_time,country,event,source_event_type,reference,actual,previous,consensus,te_forecast,revised,importance,symbol
+2025-10-01T07:00:00-04:00,United States,MBA 30-Year Mortgage Rate,mortgage rate,SEP/26,6.46%,6.34%,,,,3,
+2025-10-01T07:00:00-04:00,United States,MBA Mortgage Applications,mortgage applications,SEP/26,-12.7%,0.6%,,,,3,
+2025-10-01T07:00:00-04:00,United States,MBA Mortgage Market Index,mba mortgage market index,SEP/26,339.1,388.3,,,,3,
+2025-10-01T07:00:00-04:00,United States,MBA Mortgage Refinance Index,mba mortgage refinance index,SEP/26,1278.6,1609.8,,,,3,
+2025-10-01T07:00:00-04:00,United States,MBA Purchase Index,mba purchase index,SEP/26,172.7,174.5,,,,3,
+2025-10-01T08:15:00-04:00,United States,ADP Employment Change,adp employment change,SEP,-32K,-3K,,,®,3,
+2025-10-01T09:45:00-04:00,United States,S&P Global Manufacturing PMI Final,manufacturing pmi,SEP,52.0,53.0,,,,3,
+2025-10-01T10:00:00-04:00,United States,ISM Manufacturing PMI,business confidence,SEP,49.1,48.7,,,,3,
+2025-10-01T10:00:00-04:00,United States,ISM Manufacturing Employment,ism manufacturing employment,SEP,45.3,43.8,,,,3,
+2025-10-01T10:00:00-04:00,United States,ISM Manufacturing New Orders,ism manufacturing new orders,SEP,48.9,51.4,,,,3,
+2025-10-01T10:00:00-04:00,United States,ISM Manufacturing Prices,ism manufacturing prices,SEP,61.9,63.7,,,,3,
+2025-10-01T10:30:00-04:00,United States,EIA Crude Oil Stocks Change,crude oil stocks change,SEP/26,1.792M,-0.607M,,,,3,
+2025-10-01T10:30:00-04:00,United States,EIA Gasoline Stocks Change,gasoline stocks change,SEP/26,4.125M,-1.081M,,,®,3,
+2025-10-01T10:30:00-04:00,United States,EIA Crude Oil Imports Change,crude oil imports,SEP/26,0.071M,1.596M,,,,3,
+2025-10-01T10:30:00-04:00,United States,EIA Cushing Crude Oil Stocks Change,cushing crude oil stocks,SEP/26,-0.271M,0.177M,,,,3,
+2025-10-01T10:30:00-04:00,United States,EIA Distillate Fuel Production Change,distillate fuel production,SEP/26,-0.025M,0.029M,,,,3,
+2025-10-01T10:30:00-04:00,United States,EIA Distillate Stocks Change,distillate stocks,SEP/26,0.578M,-1.685M,,,,3,
+2025-10-01T10:30:00-04:00,United States,EIA Gasoline Production Change,gasoline production,SEP/26,-0.363M,0.3M,,,,3,
+2025-10-01T10:30:00-04:00,United States,EIA Heating Oil Stocks Change,heating oil stocks,SEP/26,0.187M,-0.189M,,,,3,
+2025-10-01T10:30:00-04:00,United States,EIA Refinery Crude Runs Change,refinery crude runs,SEP/26,-0.308M,0.052M,,,,3,
+2025-10-01T11:30:00-04:00,United States,17-Week Bill Auction,17 week bill yield,,3.785%,3.805%,,,,3,
+2025-10-01T19:00:00-04:00,United States,Total Vehicle Sales,total vehicle sales,SEP,16.4M,16.1M,,,,3,
+2025-10-02T07:30:00-04:00,United States,Challenger Job Cuts,challenger job cuts,SEP,54.064K,85.979K,,,,3,
+2025-10-02T10:30:00-04:00,United States,Fed Logan Speech,interest rate,,,,,,,3,
+2025-10-02T10:30:00-04:00,United States,EIA Natural Gas Stocks Change,natural gas stocks change,SEP/26,53Bcf,75Bcf,,,,3,
+2025-10-02T11:30:00-04:00,United States,4-Week Bill Auction,4 week bill yield,,4.060%,4.080%,,,,3,
+2025-10-02T11:30:00-04:00,United States,8-Week Bill Auction,8 week bill yield,,3.960%,4.000%,,,,3,
+2025-10-02T12:00:00-04:00,United States,15-Year Mortgage Rate,15 year mortgage rate,OCT/02,5.55%,5.49%,,,,3,
+2025-10-02T12:00:00-04:00,United States,30-Year Mortgage Rate,30 year mortgage rate,OCT/02,6.34%,6.3%,,,,3,
+2025-10-02T16:30:00-04:00,United States,Fed Balance Sheet,central bank balance sheet,OCT/01,$6.59T,$6.61T,,,,3,
+2025-10-03T06:05:00-04:00,United States,Fed Williams Speech,interest rate,,,,,,,3,
+2025-10-03T09:45:00-04:00,United States,S&P Global Composite PMI Final,composite pmi,SEP,53.9,54.6,,,,3,
+2025-10-03T09:45:00-04:00,United States,S&P Global Services PMI Final,services pmi,SEP,54.2,54.5,,,,3,
+2025-10-03T10:00:00-04:00,United States,ISM Services PMI,non manufacturing pmi,SEP,50.0,52.0,,,,3,
+2025-10-03T10:00:00-04:00,United States,ISM Services Business Activity,ism non manufacturing business activity,SEP,49.9,55.0,,,,3,
+2025-10-03T10:00:00-04:00,United States,ISM Services Employment,ism non manufacturing employment,SEP,47.2,46.5,,,,3,
+2025-10-03T10:00:00-04:00,United States,ISM Services New Orders,ism non manufacturing new orders,SEP,50.4,56.0,,,,3,
+2025-10-03T10:00:00-04:00,United States,ISM Services Prices,ism non manufacturing prices,SEP,69.4,69.2,,,,3,
+2025-10-03T13:00:00-04:00,United States,Baker Hughes Oil Rig Count,crude oil rigs,OCT/03,422,424,,,,3,
+2025-10-03T13:00:00-04:00,United States,Baker Hughes Total Rigs Count,total rigs,OCT/03,549,549,,,,3,
+2025-10-03T13:30:00-04:00,United States,Fed Logan Speech,interest rate,,,,,,,3,
+2025-10-03T13:40:00-04:00,United States,Fed Jefferson Speech,interest rate,,,,,,,3,
+2025-10-06T11:30:00-04:00,United States,3-Month Bill Auction,3 month bill yield,,3.850%,3.860%,,,,3,
+2025-10-06T11:30:00-04:00,United States,6-Month Bill Auction,6 month bill yield,,3.695%,3.715%,,,,3,
+2025-10-07T06:05:00-04:00,United States,LMI Logistics Managers Index,lmi logistics managers index,SEP,57.4,59.3,,,,3,
+2025-10-07T08:55:00-04:00,United States,Redbook YoY,redbook index,OCT/04,5.8%,5.9%,,,,3,
+2025-10-07T09:00:00-04:00,United States,Used Car Prices MoM,used car prices mom,SEP,-0.2%,0%,,,,3,
+2025-10-07T09:00:00-04:00,United States,Used Car Prices YoY,used car prices yoy,SEP,2%,1.7%,,,,3,
+2025-10-07T10:00:00-04:00,United States,Fed Bostic Speech,interest rate,,,,,,,3,
+2025-10-07T10:05:00-04:00,United States,Fed Bowman Speech,interest rate,,,,,,,3,
+2025-10-07T10:10:00-04:00,United States,RCM/TIPP Economic Optimism Index,economic optimism index,OCT,48.3,48.7,,,,3,
+2025-10-07T10:30:00-04:00,United States,Fed Miran Speech,interest rate,,,,,,,3,
+2025-10-07T11:00:00-04:00,United States,Consumer Inflation Expectations,inflation expectations,SEP,3.4%,3.2%,,,,3,
+2025-10-07T11:30:00-04:00,United States,Fed Kashkari Speech,interest rate,,,,,,,3,
+2025-10-07T13:00:00-04:00,United States,3-Year Note Auction,3 year note yield,,3.576%,3.485%,,,,3,
+2025-10-07T15:00:00-04:00,United States,Consumer Credit Change,consumer credit,AUG,$0.36B,$18.05B,,,®,3,
+2025-10-07T16:05:00-04:00,United States,Fed Miran Speech,interest rate,,,,,,,3,
+2025-10-07T16:30:00-04:00,United States,API Crude Oil Stock Change,api crude oil stock change,OCT/03,2.78M,-3.674M,,,,3,
+2025-10-08T07:00:00-04:00,United States,MBA 30-Year Mortgage Rate,mortgage rate,OCT/03,6.43%,6.46%,,,,3,
+2025-10-08T07:00:00-04:00,United States,MBA Mortgage Applications,mortgage applications,OCT/03,-4.7%,-12.7%,,,,3,
+2025-10-08T07:00:00-04:00,United States,MBA Mortgage Market Index,mba mortgage market index,OCT/03,323.1,339.1,,,,3,
+2025-10-08T07:00:00-04:00,United States,MBA Mortgage Refinance Index,mba mortgage refinance index,OCT/03,1180.2,1278.6,,,,3,
+2025-10-08T07:00:00-04:00,United States,MBA Purchase Index,mba purchase index,OCT/03,170.6,172.7,,,,3,
+2025-10-08T09:20:00-04:00,United States,Fed Musalem Speech,interest rate,,,,,,,3,
+2025-10-08T09:30:00-04:00,United States,Fed Barr Speech,interest rate,,,,,,,3,
+2025-10-08T10:30:00-04:00,United States,EIA Crude Oil Stocks Change,crude oil stocks change,OCT/03,3.715M,1.792M,,,,3,
+2025-10-08T10:30:00-04:00,United States,EIA Gasoline Stocks Change,gasoline stocks change,OCT/03,-1.6M,4.125M,,,,3,
+2025-10-08T10:30:00-04:00,United States,EIA Crude Oil Imports Change,crude oil imports,OCT/03,0.731M,0.071M,,,,3,
+2025-10-08T10:30:00-04:00,United States,EIA Cushing Crude Oil Stocks Change,cushing crude oil stocks,OCT/03,-0.763M,-0.271M,,,,3,
+2025-10-08T10:30:00-04:00,United States,EIA Distillate Fuel Production Change,distillate fuel production,OCT/03,0.21M,-0.025M,,,,3,
+2025-10-08T10:30:00-04:00,United States,EIA Distillate Stocks Change,distillate stocks,OCT/03,-2.018M,0.578M,,,,3,
+2025-10-08T10:30:00-04:00,United States,EIA Gasoline Production Change,gasoline production,OCT/03,0.409M,-0.363M,,,,3,
+2025-10-08T10:30:00-04:00,United States,EIA Heating Oil Stocks Change,heating oil stocks,OCT/03,-0.06M,0.187M,,,,3,
+2025-10-08T10:30:00-04:00,United States,EIA Refinery Crude Runs Change,refinery crude runs,OCT/03,0.129M,-0.308M,,,,3,
+2025-10-08T11:30:00-04:00,United States,17-Week Bill Auction,17 week bill yield,,3.775%,3.785%,,,,3,
+2025-10-08T13:00:00-04:00,United States,10-Year Note Auction,government bond 10y,,4.117%,4.033%,,,,3,
+2025-10-08T14:00:00-04:00,United States,FOMC Minutes,interest rate,,,,,,,3,
+2025-10-08T15:15:00-04:00,United States,Fed Kashkari Speech,interest rate,,,,,,,3,
+2025-10-08T17:45:00-04:00,United States,Fed Barr Speech,interest rate,,,,,,,3,
+2025-10-09T08:30:00-04:00,United States,Fed Chair Powell Speech,interest rate,,,,,,,3,
+2025-10-09T08:35:00-04:00,United States,Fed Bowman Speech,interest rate,,,,,,,3,
+2025-10-09T10:30:00-04:00,United States,EIA Natural Gas Stocks Change,natural gas stocks change,OCT/03,80Bcf,53Bcf,,,,3,
+2025-10-09T11:30:00-04:00,United States,4-Week Bill Auction,4 week bill yield,,4.030%,4.060%,,,,3,
+2025-10-09T11:30:00-04:00,United States,8-Week Bill Auction,8 week bill yield,,3.955%,3.960%,,,,3,
+2025-10-09T12:00:00-04:00,United States,15-Year Mortgage Rate,15 year mortgage rate,OCT/09,5.53%,5.55%,,,,3,
+2025-10-09T12:00:00-04:00,United States,30-Year Mortgage Rate,30 year mortgage rate,OCT/09,6.30%,6.34%,,,,3,
+2025-10-09T12:45:00-04:00,United States,Fed Barr Speech,interest rate,,,,,,,3,
+2025-10-09T13:00:00-04:00,United States,30-Year Bond Auction,30 year bond yield,,4.734%,4.651%,,,,3,
+2025-10-09T15:45:00-04:00,United States,Fed Bowman Speech,interest rate,,,,,,,3,
+2025-10-09T16:30:00-04:00,United States,Fed Balance Sheet,central bank balance sheet,OCT/08,$6.59T,$6.59T,,,,3,
+2025-10-10T09:45:00-04:00,United States,Fed Goolsbee Speech,interest rate,,,,,,,3,
+2025-10-10T10:00:00-04:00,United States,Michigan Consumer Sentiment Prel,consumer confidence,OCT,55.0,55.1,,,,3,
+2025-10-10T10:00:00-04:00,United States,Michigan 5 Year Inflation Expectations Prel,michigan 5 year inflation expectations,OCT,3.7%,3.7%,,,,3,
+2025-10-10T10:00:00-04:00,United States,Michigan Consumer Expectations Prel,michigan consumer expectations,OCT,51.2,51.7,,,,3,
+2025-10-10T10:00:00-04:00,United States,Michigan Current Conditions Prel,michigan current economic conditions,OCT,61.0,60.4,,,,3,
+2025-10-10T10:00:00-04:00,United States,Michigan Inflation Expectations Prel,michigan inflation expectations,OCT,4.6%,4.7%,,,,3,
+2025-10-10T13:00:00-04:00,United States,Fed Musalem Speech,interest rate,,,,,,,3,
+2025-10-10T13:00:00-04:00,United States,Baker Hughes Oil Rig Count,crude oil rigs,OCT/10,418,422,,,,3,
+2025-10-10T13:00:00-04:00,United States,Baker Hughes Total Rigs Count,total rigs,OCT/10,547,549,,,,3,
+2025-10-13T12:55:00-04:00,United States,Fed Paulson Speech,interest rate,,,,,,,3,
+2025-10-14T06:00:00-04:00,United States,NFIB Business Optimism Index,nfib business optimism index,SEP,98.8,100.8,,,,3,
+2025-10-14T08:45:00-04:00,United States,Fed Bowman Speech,interest rate,,,,,,,3,
+2025-10-14T08:55:00-04:00,United States,Redbook YoY,redbook index,OCT/11,5.9%,5.8%,,,,3,
+2025-10-14T11:30:00-04:00,United States,3-Month Bill Auction,3 month bill yield,,3.845%,3.850%,,,,3,
+2025-10-14T11:30:00-04:00,United States,6-Month Bill Auction,6 month bill yield,,3.685%,3.695%,,,,3,
+2025-10-14T12:20:00-04:00,United States,Fed Chair Powell Speech,interest rate,,,,,,,3,
+2025-10-14T15:25:00-04:00,United States,Fed Waller Speech,interest rate,,,,,,,3,
+2025-10-14T15:30:00-04:00,United States,Fed Collins Speech,interest rate,,,,,,,3,
+2025-10-15T07:00:00-04:00,United States,MBA 30-Year Mortgage Rate,mortgage rate,OCT/10,6.42%,6.43%,,,,3,
+2025-10-15T07:00:00-04:00,United States,MBA Mortgage Applications,mortgage applications,OCT/10,-1.8%,-4.7%,,,,3,
+2025-10-15T07:00:00-04:00,United States,MBA Mortgage Market Index,mba mortgage market index,OCT/10,317.2,323.1,,,,3,
+2025-10-15T07:00:00-04:00,United States,MBA Mortgage Refinance Index,mba mortgage refinance index,OCT/10,1168.0,1180.2,,,,3,
+2025-10-15T07:00:00-04:00,United States,MBA Purchase Index,mba purchase index,OCT/10,166.0,170.6,,,,3,
+2025-10-15T08:30:00-04:00,United States,NY Empire State Manufacturing Index,ny empire state manufacturing index,OCT,10.70,-8.70,,,,3,
+2025-10-15T11:30:00-04:00,United States,17-Week Bill Auction,17 week bill yield,,3.810%,3.775%,,,,3,
+2025-10-15T12:00:00-04:00,United States,Nopa Crush Report,calendar,,,,,,,3,
+2025-10-15T12:10:00-04:00,United States,Fed Bostic Speech,interest rate,,,,,,,3,
+2025-10-15T12:30:00-04:00,United States,Fed Miran Speech,interest rate,,,,,,,3,
+2025-10-15T13:00:00-04:00,United States,Fed Waller Speech,interest rate,,,,,,,3,
+2025-10-15T14:00:00-04:00,United States,Fed Beige Book,interest rate,,,,,,,3,
+2025-10-15T14:30:00-04:00,United States,Fed Schmid Speech,interest rate,,,,,,,3,
+2025-10-16T08:00:00-04:00,United States,Fed Barkin Speech,interest rate,,,,,,,3,
+2025-10-16T08:30:00-04:00,United States,Philadelphia Fed Manufacturing Index,philadelphia fed manufacturing index,OCT,-12.8,23.2,,,,3,
+2025-10-16T08:30:00-04:00,United States,Philly Fed Business Conditions,philly fed business conditions,OCT,36.2,31.5,,,,3,
+2025-10-16T08:30:00-04:00,United States,Philly Fed CAPEX Index,philly fed capex index,OCT,25.20,12.50,,,,3,
+2025-10-16T08:30:00-04:00,United States,Philly Fed Employment,philly fed employment,OCT,4.6,5.6,,,,3,
+2025-10-16T08:30:00-04:00,United States,Philly Fed New Orders,philly fed new orders,OCT,18.2,12.4,,,,3,
+2025-10-16T08:30:00-04:00,United States,Philly Fed Prices Paid,philly fed prices paid,OCT,49.20,46.80,,,,3,
+2025-10-16T09:00:00-04:00,United States,Fed Barr Speech,interest rate,,,,,,,3,
+2025-10-16T09:00:00-04:00,United States,Fed Miran Speech,interest rate,,,,,,,3,
+2025-10-16T09:00:00-04:00,United States,Fed Waller Speech,interest rate,,,,,,,3,
+2025-10-16T10:00:00-04:00,United States,Fed Bowman Speech,interest rate,,,,,,,3,
+2025-10-16T10:00:00-04:00,United States,NAHB Housing Market Index,nahb housing market index,OCT,37,32,,,,3,
+2025-10-16T10:30:00-04:00,United States,EIA Natural Gas Stocks Change,natural gas stocks change,OCT/10,80Bcf,80Bcf,,,,3,
+2025-10-16T11:30:00-04:00,United States,4-Week Bill Auction,4 week bill yield,,4.030%,4.030%,,,,3,
+2025-10-16T11:30:00-04:00,United States,8-Week Bill Auction,8 week bill yield,,3.960%,3.955%,,,,3,
+2025-10-16T12:00:00-04:00,United States,EIA Crude Oil Stocks Change,crude oil stocks change,OCT/10,3.524M,3.715M,,,,3,
+2025-10-16T12:00:00-04:00,United States,EIA Gasoline Stocks Change,gasoline stocks change,OCT/10,-0.267M,-1.601M,,,®,3,
+2025-10-16T12:00:00-04:00,United States,15-Year Mortgage Rate,15 year mortgage rate,OCT/16,5.52%,5.53%,,,,3,
+2025-10-16T12:00:00-04:00,United States,30-Year Mortgage Rate,30 year mortgage rate,OCT/16,6.27%,6.30%,,,,3,
+2025-10-16T12:00:00-04:00,United States,EIA Crude Oil Imports Change,crude oil imports,OCT/10,-1.754M,0.731M,,,,3,
+2025-10-16T12:00:00-04:00,United States,EIA Cushing Crude Oil Stocks Change,cushing crude oil stocks,OCT/10,-0.703M,-0.763M,,,,3,
+2025-10-16T12:00:00-04:00,United States,EIA Distillate Fuel Production Change,distillate fuel production,OCT/10,-0.577M,0.21M,,,,3,
+2025-10-16T12:00:00-04:00,United States,EIA Distillate Stocks Change,distillate stocks,OCT/10,-4.529M,-2.018M,,,,3,
+2025-10-16T12:00:00-04:00,United States,EIA Gasoline Production Change,gasoline production,OCT/10,-0.394M,0.409M,,,,3,
+2025-10-16T12:00:00-04:00,United States,EIA Heating Oil Stocks Change,heating oil stocks,OCT/10,-0.519M,-0.06M,,,,3,
+2025-10-16T12:00:00-04:00,United States,EIA Refinery Crude Runs Change,refinery crude runs,OCT/10,-1.167M,0.129M,,,,3,
+2025-10-16T12:45:00-04:00,United States,Fed Barkin Speech,interest rate,,,,,,,3,
+2025-10-16T13:00:00-04:00,United States,API Crude Oil Stock Change,api crude oil stock change,OCT/10,3.524M,2.78M,,,,3,
+2025-10-16T14:00:00-04:00,United States,Monthly Budget Statement,government budget value,SEP,$198B,$-345B,,,,3,
+2025-10-16T16:15:00-04:00,United States,Fed Miran Speech,interest rate,,,,,,,3,
+2025-10-16T16:30:00-04:00,United States,Fed Balance Sheet,central bank balance sheet,OCT/15,$6.59T,$6.59T,,,,3,
+2025-10-16T18:00:00-04:00,United States,Fed Kashkari Speech,interest rate,,,,,,,3,
+2025-10-17T12:15:00-04:00,United States,Fed Musalem Speech,interest rate,,,,,,,3,
+2025-10-17T13:00:00-04:00,United States,Baker Hughes Oil Rig Count,crude oil rigs,OCT/17,418,418,,,,3,
+2025-10-17T13:00:00-04:00,United States,Baker Hughes Total Rigs Count,total rigs,OCT/17,548,547,,,,3,
+2025-10-20T11:30:00-04:00,United States,3-Month Bill Auction,3 month bill yield,,3.810%,3.845%,,,,3,
+2025-10-20T11:30:00-04:00,United States,6-Month Bill Auction,6 month bill yield,,3.660%,3.685%,,,,3,
+2025-10-21T08:55:00-04:00,United States,Redbook YoY,redbook index,OCT/18,5%,5.9%,,,,3,
+2025-10-21T09:00:00-04:00,United States,Fed Waller Speech,interest rate,,,,,,,3,
+2025-10-21T10:30:00-04:00,United States,Ny Fed Treasury Purchases 1 To 2.5 Yrs,calendar,,,,$75 million,,,3,
+2025-10-21T15:30:00-04:00,United States,Fed Waller Speech,interest rate,,,,,,,3,
+2025-10-21T16:30:00-04:00,United States,API Crude Oil Stock Change,api crude oil stock change,OCT/17,-2.98M,3.524M,,,,3,
+2025-10-22T07:00:00-04:00,United States,MBA 30-Year Mortgage Rate,mortgage rate,OCT/17,6.37%,6.42%,,,,3,
+2025-10-22T07:00:00-04:00,United States,MBA Mortgage Applications,mortgage applications,OCT/17,-0.3%,-1.8%,,,,3,
+2025-10-22T07:00:00-04:00,United States,MBA Mortgage Market Index,mba mortgage market index,OCT/17,316.2,317.2,,,,3,
+2025-10-22T07:00:00-04:00,United States,MBA Mortgage Refinance Index,mba mortgage refinance index,OCT/17,1214.7,1168.0,,,,3,
+2025-10-22T07:00:00-04:00,United States,MBA Purchase Index,mba purchase index,OCT/17,157.3,166.0,,,,3,
+2025-10-22T10:30:00-04:00,United States,EIA Crude Oil Stocks Change,crude oil stocks change,OCT/17,-0.961M,3.524M,,,,3,
+2025-10-22T10:30:00-04:00,United States,EIA Gasoline Stocks Change,gasoline stocks change,OCT/17,-2.147M,-0.267M,,,,3,
+2025-10-22T10:30:00-04:00,United States,EIA Crude Oil Imports Change,crude oil imports,OCT/17,0.656M,-1.754M,,,,3,
+2025-10-22T10:30:00-04:00,United States,EIA Cushing Crude Oil Stocks Change,cushing crude oil stocks,OCT/17,-0.77M,-0.703M,,,,3,
+2025-10-22T10:30:00-04:00,United States,EIA Distillate Fuel Production Change,distillate fuel production,OCT/17,0.04M,-0.577M,,,,3,
+2025-10-22T10:30:00-04:00,United States,EIA Distillate Stocks Change,distillate stocks,OCT/17,-1.479M,-4.529M,,,,3,
+2025-10-22T10:30:00-04:00,United States,EIA Gasoline Production Change,gasoline production,OCT/17,0.235M,-0.394M,,,,3,
+2025-10-22T10:30:00-04:00,United States,EIA Heating Oil Stocks Change,heating oil stocks,OCT/17,0.088M,-0.519M,,,,3,
+2025-10-22T10:30:00-04:00,United States,EIA Refinery Crude Runs Change,refinery crude runs,OCT/17,0.6M,-1.167M,,,,3,
+2025-10-22T11:30:00-04:00,United States,17-Week Bill Auction,17 week bill yield,,3.735%,3.810%,,,,3,
+2025-10-22T13:00:00-04:00,United States,20-Year Bond Auction,20 year bond yield,,4.506%,4.613%,,,,3,
+2025-10-23T10:00:00-04:00,United States,Existing Home Sales,existing home sales,SEP,4.06M,4M,,,,3,
+2025-10-23T10:00:00-04:00,United States,Existing Home Sales MoM,existing home sales mom,SEP,1.5%,-0.2%,,,,3,
+2025-10-23T10:30:00-04:00,United States,EIA Natural Gas Stocks Change,natural gas stocks change,OCT/17,87Bcf,80Bcf,,,,3,
+2025-10-23T11:00:00-04:00,United States,Kansas Fed Composite Index,kansas fed composite index,OCT,6,4,,,,3,
+2025-10-23T11:00:00-04:00,United States,Kansas Fed Manufacturing Index,kansas fed manufacturing index,OCT,15,4,,,,3,
+2025-10-23T11:30:00-04:00,United States,4-Week Bill Auction,4 week bill yield,,3.945%,4.030%,,,,3,
+2025-10-23T11:30:00-04:00,United States,8-Week Bill Auction,8 week bill yield,,3.900%,3.960%,,,,3,
+2025-10-23T12:00:00-04:00,United States,15-Year Mortgage Rate,15 year mortgage rate,OCT/23,5.44%,5.52%,,,,3,
+2025-10-23T12:00:00-04:00,United States,30-Year Mortgage Rate,30 year mortgage rate,OCT/23,6.19%,6.27%,,,,3,
+2025-10-23T13:00:00-04:00,United States,5-Year TIPS Auction,5 year tips yield,,1.182%,1.650%,,,,3,
+2025-10-23T16:30:00-04:00,United States,Fed Balance Sheet,central bank balance sheet,OCT/22,$6.59T,$6.59T,,,,3,
+2025-10-24T08:30:00-04:00,United States,Core Inflation Rate MoM,core inflation rate mom,SEP,0.2%,0.3%,,,,3,
+2025-10-24T08:30:00-04:00,United States,Core Inflation Rate YoY,core inflation rate,SEP,3%,3.1%,,,,3,
+2025-10-24T08:30:00-04:00,United States,Inflation Rate MoM,inflation rate mom,SEP,0.3%,0.4%,,,,3,
+2025-10-24T08:30:00-04:00,United States,Inflation Rate YoY,inflation rate,SEP,3%,2.9%,,,,3,
+2025-10-24T08:30:00-04:00,United States,CPI,consumer price index cpi,SEP,324.80,323.98,,,,3,
+2025-10-24T08:30:00-04:00,United States,CPI s.a,cpi seasonally adjusted,SEP,324.368,323.364,,,,3,
+2025-10-24T09:00:00-04:00,United States,Building Permits Final,building permits,SEP,,1.33M,,,,3,
+2025-10-24T09:00:00-04:00,United States,Building Permits MoM Final,building permits mom,SEP,,-2.3%,,,,3,
+2025-10-24T09:45:00-04:00,United States,S&P Global Composite PMI Flash,composite pmi,OCT,54.8,53.9,,,,3,
+2025-10-24T09:45:00-04:00,United States,S&P Global Manufacturing PMI Flash,manufacturing pmi,OCT,52.2,52.0,,,,3,
+2025-10-24T09:45:00-04:00,United States,S&P Global Services PMI Flash,services pmi,OCT,55.2,54.2,,,,3,
+2025-10-24T10:00:00-04:00,United States,Michigan Consumer Sentiment Final,consumer confidence,OCT,53.6,55.1,,,,3,
+2025-10-24T10:00:00-04:00,United States,Michigan 5 Year Inflation Expectations Final,michigan 5 year inflation expectations,OCT,3.9%,3.7%,,,,3,
+2025-10-24T10:00:00-04:00,United States,Michigan Consumer Expectations Final,michigan consumer expectations,OCT,50.3,51.7,,,,3,
+2025-10-24T10:00:00-04:00,United States,Michigan Current Conditions Final,michigan current economic conditions,OCT,58.6,60.4,,,,3,
+2025-10-24T10:00:00-04:00,United States,Michigan Inflation Expectations Final,michigan inflation expectations,OCT,4.6%,4.7%,,,,3,
+2025-10-24T13:00:00-04:00,United States,Baker Hughes Oil Rig Count,crude oil rigs,OCT/24,420,418,,,,3,
+2025-10-24T13:00:00-04:00,United States,Baker Hughes Total Rigs Count,total rigs,OCT/24,550,548,,,,3,
+2025-10-27T10:30:00-04:00,United States,Dallas Fed Manufacturing Index,dallas fed manufacturing index,OCT,-5.0,-8.7,,,,3,
+2025-10-27T11:30:00-04:00,United States,2-Year Note Auction,2 year note yield,,3.504%,3.561%,,,,3,
+2025-10-27T11:30:00-04:00,United States,6-Month Bill Auction,6 month bill yield,,3.640%,3.660%,,,,3,
+2025-10-27T13:00:00-04:00,United States,3-Month Bill Auction,3 month bill yield,,3.730%,3.810%,,,,3,
+2025-10-27T13:00:00-04:00,United States,5-Year Note Auction,5 year note yield,,3.625%,3.710%,,,,3,
+2025-10-28T08:15:00-04:00,United States,ADP Employment Change Weekly,adp employment change weekly,,14.25K,,,,,3,
+2025-10-28T08:55:00-04:00,United States,Redbook YoY,redbook index,OCT/25,5.2%,5%,,,,3,
+2025-10-28T09:00:00-04:00,United States,S&P/Case-Shiller Home Price YoY,case shiller home price index yoy,AUG,1.6%,1.8%,,,,3,
+2025-10-28T09:00:00-04:00,United States,House Price Index,housing index,AUG,435.3,433.6,,,®,3,
+2025-10-28T09:00:00-04:00,United States,House Price Index MoM,house price index mom,AUG,0.4%,0%,,,®,3,
+2025-10-28T09:00:00-04:00,United States,House Price Index YoY,house price index yoy,AUG,2.3%,2.4%,,,®,3,
+2025-10-28T09:00:00-04:00,United States,S&P/Case-Shiller Home Price MoM,case shiller home price index mom,AUG,-0.6%,-0.3%,,,,3,
+2025-10-28T10:00:00-04:00,United States,Cb Consumer Confidence,calendar,OCT,94.6,95.6,93.2,93,®,3,
+2025-10-28T10:00:00-04:00,United States,Richmond Fed Manufacturing Index,richmond fed manufacturing index,OCT,-4,-17,,,,3,
+2025-10-28T10:00:00-04:00,United States,Richmond Fed Manufacturing Shipments Index,richmond fed manufacturing shipments,OCT,4,-20,,,,3,
+2025-10-28T10:00:00-04:00,United States,Richmond Fed Services Revenues Index,richmond fed services index,OCT,4,1,,,,3,
+2025-10-28T10:30:00-04:00,United States,Dallas Fed Services Index,dallas fed services index,OCT,-9.4,-5.6,,,,3,
+2025-10-28T10:30:00-04:00,United States,Dallas Fed Services Revenues Index,dallas fed services revenues index,OCT,-6.4,-2.4,,,,3,
+2025-10-28T11:30:00-04:00,United States,52-Week Bill Auction,52 week bill yield,,3.445%,3.540%,,,,3,
+2025-10-28T13:00:00-04:00,United States,7-Year Note Auction,7 year note yield,,3.790%,3.953%,,,,3,
+2025-10-28T13:00:00-04:00,United States,Money Supply,money supply m2,SEP,$22.21T,$22.11T,,,®,3,
+2025-10-28T16:30:00-04:00,United States,API Crude Oil Stock Change,api crude oil stock change,OCT/24,-4M,-2.98M,,,,3,
+2025-10-29T07:00:00-04:00,United States,MBA 30-Year Mortgage Rate,mortgage rate,OCT/24,6.3%,6.37%,,,,3,
+2025-10-29T07:00:00-04:00,United States,MBA Mortgage Applications,mortgage applications,OCT/24,7.1%,-0.3%,,,,3,
+2025-10-29T07:00:00-04:00,United States,MBA Mortgage Market Index,mba mortgage market index,OCT/24,338.7,316.2,,,,3,
+2025-10-29T07:00:00-04:00,United States,MBA Mortgage Refinance Index,mba mortgage refinance index,OCT/24,1327.8,1214.7,,,,3,
+2025-10-29T07:00:00-04:00,United States,MBA Purchase Index,mba purchase index,OCT/24,164.3,157.3,,,,3,
+2025-10-29T08:30:00-04:00,United States,Goods Trade Balance Adv,goods trade balance,SEP,,$-85.5B,,,®,3,
+2025-10-29T08:30:00-04:00,United States,Retail Inventories Ex Autos MoM Adv,retail inventories ex autos,SEP,,,,,,3,
+2025-10-29T08:30:00-04:00,United States,Wholesale Inventories MoM Adv,wholesale inventories,SEP,,0%,,,,3,
+2025-10-29T10:00:00-04:00,United States,Pending Home Sales MoM,pending home sales mom,SEP,0%,4.2%,,,®,3,
+2025-10-29T10:00:00-04:00,United States,Pending Home Sales YoY,pending home sales,SEP,-0.9%,3.8%,,,,3,
+2025-10-29T10:30:00-04:00,United States,EIA Crude Oil Stocks Change,crude oil stocks change,OCT/24,-6.858M,-0.961M,,,,3,
+2025-10-29T10:30:00-04:00,United States,EIA Gasoline Stocks Change,gasoline stocks change,OCT/24,-5.941M,-2.147M,,,,3,
+2025-10-29T10:30:00-04:00,United States,EIA Crude Oil Imports Change,crude oil imports,OCT/24,-1.025M,0.656M,,,,3,
+2025-10-29T10:30:00-04:00,United States,EIA Cushing Crude Oil Stocks Change,cushing crude oil stocks,OCT/24,1.334M,-0.77M,,,,3,
+2025-10-29T10:30:00-04:00,United States,EIA Distillate Fuel Production Change,distillate fuel production,OCT/24,-0.134M,0.04M,,,,3,
+2025-10-29T10:30:00-04:00,United States,EIA Distillate Stocks Change,distillate stocks,OCT/24,-3.362M,-1.479M,,,,3,
+2025-10-29T10:30:00-04:00,United States,EIA Gasoline Production Change,gasoline production,OCT/24,-0.004M,0.235M,,,,3,
+2025-10-29T10:30:00-04:00,United States,EIA Heating Oil Stocks Change,heating oil stocks,OCT/24,0.049M,0.088M,,,,3,
+2025-10-29T10:30:00-04:00,United States,EIA Refinery Crude Runs Change,refinery crude runs,OCT/24,-0.511M,0.6M,,,,3,
+2025-10-29T11:30:00-04:00,United States,17-Week Bill Auction,17 week bill yield,,3.705%,3.735%,,,,3,
+2025-10-29T11:30:00-04:00,United States,2-Year Frn Auction,calendar,,0.190%,0.200%,,,,3,
+2025-10-29T14:00:00-04:00,United States,Fed Interest Rate Decision,interest rate,,4.0%,4.25%,,,,3,
+2025-10-29T14:30:00-04:00,United States,Fed Press Conference,interest rate,,,,,,,3,
+2025-10-30T08:30:00-04:00,United States,GDP Growth Rate QoQ Adv,gdp growth rate,Q3,,3.8%,,,,3,
+2025-10-30T08:30:00-04:00,United States,GDP Price Index QoQ Adv,gdp deflator,Q3,,2.1%,2.8%,2.5%,,3,
+2025-10-30T08:30:00-04:00,United States,Core PCE Prices QoQ Adv,core pce prices qoq,Q3,,2.6%,,,,3,
+2025-10-30T08:30:00-04:00,United States,GDP Sales QoQ Adv,gdp sales qoq,Q3,,7.5%,,,,3,
+2025-10-30T08:30:00-04:00,United States,PCE Prices QoQ Adv,pce prices qoq,Q3,,2.1%,,,,3,
+2025-10-30T08:30:00-04:00,United States,Real Consumer Spending QoQ Adv,real consumer spending,Q3,,2.5%,,,,3,
+2025-10-30T09:55:00-04:00,United States,Fed Bowman Speech,interest rate,,,,,,,3,
+2025-10-30T10:30:00-04:00,United States,EIA Natural Gas Stocks Change,natural gas stocks change,OCT/24,74Bcf,87Bcf,,,,3,
+2025-10-30T10:30:00-04:00,United States,Ny Fed Treasury Purchases Tips 7.5 To 30 Yrs,calendar,,,,$25 million,,,3,
+2025-10-30T11:30:00-04:00,United States,4-Week Bill Auction,4 week bill yield,,3.910%,3.945%,,,,3,
+2025-10-30T11:30:00-04:00,United States,8-Week Bill Auction,8 week bill yield,,3.890%,3.900%,,,,3,
+2025-10-30T12:00:00-04:00,United States,15-Year Mortgage Rate,15 year mortgage rate,OCT/30,5.41%,5.44%,,,,3,
+2025-10-30T12:00:00-04:00,United States,30-Year Mortgage Rate,30 year mortgage rate,OCT/30,6.17%,6.19%,,,,3,
+2025-10-30T13:15:00-04:00,United States,Fed Logan Speech,interest rate,,,,,,,3,
+2025-10-30T16:30:00-04:00,United States,Fed Balance Sheet,central bank balance sheet,OCT/29,$6.59T,$6.59T,,,,3,
+2025-10-31T09:30:00-04:00,United States,Fed Logan Speech,interest rate,,,,,,,3,
+2025-10-31T09:45:00-04:00,United States,Chicago PMI,chicago pmi,OCT,43.8,40.6,,,,3,
+2025-10-31T12:00:00-04:00,United States,Fed Bostic Speech,interest rate,,,,,,,3,
+2025-10-31T12:00:00-04:00,United States,Fed Hammack Speech,interest rate,,,,,,,3,
+2025-10-31T13:00:00-04:00,United States,Baker Hughes Oil Rig Count,crude oil rigs,OCT/31,414,420,,,,3,
+2025-10-31T13:00:00-04:00,United States,Baker Hughes Total Rigs Count,total rigs,OCT/31,546,550,,,,3,

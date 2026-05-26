@@ -1,22 +1,22 @@
-event_time,country,event,source_event_type,reference,actual,previous,consensus,te_forecast,revised,importance,symbol,source_url
-2024-01-03T10:00:00-05:00,United States,ISM Manufacturing PMI,business confidence,DEC,47.4,46.7,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2024-01-01&end=2024-02-01
-2024-01-03T10:00:00-05:00,United States,JOLTs Job Openings,job offers,NOV,8.79M,8.852M,,,®,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2024-01-01&end=2024-02-01
-2024-01-03T14:00:00-05:00,United States,FOMC Minutes,interest rate,,,,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2024-01-01&end=2024-02-01
-2024-01-05T08:30:00-05:00,United States,Non Farm Payrolls,non farm payrolls,DEC,216K,173K,,,®,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2024-01-01&end=2024-02-01
-2024-01-05T10:00:00-05:00,United States,ISM Services PMI,non manufacturing pmi,DEC,50.6,52.7,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2024-01-01&end=2024-02-01
-2024-01-11T08:30:00-05:00,United States,Core Inflation Rate MoM,core inflation rate mom,DEC,0.3%,0.3%,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2024-01-01&end=2024-02-01
-2024-01-11T08:30:00-05:00,United States,Core Inflation Rate YoY,core inflation rate,DEC,3.9%,4%,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2024-01-01&end=2024-02-01
-2024-01-11T08:30:00-05:00,United States,Inflation Rate MoM,inflation rate mom,DEC,0.3%,0.1%,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2024-01-01&end=2024-02-01
-2024-01-11T08:30:00-05:00,United States,Inflation Rate YoY,inflation rate,DEC,3.4%,3.1%,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2024-01-01&end=2024-02-01
-2024-01-12T08:30:00-05:00,United States,PPI MoM,producer price inflation mom,DEC,-0.1%,-0.1%,,,®,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2024-01-01&end=2024-02-01
-2024-01-17T08:30:00-05:00,United States,Retail Sales MoM,retail sales mom,DEC,0.6%,0.3%,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2024-01-01&end=2024-02-01
-2024-01-18T08:30:00-05:00,United States,Building Permits Prel,building permits,DEC,1.495M,1.467M,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2024-01-01&end=2024-02-01
-2024-01-19T10:00:00-05:00,United States,Michigan Consumer Sentiment Prel,consumer confidence,JAN,78.8,69.7,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2024-01-01&end=2024-02-01
-2024-01-25T08:30:00-05:00,United States,Durable Goods Orders MoM,durable goods orders,DEC,0%,5.5%,,,®,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2024-01-01&end=2024-02-01
-2024-01-25T08:30:00-05:00,United States,GDP Growth Rate QoQ Adv,gdp growth rate,Q4,3.3%,4.9%,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2024-01-01&end=2024-02-01
-2024-01-26T08:30:00-05:00,United States,Core PCE Price Index MoM,core pce price index mom,DEC,0.2%,0.1%,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2024-01-01&end=2024-02-01
-2024-01-26T08:30:00-05:00,United States,Personal Income MoM,personal income,DEC,0.3%,0.4%,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2024-01-01&end=2024-02-01
-2024-01-26T08:30:00-05:00,United States,Personal Spending MoM,personal spending,DEC,0.7%,0.4%,,,®,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2024-01-01&end=2024-02-01
-2024-01-30T10:00:00-05:00,United States,JOLTs Job Openings,job offers,DEC,9.026M,8.925M,,,®,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2024-01-01&end=2024-02-01
-2024-01-31T14:00:00-05:00,United States,Fed Interest Rate Decision,interest rate,,5.5%,5.5%,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2024-01-01&end=2024-02-01
-2024-01-31T14:30:00-05:00,United States,Fed Press Conference,interest rate,,,,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2024-01-01&end=2024-02-01
+event_time,country,event,source_event_type,reference,actual,previous,consensus,te_forecast,revised,importance,symbol
+2024-01-03T10:00:00-05:00,United States,ISM Manufacturing PMI,business confidence,DEC,47.4,46.7,,,,3,
+2024-01-03T10:00:00-05:00,United States,JOLTs Job Openings,job offers,NOV,8.79M,8.852M,,,®,3,
+2024-01-03T14:00:00-05:00,United States,FOMC Minutes,interest rate,,,,,,,3,
+2024-01-05T08:30:00-05:00,United States,Non Farm Payrolls,non farm payrolls,DEC,216K,173K,,,®,3,
+2024-01-05T10:00:00-05:00,United States,ISM Services PMI,non manufacturing pmi,DEC,50.6,52.7,,,,3,
+2024-01-11T08:30:00-05:00,United States,Core Inflation Rate MoM,core inflation rate mom,DEC,0.3%,0.3%,,,,3,
+2024-01-11T08:30:00-05:00,United States,Core Inflation Rate YoY,core inflation rate,DEC,3.9%,4%,,,,3,
+2024-01-11T08:30:00-05:00,United States,Inflation Rate MoM,inflation rate mom,DEC,0.3%,0.1%,,,,3,
+2024-01-11T08:30:00-05:00,United States,Inflation Rate YoY,inflation rate,DEC,3.4%,3.1%,,,,3,
+2024-01-12T08:30:00-05:00,United States,PPI MoM,producer price inflation mom,DEC,-0.1%,-0.1%,,,®,3,
+2024-01-17T08:30:00-05:00,United States,Retail Sales MoM,retail sales mom,DEC,0.6%,0.3%,,,,3,
+2024-01-18T08:30:00-05:00,United States,Building Permits Prel,building permits,DEC,1.495M,1.467M,,,,3,
+2024-01-19T10:00:00-05:00,United States,Michigan Consumer Sentiment Prel,consumer confidence,JAN,78.8,69.7,,,,3,
+2024-01-25T08:30:00-05:00,United States,Durable Goods Orders MoM,durable goods orders,DEC,0%,5.5%,,,®,3,
+2024-01-25T08:30:00-05:00,United States,GDP Growth Rate QoQ Adv,gdp growth rate,Q4,3.3%,4.9%,,,,3,
+2024-01-26T08:30:00-05:00,United States,Core PCE Price Index MoM,core pce price index mom,DEC,0.2%,0.1%,,,,3,
+2024-01-26T08:30:00-05:00,United States,Personal Income MoM,personal income,DEC,0.3%,0.4%,,,,3,
+2024-01-26T08:30:00-05:00,United States,Personal Spending MoM,personal spending,DEC,0.7%,0.4%,,,®,3,
+2024-01-30T10:00:00-05:00,United States,JOLTs Job Openings,job offers,DEC,9.026M,8.925M,,,®,3,
+2024-01-31T14:00:00-05:00,United States,Fed Interest Rate Decision,interest rate,,5.5%,5.5%,,,,3,
+2024-01-31T14:30:00-05:00,United States,Fed Press Conference,interest rate,,,,,,,3,

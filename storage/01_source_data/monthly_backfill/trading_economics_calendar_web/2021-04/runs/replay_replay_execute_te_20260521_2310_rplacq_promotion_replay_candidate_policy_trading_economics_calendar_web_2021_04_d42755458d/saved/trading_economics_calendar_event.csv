@@ -1,11 +1,11 @@
-event_time,country,event,source_event_type,reference,actual,previous,consensus,te_forecast,revised,importance,symbol,source_url
-2021-04-02T08:30:00-04:00,United States,Non Farm Payrolls,non farm payrolls,MAR,916K,468K,,,®,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2021-04-01&end=2021-05-01
-2021-04-07T08:30:00-04:00,United States,Balance of Trade,balance of trade,FEB,$-71.1B,$-67.8B,,,®,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2021-04-01&end=2021-05-01
-2021-04-07T14:00:00-04:00,United States,FOMC Minutes,interest rate,,,,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2021-04-01&end=2021-05-01
-2021-04-13T08:30:00-04:00,United States,Core Inflation Rate YoY,core inflation rate,MAR,1.6%,1.3%,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2021-04-01&end=2021-05-01
-2021-04-13T08:30:00-04:00,United States,Inflation Rate YoY,inflation rate,MAR,2.6%,1.7%,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2021-04-01&end=2021-05-01
-2021-04-15T08:30:00-04:00,United States,Retail Sales MoM,retail sales mom,MAR,9.8%,-2.7%,,,®,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2021-04-01&end=2021-05-01
-2021-04-26T08:30:00-04:00,United States,Durable Goods Orders MoM,durable goods orders,MAR,0.5%,-0.9%,,,®,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2021-04-01&end=2021-05-01
-2021-04-28T14:30:00-04:00,United States,Fed Press Conference,interest rate,,,,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2021-04-01&end=2021-05-01
-2021-04-30T08:30:00-04:00,United States,Personal Income MoM,personal income,MAR,21.1%,-7%,,,®,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2021-04-01&end=2021-05-01
-2021-04-30T08:30:00-04:00,United States,Personal Spending MoM,personal spending,MAR,4.2%,-1%,,,,3,,https://tradingeconomics.com/united-states/calendar?importance=3&start=2021-04-01&end=2021-05-01
+event_time,country,event,source_event_type,reference,actual,previous,consensus,te_forecast,revised,importance,symbol
+2021-04-02T08:30:00-04:00,United States,Non Farm Payrolls,non farm payrolls,MAR,916K,468K,,,®,3,
+2021-04-07T08:30:00-04:00,United States,Balance of Trade,balance of trade,FEB,$-71.1B,$-67.8B,,,®,3,
+2021-04-07T14:00:00-04:00,United States,FOMC Minutes,interest rate,,,,,,,3,
+2021-04-13T08:30:00-04:00,United States,Core Inflation Rate YoY,core inflation rate,MAR,1.6%,1.3%,,,,3,
+2021-04-13T08:30:00-04:00,United States,Inflation Rate YoY,inflation rate,MAR,2.6%,1.7%,,,,3,
+2021-04-15T08:30:00-04:00,United States,Retail Sales MoM,retail sales mom,MAR,9.8%,-2.7%,,,®,3,
+2021-04-26T08:30:00-04:00,United States,Durable Goods Orders MoM,durable goods orders,MAR,0.5%,-0.9%,,,®,3,
+2021-04-28T14:30:00-04:00,United States,Fed Press Conference,interest rate,,,,,,,3,
+2021-04-30T08:30:00-04:00,United States,Personal Income MoM,personal income,MAR,21.1%,-7%,,,®,3,
+2021-04-30T08:30:00-04:00,United States,Personal Spending MoM,personal spending,MAR,4.2%,-1%,,,,3,
