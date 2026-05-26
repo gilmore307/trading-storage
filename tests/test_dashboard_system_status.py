@@ -91,7 +91,7 @@ class DashboardSystemStatusTests(unittest.TestCase):
                     "Trading Economics Recent Calendar Events",
                     "Historical TE Calendar Seed Receipt",
                     "Dashboard Read Model Index",
-                    "Current Status Read Model",
+                    "Status Read Model",
                     "Historical Task Progress Read Model",
                     "Realtime Signal Summary Read Model",
                     "Temporal Explorer Read Model",

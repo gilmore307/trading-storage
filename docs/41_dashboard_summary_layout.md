@@ -149,7 +149,7 @@ Still not implemented: dashboard read adapters, lifecycle timers for dashboard s
 
 `refresh_public_dashboard_read_models.py` refreshes the public dashboard set currently served to `trading-dashboard`:
 
-- `current_system_status_summary` for Current Status infrastructure/server/API/service/read-model freshness posture;
+- `current_system_status_summary` for Status infrastructure/server/API/service/read-model freshness posture;
 - `historical_task_progress_summary` for Tasks / Historical Modeling progress;
 - `temporal_explorer_summary` for the Timewheel / Temporal Explorer page;
 - `event_calendar_summary` as a narrow support event-list summary;

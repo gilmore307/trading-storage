@@ -272,17 +272,14 @@ def _tick_payloads(*, center_time: datetime, frame: str, rows: Mapping[str, Sequ
 
 
 def _lane_payloads(statuses: Mapping[str, Mapping[str, Any]], rows: Mapping[str, Sequence[Mapping[str, Any]]]) -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
-    left = [
-        {"lane_id": "market_session", "label": "Market Session", "status": statuses["calendar_market_session"]["status"], "item_count": len(rows.get("sessions", []))},
-        {"lane_id": "chart_cache", "label": "Chart Cache", "status": statuses["chart_ohlcv_cache"]["status"], "item_count": len(rows.get("chart_bars", []))},
-        {"lane_id": "market_state", "label": "Market State", "status": "not_connected", "item_count": 0},
-        {"lane_id": "replay_state", "label": "Replay State", "status": "not_connected", "item_count": 0},
-    ]
+    left: list[dict[str, Any]] = []
     right = [
+        {"lane_id": "market_session", "label": "Market Session", "status": statuses["calendar_market_session"]["status"], "item_count": len(rows.get("sessions", []))},
         {"lane_id": "scheduled_events", "label": "Scheduled Events", "status": statuses["calendar_scheduled_event"]["status"], "item_count": len(rows.get("scheduled_events", []))},
         {"lane_id": "event_results", "label": "Event Results", "status": statuses["calendar_event_result"]["status"], "item_count": len(rows.get("event_results", []))},
         {"lane_id": "news_event_index", "label": "News Index", "status": statuses["calendar_news_event_index"]["status"], "item_count": len(rows.get("news_events", []))},
         {"lane_id": "model_event_markers", "label": "Model Event Markers", "status": "not_connected", "item_count": 0},
+        {"lane_id": "replay_state", "label": "Replay State", "status": "not_connected", "item_count": 0},
     ]
     return left, right
 

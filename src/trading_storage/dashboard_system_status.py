@@ -834,7 +834,7 @@ def _dashboard_source_outputs(*, storage_root: Path, manager_storage_root: Path,
             dashboard_note,
         ),
         (
-            "Current Status Read Model",
+            "Status Read Model",
             "storage_dashboard_current_status_latest",
             storage_root / "06_dashboard_cache/read_models/current_system_status_summary/latest.json",
             "heartbeat",

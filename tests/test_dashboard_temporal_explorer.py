@@ -60,6 +60,8 @@ class DashboardTemporalExplorerTests(unittest.TestCase):
         self.assertEqual(len(chart["timewheel_ticks"]), 21)
         self.assertEqual(chart["events"][0]["lane"], "scheduled_event")
         self.assertEqual(chart["chart"]["status"], "populated")
+        self.assertEqual(chart["left_lanes"], [])
+        self.assertNotIn("market_state", {lane["lane_id"] for lane in chart["right_lanes"]})
 
     def test_refresh_materializes_temporal_explorer_summary(self):
         with tempfile.TemporaryDirectory() as tmp:
