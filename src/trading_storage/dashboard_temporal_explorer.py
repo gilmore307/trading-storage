@@ -271,17 +271,52 @@ def _tick_payloads(*, center_time: datetime, frame: str, rows: Mapping[str, Sequ
     return ticks
 
 
-def _lane_payloads(statuses: Mapping[str, Mapping[str, Any]], rows: Mapping[str, Sequence[Mapping[str, Any]]]) -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
+def _lane_payloads(*, statuses: Mapping[str, Mapping[str, Any]], rows: Mapping[str, Sequence[Mapping[str, Any]]], storage_root: Path) -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
     left: list[dict[str, Any]] = []
+    model_marker_lane = _model_event_marker_lane(storage_root)
+    replay_lane = _replay_state_lane(storage_root)
     right = [
         {"lane_id": "market_session", "label": "Market Session", "status": statuses["calendar_market_session"]["status"], "item_count": len(rows.get("sessions", []))},
         {"lane_id": "scheduled_events", "label": "Scheduled Events", "status": statuses["calendar_scheduled_event"]["status"], "item_count": len(rows.get("scheduled_events", []))},
         {"lane_id": "event_results", "label": "Event Results", "status": statuses["calendar_event_result"]["status"], "item_count": len(rows.get("event_results", []))},
         {"lane_id": "news_event_index", "label": "News Index", "status": statuses["calendar_news_event_index"]["status"], "item_count": len(rows.get("news_events", []))},
-        {"lane_id": "model_event_markers", "label": "Model Event Markers", "status": "not_connected", "item_count": 0},
-        {"lane_id": "replay_state", "label": "Replay State", "status": "not_connected", "item_count": 0},
+        model_marker_lane,
+        replay_lane,
     ]
     return left, right
+
+
+def _model_event_marker_lane(storage_root: Path) -> dict[str, Any]:
+    runtime_summary = _read_json(storage_root / "06_dashboard_cache/read_models/execution_realtime_trading_runtime_status/latest.json")
+    if not runtime_summary:
+        return {"lane_id": "model_event_markers", "label": "Model Event Markers", "status": "missing", "item_count": 0}
+    active_pointer = runtime_summary.get("chart_payload", {}).get("active_model_pointer", {})
+    if isinstance(active_pointer, Mapping) and active_pointer.get("active_model_config_present"):
+        return {"lane_id": "model_event_markers", "label": "Model Event Markers", "status": "populated", "item_count": 1}
+    return {"lane_id": "model_event_markers", "label": "Model Event Markers", "status": "empty", "item_count": 0}
+
+
+def _replay_state_lane(storage_root: Path) -> dict[str, Any]:
+    replay_root = storage_root / "05_replay_datasets"
+    if not replay_root.exists():
+        return {"lane_id": "replay_state", "label": "Replay State", "status": "missing", "item_count": 0}
+    item_count = sum(1 for path in replay_root.rglob("*") if path.is_file())
+    return {
+        "lane_id": "replay_state",
+        "label": "Replay State",
+        "status": "populated" if item_count else "empty",
+        "item_count": item_count,
+    }
+
+
+def _read_json(path: Path) -> dict[str, Any] | None:
+    try:
+        if not path.exists():
+            return None
+        data = json.loads(path.read_text())
+    except Exception:
+        return None
+    return data if isinstance(data, dict) else None
 
 
 def _chart_bars(rows: Sequence[Mapping[str, Any]]) -> list[dict[str, Any]]:
@@ -320,7 +355,7 @@ def build_temporal_explorer_summary(
     rows = dict(sql_rows or _fetch_sql_rows(center_time=center_time, frame=frame))
     events = _event_payloads(rows)
     ticks = _tick_payloads(center_time=center_time, frame=frame, rows=rows, events=events)
-    left_lanes, right_lanes = _lane_payloads(statuses, rows)
+    left_lanes, right_lanes = _lane_payloads(statuses=statuses, rows=rows, storage_root=Path(storage_root))
     chart_bars = _chart_bars(rows.get("chart_bars", []))
     populated_tables = sum(1 for status in statuses.values() if status.get("status") == "populated")
     event_counts = Counter(event["lane"] for event in events)

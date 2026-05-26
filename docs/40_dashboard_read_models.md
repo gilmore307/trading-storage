@@ -156,7 +156,7 @@ PYTHONPATH=src python3 scripts/dashboard/refresh_public_dashboard_read_models.py
 
 ### Event calendar producer
 
-`trading_storage.dashboard_temporal_explorer` produces `temporal_explorer_summary` for the dashboard Timewheel page. It reads the accepted calendar substrate tables and chart cache, emits a centered viewport, 21 synchronized time ticks for the chart x-axis, visible event markers, event/status lanes, chart-cache bars when present, and explicit `not_connected` / `not_populated` states for unpopulated sources. Market-state summary belongs to Status, not a Timewheel lane. It performs no provider calls, SQL mutation, model activation, broker execution, or account mutation.
+`trading_storage.dashboard_temporal_explorer` produces `temporal_explorer_summary` for the dashboard Timewheel page. It reads the accepted calendar substrate tables, chart cache, execution runtime status, and replay artifact root, emits a centered viewport, 21 synchronized time ticks for the chart x-axis, visible event markers, event/status lanes, chart-cache bars when present, and explicit empty/not-populated states for unpopulated sources. Market-state summary belongs to Status, not a Timewheel lane. It performs no provider calls, SQL mutation, model activation, broker execution, or account mutation.
 
 `trading_storage.dashboard_event_calendar` remains a narrow support producer for `event_calendar_summary`. It reads `trading_data.source_10_event_risk_governor` rows inside a recent/upcoming window and storage-local Trading Economics source receipts under the canonical append-only root `storage/01_source_data/monthly_backfill/trading_economics_calendar_web/`.
 

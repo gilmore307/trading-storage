@@ -1,3 +1,4 @@
+import json
 import tempfile
 import unittest
 from pathlib import Path
@@ -12,56 +13,76 @@ from trading_storage.dashboard_temporal_explorer import (
 
 class DashboardTemporalExplorerTests(unittest.TestCase):
     def test_builds_timewheel_payload(self):
-        statuses = {
-            "calendar_day": {"status": "populated", "row_count": 2},
-            "calendar_market_session": {"status": "populated", "row_count": 2},
-            "calendar_scheduled_event": {"status": "populated", "row_count": 1},
-            "calendar_event_result": {"status": "empty", "row_count": 0},
-            "calendar_news_event_index": {"status": "empty", "row_count": 0},
-            "chart_ohlcv_cache": {"status": "populated", "row_count": 1},
-        }
-        payload = build_temporal_explorer_summary(
-            generated_at_utc="2026-05-26T12:00:00Z",
-            center_time_utc="2026-05-26T12:00:00Z",
-            substrate_status=statuses,
-            sql_rows={
-                "sessions": [{"venue": "NYSE", "calendar_date": "2026-05-26", "session_type": "regular"}],
-                "scheduled_events": [
+        with tempfile.TemporaryDirectory() as tmp:
+            storage_root = Path(tmp) / "storage"
+            runtime_summary = storage_root / "06_dashboard_cache/read_models/execution_realtime_trading_runtime_status/latest.json"
+            runtime_summary.parent.mkdir(parents=True)
+            runtime_summary.write_text(
+                json.dumps(
                     {
-                        "event_id": "cpi-20260526",
-                        "event_time": "2026-05-26T12:30:00Z",
-                        "event_date": "2026-05-26",
-                        "event_type": "cpi_release",
-                        "event_scope": "macro",
-                        "source_priority": "approved_calendar",
+                        "chart_payload": {
+                            "active_model_pointer": {
+                                "active_model_config_present": False,
+                            }
+                        }
                     }
-                ],
-                "event_results": [],
-                "news_events": [],
-                "chart_bars": [
-                    {
-                        "symbol": "SPY",
-                        "timeframe": "1D",
-                        "bucket_start": "2026-05-26T00:00:00Z",
-                        "bucket_end": "2026-05-27T00:00:00Z",
-                        "open": 100,
-                        "high": 102,
-                        "low": 99,
-                        "close": 101,
-                        "volume": 1000,
-                        "bar_count": 1,
-                    }
-                ],
-            },
-        )
-        self.assertEqual(validate_dashboard_read_model(payload), TEMPORAL_EXPLORER_SUMMARY_CONTRACT)
-        chart = payload["chart_payload"]
-        self.assertEqual(chart["viewport"]["frame"], "1D")
-        self.assertEqual(len(chart["timewheel_ticks"]), 21)
-        self.assertEqual(chart["events"][0]["lane"], "scheduled_event")
-        self.assertEqual(chart["chart"]["status"], "populated")
-        self.assertEqual(chart["left_lanes"], [])
-        self.assertNotIn("market_state", {lane["lane_id"] for lane in chart["right_lanes"]})
+                )
+            )
+            (storage_root / "05_replay_datasets").mkdir(parents=True)
+            statuses = {
+                "calendar_day": {"status": "populated", "row_count": 2},
+                "calendar_market_session": {"status": "populated", "row_count": 2},
+                "calendar_scheduled_event": {"status": "populated", "row_count": 1},
+                "calendar_event_result": {"status": "empty", "row_count": 0},
+                "calendar_news_event_index": {"status": "empty", "row_count": 0},
+                "chart_ohlcv_cache": {"status": "populated", "row_count": 1},
+            }
+            payload = build_temporal_explorer_summary(
+                storage_root=storage_root,
+                generated_at_utc="2026-05-26T12:00:00Z",
+                center_time_utc="2026-05-26T12:00:00Z",
+                substrate_status=statuses,
+                sql_rows={
+                    "sessions": [{"venue": "NYSE", "calendar_date": "2026-05-26", "session_type": "regular"}],
+                    "scheduled_events": [
+                        {
+                            "event_id": "cpi-20260526",
+                            "event_time": "2026-05-26T12:30:00Z",
+                            "event_date": "2026-05-26",
+                            "event_type": "cpi_release",
+                            "event_scope": "macro",
+                            "source_priority": "approved_calendar",
+                        }
+                    ],
+                    "event_results": [],
+                    "news_events": [],
+                    "chart_bars": [
+                        {
+                            "symbol": "SPY",
+                            "timeframe": "1D",
+                            "bucket_start": "2026-05-26T00:00:00Z",
+                            "bucket_end": "2026-05-27T00:00:00Z",
+                            "open": 100,
+                            "high": 102,
+                            "low": 99,
+                            "close": 101,
+                            "volume": 1000,
+                            "bar_count": 1,
+                        }
+                    ],
+                },
+            )
+            self.assertEqual(validate_dashboard_read_model(payload), TEMPORAL_EXPLORER_SUMMARY_CONTRACT)
+            chart = payload["chart_payload"]
+            self.assertEqual(chart["viewport"]["frame"], "1D")
+            self.assertEqual(len(chart["timewheel_ticks"]), 21)
+            self.assertEqual(chart["events"][0]["lane"], "scheduled_event")
+            self.assertEqual(chart["chart"]["status"], "populated")
+            self.assertEqual(chart["left_lanes"], [])
+            lanes = {lane["lane_id"]: lane for lane in chart["right_lanes"]}
+            self.assertNotIn("market_state", lanes)
+            self.assertEqual(lanes["model_event_markers"]["status"], "empty")
+            self.assertEqual(lanes["replay_state"]["status"], "empty")
 
     def test_refresh_materializes_temporal_explorer_summary(self):
         with tempfile.TemporaryDirectory() as tmp:
