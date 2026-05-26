@@ -52,6 +52,15 @@ class DashboardTemporalExplorerTests(unittest.TestCase):
                             "event_type": "cpi_release",
                             "event_scope": "macro",
                             "source_priority": "approved_calendar",
+                            "metadata_json": {"title": "US CPI release", "summary": "Accepted CPI event family.", "layer10_status": "accepted"},
+                        },
+                        {
+                            "event_id": "ordinary-macro-20260526",
+                            "event_time": "2026-05-26T13:30:00Z",
+                            "event_date": "2026-05-26",
+                            "event_type": "macro_data",
+                            "event_scope": "macro",
+                            "source_priority": "approved_calendar",
                         }
                     ],
                     "event_results": [],
@@ -76,8 +85,12 @@ class DashboardTemporalExplorerTests(unittest.TestCase):
             chart = payload["chart_payload"]
             self.assertEqual(chart["viewport"]["frame"], "1D")
             self.assertEqual(len(chart["timewheel_ticks"]), 21)
-            self.assertEqual(chart["events"][0]["lane"], "scheduled_event")
+            self.assertEqual(len(chart["events"]), 1)
+            self.assertEqual(chart["events"][0]["lane"], "layer10_accepted_event")
+            self.assertEqual(chart["events"][0]["title"], "US CPI release")
+            self.assertEqual(chart["events"][0]["summary"], "Accepted CPI event family.")
             self.assertEqual(chart["chart"]["status"], "populated")
+            self.assertIn("SPY", chart["chart"]["available_symbols"])
             self.assertEqual(chart["left_lanes"], [])
             lanes = {lane["lane_id"]: lane for lane in chart["right_lanes"]}
             self.assertNotIn("market_state", lanes)

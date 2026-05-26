@@ -21,6 +21,7 @@ DEFAULT_FRAME = "1D"
 DEFAULT_CENTER_LOOKBACK_DAYS = 14
 DEFAULT_CENTER_LOOKAHEAD_DAYS = 45
 SUPPORTED_FRAMES = ("30m", "1h", "1D", "1W")
+DEFAULT_CHART_SYMBOLS = ("SPY", "QQQ", "IWM", "DIA")
 
 SUBSTRATE_TABLES = (
     "calendar_day",
@@ -114,7 +115,7 @@ def _fetch_sql_rows(
                     schema,
                     "calendar_scheduled_event",
                     """
-                    SELECT event_id, event_time, event_date, event_type, event_scope, symbol, country, source_priority, scheduled_known_at
+                    SELECT event_id, event_time, event_date, event_type, event_scope, symbol, country, source_priority, scheduled_known_at, source_url, raw_artifact_ref, metadata_json
                     FROM {table}
                     WHERE event_date >= %s::date AND event_date < %s::date
                     ORDER BY event_date ASC, event_time ASC NULLS LAST, event_id ASC
@@ -193,50 +194,130 @@ def _event_time(item: Mapping[str, Any]) -> datetime | None:
     return None
 
 
+def _row_text(row: Mapping[str, Any], field: str) -> str:
+    value = row.get(field)
+    if value is None:
+        return ""
+    return str(value).strip()
+
+
+def _row_metadata(row: Mapping[str, Any]) -> Mapping[str, Any]:
+    metadata = row.get("metadata_json")
+    if isinstance(metadata, Mapping):
+        return metadata
+    if isinstance(metadata, str) and metadata.strip():
+        try:
+            decoded = json.loads(metadata)
+        except json.JSONDecodeError:
+            return {}
+        return decoded if isinstance(decoded, Mapping) else {}
+    return {}
+
+
+def _metadata_text(row: Mapping[str, Any], field: str) -> str:
+    value = _row_metadata(row).get(field)
+    if value is None:
+        return ""
+    return str(value).strip()
+
+
+def _is_layer10_accepted_event(row: Mapping[str, Any]) -> bool:
+    """Return true only for event kinds accepted by Layer 10/review for chart markers."""
+
+    accepted_values = {
+        "accepted",
+        "layer10_accepted",
+        "accepted_layer10_event",
+        "accepted_layer4_event_family",
+        "production_accepted",
+    }
+    candidate_fields = (
+        "layer10_status",
+        "layer10_disposition",
+        "event_family_status",
+        "promotion_status",
+        "review_status",
+        "status",
+    )
+    for field in candidate_fields:
+        value = _row_text(row, field).lower() or _metadata_text(row, field).lower()
+        if value in accepted_values:
+            return True
+    source_priority = _row_text(row, "source_priority").lower()
+    return source_priority in accepted_values
+
+
+def _event_detail_summary(row: Mapping[str, Any], fallback: str) -> str:
+    for field in ("summary", "description", "detail", "coverage_reason"):
+        value = _row_text(row, field) or _metadata_text(row, field)
+        if value:
+            return value
+    return fallback
+
+
 def _event_payloads(rows: Mapping[str, Sequence[Mapping[str, Any]]]) -> list[dict[str, Any]]:
     events: list[dict[str, Any]] = []
     for row in rows.get("scheduled_events", []):
+        if not _is_layer10_accepted_event(row):
+            continue
         at = _event_time(row)
+        title = _metadata_text(row, "title") or str(row.get("event_type") or "Accepted event")
         events.append(
             {
                 "event_id": str(row.get("event_id")),
                 "event_time": _iso_utc(at or datetime.now(UTC)),
-                "title": str(row.get("event_type") or "Scheduled event"),
-                "lane": "scheduled_event",
+                "title": title,
+                "lane": "layer10_accepted_event",
                 "event_type": str(row.get("event_type") or "scheduled"),
                 "scope": str(row.get("event_scope") or ""),
                 "symbol": row.get("symbol"),
-                "status": "scheduled",
+                "status": _row_text(row, "layer10_status") or _metadata_text(row, "layer10_status") or "accepted",
                 "source_priority": str(row.get("source_priority") or ""),
+                "summary": _event_detail_summary(row, title),
+                "source_name": _metadata_text(row, "source_name") or str(row.get("source_priority") or ""),
+                "reference_type": _metadata_text(row, "reference_type") or ("source_url" if row.get("source_url") else "artifact"),
+                "reference": _metadata_text(row, "reference") or str(row.get("source_url") or row.get("raw_artifact_ref") or ""),
             }
         )
     for row in rows.get("event_results", []):
+        if not _is_layer10_accepted_event(row):
+            continue
         at = _event_time(row)
         events.append(
             {
                 "event_id": str(row.get("event_id")),
                 "event_time": _iso_utc(at or datetime.now(UTC)),
                 "title": "Released event result",
-                "lane": "event_result",
+                "lane": "layer10_accepted_event",
                 "event_type": "result",
                 "scope": "event",
-                "status": "released",
+                "status": _row_text(row, "layer10_status") or "accepted",
                 "source_priority": "result_artifact",
+                "summary": "Accepted Layer 10 event result is available.",
+                "source_name": "calendar_event_result",
+                "reference_type": "artifact",
+                "reference": str(row.get("source_url") or row.get("raw_artifact_ref") or ""),
             }
         )
     for row in rows.get("news_events", []):
+        if not _is_layer10_accepted_event(row):
+            continue
         at = _event_time(row)
         events.append(
             {
                 "event_id": str(row.get("news_event_id")),
                 "event_time": _iso_utc(at or datetime.now(UTC)),
                 "title": str(row.get("headline") or "News event"),
-                "lane": "news_event_index",
+                "lane": "layer10_accepted_event",
                 "event_type": str(row.get("event_family_candidate") or "news"),
                 "scope": "news",
                 "symbol": row.get("symbol"),
-                "status": str(row.get("dedup_status") or "indexed"),
+                "status": _row_text(row, "layer10_status") or str(row.get("dedup_status") or "accepted"),
                 "source_priority": str(row.get("source") or ""),
+                "summary": str(row.get("headline") or "Accepted Layer 10 news event."),
+                "source_name": str(row.get("source") or "calendar_news_event_index"),
+                "reference_type": "artifact",
+                "reference": str(row.get("raw_artifact_ref") or row.get("interpreted_event_ref") or ""),
             }
         )
     events.sort(key=lambda item: item["event_time"])
@@ -339,6 +420,12 @@ def _chart_bars(rows: Sequence[Mapping[str, Any]]) -> list[dict[str, Any]]:
     return bars
 
 
+def _available_chart_symbols(chart_bars: Sequence[Mapping[str, Any]]) -> list[str]:
+    symbols = {str(row.get("symbol") or "").strip().upper() for row in chart_bars}
+    symbols = {symbol for symbol in symbols if symbol}
+    return sorted(symbols.union(DEFAULT_CHART_SYMBOLS))
+
+
 def build_temporal_explorer_summary(
     *,
     storage_root: Path = DEFAULT_STORAGE_ROOT,
@@ -386,6 +473,8 @@ def build_temporal_explorer_summary(
             "chart": {
                 "symbol": "SPY",
                 "timeframe": _chart_timeframe(frame),
+                "available_symbols": _available_chart_symbols(rows.get("chart_bars", [])),
+                "available_timeframes": [_chart_timeframe(value) for value in SUPPORTED_FRAMES],
                 "status": "populated" if chart_bars else "not_populated",
                 "bars": chart_bars,
                 "role": "visualization_cache_not_training_truth",
