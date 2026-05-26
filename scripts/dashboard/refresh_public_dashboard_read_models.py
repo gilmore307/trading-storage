@@ -14,6 +14,7 @@ from trading_storage.dashboard_execution_runtime import DEFAULT_EXECUTION_STATUS
 from trading_storage.dashboard_refresh import DEFAULT_TRADING_MANAGER_ROOT, HISTORICAL_TASK_PROGRESS_CONTRACT, refresh_historical_task_progress_read_model
 from trading_storage.dashboard_realtime_signals import DEFAULT_TRADING_EXECUTION_ROOT, REALTIME_SIGNAL_SUMMARY_CONTRACT, refresh_realtime_signal_summary_read_model
 from trading_storage.dashboard_system_status import CURRENT_SYSTEM_STATUS_CONTRACT, refresh_current_system_status_read_model
+from trading_storage.dashboard_temporal_explorer import TEMPORAL_EXPLORER_SUMMARY_CONTRACT, refresh_temporal_explorer_summary_read_model
 
 
 def _failure_receipt(*, contract_type: str, exc: BaseException) -> dict[str, Any]:
@@ -64,6 +65,10 @@ def main(argv: list[str] | None = None) -> int:
         _run_one(
             EVENT_CALENDAR_SUMMARY_CONTRACT,
             lambda: refresh_event_calendar_summary_read_model(storage_root=args.storage_root),
+        ),
+        _run_one(
+            TEMPORAL_EXPLORER_SUMMARY_CONTRACT,
+            lambda: refresh_temporal_explorer_summary_read_model(storage_root=args.storage_root),
         ),
         _run_one(
             REALTIME_SIGNAL_SUMMARY_CONTRACT,

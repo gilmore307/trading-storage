@@ -33,6 +33,7 @@ REFRESHABLE_CONTRACT_TYPES = frozenset(
         "event_calendar_summary",
         "historical_task_progress_summary",
         "realtime_signal_summary",
+        "temporal_explorer_summary",
         "execution_realtime_trading_runtime_status",
     }
 )

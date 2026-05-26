@@ -51,6 +51,7 @@ The following dashboard summary families are accepted as storage-bound design ta
 
 Implemented realtime summary families:
 
+- `temporal_explorer_summary`;
 - `event_calendar_summary`;
 - `execution_realtime_trading_runtime_status`;
 - `realtime_signal_summary`;
@@ -125,7 +126,8 @@ Implemented storage-side support:
 - `src/trading_storage/dashboard_snapshot_lifecycle.py` and `scripts/dashboard/prune_dashboard_snapshots.py` plan or apply bounded deletion for old dashboard snapshot metadata while preserving `latest.json`, schemas, index files, Layer 1/2 data, and SQL.
 - `scripts/dashboard/materialize_read_model.py` exposes the helper as a CLI for one payload at a time.
 - `src/trading_storage/dashboard_refresh.py` and `scripts/dashboard/refresh_historical_task_progress_read_model.py` run the manager-owned `historical_task_progress_summary` producer and materialize the validated result; when no explicit coverage path is supplied, the refresh wrapper attaches the newest manager stage-coverage artifact so the Historical Task Progress page can show coverage instead of a blank placeholder.
-- `src/trading_storage/dashboard_event_calendar.py` and `scripts/dashboard/refresh_event_calendar_summary_read_model.py` build and materialize `event_calendar_summary` from accepted SQL event-calendar rows plus storage-hosted Trading Economics refresh evidence. This read model performs no provider calls and exposes unconnected families such as exchange holidays, option expiries, and index rebalance windows as explicit gaps.
+- `src/trading_storage/dashboard_temporal_explorer.py` and `scripts/dashboard/refresh_temporal_explorer_summary_read_model.py` build and materialize `temporal_explorer_summary` for the dashboard Timewheel page from `calendar_day`, `calendar_market_session`, `calendar_scheduled_event`, `calendar_event_result`, `calendar_news_event_index`, and `chart_ohlcv_cache`. This is the primary calendar/dashboard route.
+- `src/trading_storage/dashboard_event_calendar.py` and `scripts/dashboard/refresh_event_calendar_summary_read_model.py` build and materialize the narrow support read model `event_calendar_summary` from accepted SQL event rows plus storage-hosted Trading Economics refresh evidence.
 - `src/trading_storage/dashboard_execution_runtime.py` and `scripts/dashboard/refresh_execution_runtime_status_read_model.py` build and materialize `execution_realtime_trading_runtime_status` from the execution-owned readiness artifact. Dashboard clients consume it through `/ws/read-models/execution_realtime_trading_runtime_status/latest`.
 - `src/trading_storage/dashboard_realtime_signals.py` and `scripts/dashboard/refresh_realtime_signal_summary_read_model.py` build and materialize `realtime_signal_summary` from execution-owned realtime monitor receipts. When no realtime monitor receipt exists, the producer emits an explicit safe `not_started` state rather than fabricating signal metrics.
 - `deploy/systemd/trading-storage-dashboard-read-model-refresh.service` and `.timer` define the fallback periodic refresh template. Manager workflow-state writes trigger primary progress refreshes, while the timer default is 60 seconds for calibration when an event is missed.
@@ -146,6 +148,7 @@ Refresh entrypoints:
 ```bash
 PYTHONPATH=src python3 scripts/dashboard/refresh_current_system_status_read_model.py --storage-root storage
 PYTHONPATH=src python3 scripts/dashboard/refresh_event_calendar_summary_read_model.py --storage-root storage
+PYTHONPATH=src python3 scripts/dashboard/refresh_temporal_explorer_summary_read_model.py --storage-root storage
 PYTHONPATH=src python3 scripts/dashboard/refresh_execution_runtime_status_read_model.py --storage-root storage
 PYTHONPATH=src python3 scripts/dashboard/refresh_realtime_signal_summary_read_model.py --storage-root storage --trading-execution-root /root/projects/trading-execution
 PYTHONPATH=src python3 scripts/dashboard/refresh_public_dashboard_read_models.py --storage-root storage --trading-manager-root /root/projects/trading-manager --trading-execution-root /root/projects/trading-execution
@@ -153,7 +156,9 @@ PYTHONPATH=src python3 scripts/dashboard/refresh_public_dashboard_read_models.py
 
 ### Event calendar producer
 
-`trading_storage.dashboard_event_calendar` produces `event_calendar_summary` for the dashboard Calendar page. It reads `trading_data.source_10_event_risk_governor` rows inside a recent/upcoming window and storage-local Trading Economics source receipts under the canonical append-only root `storage/01_source_data/monthly_backfill/trading_economics_calendar_web/`. It summarizes connected families for macro releases and earnings shells, lists upcoming/recent events, reports source-artifact evidence counts, and marks exchange holidays/early closes, option expiry windows, and index rebalance windows as `not_connected` until accepted sources exist. It is a read-only/materialization producer: no provider calls, model activation, broker execution, account mutation, or SQL mutation.
+`trading_storage.dashboard_temporal_explorer` produces `temporal_explorer_summary` for the dashboard Timewheel page. It reads the accepted calendar substrate tables and chart cache, emits a centered viewport, 21 synchronized time ticks, left/right lanes, visible event markers, chart-cache bars when present, and explicit `not_connected` / `not_populated` states for lanes without accepted sources. It performs no provider calls, SQL mutation, model activation, broker execution, or account mutation.
+
+`trading_storage.dashboard_event_calendar` remains a narrow support producer for `event_calendar_summary`. It reads `trading_data.source_10_event_risk_governor` rows inside a recent/upcoming window and storage-local Trading Economics source receipts under the canonical append-only root `storage/01_source_data/monthly_backfill/trading_economics_calendar_web/`.
 
 ### Execution runtime status producer
 

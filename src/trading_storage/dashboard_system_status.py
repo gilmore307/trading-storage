@@ -855,6 +855,13 @@ def _dashboard_source_outputs(*, storage_root: Path, manager_storage_root: Path,
             dashboard_note,
         ),
         (
+            "Temporal Explorer Read Model",
+            "storage_dashboard_temporal_explorer_latest",
+            storage_root / "06_dashboard_cache/read_models/temporal_explorer_summary/latest.json",
+            "heartbeat",
+            dashboard_note,
+        ),
+        (
             "Event Calendar Read Model",
             "storage_dashboard_event_calendar_latest",
             storage_root / "06_dashboard_cache/read_models/event_calendar_summary/latest.json",

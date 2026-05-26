@@ -151,6 +151,8 @@ Still not implemented: dashboard read adapters, lifecycle timers for dashboard s
 
 - `current_system_status_summary` for Current Status infrastructure/server/API/service/read-model freshness posture;
 - `historical_task_progress_summary` for Tasks / Historical Modeling progress;
+- `temporal_explorer_summary` for the Timewheel / Temporal Explorer page;
+- `event_calendar_summary` as a narrow support event-list summary;
 - `realtime_signal_summary` for realtime monitor/signal readiness;
 - `execution_realtime_trading_runtime_status` for execution runtime readiness.
 
