@@ -123,7 +123,7 @@ Model-pipeline replay result summaries are permanent. Each model pipeline must r
 Source data is classified by reproducibility and reuse:
 
 - point-in-time, vintage, revision-sensitive, provider-window-limited, expensive, paid-window, option history, SEC filing snapshots, GDELT historical pulls, and lineage-referenced source data: compress and retain by default;
-- Trading Economics (`trading_economics_calendar_web`, including `te_recent_calendar_refresh_*`) source data is append-only protected because the subscription is no longer available; never delete existing TE payloads, and only add new/latest data incrementally if it becomes available again;
+- Trading Economics (`trading_economics_calendar_web`, including `te_recent_calendar_refresh_*`) source data is append-only protected because the subscription is no longer available; never delete existing TE payloads, and only add new/latest data incrementally if it becomes available again. The canonical active source root is `storage/01_source_data/monthly_backfill/trading_economics_calendar_web/YYYY-MM/runs/<run_id>/`; old monthly/realtime/replay originals belong under that root's `_manifests/source_consolidation_*` evidence area, not as separate active TE source roots.
 - stable re-downloadable provider cache and one-off experiment pulls without lineage references: TTL delete may be allowed after quarantine;
 - shared normalized source data: retain or compress while any active/promoted/review lineage may reference it.
 
@@ -147,7 +147,7 @@ Policy: never compress PostgreSQL live data files directly. Archive through dump
 - replay Layer 1/2 and event/news reusable inputs: retain or compress/archive;
 - model-specific replay downloads such as one-off option snapshots: TTL delete after replay close when summaries/manifests/receipts are retained;
 - PIT/vintage/source history: compress and retain by default;
-- Trading Economics calendar/source payloads: keep forever; no delete candidates, no destructive pruning, only append/incremental additions;
+- Trading Economics calendar/source payloads: keep forever; no delete candidates, no destructive pruning, only append/incremental additions under the canonical month-bucketed TE source root;
 - dashboard/read-model latest summaries: retained;
 - dashboard/read-model high-frequency snapshots: count-based metadata pruning after explicit reviewed approval; current default prune plan keeps the latest 10 snapshots per contract and marks older snapshots as delete candidates while preserving `latest.json`, schemas, indexes, SQL, and source data;
 - lifecycle receipts, tombstones, executed protected sets, executed lifecycle plans, and quarantine/recheck evidence: retained as audit evidence;
