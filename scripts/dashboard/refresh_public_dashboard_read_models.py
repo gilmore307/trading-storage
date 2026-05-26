@@ -48,6 +48,11 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--trading-manager-root", type=Path, default=DEFAULT_TRADING_MANAGER_ROOT)
     parser.add_argument("--trading-execution-root", type=Path, default=DEFAULT_TRADING_EXECUTION_ROOT)
     parser.add_argument("--execution-runtime-status-path", type=Path, default=DEFAULT_EXECUTION_STATUS_PATH)
+    parser.add_argument(
+        "--allow-partial-success",
+        action="store_true",
+        help="Return exit code 0 for a degraded batch. Default is nonzero so service monitors can alert on stale read models.",
+    )
     args = parser.parse_args(argv)
     args.storage_root.mkdir(parents=True, exist_ok=True)
     results = [
@@ -93,7 +98,9 @@ def main(argv: list[str] | None = None) -> int:
             sort_keys=True,
         )
     )
-    return 0 if any(row.get("status") == "succeeded" for row in results) else 1
+    if status == "succeeded":
+        return 0
+    return 0 if args.allow_partial_success and any(row.get("status") == "succeeded" for row in results) else 1
 
 
 if __name__ == "__main__":

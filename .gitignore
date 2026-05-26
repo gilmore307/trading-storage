@@ -18,7 +18,6 @@ htmlcov/
 /artifacts/
 /outputs/
 /runs/
-/storage/
 /logs/
 /tmp/
 *.log

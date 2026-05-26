@@ -32,6 +32,15 @@ def _write_snapshot(storage_root: Path, contract: str, stamp: str, size: int = 1
     return path
 
 
+def _write_issue_snapshot(storage_root: Path, contract: str, stamp: str) -> Path:
+    path = _write_snapshot(storage_root, contract, stamp)
+    path.write_text(
+        json.dumps({"contract_type": contract, "issue_refs": [{"issue_type": "test_alert", "status": "open"}]}),
+        encoding="utf-8",
+    )
+    return path
+
+
 class DashboardSnapshotLifecycleTests(unittest.TestCase):
     def test_default_policy_keeps_only_recent_few_per_contract(self):
         with tempfile.TemporaryDirectory() as tmp:
@@ -99,6 +108,28 @@ class DashboardSnapshotLifecycleTests(unittest.TestCase):
             self.assertTrue(plan.summary["mutation_performed"])
             self.assertFalse(plan.summary["layer_01_02_data_deleted"])
             self.assertFalse(plan.summary["sql_mutation_performed"])
+
+    def test_unresolved_issue_snapshots_are_retained(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            storage_root = Path(tmp) / "storage"
+            old = _write_issue_snapshot(storage_root, "current_system_status_summary", "20260514T000000Z")
+            recent = _write_snapshot(storage_root, "current_system_status_summary", "20260516T110000Z")
+
+            plan = build_dashboard_snapshot_lifecycle_plan(
+                storage_root=storage_root,
+                max_age_hours=24,
+                keep_latest_per_contract=1,
+                apply=True,
+                now=NOW,
+                approval_ref="accepted_storage_lifecycle_decision_ref:test",
+            )
+
+            self.assertTrue(old.exists())
+            self.assertTrue(recent.exists())
+            self.assertEqual(
+                plan.summary["action_counts"],
+                {"retain_recent_snapshot": 1, "retain_unresolved_issue_snapshot": 1},
+            )
 
     def test_write_plan_outputs_json_and_summary(self):
         with tempfile.TemporaryDirectory() as tmp:

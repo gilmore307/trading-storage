@@ -150,6 +150,26 @@ def _prune_empty_snapshot_dirs(storage_root: Path, path: Path) -> None:
         current = current.parent
 
 
+def _has_unresolved_issue_ref(path: Path) -> bool:
+    try:
+        payload = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        return False
+    if not isinstance(payload, dict):
+        return False
+    issue_refs = payload.get("issue_refs")
+    if not isinstance(issue_refs, Sequence) or isinstance(issue_refs, (str, bytes, bytearray)):
+        return False
+    resolved_statuses = {"resolved", "closed", "completed", "not_planned", "false_positive"}
+    for issue in issue_refs:
+        if not isinstance(issue, dict):
+            continue
+        status = str(issue.get("status") or issue.get("resolution_status") or "open").strip().lower()
+        if status not in resolved_statuses:
+            return True
+    return False
+
+
 def build_dashboard_snapshot_lifecycle_plan(
     *,
     storage_root: Path = DEFAULT_STORAGE_ROOT,
@@ -206,6 +226,18 @@ def build_dashboard_snapshot_lifecycle_plan(
                         artifact_size_bytes=stat.st_size,
                         action="retain_within_ttl",
                         reason="Snapshot is newer than the dashboard metadata retention cutoff.",
+                    )
+                )
+                continue
+            if _has_unresolved_issue_ref(path):
+                records.append(
+                    DashboardSnapshotLifecycleRecord(
+                        contract_type=contract_type,
+                        physical_path=relative,
+                        generated_at_utc=generated_text,
+                        artifact_size_bytes=stat.st_size,
+                        action="retain_unresolved_issue_snapshot",
+                        reason="Snapshot contains open/unresolved issue_refs and must remain available for incident review.",
                     )
                 )
                 continue

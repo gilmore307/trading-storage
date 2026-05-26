@@ -111,13 +111,38 @@ class DashboardRefreshTests(unittest.TestCase):
                 check=False,
             )
 
-            self.assertEqual(completed.returncode, 0, completed.stderr)
+            self.assertEqual(completed.returncode, 1, completed.stderr)
             receipt = json.loads(completed.stdout)
             self.assertEqual(receipt["status"], "degraded")
             by_contract = {row["refreshed_contract_type"]: row for row in receipt["results"]}
             self.assertEqual(by_contract["current_system_status_summary"]["status"], "succeeded")
             self.assertEqual(by_contract[HISTORICAL_TASK_PROGRESS_CONTRACT]["status"], "failed")
             self.assertTrue((storage_root / "06_dashboard_cache/read_models/current_system_status_summary/latest.json").exists())
+
+    def test_public_refresh_batch_can_allow_partial_success_explicitly(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            storage_root = Path(tmp) / "storage"
+            missing_manager = Path(tmp) / "missing-manager"
+
+            completed = subprocess.run(
+                [
+                    sys.executable,
+                    "scripts/dashboard/refresh_public_dashboard_read_models.py",
+                    "--storage-root",
+                    str(storage_root),
+                    "--trading-manager-root",
+                    str(missing_manager),
+                    "--allow-partial-success",
+                ],
+                cwd=Path(__file__).resolve().parents[1],
+                env={**os.environ, "PYTHONPATH": "src"},
+                text=True,
+                capture_output=True,
+                check=False,
+            )
+
+            self.assertEqual(completed.returncode, 0, completed.stderr)
+            self.assertEqual(json.loads(completed.stdout)["status"], "degraded")
 
 
 if __name__ == "__main__":

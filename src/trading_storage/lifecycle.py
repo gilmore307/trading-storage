@@ -151,9 +151,12 @@ DEFAULT_RETENTION_RULES: tuple[RetentionRule, ...] = (
     RetentionRule(
         name="local_archives",
         roots=("storage/90_lifecycle/archive",),
-        action="delete",
-        ttl_days=180,
-        description="Local archives are pruned after one hundred eighty days.",
+        action="retain",
+        ttl_days=None,
+        description=(
+            "Reviewed lifecycle archives are retained until an explicit artifact-index/protected-set "
+            "lifecycle decision supersedes them."
+        ),
     ),
 )
 
