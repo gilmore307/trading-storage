@@ -190,6 +190,31 @@ class ArtifactIndexTests(unittest.TestCase):
                 "compress_and_retain",
             )
 
+    def test_trading_economics_source_data_is_kept_forever(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            monthly = root / "storage" / "01_source_data" / "monthly_backfill" / "trading_economics_calendar_web" / "2016-01.jsonl"
+            realtime = (
+                root
+                / "storage"
+                / "01_source_data"
+                / "realtime"
+                / "trading_economics_calendar_web"
+                / "runs"
+                / "te_recent_calendar_refresh_20260526T103257Z"
+                / "calendar.json"
+            )
+            monthly.parent.mkdir(parents=True, exist_ok=True)
+            realtime.parent.mkdir(parents=True, exist_ok=True)
+            monthly.write_text('{"event":"example"}\n', encoding="utf-8")
+            realtime.write_text(json.dumps({"contract_type": "trading_economics_calendar_snapshot"}), encoding="utf-8")
+
+            index = build_artifact_index(root=root)
+
+            for record in index.records:
+                self.assertEqual(record.retention_class, "keep_forever")
+                self.assertEqual(record.protected_reason_codes, ("keep_forever_retention",))
+
     def test_model_specific_replay_option_snapshot_is_ttl_delete_allowed(self):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)

@@ -397,6 +397,10 @@ def _has_reusable_replay_input_marker(text: str) -> bool:
     )
 
 
+def _has_trading_economics_marker(text: str) -> bool:
+    return any(token in text for token in ("trading_economics", "te_recent_calendar_refresh"))
+
+
 def _has_model_specific_replay_download_marker(text: str) -> bool:
     return "replay" in text and any(
         token in text
@@ -427,6 +431,8 @@ def _retention_class(
         return "dashboard_latest_retained"
     if _is_dashboard_snapshot(relative_path):
         return "ttl_delete_allowed"
+    if _has_trading_economics_marker(text):
+        return "keep_forever"
     if _is_replay_path(relative_path) and _has_replay_result_summary_marker(text):
         return "keep_forever"
     if _is_replay_path(relative_path) and _has_model_specific_replay_download_marker(text):
