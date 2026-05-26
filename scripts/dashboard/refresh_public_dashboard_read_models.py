@@ -9,6 +9,7 @@ from pathlib import Path
 from typing import Any, Callable
 
 from trading_storage.artifact_store import now_utc
+from trading_storage.dashboard_event_calendar import EVENT_CALENDAR_SUMMARY_CONTRACT, refresh_event_calendar_summary_read_model
 from trading_storage.dashboard_execution_runtime import DEFAULT_EXECUTION_STATUS_PATH, EXECUTION_RUNTIME_STATUS_CONTRACT, refresh_execution_runtime_status_read_model
 from trading_storage.dashboard_refresh import DEFAULT_TRADING_MANAGER_ROOT, HISTORICAL_TASK_PROGRESS_CONTRACT, refresh_historical_task_progress_read_model
 from trading_storage.dashboard_realtime_signals import DEFAULT_TRADING_EXECUTION_ROOT, REALTIME_SIGNAL_SUMMARY_CONTRACT, refresh_realtime_signal_summary_read_model
@@ -59,6 +60,10 @@ def main(argv: list[str] | None = None) -> int:
                 trading_manager_root=args.trading_manager_root,
                 storage_root=args.storage_root,
             ).receipt,
+        ),
+        _run_one(
+            EVENT_CALENDAR_SUMMARY_CONTRACT,
+            lambda: refresh_event_calendar_summary_read_model(storage_root=args.storage_root),
         ),
         _run_one(
             REALTIME_SIGNAL_SUMMARY_CONTRACT,

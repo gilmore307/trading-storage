@@ -94,6 +94,7 @@ class DashboardSystemStatusTests(unittest.TestCase):
                     "Current Status Read Model",
                     "Historical Task Progress Read Model",
                     "Realtime Signal Summary Read Model",
+                    "Event Calendar Read Model",
                     "Execution Runtime Read Model",
                 ],
             )

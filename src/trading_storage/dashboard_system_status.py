@@ -589,8 +589,9 @@ def _source_connection_statuses(
     connections = _provider_api_statuses()
     timer = _service_by_unit(services, "trading-data-te-calendar-refresh.timer")
     worker = _service_by_unit(services, "trading-data-te-calendar-refresh.service")
+    te_root = storage_root / "01_source_data/monthly_backfill/trading_economics_calendar_web"
     receipt = _source_output_status(
-        storage_root / "01_source_data/realtime/trading_economics_calendar_web/completion_receipt.json",
+        _latest_matching_file(te_root, "**/completion_receipt.json"),
         label="Trading Economics Recent Calendar Receipt",
         kind="trading_economics_calendar_receipt",
         now_epoch=now_epoch,
@@ -807,14 +808,14 @@ def _dashboard_source_outputs(*, storage_root: Path, manager_storage_root: Path,
         (
             "Trading Economics Recent Calendar Receipt",
             "trading_economics_calendar_receipt",
-            storage_root / "01_source_data/realtime/trading_economics_calendar_web/completion_receipt.json",
+            _latest_matching_file(storage_root / "01_source_data/monthly_backfill/trading_economics_calendar_web", "**/completion_receipt.json"),
             "heartbeat",
             source_note,
         ),
         (
             "Trading Economics Recent Calendar Events",
             "trading_economics_calendar_events",
-            _latest_matching_file(storage_root / "01_source_data/realtime/trading_economics_calendar_web/runs", "**/saved/trading_economics_calendar_event.csv"),
+            _latest_matching_file(storage_root / "01_source_data/monthly_backfill/trading_economics_calendar_web", "**/saved/trading_economics_calendar_event.csv"),
             "heartbeat",
             source_note,
         ),
@@ -850,6 +851,13 @@ def _dashboard_source_outputs(*, storage_root: Path, manager_storage_root: Path,
             "Realtime Signal Summary Read Model",
             "storage_dashboard_realtime_signal_latest",
             storage_root / "06_dashboard_cache/read_models/realtime_signal_summary/latest.json",
+            "heartbeat",
+            dashboard_note,
+        ),
+        (
+            "Event Calendar Read Model",
+            "storage_dashboard_event_calendar_latest",
+            storage_root / "06_dashboard_cache/read_models/event_calendar_summary/latest.json",
             "heartbeat",
             dashboard_note,
         ),
