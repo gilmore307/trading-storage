@@ -49,7 +49,7 @@ class DashboardSystemStatusTests(unittest.TestCase):
                     "Alpaca Market Data API",
                     "OKX Market Data API",
                     "ThetaData Options API",
-                    "Trading Economics Storage Snapshot",
+                    "Trading Economics Calendar Source",
                 ],
             )
             self.assertTrue(all("status" in api and "healthy" in api for api in chart["apis"]))
@@ -264,6 +264,7 @@ class DashboardSystemStatusTests(unittest.TestCase):
             units,
             [
                 "trading-dashboard-web.service",
+                "trading-data-te-calendar-refresh.timer",
                 "trading-execution-realtime-runtime-check.path",
             ],
         )

@@ -57,19 +57,16 @@ DEFAULT_PROVIDER_STAGE_RESERVED_MEMORY_MB = 2048
 SYSTEMD_UNIT_FALLBACKS = (
     "trading-dashboard-web.service",
     "trading-manager-historical-scheduler.service",
+    "trading-data-te-calendar-refresh.service",
     "trading-execution-realtime-monitor-loop.service",
     "trading-storage-dashboard-read-model-refresh.service",
+    "trading-data-te-calendar-refresh.timer",
     "trading-execution-realtime-runtime-check.service",
     "trading-storage-dashboard-read-model-refresh.timer",
     "trading-execution-realtime-runtime-check.timer",
     "trading-execution-realtime-runtime-check.path",
 )
-RETIRED_SYSTEMD_UNITS = frozenset(
-    {
-        "trading-data-te-calendar-refresh.service",
-        "trading-data-te-calendar-refresh.timer",
-    }
-)
+RETIRED_SYSTEMD_UNITS = frozenset()
 FAILED_SYSTEMD_RESULTS = {
     "core-dump",
     "exit-code",
@@ -594,11 +591,11 @@ def _source_connection_statuses(
     te_root = storage_root / "01_source_data/monthly_backfill/trading_economics_calendar_web"
     event_file = _source_output_status(
         _latest_matching_file(te_root, "**/saved/trading_economics_calendar_event.csv"),
-        label="Trading Economics Canonical Source Snapshot",
+        label="Trading Economics Calendar Source",
         kind="trading_economics_calendar_storage_snapshot",
         now_epoch=now_epoch,
-        freshness_class="source_snapshot",
-        freshness_note="Canonical TE macro source data is storage-only; website refresh is retired.",
+        freshness_class="event_driven",
+        freshness_note="Canonical TE macro source rows update when the bounded recent/future refresh appends storage data.",
     )
     if event_file["status"] == "available":
         status = "available"
@@ -606,7 +603,7 @@ def _source_connection_statuses(
         status = "missing_snapshot"
     connections.append(
         {
-            "name": "Trading Economics Storage Snapshot",
+            "name": "Trading Economics Calendar Source",
             "kind": "economic_calendar_storage_source",
             "status": status,
             "healthy": event_file["status"] == "available",
@@ -780,14 +777,14 @@ def _dashboard_source_outputs(*, storage_root: Path, manager_storage_root: Path,
             "Trading Economics Canonical Source Receipt",
             "trading_economics_calendar_source_receipt",
             _latest_matching_file(storage_root / "01_source_data/monthly_backfill/trading_economics_calendar_web", "**/completion_receipt.json"),
-            "source_snapshot",
+            "event_driven",
             source_note,
         ),
         (
             "Trading Economics Canonical Source Events",
             "trading_economics_calendar_source_events",
             _latest_matching_file(storage_root / "01_source_data/monthly_backfill/trading_economics_calendar_web", "**/saved/trading_economics_calendar_event.csv"),
-            "source_snapshot",
+            "event_driven",
             source_note,
         ),
         (
