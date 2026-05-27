@@ -59,12 +59,19 @@ class SharedContractTests(unittest.TestCase):
         self.assertTrue(all(row["optionable_proxy_status"] == "not_applicable" for row in by_target["AAOI"]))
 
         with universe_path.open(newline="") as csv_file:
-            universe_symbols = {row["symbol"] for row in csv.DictReader(csv_file)}
+            universe_rows = list(csv.DictReader(csv_file))
+            universe_symbols = {row["symbol"] for row in universe_rows}
         with combinations_path.open(newline="") as csv_file:
-            combination_ids = {row["combination_id"] for row in csv.DictReader(csv_file)}
+            combination_rows = list(csv.DictReader(csv_file))
+            combination_ids = {row["combination_id"] for row in combination_rows}
         for proxy in {"IBIT", "ETHA", "FSOL"}:
             self.assertNotIn(proxy, universe_symbols)
             self.assertFalse(any(proxy.lower() in combination_id for combination_id in combination_ids))
+
+        self.assertEqual({row["feature_grain"] for row in universe_rows}, {"1m"})
+        self.assertEqual({row["numerator_bar_grain"] for row in combination_rows}, {"1m"})
+        self.assertEqual({row["denominator_bar_grain"] for row in combination_rows}, {"1m"})
+        self.assertEqual({row["feature_bar_grain"] for row in combination_rows}, {"1m"})
 
 
 if __name__ == "__main__":
