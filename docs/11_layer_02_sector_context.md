@@ -13,11 +13,20 @@ trading_model.model_02_sector_context_explainability
 trading_model.model_02_sector_context_diagnostics
 ```
 
-There is no accepted `source_02_sector_context` storage artifact. `source_02_target_candidate_holdings` is downstream candidate-builder / Layer 3 input-preparation evidence, not Layer 2 core behavior input.
+There is no accepted `source_02_sector_context` storage artifact. The conceptual Layer 2 model output is per-ETF `context_etf_state`; the current physical table remains `trading_model.model_02_sector_context` with the earlier `sector_context_state` vocabulary.
+
+`source_02_target_candidate_holdings` is downstream candidate-builder / Layer 3 input-preparation evidence, not Layer 2 core behavior input. Holdings/manual mappings are seed or fallback evidence for ordinary targets; future target-context weighting should be stored as reviewed dynamic `target_context_profile` evidence when that contract is implemented.
 
 ## Storage boundary
 
 Storage contracts preserve point-in-time availability, row keys, restore/rehydrate expectations, retention policy, and completion receipts. They do not decide model semantics or promote explainability or diagnostics fields into downstream dependencies.
+
+Layer 2 storage should distinguish:
+
+- per-ETF `context_etf_state` rows, currently stored through `model_02_sector_context`;
+- optional global/group `cross_etf_summary` rows or artifacts;
+- internal per-ETF cross-section calculations, which should not become separate durable output rows when embedded in `context_etf_state`;
+- target routing evidence for Layer 1 ETF targets, Layer 2 context ETF targets, and ordinary targets.
 
 ## Column naming
 
@@ -42,6 +51,8 @@ Layer 2 storage changes are acceptable when they:
 - preserve canonical Layer 2 artifact names and point-in-time availability;
 - avoid adding `source_02_sector_context` storage unless a later accepted contract creates it;
 - keep `source_02_target_candidate_holdings` downstream of Layer 2 core behavior modeling;
+- avoid durable `context_etf_cross_section_row` output rows when their values are construction evidence already embedded in `context_etf_state`;
+- preserve the three target-context routing cases before introducing new storage tables for `target_context_profile`;
 - define durable layout, reference, retention, restore, and rehydrate expectations before producers depend on them;
 - route shared fields, statuses, artifact-reference formats, or storage contract names through `trading-manager/scripts/` before cross-repository dependence.
 
