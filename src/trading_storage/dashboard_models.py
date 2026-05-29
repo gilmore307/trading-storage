@@ -219,6 +219,70 @@ def _source_refs(historical: Mapping[str, Any] | None, runtime: Mapping[str, Any
     ]
 
 
+def _load_json_object(path: Path) -> dict[str, Any] | None:
+    try:
+        payload = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        return None
+    return payload if isinstance(payload, dict) else None
+
+
+def _model_group_promotion_versions(storage_root: Path, *, active_ref: str | None) -> list[dict[str, Any]]:
+    review_root = storage_root / "05_replay_datasets" / "promotion_replay_candidate_policy" / "promotion_review_runs"
+    if not review_root.exists():
+        return []
+    rows: list[dict[str, Any]] = []
+    for decision_path in sorted(review_root.glob("*/promotion_eligibility_decision.json")):
+        decision = _load_json_object(decision_path)
+        if decision is None:
+            continue
+        review = _load_json_object(decision_path.parent / "promotion_evaluation_review.json") or {}
+        settlement_ref = str(decision.get("settlement_run_ref") or review.get("settlement_run_ref") or "")
+        settlement = _load_json_object(Path(settlement_ref)) if settlement_ref else None
+        metrics = settlement.get("metrics") if isinstance(settlement, Mapping) and isinstance(settlement.get("metrics"), Mapping) else {}
+        decision_status = str(decision.get("decision_status") or "not_reported")
+        recommendation = str(decision.get("agent_review_recommendation") or review.get("recommendation") or "")
+        candidate_model_ref = str(decision.get("candidate_model_ref") or review.get("candidate_model_ref") or "")
+        if active_ref and candidate_model_ref and candidate_model_ref == active_ref:
+            identity = "active"
+        elif decision_status == "eligible":
+            identity = "shadow"
+        elif decision_status in {"deferred", "rejected", "revoked", "superseded"}:
+            identity = "retired"
+        else:
+            identity = "candidate"
+        rows.append(
+            {
+                "version_id": decision_path.parent.name,
+                "fold_id": str(decision.get("fold_id") or review.get("fold_id") or ""),
+                "candidate_model_ref": candidate_model_ref,
+                "identity": identity,
+                "decision_status": decision_status,
+                "agent_review_recommendation": recommendation,
+                "created_at_utc": decision.get("created_at_utc") or review.get("created_at_utc"),
+                "updated_at_utc": decision.get("created_at_utc") or review.get("created_at_utc"),
+                "metrics": {
+                    "auroc": metrics.get("auroc"),
+                    "decision_row_count": metrics.get("decision_row_count"),
+                    "excess_return_total": metrics.get("excess_return_total"),
+                    "max_drawdown": metrics.get("max_drawdown"),
+                    "hit_rate": metrics.get("hit_rate"),
+                    "brier_score": metrics.get("brier_score"),
+                    "pca_available": metrics.get("pca_available"),
+                    "pcoa_available": metrics.get("pcoa_available"),
+                },
+                "blocking_issues": [str(item) for item in review.get("blocking_issues") or [] if item],
+                "summary": str(decision.get("decision_reason") or review.get("rationale") or ""),
+                "refs": {
+                    "decision_ref": str(decision_path),
+                    "review_ref": str(decision_path.parent / "promotion_evaluation_review.json"),
+                    "settlement_ref": settlement_ref,
+                },
+            }
+        )
+    return sorted(rows, key=lambda row: str(row.get("created_at_utc") or row.get("version_id") or ""))
+
+
 def build_model_layer_readiness_summary(
     *,
     storage_root: Path = DEFAULT_STORAGE_ROOT,
@@ -233,6 +297,8 @@ def build_model_layer_readiness_summary(
     evaluation_task = _global_task(tasks, "model_group.evaluation")
     promotion_task = _global_task(tasks, "model_group.promotion")
     active_ref = _active_ref(runtime)
+    group_versions = _model_group_promotion_versions(storage_root, active_ref=active_ref)
+    latest_group_promotion = group_versions[-1] if group_versions else None
     layers = []
     version_count = 0
     active_count = 0
@@ -259,7 +325,11 @@ def build_model_layer_readiness_summary(
                 "eliminated_version_refs": [],
                 "versions": versions,
                 "evaluation": _task_summary(evaluation_task),
-                "promotion": _task_summary(promotion_task),
+                "promotion": {
+                    "status": latest_group_promotion.get("decision_status") if latest_group_promotion else (_task_status(promotion_task) if promotion_task else "not_reported"),
+                    "summary": latest_group_promotion.get("summary") if latest_group_promotion else str((promotion_task or {}).get("reason") or "No group promotion evidence has been published yet."),
+                    "updated_at_utc": latest_group_promotion.get("updated_at_utc") if latest_group_promotion else ((promotion_task or {}).get("status_updated_at_utc") or (promotion_task or {}).get("updated_at_utc")),
+                },
                 "blockers": _task_blockers(layer_tasks),
                 "latest_updated_at_utc": _latest_update(layer_tasks),
                 "summary": f"{name} lifecycle posture derived from dashboard evidence.",
@@ -281,6 +351,7 @@ def build_model_layer_readiness_summary(
             "shadow_model_refs": [],
             "retiring_model_refs": [],
             "eliminated_model_refs": [],
+            "group_versions": group_versions,
         },
         "profile_refs": [{"registry_ref": "MODEL_LAYER_READINESS_SUMMARY", "field": "contract_type"}],
         "issue_refs": [],
@@ -305,6 +376,7 @@ def build_model_promotion_posture_summary(
     evaluation_task = _global_task(tasks, "model_group.evaluation")
     promotion_task = _global_task(tasks, "model_group.promotion")
     active_ref = _active_ref(runtime)
+    group_versions = _model_group_promotion_versions(storage_root, active_ref=active_ref)
     rows = []
     blocked_count = 0
     active_count = 0
@@ -337,6 +409,14 @@ def build_model_promotion_posture_summary(
                 "summary": f"{name} promotion posture derived from dashboard lifecycle evidence.",
             }
         )
+    status_counts: dict[str, int] = {}
+    for version in group_versions:
+        status = str(version.get("decision_status") or "not_reported")
+        status_counts[status] = status_counts.get(status, 0) + 1
+    identity_counts: dict[str, int] = {}
+    for version in group_versions:
+        identity = str(version.get("identity") or "candidate")
+        identity_counts[identity] = identity_counts.get(identity, 0) + 1
     return {
         "contract_type": MODEL_PROMOTION_POSTURE_CONTRACT,
         "schema_version": 1,
@@ -344,8 +424,13 @@ def build_model_promotion_posture_summary(
         "source_system": "trading-storage",
         "status": "blocked" if blocked_count else "ready",
         "severity": "medium" if blocked_count else "info",
-        "summary": f"Model promotion posture has {len(rows)} layer rows, {active_count} active, and {blocked_count} blocked.",
-        "chart_payload": {"models": rows},
+        "summary": f"Model promotion posture has {len(group_versions)} model-group promotion versions and {len(rows)} layer rows.",
+        "chart_payload": {
+            "models": rows,
+            "group_versions": group_versions,
+            "status_counts": status_counts,
+            "identity_counts": identity_counts,
+        },
         "profile_refs": [{"registry_ref": "MODEL_PROMOTION_POSTURE_SUMMARY", "field": "contract_type"}],
         "issue_refs": [],
         "diagnostic_refs": [],

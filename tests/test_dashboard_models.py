@@ -100,12 +100,82 @@ def _runtime_payload() -> dict:
     }
 
 
+def _write_group_promotion_version(storage_root: Path) -> None:
+    settlement_path = (
+        storage_root
+        / "05_replay_datasets"
+        / "promotion_replay_candidate_policy"
+        / "fold_settlement_runs"
+        / "model_group_evaluation_fixture"
+        / "fold_settlement_run.json"
+    )
+    review_root = (
+        storage_root
+        / "05_replay_datasets"
+        / "promotion_replay_candidate_policy"
+        / "promotion_review_runs"
+        / "model_group_evaluation_fixture"
+    )
+    settlement_path.parent.mkdir(parents=True, exist_ok=True)
+    review_root.mkdir(parents=True, exist_ok=True)
+    settlement_path.write_text(
+        json.dumps(
+            {
+                "contract_type": "fold_settlement_run",
+                "metrics": {
+                    "decision_row_count": 5382,
+                    "auroc": 0.5246,
+                    "excess_return_total": 1.98,
+                    "max_drawdown": -0.288,
+                    "hit_rate": 0.52,
+                    "brier_score": 0.24,
+                    "pca_available": False,
+                    "pcoa_available": False,
+                },
+            }
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+    (review_root / "promotion_evaluation_review.json").write_text(
+        json.dumps(
+            {
+                "contract_type": "promotion_evaluation_review",
+                "recommendation": "insufficient_evidence",
+                "rationale": "AUROC below gate and comparison evidence missing.",
+                "blocking_issues": ["auroc_below_minimum", "missing anonymous comparison"],
+                "settlement_run_ref": str(settlement_path),
+                "created_at_utc": "2026-05-29T00:04:00Z",
+            }
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+    (review_root / "promotion_eligibility_decision.json").write_text(
+        json.dumps(
+            {
+                "contract_type": "promotion_eligibility_decision",
+                "fold_id": "fold_2016-01_2016-06",
+                "candidate_model_ref": "storage://trading-manager/model_group/2016-01_2016-06",
+                "decision_status": "deferred",
+                "agent_review_recommendation": "insufficient_evidence",
+                "decision_reason": "AUROC below gate and comparison evidence missing.",
+                "settlement_run_ref": str(settlement_path),
+                "created_at_utc": "2026-05-29T00:04:00Z",
+            }
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+
+
 class DashboardModelsTests(unittest.TestCase):
     def test_builds_model_layer_readiness_from_existing_summaries(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             storage_root = Path(tmp)
             _write_latest(storage_root, "historical_task_progress_summary", _historical_payload())
             _write_latest(storage_root, "execution_realtime_trading_runtime_status", _runtime_payload())
+            _write_group_promotion_version(storage_root)
 
             payload = build_model_layer_readiness_summary(storage_root=storage_root, generated_at_utc="2026-05-29T00:04:00Z")
 
@@ -115,13 +185,15 @@ class DashboardModelsTests(unittest.TestCase):
             self.assertEqual(len(layers), 10)
             layer_five = next(layer for layer in layers if layer["layer"] == 5)
             self.assertEqual(layer_five["versions"][0]["version_id"], "2016-fold1:model_05_alpha_confidence")
-            self.assertEqual(layer_five["promotion"]["status"], "blocked")
+            self.assertEqual(layer_five["promotion"]["status"], "deferred")
+            self.assertEqual(len(payload["chart_payload"]["group_versions"]), 1)
 
     def test_builds_model_promotion_posture_rows(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             storage_root = Path(tmp)
             _write_latest(storage_root, "historical_task_progress_summary", _historical_payload())
             _write_latest(storage_root, "execution_realtime_trading_runtime_status", _runtime_payload())
+            _write_group_promotion_version(storage_root)
 
             payload = build_model_promotion_posture_summary(storage_root=storage_root, generated_at_utc="2026-05-29T00:04:00Z")
 
@@ -131,6 +203,9 @@ class DashboardModelsTests(unittest.TestCase):
             layer_five = next(row for row in payload["chart_payload"]["models"] if row["layer"] == 5)
             self.assertEqual(layer_five["version_id"], "2016-fold1:model_05_alpha_confidence")
             self.assertEqual(layer_five["evaluation_status"], "ready")
+            self.assertEqual(payload["chart_payload"]["status_counts"], {"deferred": 1})
+            self.assertEqual(payload["chart_payload"]["identity_counts"], {"retired": 1})
+            self.assertEqual(payload["chart_payload"]["group_versions"][0]["metrics"]["auroc"], 0.5246)
 
     def test_refresh_materializes_model_summaries(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
