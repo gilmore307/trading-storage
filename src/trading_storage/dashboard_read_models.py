@@ -34,14 +34,14 @@ REFRESHABLE_CONTRACT_TYPES = frozenset(
         "realtime_signal_summary",
         "temporal_explorer_summary",
         "execution_realtime_trading_runtime_status",
+        "model_layer_readiness_summary",
+        "model_promotion_posture_summary",
     }
 )
 PARKED_CONTRACT_TYPES = frozenset(
     {
         "alert_exception_summary",
         "realtime_task_progress_summary",
-        "model_layer_readiness_summary",
-        "model_promotion_posture_summary",
         "registry_dictionary_profile",
         "runtime_decision_quality_summary",
         "trading_performance_summary",

@@ -10,6 +10,12 @@ from typing import Any, Callable
 
 from trading_storage.artifact_store import now_utc
 from trading_storage.dashboard_execution_runtime import DEFAULT_EXECUTION_STATUS_PATH, EXECUTION_RUNTIME_STATUS_CONTRACT, refresh_execution_runtime_status_read_model
+from trading_storage.dashboard_models import (
+    MODEL_LAYER_READINESS_CONTRACT,
+    MODEL_PROMOTION_POSTURE_CONTRACT,
+    refresh_model_layer_readiness_summary_read_model,
+    refresh_model_promotion_posture_summary_read_model,
+)
 from trading_storage.dashboard_refresh import DEFAULT_TRADING_MANAGER_ROOT, HISTORICAL_TASK_PROGRESS_CONTRACT, refresh_historical_task_progress_read_model
 from trading_storage.dashboard_realtime_signals import DEFAULT_TRADING_EXECUTION_ROOT, REALTIME_SIGNAL_SUMMARY_CONTRACT, refresh_realtime_signal_summary_read_model
 from trading_storage.dashboard_system_status import CURRENT_SYSTEM_STATUS_CONTRACT, refresh_current_system_status_read_model
@@ -83,6 +89,14 @@ def main(argv: list[str] | None = None) -> int:
                 storage_root=args.storage_root,
                 status_path=args.execution_runtime_status_path,
             ),
+        ),
+        _run_one(
+            MODEL_LAYER_READINESS_CONTRACT,
+            lambda: refresh_model_layer_readiness_summary_read_model(storage_root=args.storage_root),
+        ),
+        _run_one(
+            MODEL_PROMOTION_POSTURE_CONTRACT,
+            lambda: refresh_model_promotion_posture_summary_read_model(storage_root=args.storage_root),
         ),
     ]
     status = "succeeded" if all(row.get("status") == "succeeded" for row in results) else "degraded"

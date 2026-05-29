@@ -1,0 +1,393 @@
+"""Models page dashboard read-model producers.
+
+These producers expose model lifecycle posture from already-materialized
+dashboard summaries. They do not query raw model internals, activate models,
+submit broker work, or mutate lifecycle state.
+"""
+
+from __future__ import annotations
+
+import json
+from datetime import datetime, timezone
+from pathlib import Path
+from typing import Any, Mapping
+
+from .artifact_store import now_utc
+from .dashboard_read_models import materialize_dashboard_read_model
+
+MODEL_LAYER_READINESS_CONTRACT = "model_layer_readiness_summary"
+MODEL_PROMOTION_POSTURE_CONTRACT = "model_promotion_posture_summary"
+MODEL_LAYER_READINESS_SCHEMA_REF = f"storage/06_dashboard_cache/schemas/{MODEL_LAYER_READINESS_CONTRACT}.schema.json"
+MODEL_PROMOTION_POSTURE_SCHEMA_REF = f"storage/06_dashboard_cache/schemas/{MODEL_PROMOTION_POSTURE_CONTRACT}.schema.json"
+
+HISTORICAL_TASK_PROGRESS_CONTRACT = "historical_task_progress_summary"
+EXECUTION_RUNTIME_STATUS_CONTRACT = "execution_realtime_trading_runtime_status"
+DEFAULT_STORAGE_ROOT = Path("storage")
+DEFAULT_STALE_AFTER_SECONDS = 900
+
+MODEL_LAYERS = (
+    (1, "model_01_market_regime", "Market Regime"),
+    (2, "model_02_sector_context", "Sector Context"),
+    (3, "model_03_target_state_vector", "Target State Vector"),
+    (4, "model_04_event_failure_risk", "Event Failure Risk"),
+    (5, "model_05_alpha_confidence", "Alpha Confidence"),
+    (6, "model_06_dynamic_risk_policy", "Dynamic Risk Policy"),
+    (7, "model_07_position_projection", "Position Projection"),
+    (8, "model_08_underlying_action", "Underlying Action"),
+    (9, "model_09_option_expression", "Option Expression"),
+    (10, "model_10_event_risk_governor", "Event Risk Governor"),
+)
+
+
+def _read_latest(storage_root: Path, contract_type: str) -> dict[str, Any] | None:
+    path = storage_root / "06_dashboard_cache" / "read_models" / contract_type / "latest.json"
+    try:
+        payload = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        return None
+    return payload if isinstance(payload, dict) else None
+
+
+def _chart(payload: Mapping[str, Any] | None) -> dict[str, Any]:
+    chart = payload.get("chart_payload") if isinstance(payload, Mapping) else None
+    return chart if isinstance(chart, dict) else {}
+
+
+def _tasks(historical: Mapping[str, Any] | None) -> list[dict[str, Any]]:
+    task_timeline = _chart(historical).get("task_timeline")
+    return [dict(task) for task in task_timeline] if isinstance(task_timeline, list) else []
+
+
+def _task_row_key(task: Mapping[str, Any]) -> str:
+    return str(task.get("task_uid") or f"{task.get('month') or 'unknown'}:{task.get('task_id') or 'unknown'}")
+
+
+def _layer_tasks(tasks: list[dict[str, Any]], layer: int) -> list[dict[str, Any]]:
+    if layer == 10:
+        return [task for task in tasks if task.get("task_id") == "model_group.model_10_event_risk_governor" or task.get("layer") == 10]
+    return [task for task in tasks if task.get("layer") == layer]
+
+
+def _task_status(task: Mapping[str, Any]) -> str:
+    return str(task.get("status") or task.get("task_state") or "unknown")
+
+
+def _layer_status(layer_tasks: list[dict[str, Any]]) -> str:
+    if not layer_tasks:
+        return "not_started"
+    statuses = {_task_status(task).lower() for task in layer_tasks}
+    states = {str(task.get("task_state") or "").lower() for task in layer_tasks}
+    if "failed" in statuses or "failed" in states:
+        return "failed"
+    if {"running", "ready"} & statuses or "current" in states:
+        return "running"
+    if all(
+        _task_status(task).lower() in {"succeeded", "not_applicable"}
+        or str(task.get("task_state") or "").lower() in {"completed", "skipped"}
+        for task in layer_tasks
+    ):
+        return "completed"
+    if "blocked" in statuses or "future" in states:
+        return "blocked"
+    return "in_progress"
+
+
+def _latest_update(layer_tasks: list[dict[str, Any]]) -> str | None:
+    timestamps = [
+        str(value)
+        for task in layer_tasks
+        for value in (
+            task.get("status_updated_at_utc"),
+            task.get("updated_at_utc"),
+            task.get("ended_at_utc"),
+            task.get("started_at_utc"),
+            task.get("created_at_utc"),
+        )
+        if value
+    ]
+    return max(timestamps) if timestamps else None
+
+
+def _task_detail(task: Mapping[str, Any]) -> Mapping[str, Any]:
+    detail = task.get("detail")
+    return detail if isinstance(detail, Mapping) else {}
+
+
+def _task_blockers(layer_tasks: list[dict[str, Any]]) -> list[str]:
+    blockers: list[str] = []
+    for task in layer_tasks:
+        detail = _task_detail(task)
+        raw = detail.get("blockers")
+        if isinstance(raw, list):
+            blockers.extend(str(item) for item in raw if item)
+        elif task.get("blocker_count"):
+            blockers.append(f"{task.get('task_id') or 'task'} reported {task.get('blocker_count')} blockers")
+    return sorted(set(blockers))
+
+
+def _receipt_refs(task: Mapping[str, Any]) -> list[str]:
+    detail = _task_detail(task)
+    refs = detail.get("receipt_refs")
+    return [str(ref) for ref in refs] if isinstance(refs, list) else []
+
+
+def _version_for_layer(layer: int, model_id: str, layer_tasks: list[dict[str, Any]]) -> dict[str, Any] | None:
+    model_tasks = [task for task in layer_tasks if str(task.get("stage_type") or "") in {"model_generation", "model_task"} or "model" in str(task.get("task_id") or "")]
+    materialized_tasks = [
+        task for task in model_tasks
+        if _task_status(task).lower() in {"running", "succeeded", "not_applicable"}
+        or bool(_receipt_refs(task))
+        or bool(task.get("started_at_utc"))
+        or bool(task.get("ended_at_utc"))
+    ]
+    if not materialized_tasks:
+        return None
+    latest = max(materialized_tasks, key=lambda task: str(task.get("status_updated_at_utc") or task.get("updated_at_utc") or task.get("created_at_utc") or ""))
+    receipts = _receipt_refs(latest)
+    month = str(latest.get("month") or "unknown_period")
+    status = _task_status(latest)
+    return {
+        "version_id": f"{month}:{model_id}",
+        "model_id": model_id,
+        "layer": layer,
+        "run_id": _task_row_key(latest),
+        "artifact_ref": receipts[-1] if receipts else None,
+        "role": "candidate",
+        "lifecycle_status": status,
+        "evaluation_status": None,
+        "promotion_status": None,
+        "updated_at_utc": latest.get("status_updated_at_utc") or latest.get("updated_at_utc"),
+        "summary": f"{latest.get('task_label') or model_id} is {status}.",
+    }
+
+
+def _normalize_model_ref(value: Any) -> str:
+    if isinstance(value, str):
+        return value
+    if isinstance(value, Mapping):
+        for key in ("model_ref", "version_id", "model_version", "run_id", "artifact_ref", "id", "path", "ref"):
+            candidate = value.get(key)
+            if candidate:
+                return str(candidate)
+    return ""
+
+
+def _active_ref(runtime: Mapping[str, Any] | None) -> str | None:
+    pointer = _chart(runtime).get("active_model_pointer")
+    if not isinstance(pointer, Mapping):
+        return None
+    return _normalize_model_ref(pointer.get("selected_active_model_ref")) or _normalize_model_ref(pointer.get("new_active_config_ref")) or None
+
+
+def _ref_matches_layer(ref: str | None, layer: int, model_id: str) -> bool:
+    if not ref:
+        return False
+    normalized = ref.lower()
+    return model_id in normalized or f"layer_{layer:02d}" in normalized or f"model_{layer:02d}" in normalized
+
+
+def _global_task(tasks: list[dict[str, Any]], task_id: str) -> dict[str, Any] | None:
+    matches = [task for task in tasks if task.get("task_id") == task_id]
+    if not matches:
+        return None
+    return max(matches, key=lambda task: str(task.get("status_updated_at_utc") or task.get("updated_at_utc") or task.get("created_at_utc") or ""))
+
+
+def _task_summary(task: Mapping[str, Any] | None) -> dict[str, Any] | None:
+    if not task:
+        return None
+    return {
+        "status": _task_status(task),
+        "summary": str(task.get("reason") or task.get("task_label") or "Task evidence is present."),
+        "updated_at_utc": task.get("status_updated_at_utc") or task.get("updated_at_utc"),
+    }
+
+
+def _freshness(payloads: list[Mapping[str, Any] | None]) -> dict[str, Any]:
+    generated_values = [str(payload.get("generated_at_utc")) for payload in payloads if isinstance(payload, Mapping) and payload.get("generated_at_utc")]
+    return {
+        "class": "derived_model_lifecycle_summary",
+        "status": "fresh" if generated_values else "no_source_summary",
+        "stale_after_seconds": DEFAULT_STALE_AFTER_SECONDS,
+    }
+
+
+def _source_refs(historical: Mapping[str, Any] | None, runtime: Mapping[str, Any] | None) -> list[dict[str, Any]]:
+    return [
+        {"contract_type": HISTORICAL_TASK_PROGRESS_CONTRACT, "included": bool(historical)},
+        {"contract_type": EXECUTION_RUNTIME_STATUS_CONTRACT, "included": bool(runtime)},
+    ]
+
+
+def build_model_layer_readiness_summary(
+    *,
+    storage_root: Path = DEFAULT_STORAGE_ROOT,
+    generated_at_utc: str | None = None,
+) -> dict[str, Any]:
+    """Build the Models page layer lifecycle summary."""
+
+    generated_at_utc = generated_at_utc or now_utc()
+    historical = _read_latest(storage_root, HISTORICAL_TASK_PROGRESS_CONTRACT)
+    runtime = _read_latest(storage_root, EXECUTION_RUNTIME_STATUS_CONTRACT)
+    tasks = _tasks(historical)
+    evaluation_task = _global_task(tasks, "model_group.evaluation")
+    promotion_task = _global_task(tasks, "model_group.promotion")
+    active_ref = _active_ref(runtime)
+    layers = []
+    version_count = 0
+    active_count = 0
+    for layer, model_id, name in MODEL_LAYERS:
+        layer_tasks = _layer_tasks(tasks, layer)
+        version = _version_for_layer(layer, model_id, layer_tasks)
+        versions = [version] if version else []
+        version_count += len(versions)
+        is_active = _ref_matches_layer(active_ref, layer, model_id)
+        active_count += 1 if is_active else 0
+        layers.append(
+            {
+                "layer": layer,
+                "layer_id": f"layer_{layer:02d}",
+                "model_id": model_id,
+                "name": name,
+                "status": _layer_status(layer_tasks),
+                "lifecycle_status": "active" if is_active else _layer_status(layer_tasks),
+                "latest_version_ref": version["version_id"] if version else None,
+                "current_version_ref": version["version_id"] if version else None,
+                "active_version_ref": active_ref if is_active else None,
+                "shadow_version_refs": [],
+                "retiring_version_refs": [],
+                "eliminated_version_refs": [],
+                "versions": versions,
+                "evaluation": _task_summary(evaluation_task),
+                "promotion": _task_summary(promotion_task),
+                "blockers": _task_blockers(layer_tasks),
+                "latest_updated_at_utc": _latest_update(layer_tasks),
+                "summary": f"{name} lifecycle posture derived from dashboard evidence.",
+            }
+        )
+    status = "ready" if layers else "not_started"
+    return {
+        "contract_type": MODEL_LAYER_READINESS_CONTRACT,
+        "schema_version": 1,
+        "generated_at_utc": generated_at_utc,
+        "source_system": "trading-storage",
+        "status": status,
+        "severity": "info",
+        "summary": f"Models page has {version_count} observed candidate versions and {active_count} active live pointers.",
+        "chart_payload": {
+            "layers": layers,
+            "current_layer": _chart(historical).get("active_task", {}).get("layer") if isinstance(_chart(historical).get("active_task"), Mapping) else None,
+            "active_model_ref": active_ref,
+            "shadow_model_refs": [],
+            "retiring_model_refs": [],
+            "eliminated_model_refs": [],
+        },
+        "profile_refs": [{"registry_ref": "MODEL_LAYER_READINESS_SUMMARY", "field": "contract_type"}],
+        "issue_refs": [],
+        "diagnostic_refs": [],
+        "lineage_refs": _source_refs(historical, runtime),
+        "freshness": _freshness([historical, runtime]),
+        "schema_ref": MODEL_LAYER_READINESS_SCHEMA_REF,
+    }
+
+
+def build_model_promotion_posture_summary(
+    *,
+    storage_root: Path = DEFAULT_STORAGE_ROOT,
+    generated_at_utc: str | None = None,
+) -> dict[str, Any]:
+    """Build model promotion posture rows for the Models page."""
+
+    generated_at_utc = generated_at_utc or now_utc()
+    historical = _read_latest(storage_root, HISTORICAL_TASK_PROGRESS_CONTRACT)
+    runtime = _read_latest(storage_root, EXECUTION_RUNTIME_STATUS_CONTRACT)
+    tasks = _tasks(historical)
+    evaluation_task = _global_task(tasks, "model_group.evaluation")
+    promotion_task = _global_task(tasks, "model_group.promotion")
+    active_ref = _active_ref(runtime)
+    rows = []
+    blocked_count = 0
+    active_count = 0
+    for layer, model_id, name in MODEL_LAYERS:
+        layer_tasks = _layer_tasks(tasks, layer)
+        version = _version_for_layer(layer, model_id, layer_tasks)
+        blockers = _task_blockers(layer_tasks)
+        is_active = _ref_matches_layer(active_ref, layer, model_id)
+        promotion_status = _task_status(promotion_task) if promotion_task else "not_reviewed"
+        if blockers:
+            promotion_status = "blocked"
+            blocked_count += 1
+        if is_active:
+            active_count += 1
+        rows.append(
+            {
+                "layer": layer,
+                "layer_id": f"layer_{layer:02d}",
+                "model_id": model_id,
+                "model_ref": version["version_id"] if version else model_id,
+                "version_id": version["version_id"] if version else None,
+                "model_name": name,
+                "promotion_status": "active" if is_active else promotion_status,
+                "activation_status": "active" if is_active else "not_active",
+                "evaluation_status": _task_status(evaluation_task) if evaluation_task else "not_evaluated",
+                "latest_agent_decision_status": None,
+                "missing_evidence_categories": [] if version else ["registered_model_version"],
+                "blockers": blockers,
+                "latest_updated_at_utc": _latest_update(layer_tasks),
+                "summary": f"{name} promotion posture derived from dashboard lifecycle evidence.",
+            }
+        )
+    return {
+        "contract_type": MODEL_PROMOTION_POSTURE_CONTRACT,
+        "schema_version": 1,
+        "generated_at_utc": generated_at_utc,
+        "source_system": "trading-storage",
+        "status": "blocked" if blocked_count else "ready",
+        "severity": "medium" if blocked_count else "info",
+        "summary": f"Model promotion posture has {len(rows)} layer rows, {active_count} active, and {blocked_count} blocked.",
+        "chart_payload": {"models": rows},
+        "profile_refs": [{"registry_ref": "MODEL_PROMOTION_POSTURE_SUMMARY", "field": "contract_type"}],
+        "issue_refs": [],
+        "diagnostic_refs": [],
+        "lineage_refs": _source_refs(historical, runtime),
+        "freshness": _freshness([historical, runtime]),
+        "schema_ref": MODEL_PROMOTION_POSTURE_SCHEMA_REF,
+    }
+
+
+def refresh_model_layer_readiness_summary_read_model(*, storage_root: Path = DEFAULT_STORAGE_ROOT) -> dict[str, Any]:
+    payload = build_model_layer_readiness_summary(storage_root=storage_root)
+    materialized = materialize_dashboard_read_model(payload, storage_root=storage_root, expected_contract_type=MODEL_LAYER_READINESS_CONTRACT)
+    return _refresh_receipt(MODEL_LAYER_READINESS_CONTRACT, materialized.index_row)
+
+
+def refresh_model_promotion_posture_summary_read_model(*, storage_root: Path = DEFAULT_STORAGE_ROOT) -> dict[str, Any]:
+    payload = build_model_promotion_posture_summary(storage_root=storage_root)
+    materialized = materialize_dashboard_read_model(payload, storage_root=storage_root, expected_contract_type=MODEL_PROMOTION_POSTURE_CONTRACT)
+    return _refresh_receipt(MODEL_PROMOTION_POSTURE_CONTRACT, materialized.index_row)
+
+
+def _refresh_receipt(contract_type: str, materialized: Mapping[str, Any]) -> dict[str, Any]:
+    return {
+        "contract_type": "dashboard_read_model_refresh_receipt",
+        "generated_at_utc": now_utc(),
+        "refreshed_contract_type": contract_type,
+        "materialized": dict(materialized),
+        "side_effects": {
+            "provider_calls": False,
+            "model_activation": False,
+            "broker_execution": False,
+            "account_mutation": False,
+            "storage_dashboard_write": True,
+        },
+    }
+
+
+__all__ = [
+    "MODEL_LAYER_READINESS_CONTRACT",
+    "MODEL_PROMOTION_POSTURE_CONTRACT",
+    "build_model_layer_readiness_summary",
+    "build_model_promotion_posture_summary",
+    "refresh_model_layer_readiness_summary_read_model",
+    "refresh_model_promotion_posture_summary_read_model",
+]
