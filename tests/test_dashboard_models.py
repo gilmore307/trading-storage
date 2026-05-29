@@ -129,6 +129,21 @@ def _write_group_promotion_version(storage_root: Path) -> None:
                     "max_drawdown": -0.288,
                     "hit_rate": 0.52,
                     "brier_score": 0.24,
+                    "pr_auc": 0.61,
+                    "base_rate": 0.54,
+                    "ece": 0.12,
+                    "mce": 0.22,
+                    "brier_reliability": 0.04,
+                    "brier_resolution": 0.03,
+                    "brier_uncertainty": 0.25,
+                    "profit_factor": 1.4,
+                    "return_per_decision": 0.0003,
+                    "tail_loss_p05": -0.021,
+                    "cost_sensitivity_2x": 1.2,
+                    "worst_month_return": -0.18,
+                    "month_slice_count": 6,
+                    "data_integrity_status": "passed",
+                    "leakage_check_status": "passed",
                     "feature_column_count": 3,
                     "feature_row_count": 5382,
                     "feature_sample_count": 160,
@@ -152,6 +167,13 @@ def _write_group_promotion_version(storage_root: Path) -> None:
                         },
                         "silhouette": {"outcome_label": 0.18, "decision_action": 0.09},
                     },
+                    "predictive_diagnostics": {"base_rate": 0.54, "pr_auc": 0.61},
+                    "calibration_diagnostics": {"ece": 0.12, "mce": 0.22},
+                    "economic_diagnostics": {"profit_factor": 1.4, "tail_loss_p05": -0.021},
+                    "data_integrity_diagnostics": {"status": "passed", "leakage_check_status": "passed"},
+                    "temporal_stability_diagnostics": {"month_slice_count": 6, "worst_month_return": -0.18},
+                    "baseline_comparison_diagnostics": {"candidate_minus_no_trade": 1.98},
+                    "uncertainty_diagnostics": {"available": False, "reason": "single fold"},
                 },
             }
         )
@@ -228,6 +250,8 @@ class DashboardModelsTests(unittest.TestCase):
             self.assertEqual(payload["chart_payload"]["identity_counts"], {"retired": 1})
             self.assertEqual(payload["chart_payload"]["group_versions"][0]["version_label"], "2016 fold1")
             self.assertEqual(payload["chart_payload"]["group_versions"][0]["metrics"]["auroc"], 0.5246)
+            self.assertEqual(payload["chart_payload"]["group_versions"][0]["metrics"]["pr_auc"], 0.61)
+            self.assertEqual(payload["chart_payload"]["group_versions"][0]["metrics"]["data_integrity_status"], "passed")
             self.assertEqual(payload["chart_payload"]["group_versions"][0]["metrics"]["pca_variance_top2"], 0.81)
             self.assertEqual(payload["chart_payload"]["group_versions"][0]["metrics"]["silhouette_outcome_label"], 0.18)
 
