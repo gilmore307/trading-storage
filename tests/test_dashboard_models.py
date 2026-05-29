@@ -40,12 +40,15 @@ def _historical_payload() -> dict:
                     "month": "2016-fold1",
                     "task_id": "layer_05_alpha_confidence.model_generation.train",
                     "task_label": "Layer 5 Alpha Confidence Model",
-                    "task_state": "current",
-                    "status": "running",
+                    "task_state": "completed",
+                    "status": "succeeded",
                     "stage_type": "model_generation",
                     "layer": 5,
                     "status_updated_at_utc": "2026-05-29T00:01:00Z",
-                    "detail": {"receipt_refs": ["receipt://l5-train"]},
+                    "detail": {
+                        "receipt_refs": ["storage/02_control_plane/runtime/model_training_stage_receipts/layer_05_alpha_confidence__model_generation__test/receipt.json"],
+                        "progress": {"status": "complete"},
+                    },
                 },
                 {
                     "task_uid": "eval",
@@ -485,6 +488,39 @@ class DashboardModelsTests(unittest.TestCase):
             self.assertEqual(layer_five["versions"][0]["version_id"], "2016-fold1:model_05_alpha_confidence")
             self.assertEqual(layer_five["promotion"]["status"], "deferred")
             self.assertEqual(len(payload["chart_payload"]["group_versions"]), 1)
+
+    def test_layer_versions_ignore_blocked_partial_task_receipts(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            storage_root = Path(tmp)
+            historical = _historical_payload()
+            historical["chart_payload"]["task_timeline"].append(
+                {
+                    "task_uid": "l5-fold2-partial",
+                    "month": "2016-fold2",
+                    "task_id": "layer_05_alpha_confidence",
+                    "task_label": "Layer 5 Alpha Confidence Model",
+                    "task_state": "future",
+                    "status": "blocked",
+                    "stage_type": "model_task",
+                    "layer": 5,
+                    "status_updated_at_utc": "2026-05-29T00:09:00Z",
+                    "detail": {
+                        "receipt_refs": [
+                            "storage/02_control_plane/runtime/model_training_stage_receipts/layer_05_alpha_confidence__data_acquisition/receipt.json",
+                            "storage/02_control_plane/runtime/model_training_stage_receipts/layer_05_alpha_confidence__feature_generation/receipt.json",
+                        ],
+                        "progress": {"status": "blocked"},
+                        "blockers": ["upstream_layer_04_model_generation_complete"],
+                    },
+                }
+            )
+            _write_latest(storage_root, "historical_task_progress_summary", historical)
+            _write_latest(storage_root, "execution_realtime_trading_runtime_status", _runtime_payload())
+
+            payload = build_model_layer_readiness_summary(storage_root=storage_root, generated_at_utc="2026-05-29T00:10:00Z")
+
+            layer_five = next(layer for layer in payload["chart_payload"]["layers"] if layer["layer"] == 5)
+            self.assertEqual(layer_five["versions"][0]["version_id"], "2016-fold1:model_05_alpha_confidence")
 
     def test_builds_model_promotion_posture_rows(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:

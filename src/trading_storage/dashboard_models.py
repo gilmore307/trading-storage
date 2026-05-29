@@ -132,15 +132,30 @@ def _receipt_refs(task: Mapping[str, Any]) -> list[str]:
     return [str(ref) for ref in refs] if isinstance(refs, list) else []
 
 
+def _has_model_output_receipt(task: Mapping[str, Any]) -> bool:
+    model_output_markers = (
+        "__model_generation__",
+        "__model_training__",
+        "/model_generation/",
+        "/model_training/",
+        "model_generation",
+        "model_training",
+    )
+    return any(any(marker in ref for marker in model_output_markers) for ref in _receipt_refs(task))
+
+
+def _has_completed_model_output(task: Mapping[str, Any]) -> bool:
+    status = _task_status(task).lower()
+    state = str(task.get("task_state") or "").lower()
+    progress = _task_detail(task).get("progress")
+    progress_status = str(progress.get("status") or "").lower() if isinstance(progress, Mapping) else ""
+    is_complete = status == "succeeded" or state == "completed" or progress_status == "complete"
+    return is_complete and _has_model_output_receipt(task)
+
+
 def _version_for_layer(layer: int, model_id: str, layer_tasks: list[dict[str, Any]]) -> dict[str, Any] | None:
     model_tasks = [task for task in layer_tasks if str(task.get("stage_type") or "") in {"model_generation", "model_task"} or "model" in str(task.get("task_id") or "")]
-    materialized_tasks = [
-        task for task in model_tasks
-        if _task_status(task).lower() in {"running", "succeeded", "not_applicable"}
-        or bool(_receipt_refs(task))
-        or bool(task.get("started_at_utc"))
-        or bool(task.get("ended_at_utc"))
-    ]
+    materialized_tasks = [task for task in model_tasks if _has_completed_model_output(task)]
     if not materialized_tasks:
         return None
     latest = max(materialized_tasks, key=lambda task: str(task.get("status_updated_at_utc") or task.get("updated_at_utc") or task.get("created_at_utc") or ""))
