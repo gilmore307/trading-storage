@@ -17,8 +17,10 @@ from .artifact_store import now_utc
 from .dashboard_read_models import materialize_dashboard_read_model
 
 MODEL_LAYER_READINESS_CONTRACT = "model_layer_readiness_summary"
+MODEL_LAYER_EVALUATION_CONTRACT = "model_layer_evaluation_summary"
 MODEL_PROMOTION_POSTURE_CONTRACT = "model_promotion_posture_summary"
 MODEL_LAYER_READINESS_SCHEMA_REF = f"storage/06_dashboard_cache/schemas/{MODEL_LAYER_READINESS_CONTRACT}.schema.json"
+MODEL_LAYER_EVALUATION_SCHEMA_REF = f"storage/06_dashboard_cache/schemas/{MODEL_LAYER_EVALUATION_CONTRACT}.schema.json"
 MODEL_PROMOTION_POSTURE_SCHEMA_REF = f"storage/06_dashboard_cache/schemas/{MODEL_PROMOTION_POSTURE_CONTRACT}.schema.json"
 
 HISTORICAL_TASK_PROGRESS_CONTRACT = "historical_task_progress_summary"
@@ -39,6 +41,59 @@ MODEL_LAYERS = (
     (9, "model_09_option_expression", "Option Expression"),
     (10, "model_10_event_risk_governor", "Event Risk Governor"),
 )
+
+LAYER_EVALUATION_CLAIMS = {
+    1: {
+        "claim": "Market regime state is separable, stable, and useful as upstream context.",
+        "target_definition": "Broad market regime/context state, not a direct trade label.",
+        "required_metrics": ["state_separability", "regime_stability", "drift", "downstream_contribution"],
+    },
+    2: {
+        "claim": "Sector and proxy context adds stable relative information beyond market regime.",
+        "target_definition": "Sector/proxy-relative context state.",
+        "required_metrics": ["relative_context_accuracy", "proxy_stability", "sector_slice_robustness", "downstream_contribution"],
+    },
+    3: {
+        "claim": "Target state vectors are point-in-time, non-leaky, and reconstruct useful target context.",
+        "target_definition": "Target-specific state representation for downstream alpha/risk layers.",
+        "required_metrics": ["state_reconstruction", "missingness", "point_in_time_leakage", "state_drift"],
+    },
+    4: {
+        "claim": "Known event-failure risk is represented before alpha/action scoring.",
+        "target_definition": "Pre-known event risk state, separate from post-replay residual attribution.",
+        "required_metrics": ["event_risk_precision", "event_risk_recall", "duplicate_event_resistance", "event_slice_robustness"],
+    },
+    5: {
+        "claim": "Alpha confidence ranks after-cost opportunities and is calibrated enough for downstream thresholds.",
+        "target_definition": "After-cost alpha/confidence label by horizon.",
+        "required_metrics": ["auroc", "pr_auc", "brier_score", "ece", "decile_return", "feature_importance"],
+    },
+    6: {
+        "claim": "Dynamic risk policy improves risk-adjusted exposure without expanding tail loss.",
+        "target_definition": "Risk posture conditioned on alpha, target state, and event context.",
+        "required_metrics": ["risk_adjusted_return", "max_drawdown", "tail_loss", "policy_stability", "cost_sensitivity"],
+    },
+    7: {
+        "claim": "Position projection predicts exposure path well enough to constrain actions.",
+        "target_definition": "Projected exposure path and position behavior.",
+        "required_metrics": ["exposure_path_error", "overshoot_rate", "churn_rate", "path_slice_robustness"],
+    },
+    8: {
+        "claim": "Underlying action thesis improves utility after costs and risk controls.",
+        "target_definition": "Direct underlying action class and plan utility.",
+        "required_metrics": ["action_confusion", "action_utility", "false_action_rate", "missed_opportunity_rate", "slice_robustness"],
+    },
+    9: {
+        "claim": "Option expression improves or safely abstains relative to direct underlying thesis.",
+        "target_definition": "Option expression fit, liquidity, IV, and no-option fallback.",
+        "required_metrics": ["expression_fit", "liquidity_failure_rate", "iv_sensitivity", "no_option_fallback_quality"],
+    },
+    10: {
+        "claim": "Post-replay event governor attributes residual failures and missed opportunities correctly.",
+        "target_definition": "Residual event-risk attribution after replay.",
+        "required_metrics": ["failure_attribution_precision", "missed_event_rate", "false_block_rate", "event_regime_stability"],
+    },
+}
 
 
 def _read_latest(storage_root: Path, contract_type: str) -> dict[str, Any] | None:
@@ -667,6 +722,173 @@ def build_model_layer_readiness_summary(
     }
 
 
+def _layer_evaluation_sections(layer: int, *, version: Mapping[str, Any] | None, group_versions: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    claim = LAYER_EVALUATION_CLAIMS[layer]
+    has_version = bool(version)
+    group_reference_available = bool(group_versions)
+    sections = [
+        {
+            "section_id": "evaluation_population",
+            "label": "Evaluation Population",
+            "status": "insufficient_evidence",
+            "reason": (
+                "Layer task coverage exists, but no layer_evaluation_summary artifact reports holdout rows, exclusions, labels, or split diagnostics."
+                if has_version
+                else "No completed layer model version is available for evaluation."
+            ),
+            "required_evidence": ["fold_id", "target_scope", "train_validation_test_rows", "excluded_rows", "label_definition"],
+        },
+        {
+            "section_id": "predictive_evidence",
+            "label": "Predictive Evidence",
+            "status": "insufficient_evidence",
+            "reason": "No layer-specific holdout metrics are published. Group metrics must not be relabeled as layer metrics.",
+            "required_evidence": claim["required_metrics"],
+        },
+        {
+            "section_id": "statistical_reliability",
+            "label": "Statistical Reliability",
+            "status": "insufficient_evidence",
+            "reason": "No confidence intervals, fold variance, bootstrap result, or significance/stability test is published for this layer.",
+            "required_evidence": ["confidence_interval", "fold_variance", "bootstrap_or_permutation_test", "sample_size_power_note"],
+        },
+        {
+            "section_id": "calibration_distribution",
+            "label": "Calibration / Distribution",
+            "status": "insufficient_evidence",
+            "reason": "No layer-aware calibration curve, distribution drift, embedding separation, or representation stability artifact is published.",
+            "required_evidence": ["calibration_or_distribution_diagnostic", "drift_by_fold", "embedding_or_score_distribution"],
+        },
+        {
+            "section_id": "signal_diagnostics",
+            "label": "Signal Diagnostics",
+            "status": "insufficient_evidence",
+            "reason": "No feature importance, missingness, monotonicity, sensitivity, redundancy, or correlation diagnostic is published for this layer.",
+            "required_evidence": ["feature_importance", "missingness", "sensitivity", "correlation_or_redundancy"],
+        },
+        {
+            "section_id": "robustness",
+            "label": "Robustness",
+            "status": "insufficient_evidence",
+            "reason": "No layer-specific slice robustness is published by regime, volatility, liquidity, target, sector, event context, or period.",
+            "required_evidence": ["regime_slice", "volatility_slice", "liquidity_slice", "period_slice"],
+        },
+        {
+            "section_id": "integrity",
+            "label": "Integrity",
+            "status": "insufficient_evidence",
+            "reason": "No layer-specific leakage, label timing, point-in-time isolation, or artifact provenance check is published.",
+            "required_evidence": ["leakage_check", "label_timing_check", "train_test_isolation", "artifact_lineage"],
+        },
+        {
+            "section_id": "downstream_contribution",
+            "label": "Downstream Contribution",
+            "status": "reference_only" if group_reference_available else "insufficient_evidence",
+            "reason": (
+                "A group-level baseline-active result is available, but no layer ablation or marginal contribution study isolates this layer."
+                if group_reference_available
+                else "No group-level result or layer ablation is available."
+            ),
+            "required_evidence": ["layer_ablation", "substitution_test", "marginal_group_metric_delta"],
+        },
+    ]
+    return sections
+
+
+def build_model_layer_evaluation_summary(
+    *,
+    storage_root: Path = DEFAULT_STORAGE_ROOT,
+    generated_at_utc: str | None = None,
+) -> dict[str, Any]:
+    """Build layer-level model-evidence dossiers for the Models page."""
+
+    generated_at_utc = generated_at_utc or now_utc()
+    layer_payload = build_model_layer_readiness_summary(storage_root=storage_root, generated_at_utc=generated_at_utc)
+    promotion_payload = build_model_promotion_posture_summary(storage_root=storage_root, generated_at_utc=generated_at_utc)
+    layer_chart = _chart(layer_payload)
+    promotion_chart = _chart(promotion_payload)
+    lifecycle_by_layer = {
+        int(layer["layer"]): layer
+        for layer in layer_chart.get("layers", [])
+        if isinstance(layer, Mapping) and isinstance(layer.get("layer"), int)
+    }
+    promotion_by_layer = {
+        int(row["layer"]): row
+        for row in promotion_chart.get("models", [])
+        if isinstance(row, Mapping) and isinstance(row.get("layer"), int)
+    }
+    group_versions = [dict(row) for row in promotion_chart.get("group_versions", []) if isinstance(row, Mapping)]
+    rows = []
+    for layer, model_id, name in MODEL_LAYERS:
+        lifecycle = lifecycle_by_layer.get(layer, {})
+        promotion = promotion_by_layer.get(layer, {})
+        versions = lifecycle.get("versions") if isinstance(lifecycle.get("versions"), list) else []
+        version = versions[0] if versions and isinstance(versions[0], Mapping) else None
+        claim = LAYER_EVALUATION_CLAIMS[layer]
+        sections = _layer_evaluation_sections(layer, version=version, group_versions=group_versions)
+        missing_count = sum(1 for section in sections if section.get("status") == "insufficient_evidence")
+        rows.append(
+            {
+                "layer": layer,
+                "layer_id": f"layer_{layer:02d}",
+                "model_id": model_id,
+                "name": name,
+                "version_id": version.get("version_id") if isinstance(version, Mapping) else None,
+                "evidence_status": "insufficient_evidence" if missing_count else "evaluated",
+                "validity_status": "insufficient_evidence",
+                "validity_decision": {
+                    "status": "insufficient_evidence",
+                    "reason": "No layer_evaluation_summary artifact with layer-specific metrics has been published yet.",
+                    "missing_section_count": missing_count,
+                },
+                "claim": {
+                    "modeling_claim": claim["claim"],
+                    "target_definition": claim["target_definition"],
+                    "input_scope": lifecycle.get("summary") or "",
+                    "output_contract": f"{model_id} layer output consumed by downstream model stack.",
+                },
+                "sections": sections,
+                "group_context": {
+                    "available": bool(group_versions),
+                    "active_baseline_ref": group_versions[-1].get("version_id") if group_versions else None,
+                    "note": "Group-level metrics are available only as context and are not layer-specific evidence.",
+                },
+                "operational_refs": {
+                    "lifecycle_status": lifecycle.get("lifecycle_status") or lifecycle.get("status"),
+                    "promotion_status": promotion.get("promotion_status"),
+                    "blockers": promotion.get("blockers") or lifecycle.get("blockers") or [],
+                    "latest_updated_at_utc": lifecycle.get("latest_updated_at_utc") or promotion.get("latest_updated_at_utc"),
+                },
+            }
+        )
+    return {
+        "contract_type": MODEL_LAYER_EVALUATION_CONTRACT,
+        "schema_version": 1,
+        "generated_at_utc": generated_at_utc,
+        "source_system": "trading-storage",
+        "status": "blocked",
+        "severity": "medium",
+        "summary": "Layer model evidence dossiers are published, but layer-specific statistical evaluation artifacts are still missing.",
+        "chart_payload": {
+            "layers": rows,
+            "required_artifact": "layer_evaluation_summary",
+            "state_vocabulary": ["evaluated", "insufficient_evidence", "not_applicable", "failed_validity", "reference_only"],
+        },
+        "profile_refs": [{"registry_ref": "MODEL_LAYER_EVALUATION_SUMMARY", "field": "contract_type"}],
+        "issue_refs": [
+            {
+                "issue_id": "missing_layer_evaluation_artifacts",
+                "severity": "medium",
+                "summary": "Per-layer subtabs cannot show model validity metrics until layer_evaluation_summary artifacts publish layer-specific evidence.",
+            }
+        ],
+        "diagnostic_refs": [],
+        "lineage_refs": _source_refs(_read_latest(storage_root, HISTORICAL_TASK_PROGRESS_CONTRACT), _read_latest(storage_root, EXECUTION_RUNTIME_STATUS_CONTRACT)),
+        "freshness": {"class": "derived_model_layer_evidence_summary", "status": "fresh", "stale_after_seconds": DEFAULT_STALE_AFTER_SECONDS},
+        "schema_ref": MODEL_LAYER_EVALUATION_SCHEMA_REF,
+    }
+
+
 def build_model_promotion_posture_summary(
     *,
     storage_root: Path = DEFAULT_STORAGE_ROOT,
@@ -756,6 +978,12 @@ def refresh_model_layer_readiness_summary_read_model(*, storage_root: Path = DEF
     return _refresh_receipt(MODEL_LAYER_READINESS_CONTRACT, materialized.index_row)
 
 
+def refresh_model_layer_evaluation_summary_read_model(*, storage_root: Path = DEFAULT_STORAGE_ROOT) -> dict[str, Any]:
+    payload = build_model_layer_evaluation_summary(storage_root=storage_root)
+    materialized = materialize_dashboard_read_model(payload, storage_root=storage_root, expected_contract_type=MODEL_LAYER_EVALUATION_CONTRACT)
+    return _refresh_receipt(MODEL_LAYER_EVALUATION_CONTRACT, materialized.index_row)
+
+
 def refresh_model_promotion_posture_summary_read_model(*, storage_root: Path = DEFAULT_STORAGE_ROOT) -> dict[str, Any]:
     payload = build_model_promotion_posture_summary(storage_root=storage_root)
     materialized = materialize_dashboard_read_model(payload, storage_root=storage_root, expected_contract_type=MODEL_PROMOTION_POSTURE_CONTRACT)
@@ -780,9 +1008,12 @@ def _refresh_receipt(contract_type: str, materialized: Mapping[str, Any]) -> dic
 
 __all__ = [
     "MODEL_LAYER_READINESS_CONTRACT",
+    "MODEL_LAYER_EVALUATION_CONTRACT",
     "MODEL_PROMOTION_POSTURE_CONTRACT",
     "build_model_layer_readiness_summary",
+    "build_model_layer_evaluation_summary",
     "build_model_promotion_posture_summary",
     "refresh_model_layer_readiness_summary_read_model",
+    "refresh_model_layer_evaluation_summary_read_model",
     "refresh_model_promotion_posture_summary_read_model",
 ]

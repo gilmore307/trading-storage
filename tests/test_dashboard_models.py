@@ -6,10 +6,13 @@ import unittest
 from pathlib import Path
 
 from trading_storage.dashboard_models import (
+    MODEL_LAYER_EVALUATION_CONTRACT,
     MODEL_LAYER_READINESS_CONTRACT,
     MODEL_PROMOTION_POSTURE_CONTRACT,
+    build_model_layer_evaluation_summary,
     build_model_layer_readiness_summary,
     build_model_promotion_posture_summary,
+    refresh_model_layer_evaluation_summary_read_model,
     refresh_model_layer_readiness_summary_read_model,
     refresh_model_promotion_posture_summary_read_model,
 )
@@ -580,6 +583,29 @@ class DashboardModelsTests(unittest.TestCase):
             self.assertEqual(scorecards["selection_quality"]["taken_good_count"], 2100)
             self.assertFalse(payload["chart_payload"]["group_versions"][0]["metrics"]["evaluation_disagreement_report"]["promotion_gate_basis"]["auroc_is_hard_gate"])
 
+    def test_builds_layer_evaluation_dossiers_with_missing_evidence(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            storage_root = Path(tmp)
+            _write_latest(storage_root, "historical_task_progress_summary", _historical_payload())
+            _write_latest(storage_root, "execution_realtime_trading_runtime_status", _runtime_payload())
+            _write_mismatched_group_promotion_version(storage_root)
+            _write_preview_override(storage_root)
+
+            payload = build_model_layer_evaluation_summary(storage_root=storage_root, generated_at_utc="2026-05-29T00:09:00Z")
+
+            self.assertEqual(payload["contract_type"], MODEL_LAYER_EVALUATION_CONTRACT)
+            self.assertEqual(validate_dashboard_read_model(payload), MODEL_LAYER_EVALUATION_CONTRACT)
+            self.assertEqual(len(payload["chart_payload"]["layers"]), 10)
+            layer_five = next(row for row in payload["chart_payload"]["layers"] if row["layer"] == 5)
+            self.assertEqual(layer_five["evidence_status"], "insufficient_evidence")
+            self.assertEqual(layer_five["validity_status"], "insufficient_evidence")
+            self.assertIn("After-cost alpha", layer_five["claim"]["target_definition"])
+            predictive = next(section for section in layer_five["sections"] if section["section_id"] == "predictive_evidence")
+            self.assertEqual(predictive["status"], "insufficient_evidence")
+            self.assertIn("auroc", predictive["required_evidence"])
+            downstream = next(section for section in layer_five["sections"] if section["section_id"] == "downstream_contribution")
+            self.assertEqual(downstream["status"], "reference_only")
+
     def test_model_group_versions_are_fold_level_not_review_run_level(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             storage_root = Path(tmp)
@@ -672,11 +698,14 @@ class DashboardModelsTests(unittest.TestCase):
             _write_latest(storage_root, "execution_realtime_trading_runtime_status", _runtime_payload())
 
             layer_receipt = refresh_model_layer_readiness_summary_read_model(storage_root=storage_root)
+            evaluation_receipt = refresh_model_layer_evaluation_summary_read_model(storage_root=storage_root)
             promotion_receipt = refresh_model_promotion_posture_summary_read_model(storage_root=storage_root)
 
             self.assertEqual(layer_receipt["refreshed_contract_type"], MODEL_LAYER_READINESS_CONTRACT)
+            self.assertEqual(evaluation_receipt["refreshed_contract_type"], MODEL_LAYER_EVALUATION_CONTRACT)
             self.assertEqual(promotion_receipt["refreshed_contract_type"], MODEL_PROMOTION_POSTURE_CONTRACT)
             self.assertTrue((storage_root / "06_dashboard_cache/read_models/model_layer_readiness_summary/latest.json").exists())
+            self.assertTrue((storage_root / "06_dashboard_cache/read_models/model_layer_evaluation_summary/latest.json").exists())
             self.assertTrue((storage_root / "06_dashboard_cache/read_models/model_promotion_posture_summary/latest.json").exists())
 
 

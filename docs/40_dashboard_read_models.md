@@ -46,6 +46,7 @@ The following dashboard summary families are accepted as storage-bound design ta
 - `historical_task_progress_summary`;
 - `realtime_task_progress_summary`;
 - `model_layer_readiness_summary`;
+- `model_layer_evaluation_summary`;
 - `model_promotion_posture_summary`;
 - `registry_dictionary_profile`.
 
@@ -55,6 +56,7 @@ Implemented realtime summary families:
 - `execution_realtime_trading_runtime_status`;
 - `realtime_signal_summary`;
 - `model_layer_readiness_summary`;
+- `model_layer_evaluation_summary`;
 - `model_promotion_posture_summary`;
 
 Future/parked summary families:
@@ -131,7 +133,7 @@ Implemented storage-side support:
 - `src/trading_storage/dashboard_refresh.py` and `scripts/dashboard/refresh_historical_task_progress_read_model.py` run the manager-owned `historical_task_progress_summary` producer and materialize the validated result; when no explicit coverage path is supplied, the refresh wrapper attaches the newest manager stage-coverage artifact so the Historical Task Progress page can show coverage instead of a blank placeholder.
 - `src/trading_storage/dashboard_temporal_explorer.py` and `scripts/dashboard/refresh_temporal_explorer_summary_read_model.py` build and materialize `temporal_explorer_summary` for the dashboard Timewheel page from `calendar_day`, `calendar_market_session`, `calendar_scheduled_event`, `calendar_event_result`, `calendar_news_event_index`, and `chart_ohlcv_cache`. This is the primary calendar/dashboard route.
 - `src/trading_storage/dashboard_execution_runtime.py` and `scripts/dashboard/refresh_execution_runtime_status_read_model.py` build and materialize `execution_realtime_trading_runtime_status` from the execution-owned readiness artifact. Dashboard clients consume it through `/ws/read-models/execution_realtime_trading_runtime_status/latest`.
-- `src/trading_storage/dashboard_models.py` builds and materializes `model_layer_readiness_summary` and `model_promotion_posture_summary` from already-materialized task-progress, execution-runtime, and promotion-review artifacts. It reports model-group promotion-version history with active/shadow/retired identity, AUROC/return/drawdown/PCA metric fields, and layer component version refs for the Models page.
+- `src/trading_storage/dashboard_models.py` builds and materializes `model_layer_readiness_summary`, `model_layer_evaluation_summary`, and `model_promotion_posture_summary` from already-materialized task-progress, execution-runtime, and promotion-review artifacts. It reports model-group promotion-version history with active/shadow/retired identity, AUROC/return/drawdown/PCA metric fields, and layer component version refs for the Models page. Layer evaluation rows are evidence dossiers: they state the layer claim, required metrics, available/missing statistical evidence, validity status, and downstream group context without treating operational task receipts as model-performance proof.
 - `src/trading_storage/dashboard_realtime_signals.py` and `scripts/dashboard/refresh_realtime_signal_summary_read_model.py` build and materialize `realtime_signal_summary` from execution-owned realtime monitor receipts. When no realtime monitor receipt exists, the producer emits an explicit safe `not_started` state rather than fabricating signal metrics.
 - `deploy/systemd/trading-storage-dashboard-read-model-refresh.service` and `.timer` define the fallback periodic refresh template. Manager workflow-state writes trigger primary progress refreshes, while the timer default is 60 seconds for calibration when an event is missed.
 - Tests cover envelope validation, path safety, future timestamp rejection, secret-like payload rejection, state-change snapshot/latest/schema/index writes, latest-only refreshes, the CLI materializer path, and refresh orchestration side-effect flags.
@@ -168,7 +170,7 @@ PYTHONPATH=src python3 scripts/dashboard/refresh_public_dashboard_read_models.py
 
 ### Model lifecycle producers
 
-`trading_storage.dashboard_models` produces `model_layer_readiness_summary` and `model_promotion_posture_summary` for the dashboard Models page. These summaries are derived from `historical_task_progress_summary`, `execution_realtime_trading_runtime_status`, and local promotion-review artifacts; they do not query raw model tables, activate models, place orders, or mutate lifecycle state. The model-group portion owns promotion-version history, active/shadow/retired identity, AUROC/return/drawdown/PCA metric fields, agent recommendation, and decision status because promotion is decided for the whole pipeline. Layer rows provide model family, layer role, optimization target, and component version refs only. Task state and workflow blockers remain Tasks/Diagnostics concerns rather than model-page status labels.
+`trading_storage.dashboard_models` produces `model_layer_readiness_summary`, `model_layer_evaluation_summary`, and `model_promotion_posture_summary` for the dashboard Models page. These summaries are derived from `historical_task_progress_summary`, `execution_realtime_trading_runtime_status`, and local promotion-review artifacts; they do not query raw model tables, activate models, place orders, or mutate lifecycle state. The model-group portion owns promotion-version history, active/shadow/retired identity, AUROC/return/drawdown/PCA metric fields, agent recommendation, and decision status because promotion is decided for the whole pipeline. Layer readiness rows provide model family, layer role, optimization target, and component version refs. Layer evaluation rows provide a model-validity dossier for each layer: expected claim, target definition, required evidence, evaluation population, predictive evidence, statistical reliability, calibration/distribution, signal diagnostics, robustness, integrity, downstream contribution, and an explicit `insufficient_evidence` state when layer-specific analysis has not been published. Task state and workflow blockers remain Tasks/Diagnostics concerns rather than model-page validity labels.
 
 ### Realtime signal producer
 
