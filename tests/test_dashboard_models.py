@@ -178,6 +178,39 @@ def _write_group_promotion_version(storage_root: Path) -> None:
                     "temporal_stability_diagnostics": {"month_slice_count": 6, "worst_month_return": -0.18},
                     "baseline_comparison_diagnostics": {"candidate_minus_no_trade": 1.98},
                     "uncertainty_diagnostics": {"available": False, "reason": "single fold"},
+                    "scorecards": {
+                        "ranking_calibration": {
+                            "auroc": 0.5246,
+                            "pr_auc": 0.61,
+                            "score_decile_return": [{"decile": 1, "row_count": 538, "excess_return_total": 0.42}],
+                        },
+                        "selection_quality": {
+                            "taken_good_count": 2100,
+                            "taken_bad_count": 1300,
+                            "model_missed_good_count": 0,
+                            "bad_fill_rate": 0.382353,
+                            "profitable_opportunity_recall": 1.0,
+                            "intended_operating_threshold_band": {"threshold": 0.7, "selected_count": 1800, "return_per_selected": 0.0012},
+                        },
+                        "economic_quality": {
+                            "net_return_total": 2.1,
+                            "baseline_return_total": 0.12,
+                            "excess_return_total": 1.98,
+                            "max_drawdown": -0.18,
+                            "tail_loss_p05": -0.021,
+                        },
+                        "slices": {
+                            "decision_intended_side": [
+                                {"value": "long", "row_count": 3400, "excess_return_total": 1.7},
+                                {"value": "flat", "row_count": 1982, "excess_return_total": 0.28},
+                            ]
+                        },
+                    },
+                    "evaluation_disagreement_report": {
+                        "disagreement_count": 1,
+                        "promotion_gate_basis": {"auroc_is_hard_gate": False},
+                        "disagreements": [{"type": "auroc_below_old_gate_but_positive_utility", "severity": "notice"}],
+                    },
                     "decision_variable_schema_diagnostics": {
                         "status": "passed",
                         "row_count": 5382,
@@ -289,6 +322,9 @@ class DashboardModelsTests(unittest.TestCase):
             variable_diagnostics = payload["chart_payload"]["group_versions"][0]["metrics"]["decision_variable_schema_diagnostics"]
             self.assertEqual(variable_diagnostics["coverage"]["decision_intended_side"]["values"]["long"], 3400)
             self.assertEqual(variable_diagnostics["coverage"]["eval_action_class"]["values"]["taken_good"], 2100)
+            scorecards = payload["chart_payload"]["group_versions"][0]["metrics"]["scorecards"]
+            self.assertEqual(scorecards["selection_quality"]["taken_good_count"], 2100)
+            self.assertFalse(payload["chart_payload"]["group_versions"][0]["metrics"]["evaluation_disagreement_report"]["promotion_gate_basis"]["auroc_is_hard_gate"])
 
     def test_model_group_versions_are_fold_level_not_review_run_level(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:

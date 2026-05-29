@@ -351,6 +351,8 @@ def _model_group_promotion_versions(storage_root: Path, *, active_ref: str | Non
                 "uncertainty_diagnostics": metrics.get("uncertainty_diagnostics"),
                 "feature_diagnostics": metrics.get("feature_diagnostics"),
                 "decision_variable_schema_diagnostics": metrics.get("decision_variable_schema_diagnostics"),
+                "scorecards": metrics.get("scorecards"),
+                "evaluation_disagreement_report": metrics.get("evaluation_disagreement_report"),
             },
             "blocking_issues": [str(item) for item in review.get("blocking_issues") or [] if item],
             "summary": str(decision.get("decision_reason") or review.get("rationale") or ""),
