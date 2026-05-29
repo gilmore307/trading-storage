@@ -122,6 +122,7 @@ def _write_group_promotion_version(storage_root: Path) -> None:
         json.dumps(
             {
                 "contract_type": "fold_settlement_run",
+                "target_symbol": "AAPL",
                 "metrics": {
                     "decision_row_count": 5382,
                     "auroc": 0.5246,
@@ -184,6 +185,7 @@ def _write_group_promotion_version(storage_root: Path) -> None:
         json.dumps(
             {
                 "contract_type": "promotion_evaluation_review",
+                "target_symbol": "AAPL",
                 "recommendation": "insufficient_evidence",
                 "rationale": "AUROC below gate and comparison evidence missing.",
                 "blocking_issues": ["auroc_below_minimum", "missing anonymous comparison"],
@@ -199,7 +201,8 @@ def _write_group_promotion_version(storage_root: Path) -> None:
             {
                 "contract_type": "promotion_eligibility_decision",
                 "fold_id": "fold_2016-01_2016-06",
-                "candidate_model_ref": "storage://trading-manager/model_group/2016-01_2016-06",
+                "target_symbol": "AAPL",
+                "candidate_model_ref": "storage://trading-manager/model_group/aapl/2016-01_2016-06",
                 "decision_status": "deferred",
                 "agent_review_recommendation": "insufficient_evidence",
                 "decision_reason": "AUROC below gate and comparison evidence missing.",
@@ -248,7 +251,7 @@ class DashboardModelsTests(unittest.TestCase):
             self.assertEqual(layer_five["evaluation_status"], "ready")
             self.assertEqual(payload["chart_payload"]["status_counts"], {"deferred": 1})
             self.assertEqual(payload["chart_payload"]["identity_counts"], {"retired": 1})
-            self.assertEqual(payload["chart_payload"]["group_versions"][0]["version_label"], "2016 fold1")
+            self.assertEqual(payload["chart_payload"]["group_versions"][0]["version_label"], "AAPL 2016 fold1")
             self.assertEqual(payload["chart_payload"]["group_versions"][0]["metrics"]["auroc"], 0.5246)
             self.assertEqual(payload["chart_payload"]["group_versions"][0]["metrics"]["pr_auc"], 0.61)
             self.assertEqual(payload["chart_payload"]["group_versions"][0]["metrics"]["data_integrity_status"], "passed")
@@ -282,7 +285,7 @@ class DashboardModelsTests(unittest.TestCase):
             )
 
             self.assertEqual(len(payload["chart_payload"]["group_versions"]), 1)
-            self.assertEqual(payload["chart_payload"]["group_versions"][0]["version_label"], "2016 fold1")
+            self.assertEqual(payload["chart_payload"]["group_versions"][0]["version_label"], "AAPL 2016 fold1")
 
     def test_refresh_materializes_model_summaries(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:

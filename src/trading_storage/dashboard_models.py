@@ -228,15 +228,17 @@ def _load_json_object(path: Path) -> dict[str, Any] | None:
     return payload if isinstance(payload, dict) else None
 
 
-def _model_group_version_label(*, fold_id: str, candidate_model_ref: str, fallback: str) -> str:
+def _model_group_version_label(*, fold_id: str, candidate_model_ref: str, target_symbol: str, fallback: str) -> str:
     source = " ".join(item for item in [fold_id, candidate_model_ref, fallback] if item)
+    target = target_symbol.strip().upper()
     compact_match = re.search(
         r"(?P<year>20\d{2})[-_ ]?fold[-_ ]?(?P<fold>\d+)",
         source,
         flags=re.IGNORECASE,
     )
     if compact_match:
-        return f"{compact_match.group('year')} fold{int(compact_match.group('fold'))}"
+        label = f"{compact_match.group('year')} fold{int(compact_match.group('fold'))}"
+        return f"{target} {label}" if target else f"Unscoped {label}"
 
     range_match = re.search(
         r"(?P<year>20\d{2})-(?P<start_month>\d{2})_(?P=year)-(?P<end_month>\d{2})",
@@ -245,7 +247,8 @@ def _model_group_version_label(*, fold_id: str, candidate_model_ref: str, fallba
     if range_match:
         start_month = int(range_match.group("start_month"))
         fold_number = ((start_month - 1) // 6) + 1
-        return f"{range_match.group('year')} fold{fold_number}"
+        label = f"{range_match.group('year')} fold{fold_number}"
+        return f"{target} {label}" if target else f"Unscoped {label}"
 
     return fallback
 
@@ -267,10 +270,18 @@ def _model_group_promotion_versions(storage_root: Path, *, active_ref: str | Non
         recommendation = str(decision.get("agent_review_recommendation") or review.get("recommendation") or "")
         candidate_model_ref = str(decision.get("candidate_model_ref") or review.get("candidate_model_ref") or "")
         fold_id = str(decision.get("fold_id") or review.get("fold_id") or "")
+        target_symbol = str(
+            decision.get("target_symbol")
+            or review.get("target_symbol")
+            or (settlement.get("target_symbol") if isinstance(settlement, Mapping) else "")
+            or _target_symbol_from_candidate_ref(candidate_model_ref)
+            or ""
+        ).strip().upper()
         version_key = candidate_model_ref or fold_id or decision_path.parent.name
         version_label = _model_group_version_label(
             fold_id=fold_id,
             candidate_model_ref=candidate_model_ref,
+            target_symbol=target_symbol,
             fallback=decision_path.parent.name,
         )
         if active_ref and candidate_model_ref and candidate_model_ref == active_ref:
@@ -286,6 +297,7 @@ def _model_group_promotion_versions(storage_root: Path, *, active_ref: str | Non
             "version_label": version_label,
             "promotion_run_id": decision_path.parent.name,
             "fold_id": fold_id,
+            "target_symbol": target_symbol or None,
             "candidate_model_ref": candidate_model_ref,
             "identity": identity,
             "decision_status": decision_status,
@@ -349,10 +361,29 @@ def _model_group_promotion_versions(storage_root: Path, *, active_ref: str | Non
         existing_clock = str((existing or {}).get("created_at_utc") or (existing or {}).get("promotion_run_id") or "")
         if existing is None or row_clock >= existing_clock:
             rows_by_version_key[version_key] = row
+    scoped_folds = {
+        str(row.get("fold_id") or "")
+        for row in rows_by_version_key.values()
+        if row.get("target_symbol") and row.get("fold_id")
+    }
+    rows = [
+        row for row in rows_by_version_key.values()
+        if row.get("target_symbol") or str(row.get("fold_id") or "") not in scoped_folds
+    ]
     return sorted(
-        rows_by_version_key.values(),
+        rows,
         key=lambda row: str(row.get("created_at_utc") or row.get("version_id") or ""),
     )
+
+
+def _target_symbol_from_candidate_ref(candidate_model_ref: str) -> str | None:
+    match = re.search(r"/model_group/(?P<target>[A-Za-z0-9_]+)/20\d{2}-\d{2}_20\d{2}-\d{2}$", candidate_model_ref)
+    if not match:
+        return None
+    raw_target = match.group("target").upper()
+    if raw_target == "UNKNOWN_TARGET":
+        return None
+    return raw_target.replace("_", ".")
 
 
 def build_model_layer_readiness_summary(
