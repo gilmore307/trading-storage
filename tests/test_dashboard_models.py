@@ -129,8 +129,29 @@ def _write_group_promotion_version(storage_root: Path) -> None:
                     "max_drawdown": -0.288,
                     "hit_rate": 0.52,
                     "brier_score": 0.24,
-                    "pca_available": False,
-                    "pcoa_available": False,
+                    "feature_column_count": 3,
+                    "feature_row_count": 5382,
+                    "feature_sample_count": 160,
+                    "pca_available": True,
+                    "pca_variance_top2": 0.81,
+                    "pcoa_available": True,
+                    "pcoa_variance_top2": 0.76,
+                    "silhouette_outcome_label": 0.18,
+                    "silhouette_decision_action": 0.09,
+                    "feature_diagnostics": {
+                        "feature_columns": ["feature_daily_return", "feature_momentum_7d", "feature_volume_rank_30d"],
+                        "pca": {
+                            "available": True,
+                            "explained_variance_ratio": [0.62, 0.19],
+                            "points": [{"x": -0.2, "y": 0.1, "outcome_label": 0, "decision_action": "skip"}],
+                        },
+                        "pcoa": {
+                            "available": True,
+                            "explained_variance_ratio": [0.51, 0.25],
+                            "points": [{"x": -0.1, "y": 0.2, "outcome_label": 1, "decision_action": "trade"}],
+                        },
+                        "silhouette": {"outcome_label": 0.18, "decision_action": 0.09},
+                    },
                 },
             }
         )
@@ -207,6 +228,8 @@ class DashboardModelsTests(unittest.TestCase):
             self.assertEqual(payload["chart_payload"]["identity_counts"], {"retired": 1})
             self.assertEqual(payload["chart_payload"]["group_versions"][0]["version_label"], "2016 fold1")
             self.assertEqual(payload["chart_payload"]["group_versions"][0]["metrics"]["auroc"], 0.5246)
+            self.assertEqual(payload["chart_payload"]["group_versions"][0]["metrics"]["pca_variance_top2"], 0.81)
+            self.assertEqual(payload["chart_payload"]["group_versions"][0]["metrics"]["silhouette_outcome_label"], 0.18)
 
     def test_model_group_versions_are_fold_level_not_review_run_level(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
