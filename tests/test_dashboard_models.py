@@ -398,8 +398,8 @@ def _write_preview_override(storage_root: Path) -> None:
                         "fold_id": "fold_2016-01_2016-06",
                         "target_symbol": "AAPL",
                         "candidate_model_ref": "storage://trading-manager/model_group/aapl/2016-01_2016-06",
-                        "decision_status": "promoted",
-                        "identity": "promoted",
+                        "decision_status": "baseline_active",
+                        "identity": "active",
                         "reason": "Temporary Models-page preview override.",
                     }
                 ],
@@ -640,8 +640,8 @@ class DashboardModelsTests(unittest.TestCase):
             versions = payload["chart_payload"]["group_versions"]
             self.assertEqual(len(versions), 1)
             self.assertEqual(versions[0]["version_label"], "AAPL 2016 fold1")
-            self.assertEqual(versions[0]["decision_status"], "promoted")
-            self.assertEqual(versions[0]["identity"], "promoted")
+            self.assertEqual(versions[0]["decision_status"], "baseline_active")
+            self.assertEqual(versions[0]["identity"], "active")
             self.assertTrue(versions[0]["preview_override"])
             self.assertEqual(versions[0]["excluded_reason_codes_overridden"], ["replay_scope_target_mismatch"])
 
