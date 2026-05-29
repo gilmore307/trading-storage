@@ -205,7 +205,37 @@ class DashboardModelsTests(unittest.TestCase):
             self.assertEqual(layer_five["evaluation_status"], "ready")
             self.assertEqual(payload["chart_payload"]["status_counts"], {"deferred": 1})
             self.assertEqual(payload["chart_payload"]["identity_counts"], {"retired": 1})
+            self.assertEqual(payload["chart_payload"]["group_versions"][0]["version_label"], "2016 fold1")
             self.assertEqual(payload["chart_payload"]["group_versions"][0]["metrics"]["auroc"], 0.5246)
+
+    def test_model_group_versions_are_fold_level_not_review_run_level(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            storage_root = Path(tmp)
+            _write_latest(storage_root, "historical_task_progress_summary", _historical_payload())
+            _write_latest(storage_root, "execution_realtime_trading_runtime_status", _runtime_payload())
+            _write_group_promotion_version(storage_root)
+            source_root = (
+                storage_root
+                / "05_replay_datasets"
+                / "promotion_replay_candidate_policy"
+                / "promotion_review_runs"
+                / "model_group_evaluation_fixture"
+            )
+            duplicate_root = source_root.parent / "model_group_evaluation_fixture_retry"
+            duplicate_root.mkdir(parents=True, exist_ok=True)
+            for filename in ["promotion_evaluation_review.json", "promotion_eligibility_decision.json"]:
+                duplicate_root.joinpath(filename).write_text(
+                    source_root.joinpath(filename).read_text(encoding="utf-8"),
+                    encoding="utf-8",
+                )
+
+            payload = build_model_promotion_posture_summary(
+                storage_root=storage_root,
+                generated_at_utc="2026-05-29T00:04:00Z",
+            )
+
+            self.assertEqual(len(payload["chart_payload"]["group_versions"]), 1)
+            self.assertEqual(payload["chart_payload"]["group_versions"][0]["version_label"], "2016 fold1")
 
     def test_refresh_materializes_model_summaries(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:

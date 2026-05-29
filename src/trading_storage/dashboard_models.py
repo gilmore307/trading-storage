@@ -8,6 +8,7 @@ submit broker work, or mutate lifecycle state.
 from __future__ import annotations
 
 import json
+import re
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Mapping
@@ -227,11 +228,33 @@ def _load_json_object(path: Path) -> dict[str, Any] | None:
     return payload if isinstance(payload, dict) else None
 
 
+def _model_group_version_label(*, fold_id: str, candidate_model_ref: str, fallback: str) -> str:
+    source = " ".join(item for item in [fold_id, candidate_model_ref, fallback] if item)
+    compact_match = re.search(
+        r"(?P<year>20\d{2})[-_ ]?fold[-_ ]?(?P<fold>\d+)",
+        source,
+        flags=re.IGNORECASE,
+    )
+    if compact_match:
+        return f"{compact_match.group('year')} fold{int(compact_match.group('fold'))}"
+
+    range_match = re.search(
+        r"(?P<year>20\d{2})-(?P<start_month>\d{2})_(?P=year)-(?P<end_month>\d{2})",
+        source,
+    )
+    if range_match:
+        start_month = int(range_match.group("start_month"))
+        fold_number = ((start_month - 1) // 6) + 1
+        return f"{range_match.group('year')} fold{fold_number}"
+
+    return fallback
+
+
 def _model_group_promotion_versions(storage_root: Path, *, active_ref: str | None) -> list[dict[str, Any]]:
     review_root = storage_root / "05_replay_datasets" / "promotion_replay_candidate_policy" / "promotion_review_runs"
     if not review_root.exists():
         return []
-    rows: list[dict[str, Any]] = []
+    rows_by_version_key: dict[str, dict[str, Any]] = {}
     for decision_path in sorted(review_root.glob("*/promotion_eligibility_decision.json")):
         decision = _load_json_object(decision_path)
         if decision is None:
@@ -243,6 +266,13 @@ def _model_group_promotion_versions(storage_root: Path, *, active_ref: str | Non
         decision_status = str(decision.get("decision_status") or "not_reported")
         recommendation = str(decision.get("agent_review_recommendation") or review.get("recommendation") or "")
         candidate_model_ref = str(decision.get("candidate_model_ref") or review.get("candidate_model_ref") or "")
+        fold_id = str(decision.get("fold_id") or review.get("fold_id") or "")
+        version_key = candidate_model_ref or fold_id or decision_path.parent.name
+        version_label = _model_group_version_label(
+            fold_id=fold_id,
+            candidate_model_ref=candidate_model_ref,
+            fallback=decision_path.parent.name,
+        )
         if active_ref and candidate_model_ref and candidate_model_ref == active_ref:
             identity = "active"
         elif decision_status == "eligible":
@@ -251,36 +281,44 @@ def _model_group_promotion_versions(storage_root: Path, *, active_ref: str | Non
             identity = "retired"
         else:
             identity = "candidate"
-        rows.append(
-            {
-                "version_id": decision_path.parent.name,
-                "fold_id": str(decision.get("fold_id") or review.get("fold_id") or ""),
-                "candidate_model_ref": candidate_model_ref,
-                "identity": identity,
-                "decision_status": decision_status,
-                "agent_review_recommendation": recommendation,
-                "created_at_utc": decision.get("created_at_utc") or review.get("created_at_utc"),
-                "updated_at_utc": decision.get("created_at_utc") or review.get("created_at_utc"),
-                "metrics": {
-                    "auroc": metrics.get("auroc"),
-                    "decision_row_count": metrics.get("decision_row_count"),
-                    "excess_return_total": metrics.get("excess_return_total"),
-                    "max_drawdown": metrics.get("max_drawdown"),
-                    "hit_rate": metrics.get("hit_rate"),
-                    "brier_score": metrics.get("brier_score"),
-                    "pca_available": metrics.get("pca_available"),
-                    "pcoa_available": metrics.get("pcoa_available"),
-                },
-                "blocking_issues": [str(item) for item in review.get("blocking_issues") or [] if item],
-                "summary": str(decision.get("decision_reason") or review.get("rationale") or ""),
-                "refs": {
-                    "decision_ref": str(decision_path),
-                    "review_ref": str(decision_path.parent / "promotion_evaluation_review.json"),
-                    "settlement_ref": settlement_ref,
-                },
-            }
-        )
-    return sorted(rows, key=lambda row: str(row.get("created_at_utc") or row.get("version_id") or ""))
+        row = {
+            "version_id": version_key,
+            "version_label": version_label,
+            "promotion_run_id": decision_path.parent.name,
+            "fold_id": fold_id,
+            "candidate_model_ref": candidate_model_ref,
+            "identity": identity,
+            "decision_status": decision_status,
+            "agent_review_recommendation": recommendation,
+            "created_at_utc": decision.get("created_at_utc") or review.get("created_at_utc"),
+            "updated_at_utc": decision.get("created_at_utc") or review.get("created_at_utc"),
+            "metrics": {
+                "auroc": metrics.get("auroc"),
+                "decision_row_count": metrics.get("decision_row_count"),
+                "excess_return_total": metrics.get("excess_return_total"),
+                "max_drawdown": metrics.get("max_drawdown"),
+                "hit_rate": metrics.get("hit_rate"),
+                "brier_score": metrics.get("brier_score"),
+                "pca_available": metrics.get("pca_available"),
+                "pcoa_available": metrics.get("pcoa_available"),
+            },
+            "blocking_issues": [str(item) for item in review.get("blocking_issues") or [] if item],
+            "summary": str(decision.get("decision_reason") or review.get("rationale") or ""),
+            "refs": {
+                "decision_ref": str(decision_path),
+                "review_ref": str(decision_path.parent / "promotion_evaluation_review.json"),
+                "settlement_ref": settlement_ref,
+            },
+        }
+        existing = rows_by_version_key.get(version_key)
+        row_clock = str(row.get("created_at_utc") or row.get("promotion_run_id") or "")
+        existing_clock = str((existing or {}).get("created_at_utc") or (existing or {}).get("promotion_run_id") or "")
+        if existing is None or row_clock >= existing_clock:
+            rows_by_version_key[version_key] = row
+    return sorted(
+        rows_by_version_key.values(),
+        key=lambda row: str(row.get("created_at_utc") or row.get("version_id") or ""),
+    )
 
 
 def build_model_layer_readiness_summary(
