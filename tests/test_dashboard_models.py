@@ -101,6 +101,27 @@ def _runtime_payload() -> dict:
 
 
 def _write_group_promotion_version(storage_root: Path) -> None:
+    replay_root = (
+        storage_root
+        / "05_replay_datasets"
+        / "promotion_replay_candidate_policy"
+        / "replay_execution_runs"
+        / "aapl_replay_fixture"
+    )
+    replay_root.mkdir(parents=True, exist_ok=True)
+    replay_receipt_path = replay_root / "replay_execution_receipt.json"
+    replay_receipt_path.write_text(
+        json.dumps(
+            {
+                "contract_type": "evaluation_replay_execution_run",
+                "candidate_model_ref": "storage://trading-manager/model_group/aapl/2016-01_2016-06",
+                "target_refs": ["AAPL"],
+                "decision_rows_ref": str(replay_root / "decision_rows.jsonl"),
+            }
+        )
+        + "\n",
+        encoding="utf-8",
+    )
     settlement_path = (
         storage_root
         / "05_replay_datasets"
@@ -123,6 +144,7 @@ def _write_group_promotion_version(storage_root: Path) -> None:
             {
                 "contract_type": "fold_settlement_run",
                 "target_symbol": "AAPL",
+                "replay_result_ref": str(replay_receipt_path),
                 "metrics": {
                     "decision_row_count": 5382,
                     "auroc": 0.5246,
@@ -359,6 +381,92 @@ def _write_mismatched_group_promotion_version(storage_root: Path) -> None:
     )
 
 
+def _write_unscoped_group_promotion_version(storage_root: Path) -> None:
+    replay_root = (
+        storage_root
+        / "05_replay_datasets"
+        / "promotion_replay_candidate_policy"
+        / "replay_execution_runs"
+        / "unscoped_replay_fixture"
+    )
+    replay_root.mkdir(parents=True, exist_ok=True)
+    replay_receipt_path = replay_root / "replay_execution_receipt.json"
+    replay_receipt_path.write_text(
+        json.dumps(
+            {
+                "contract_type": "evaluation_replay_execution_run",
+                "candidate_model_ref": "storage://trading-manager/model_group/2016-01_2016-06",
+                "target_refs": ["BTC", "ETH", "SOL"],
+                "decision_rows_ref": str(replay_root / "decision_rows.jsonl"),
+            }
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+    settlement_path = (
+        storage_root
+        / "05_replay_datasets"
+        / "promotion_replay_candidate_policy"
+        / "fold_settlement_runs"
+        / "model_group_evaluation_unscoped"
+        / "fold_settlement_run.json"
+    )
+    review_root = (
+        storage_root
+        / "05_replay_datasets"
+        / "promotion_replay_candidate_policy"
+        / "promotion_review_runs"
+        / "model_group_evaluation_unscoped"
+    )
+    settlement_path.parent.mkdir(parents=True, exist_ok=True)
+    review_root.mkdir(parents=True, exist_ok=True)
+    settlement_path.write_text(
+        json.dumps(
+            {
+                "contract_type": "fold_settlement_run",
+                "replay_result_ref": str(replay_receipt_path),
+                "metrics": {
+                    "decision_row_count": 80,
+                    "feature_diagnostics": {
+                        "pca": {"available": True, "points": [{"x": 0.1, "y": 0.2}]},
+                        "pcoa": {"available": True, "points": [{"x": 0.2, "y": 0.3}]},
+                        "silhouette": {"outcome_label": -0.007, "decision_action": 0.327},
+                    },
+                },
+            }
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+    (review_root / "promotion_evaluation_review.json").write_text(
+        json.dumps(
+            {
+                "contract_type": "promotion_evaluation_review",
+                "recommendation": "failed",
+                "settlement_run_ref": str(settlement_path),
+                "created_at_utc": "2026-05-29T00:07:00Z",
+            }
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+    (review_root / "promotion_eligibility_decision.json").write_text(
+        json.dumps(
+            {
+                "contract_type": "promotion_eligibility_decision",
+                "fold_id": "fold_2016-01_2016-06",
+                "candidate_model_ref": "storage://trading-manager/model_group/2016-01_2016-06",
+                "decision_status": "rejected",
+                "settlement_run_ref": str(settlement_path),
+                "replay_validation_ref": str(replay_receipt_path),
+                "created_at_utc": "2026-05-29T00:07:00Z",
+            }
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+
+
 class DashboardModelsTests(unittest.TestCase):
     def test_builds_model_layer_readiness_from_existing_summaries(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
@@ -402,6 +510,7 @@ class DashboardModelsTests(unittest.TestCase):
             self.assertEqual(payload["chart_payload"]["group_versions"][0]["metrics"]["pca_variance_top2"], 0.81)
             self.assertEqual(payload["chart_payload"]["group_versions"][0]["metrics"]["silhouette_outcome_label"], 0.18)
             self.assertEqual(payload["chart_payload"]["group_versions"][0]["metrics"]["decision_variable_schema_status"], "passed")
+            self.assertEqual(payload["chart_payload"]["group_versions"][0]["metrics"]["diagnostic_availability"]["slice_distribution"]["status"], "available")
             variable_diagnostics = payload["chart_payload"]["group_versions"][0]["metrics"]["decision_variable_schema_diagnostics"]
             self.assertEqual(variable_diagnostics["coverage"]["decision_intended_side"]["values"]["long"], 3400)
             self.assertEqual(variable_diagnostics["coverage"]["eval_action_class"]["values"]["taken_good"], 2100)
@@ -452,6 +561,26 @@ class DashboardModelsTests(unittest.TestCase):
 
             self.assertEqual(payload["chart_payload"]["group_versions"], [])
             self.assertEqual(payload["chart_payload"]["status_counts"], {})
+
+    def test_model_group_versions_skip_unscoped_artifacts_and_report_exclusion(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            storage_root = Path(tmp)
+            _write_latest(storage_root, "historical_task_progress_summary", _historical_payload())
+            _write_latest(storage_root, "execution_realtime_trading_runtime_status", _runtime_payload())
+            _write_unscoped_group_promotion_version(storage_root)
+
+            payload = build_model_promotion_posture_summary(
+                storage_root=storage_root,
+                generated_at_utc="2026-05-29T00:08:00Z",
+            )
+
+            self.assertEqual(payload["chart_payload"]["group_versions"], [])
+            exclusions = payload["chart_payload"]["excluded_group_versions"]
+            self.assertEqual(len(exclusions), 1)
+            self.assertIn("missing_target_symbol", exclusions[0]["reason_codes"])
+            self.assertIn("unscoped_candidate_model_ref", exclusions[0]["reason_codes"])
+            self.assertEqual(payload["summary"], "No valid scoped model-group promotion evidence is published.")
+            self.assertEqual(payload["issue_refs"][0]["issue_id"], "model_group_promotion_evidence_excluded")
 
     def test_refresh_materializes_model_summaries(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:

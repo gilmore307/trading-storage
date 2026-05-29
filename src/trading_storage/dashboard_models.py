@@ -220,6 +220,24 @@ def _source_refs(historical: Mapping[str, Any] | None, runtime: Mapping[str, Any
     ]
 
 
+def _exclusion_issue_refs(exclusions: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    if not exclusions:
+        return []
+    counts: dict[str, int] = {}
+    for exclusion in exclusions:
+        for reason_code in exclusion.get("reason_codes") or []:
+            key = str(reason_code)
+            counts[key] = counts.get(key, 0) + 1
+    return [
+        {
+            "issue_id": "model_group_promotion_evidence_excluded",
+            "severity": "medium",
+            "summary": f"{len(exclusions)} model-group promotion artifacts were excluded from dashboard analysis because they are not valid scoped promotion evidence.",
+            "reason_counts": counts,
+        }
+    ]
+
+
 def _load_json_object(path: Path) -> dict[str, Any] | None:
     try:
         payload = json.loads(path.read_text(encoding="utf-8"))
@@ -284,11 +302,65 @@ def _model_group_version_scope_mismatch(decision: Mapping[str, Any], settlement:
     return None
 
 
-def _model_group_promotion_versions(storage_root: Path, *, active_ref: str | None) -> list[dict[str, Any]]:
+def _model_group_version_exclusion_reasons(
+    *,
+    decision: Mapping[str, Any],
+    settlement: Mapping[str, Any] | None,
+    target_symbol: str,
+    candidate_model_ref: str,
+) -> list[dict[str, str]]:
+    reasons: list[dict[str, str]] = []
+    normalized_target = target_symbol.strip().upper()
+    if not normalized_target:
+        reasons.append({"reason_code": "missing_target_symbol", "reason": "promotion artifact does not declare a target_symbol"})
+    candidate_target = _target_symbol_from_candidate_ref(candidate_model_ref)
+    if not candidate_target:
+        reasons.append({"reason_code": "unscoped_candidate_model_ref", "reason": "candidate_model_ref is fold-scoped instead of target-scoped"})
+    elif normalized_target and candidate_target != normalized_target:
+        reasons.append(
+            {
+                "reason_code": "candidate_target_mismatch",
+                "reason": f"candidate_model_ref target {candidate_target} does not match artifact target {normalized_target}",
+            }
+        )
+    scope_mismatch = _model_group_version_scope_mismatch(decision, settlement, normalized_target)
+    if scope_mismatch:
+        reasons.append({"reason_code": "replay_scope_target_mismatch", "reason": scope_mismatch})
+    return reasons
+
+
+def _diagnostic_availability(metrics: Mapping[str, Any]) -> dict[str, dict[str, str]]:
+    feature = metrics.get("feature_diagnostics") if isinstance(metrics.get("feature_diagnostics"), Mapping) else {}
+    scorecards = metrics.get("scorecards") if isinstance(metrics.get("scorecards"), Mapping) else {}
+    slices = scorecards.get("slices") if isinstance(scorecards.get("slices"), Mapping) else {}
+    silhouette = feature.get("silhouette") if isinstance(feature.get("silhouette"), Mapping) else {}
+    pca = feature.get("pca") if isinstance(feature.get("pca"), Mapping) else {}
+    pcoa = feature.get("pcoa") if isinstance(feature.get("pcoa"), Mapping) else {}
+    feature_available = bool(pca.get("available") or pcoa.get("available"))
+    slice_available = bool(any(isinstance(value, list) and value for value in slices.values()))
+    silhouette_available = bool(any(value is not None for value in silhouette.values()))
+    return {
+        "feature_space": {
+            "status": "available" if feature_available else "unavailable",
+            "reason_code": "feature_space_published" if feature_available else "missing_feature_space_diagnostics",
+        },
+        "silhouette": {
+            "status": "available" if silhouette_available else "unavailable",
+            "reason_code": "silhouette_published" if silhouette_available else "missing_silhouette_diagnostics",
+        },
+        "slice_distribution": {
+            "status": "available" if slice_available else "unavailable",
+            "reason_code": "scorecard_slices_published" if slice_available else "missing_slice_scorecards",
+        },
+    }
+
+
+def _model_group_promotion_evidence(storage_root: Path, *, active_ref: str | None) -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
     review_root = storage_root / "05_replay_datasets" / "promotion_replay_candidate_policy" / "promotion_review_runs"
     if not review_root.exists():
-        return []
+        return [], []
     rows_by_version_key: dict[str, dict[str, Any]] = {}
+    exclusions: list[dict[str, Any]] = []
     for decision_path in sorted(review_root.glob("*/promotion_eligibility_decision.json")):
         decision = _load_json_object(decision_path)
         if decision is None:
@@ -308,7 +380,25 @@ def _model_group_promotion_versions(storage_root: Path, *, active_ref: str | Non
             or _target_symbol_from_candidate_ref(candidate_model_ref)
             or ""
         ).strip().upper()
-        if _model_group_version_scope_mismatch(decision, settlement, target_symbol):
+        exclusion_reasons = _model_group_version_exclusion_reasons(
+            decision=decision,
+            settlement=settlement,
+            target_symbol=target_symbol,
+            candidate_model_ref=candidate_model_ref,
+        )
+        if exclusion_reasons:
+            exclusions.append(
+                {
+                    "promotion_run_id": decision_path.parent.name,
+                    "decision_ref": str(decision_path),
+                    "settlement_ref": settlement_ref or None,
+                    "fold_id": fold_id or None,
+                    "target_symbol": target_symbol or None,
+                    "candidate_model_ref": candidate_model_ref or None,
+                    "reason_codes": [item["reason_code"] for item in exclusion_reasons],
+                    "reasons": exclusion_reasons,
+                }
+            )
             continue
         version_key = candidate_model_ref or fold_id or decision_path.parent.name
         version_label = _model_group_version_label(
@@ -385,6 +475,7 @@ def _model_group_promotion_versions(storage_root: Path, *, active_ref: str | Non
                 "feature_diagnostics": metrics.get("feature_diagnostics"),
                 "decision_variable_schema_diagnostics": metrics.get("decision_variable_schema_diagnostics"),
                 "scorecards": metrics.get("scorecards"),
+                "diagnostic_availability": metrics.get("diagnostic_availability") or _diagnostic_availability(metrics),
                 "evaluation_disagreement_report": metrics.get("evaluation_disagreement_report"),
             },
             "blocking_issues": [str(item) for item in review.get("blocking_issues") or [] if item],
@@ -412,7 +503,12 @@ def _model_group_promotion_versions(storage_root: Path, *, active_ref: str | Non
     return sorted(
         rows,
         key=lambda row: str(row.get("created_at_utc") or row.get("version_id") or ""),
-    )
+    ), exclusions
+
+
+def _model_group_promotion_versions(storage_root: Path, *, active_ref: str | None) -> list[dict[str, Any]]:
+    rows, _exclusions = _model_group_promotion_evidence(storage_root, active_ref=active_ref)
+    return rows
 
 
 def _target_symbol_from_candidate_ref(candidate_model_ref: str) -> str | None:
@@ -439,7 +535,7 @@ def build_model_layer_readiness_summary(
     evaluation_task = _global_task(tasks, "model_group.evaluation")
     promotion_task = _global_task(tasks, "model_group.promotion")
     active_ref = _active_ref(runtime)
-    group_versions = _model_group_promotion_versions(storage_root, active_ref=active_ref)
+    group_versions, excluded_group_versions = _model_group_promotion_evidence(storage_root, active_ref=active_ref)
     latest_group_promotion = group_versions[-1] if group_versions else None
     layers = []
     version_count = 0
@@ -494,9 +590,10 @@ def build_model_layer_readiness_summary(
             "retiring_model_refs": [],
             "eliminated_model_refs": [],
             "group_versions": group_versions,
+            "excluded_group_versions": excluded_group_versions,
         },
         "profile_refs": [{"registry_ref": "MODEL_LAYER_READINESS_SUMMARY", "field": "contract_type"}],
-        "issue_refs": [],
+        "issue_refs": _exclusion_issue_refs(excluded_group_versions),
         "diagnostic_refs": [],
         "lineage_refs": _source_refs(historical, runtime),
         "freshness": _freshness([historical, runtime]),
@@ -518,7 +615,7 @@ def build_model_promotion_posture_summary(
     evaluation_task = _global_task(tasks, "model_group.evaluation")
     promotion_task = _global_task(tasks, "model_group.promotion")
     active_ref = _active_ref(runtime)
-    group_versions = _model_group_promotion_versions(storage_root, active_ref=active_ref)
+    group_versions, excluded_group_versions = _model_group_promotion_evidence(storage_root, active_ref=active_ref)
     rows = []
     blocked_count = 0
     active_count = 0
@@ -566,15 +663,20 @@ def build_model_promotion_posture_summary(
         "source_system": "trading-storage",
         "status": "blocked" if blocked_count else "ready",
         "severity": "medium" if blocked_count else "info",
-        "summary": f"Model promotion posture has {len(group_versions)} model-group promotion versions and {len(rows)} layer rows.",
+        "summary": (
+            f"Model promotion posture has {len(group_versions)} valid scoped model-group promotion versions and {len(rows)} layer rows."
+            if group_versions
+            else "No valid scoped model-group promotion evidence is published."
+        ),
         "chart_payload": {
             "models": rows,
             "group_versions": group_versions,
+            "excluded_group_versions": excluded_group_versions,
             "status_counts": status_counts,
             "identity_counts": identity_counts,
         },
         "profile_refs": [{"registry_ref": "MODEL_PROMOTION_POSTURE_SUMMARY", "field": "contract_type"}],
-        "issue_refs": [],
+        "issue_refs": _exclusion_issue_refs(excluded_group_versions),
         "diagnostic_refs": [],
         "lineage_refs": _source_refs(historical, runtime),
         "freshness": _freshness([historical, runtime]),
