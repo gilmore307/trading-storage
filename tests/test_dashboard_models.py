@@ -145,6 +145,9 @@ def _write_group_promotion_version(storage_root: Path) -> None:
                     "month_slice_count": 6,
                     "data_integrity_status": "passed",
                     "leakage_check_status": "passed",
+                    "decision_variable_schema_status": "passed",
+                    "decision_intended_side_unknown_count": 0,
+                    "decision_agency_unknown_count": 0,
                     "feature_column_count": 3,
                     "feature_row_count": 5382,
                     "feature_sample_count": 160,
@@ -175,6 +178,31 @@ def _write_group_promotion_version(storage_root: Path) -> None:
                     "temporal_stability_diagnostics": {"month_slice_count": 6, "worst_month_return": -0.18},
                     "baseline_comparison_diagnostics": {"candidate_minus_no_trade": 1.98},
                     "uncertainty_diagnostics": {"available": False, "reason": "single fold"},
+                    "decision_variable_schema_diagnostics": {
+                        "status": "passed",
+                        "row_count": 5382,
+                        "feature_namespace_leakage_status": "passed",
+                        "feature_namespace_leakage_columns": [],
+                        "coverage": {
+                            "decision_intended_side": {"known_count": 5382, "unknown_count": 0, "values": {"long": 3400, "flat": 1982}},
+                            "decision_intended_action": {"known_count": 5382, "unknown_count": 0, "values": {"open": 3400, "no_trade": 1982}},
+                            "decision_disposition": {"known_count": 5382, "unknown_count": 0, "values": {"accepted": 3400, "rejected": 1982}},
+                            "decision_agency": {"known_count": 5382, "unknown_count": 0, "values": {"model": 5382}},
+                            "eval_action_class": {"known_count": 5382, "unknown_count": 0, "values": {"taken_good": 2100, "taken_bad": 1300, "avoided_bad": 1982}},
+                            "eval_economic_class": {"known_count": 5382, "unknown_count": 0, "values": {"positive_excess": 2500, "negative_excess": 2882}},
+                        },
+                        "normalized_row_samples": [
+                            {
+                                "decision_intended_side": "long",
+                                "decision_intended_action": "open",
+                                "decision_disposition": "accepted",
+                                "decision_agency": "model",
+                                "replay_excess_return": 0.018,
+                                "eval_action_class": "taken_good",
+                                "eval_economic_class": "positive_excess",
+                            }
+                        ],
+                    },
                 },
             }
         )
@@ -257,6 +285,10 @@ class DashboardModelsTests(unittest.TestCase):
             self.assertEqual(payload["chart_payload"]["group_versions"][0]["metrics"]["data_integrity_status"], "passed")
             self.assertEqual(payload["chart_payload"]["group_versions"][0]["metrics"]["pca_variance_top2"], 0.81)
             self.assertEqual(payload["chart_payload"]["group_versions"][0]["metrics"]["silhouette_outcome_label"], 0.18)
+            self.assertEqual(payload["chart_payload"]["group_versions"][0]["metrics"]["decision_variable_schema_status"], "passed")
+            variable_diagnostics = payload["chart_payload"]["group_versions"][0]["metrics"]["decision_variable_schema_diagnostics"]
+            self.assertEqual(variable_diagnostics["coverage"]["decision_intended_side"]["values"]["long"], 3400)
+            self.assertEqual(variable_diagnostics["coverage"]["eval_action_class"]["values"]["taken_good"], 2100)
 
     def test_model_group_versions_are_fold_level_not_review_run_level(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
