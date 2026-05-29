@@ -87,9 +87,13 @@ class MaterializedDashboardReadModel:
     schema_path: Path
     index_path: Path
     content_hash: str
+    snapshot_state_hash: str
     byte_count: int
     generated_at_utc: str
     storage_uri: str
+    snapshot_written: bool
+    index_written: bool
+    write_mode: str
     index_row: dict[str, Any]
 
 
@@ -238,6 +242,29 @@ def _write_atomic_json(path: Path, payload: Mapping[str, Any]) -> bytes:
     return content
 
 
+def _read_json_object(path: Path) -> Mapping[str, Any] | None:
+    try:
+        payload = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        return None
+    if not isinstance(payload, Mapping):
+        return None
+    return payload
+
+
+def _snapshot_state_hash(payload: Mapping[str, Any]) -> str:
+    """Hash dashboard state while excluding volatile materialization time.
+
+    ``generated_at_utc`` changes on every refresh and should keep
+    ``latest.json`` current, but it should not create a new timestamped
+    snapshot when the owner-facing state did not change.
+    """
+
+    stable_payload = dict(payload)
+    stable_payload.pop("generated_at_utc", None)
+    return "sha256:" + hashlib.sha256(canonical_json_bytes(stable_payload)).hexdigest()
+
+
 def _storage_uri(storage_root: Path, path: Path) -> str:
     return "storage://trading-storage/" + str(path.relative_to(storage_root)).replace("\\", "/")
 
@@ -286,13 +313,27 @@ def materialize_dashboard_read_model(
         normalized_payload["schema_ref"] = schema_ref.replace(str(payload.get("contract_type")), contract_type)
         payload_to_write = normalized_payload
 
-    content = _write_atomic_json(snapshot_path, payload_to_write)
-    latest_content = _write_atomic_json(latest_path, payload_to_write)
-    if latest_content != content:
-        raise DashboardReadModelError("latest.json content diverged from validated snapshot")
-
+    content = canonical_json_bytes(payload_to_write)
     content_hash = "sha256:" + hashlib.sha256(content).hexdigest()
-    byte_count = len(content)
+    state_hash = _snapshot_state_hash(payload_to_write)
+    latest_payload = _read_json_object(latest_path)
+    latest_state_hash = _snapshot_state_hash(latest_payload) if latest_payload is not None else None
+    write_snapshot = latest_state_hash != state_hash
+
+    if write_snapshot:
+        snapshot_content = _write_atomic_json(snapshot_path, payload_to_write)
+        latest_content = _write_atomic_json(latest_path, payload_to_write)
+        if latest_content != snapshot_content:
+            raise DashboardReadModelError("latest.json content diverged from validated snapshot")
+        byte_count = len(snapshot_content)
+        storage_uri = _storage_uri(storage_root, snapshot_path)
+        write_mode = "snapshot_and_latest"
+    else:
+        latest_content = _write_atomic_json(latest_path, payload_to_write)
+        byte_count = len(latest_content)
+        storage_uri = _storage_uri(storage_root, latest_path)
+        write_mode = "latest_only_state_unchanged"
+
     index_row = {
         "contract_type": contract_type,
         "schema_version": payload["schema_version"],
@@ -302,12 +343,17 @@ def materialize_dashboard_read_model(
         "snapshot_uri": _storage_uri(storage_root, snapshot_path),
         "schema_uri": _storage_uri(storage_root, schema_path),
         "content_hash_sha256": content_hash,
+        "snapshot_state_hash_sha256": state_hash,
         "byte_count": byte_count,
         "source_system": payload["source_system"],
         "status": payload["status"],
         "severity": payload.get("severity"),
+        "snapshot_written": write_snapshot,
+        "index_written": write_snapshot,
+        "write_mode": write_mode,
     }
-    append_text_locked(index_path, json.dumps(index_row, sort_keys=True) + "\n")
+    if write_snapshot:
+        append_text_locked(index_path, json.dumps(index_row, sort_keys=True) + "\n")
 
     return MaterializedDashboardReadModel(
         contract_type=contract_type,
@@ -316,8 +362,12 @@ def materialize_dashboard_read_model(
         schema_path=schema_path,
         index_path=index_path,
         content_hash=content_hash,
+        snapshot_state_hash=state_hash,
         byte_count=byte_count,
         generated_at_utc=str(payload["generated_at_utc"]),
-        storage_uri=index_row["snapshot_uri"],
+        storage_uri=storage_uri,
+        snapshot_written=write_snapshot,
+        index_written=write_snapshot,
+        write_mode=write_mode,
         index_row=index_row,
     )

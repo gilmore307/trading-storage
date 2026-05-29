@@ -108,6 +108,18 @@ Includes Layer 3+ diagnostic summaries, runtime metadata, dashboard snapshots, s
 
 Policy: delete by TTL after the model run cycle closes and after latest summaries, receipts, manifests, lineage refs, and unresolved-alert evidence are preserved. Keep only compact summary/receipt evidence after the retention window.
 
+## Materialization classes
+
+Storage lifecycle decisions classify files by the role they play, not only by path:
+
+- `canonical_source`: source/provider payloads and point-in-time raw evidence needed to rebuild or audit later outputs. Keep or compress by default.
+- `durable_evidence`: model artifacts, replay/evaluation/promotion evidence, lifecycle receipts, and mutation/audit receipts. Keep for lineage or audit lifetime.
+- `control_state`: concise current facts, pointers, locks, workflow state, and readiness state used to run the system. Keep current; archive only through reviewed state policy.
+- `derived_read_model`: dashboard/status/task summaries and other rebuildable materialized views. Keep `latest` hot and retain only state-change snapshots needed for charts/debugging.
+- `debug_sidecar`: stdout/stderr, dry-run dumps, duplicate JSONL extracts, scratch manifests, and diagnostic context that is not the only evidence. TTL delete or compress after the owning run closes.
+
+When one logical fact appears in more than one class, the narrower canonical class owns the fact. For example, TE calendar source payloads are `canonical_source`; dashboard rows summarizing TE freshness are `derived_read_model`.
+
 ### Replay datasets and replay downloads
 
 Replay storage separates reusable replay inputs, model-specific temporary downloads, and permanent model-pipeline replay results.
@@ -148,8 +160,8 @@ Policy: never compress PostgreSQL live data files directly. Archive through dump
 - model-specific replay downloads such as one-off option snapshots: TTL delete after replay close when summaries/manifests/receipts are retained;
 - PIT/vintage/source history: compress and retain by default;
 - Trading Economics calendar/source payloads: keep forever; no delete candidates, no destructive pruning, only append/incremental additions under the canonical month-bucketed TE source root;
-- dashboard/read-model latest summaries: retained;
-- dashboard/read-model high-frequency snapshots: count-based metadata pruning after explicit reviewed approval; current default prune plan keeps the latest 10 snapshots per contract and marks older snapshots as delete candidates while preserving `latest.json`, schemas, indexes, SQL, and source data;
+- dashboard/read-model latest summaries: retained as derived read models;
+- dashboard/read-model state-change snapshots: count-based metadata pruning after explicit reviewed approval; current default prune plan keeps the latest 10 snapshots per contract and marks older snapshots as delete candidates while preserving `latest.json`, schemas, indexes, SQL, and source data;
 - lifecycle receipts, tombstones, executed protected sets, executed lifecycle plans, and quarantine/recheck evidence: retained as audit evidence;
 - lifecycle `runs`, `outputs`, and `staging`: ordinary runtime context rolls off after about 30 days; formal lifecycle evidence found there is retained until extracted to canonical `storage/90_lifecycle` evidence directories;
 - Layer 3+ model-run metadata/intermediates: delete by TTL after run-cycle close when reproducible or no longer lineage-required;

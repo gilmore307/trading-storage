@@ -27,10 +27,10 @@ Where:
 
 - `<contract_type>` is the registered payload value, for example `current_system_status_summary`.
 - `<generated_at_utc_compact>` uses UTC compact form `YYYYMMDDTHHMMSSZ` so filenames sort chronologically and avoid punctuation.
-- `latest.json` is a copy of the newest accepted snapshot for fast dashboard reads.
-- `snapshots/` keeps timestamped materialized history for trend charts and audit.
+- `latest.json` is the newest accepted summary for fast dashboard reads.
+- `snapshots/` keeps timestamped state-change history for trend charts and debugging.
 - `schemas/` holds JSON Schema contracts for validation once implementation begins.
-- `index/dashboard_read_model_index.jsonl` records the latest known snapshot path, checksum, byte count, freshness, and schema ref per contract.
+- `index/dashboard_read_model_index.jsonl` records accepted state-change snapshot paths, checksums, byte counts, freshness, and schema refs per contract.
 
 ## Registered Initial Contracts
 
@@ -104,8 +104,9 @@ Minimum validation requirements:
 4. `schema_ref` resolves to the schema used for validation.
 5. `diagnostic_refs` are issue-focused and not a general raw artifact/log/table browser.
 6. No secret-like values appear in summary, chart, profile, issue, diagnostic, or lineage payloads.
-7. `latest.json` update is atomic after snapshot validation succeeds.
-8. Index row checksum and byte count match the materialized snapshot.
+7. `latest.json` update is atomic after validation succeeds.
+8. Timestamped snapshots and index rows are written only when the non-volatile owner-facing state changes.
+9. Index row checksum and byte count match the materialized state-change snapshot.
 
 ## Lifecycle Posture
 
@@ -115,6 +116,7 @@ Default lifecycle posture:
 
 - retain `latest.json` for every registered summary contract;
 - retain the latest few snapshots for trend charts and debugging;
+- update `latest.json` without creating a snapshot when only `generated_at_utc` changed;
 - prune older snapshots when they fall outside the per-contract hot count window;
 - never delete a summary snapshot that is the only remaining explanation for an unresolved alert;
 - preserve schema and contract metadata needed for restore compatibility.
@@ -136,7 +138,7 @@ It must not use this layout to create primary views over raw artifacts, raw rece
 
 The first storage-side materialization and refresh helpers are implemented:
 
-- `src/trading_storage/dashboard_read_models.py` validates the common dashboard read-model envelope, rejects unsafe contract paths, rejects future timestamps beyond accepted clock skew, scans for secret-like values, writes snapshots, atomically replaces `latest.json`, creates the common schema placeholder for the contract, and appends `dashboard_read_model_index.jsonl` rows with checksum and byte counts.
+- `src/trading_storage/dashboard_read_models.py` validates the common dashboard read-model envelope, rejects unsafe contract paths, rejects future timestamps beyond accepted clock skew, scans for secret-like values, atomically replaces `latest.json`, creates the common schema placeholder for the contract, and appends `dashboard_read_model_index.jsonl` rows with checksum and byte counts only for state-change snapshots.
 - `scripts/dashboard/materialize_read_model.py` is the executable wrapper for validating and materializing one producer-supplied read-model JSON payload.
 - `src/trading_storage/dashboard_refresh.py` and `scripts/dashboard/refresh_historical_task_progress_read_model.py` run the manager-owned `historical_task_progress_summary` producer and materialize the validated output.
 - `src/trading_storage/dashboard_realtime_signals.py` and `scripts/dashboard/refresh_realtime_signal_summary_read_model.py` build and materialize `realtime_signal_summary`.

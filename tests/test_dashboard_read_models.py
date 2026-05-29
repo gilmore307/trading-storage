@@ -65,7 +65,58 @@ class DashboardReadModelTests(unittest.TestCase):
             self.assertEqual(len(index_rows), 1)
             self.assertEqual(index_rows[0]["snapshot_uri"], materialized.storage_uri)
             self.assertEqual(index_rows[0]["content_hash_sha256"], materialized.content_hash)
+            self.assertEqual(index_rows[0]["snapshot_state_hash_sha256"], materialized.snapshot_state_hash)
             self.assertEqual(index_rows[0]["byte_count"], materialized.byte_count)
+            self.assertTrue(materialized.snapshot_written)
+            self.assertTrue(materialized.index_written)
+            self.assertEqual(materialized.write_mode, "snapshot_and_latest")
+
+    def test_latest_only_refresh_when_state_is_unchanged(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            storage_root = Path(tmp)
+            first = materialize_dashboard_read_model(sample_payload(), storage_root=storage_root, now=FIXED_NOW)
+            second_payload = sample_payload(generated_at_utc="2026-05-12T00:00:30Z")
+            second = materialize_dashboard_read_model(second_payload, storage_root=storage_root, now=FIXED_NOW)
+
+            self.assertTrue(first.snapshot_path.exists())
+            self.assertFalse(second.snapshot_path.exists())
+            self.assertTrue(second.latest_path.exists())
+            self.assertFalse(second.snapshot_written)
+            self.assertFalse(second.index_written)
+            self.assertEqual(second.write_mode, "latest_only_state_unchanged")
+            self.assertEqual(second.storage_uri, "storage://trading-storage/06_dashboard_cache/read_models/current_system_status_summary/latest.json")
+
+            latest = json.loads(second.latest_path.read_text(encoding="utf-8"))
+            index_rows = [json.loads(line) for line in second.index_path.read_text(encoding="utf-8").splitlines()]
+
+            self.assertEqual(latest["generated_at_utc"], "2026-05-12T00:00:30Z")
+            self.assertEqual(len(index_rows), 1)
+
+    def test_state_change_writes_new_snapshot_and_index_row(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            storage_root = Path(tmp)
+            first = materialize_dashboard_read_model(sample_payload(), storage_root=storage_root, now=FIXED_NOW)
+            changed = materialize_dashboard_read_model(
+                sample_payload(
+                    generated_at_utc="2026-05-12T00:01:00Z",
+                    status="degraded",
+                    summary="Dashboard read-model source is stale.",
+                    chart_payload={"cards": [{"label": "stale", "value": 1}]},
+                    freshness={"class": "fresh", "stale_after_seconds": 300, "status": "stale"},
+                ),
+                storage_root=storage_root,
+                now=FIXED_NOW,
+            )
+
+            self.assertTrue(first.snapshot_path.exists())
+            self.assertTrue(changed.snapshot_path.exists())
+            self.assertTrue(changed.snapshot_written)
+            self.assertNotEqual(first.snapshot_state_hash, changed.snapshot_state_hash)
+
+            index_rows = [json.loads(line) for line in changed.index_path.read_text(encoding="utf-8").splitlines()]
+
+            self.assertEqual(len(index_rows), 2)
+            self.assertEqual(index_rows[-1]["write_mode"], "snapshot_and_latest")
 
     def test_rejects_contract_type_mismatch(self):
         with self.assertRaises(DashboardReadModelError):

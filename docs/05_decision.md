@@ -631,11 +631,11 @@ Status: Accepted
 
 ### Context
 
-`storage/06_dashboard_cache` is a read-model cache, not the canonical evidence store. Keeping every timestamped dashboard snapshot would grow unbounded under frequent refreshes, while retaining a small recent window is still useful for trend charts, debugging, and quick operator comparison.
+`storage/06_dashboard_cache` is a read-model cache, not the canonical evidence store. Keeping every refresh as a timestamped dashboard snapshot would grow unbounded under timer-driven refreshes, while retaining a small recent state-change window is still useful for trend charts, debugging, and quick operator comparison.
 
 ### Decision
 
-Retain `latest.json`, schema files, and index metadata for dashboard read models.
+Retain `latest.json`, schema files, and index metadata for dashboard read models. `latest.json` is updated on every accepted refresh. Timestamped snapshots and index rows are written only when non-volatile owner-facing state changes; a refresh that only advances `generated_at_utc` does not create a new snapshot.
 
 For timestamped dashboard snapshots under:
 
@@ -643,11 +643,11 @@ For timestamped dashboard snapshots under:
 storage/06_dashboard_cache/read_models/<contract_type>/snapshots/
 ```
 
-use count-based hot retention. The default prune plan keeps the latest 10 snapshots per contract and marks older snapshots as delete candidates. The optional age grace flag may be used for short debugging windows, but it is not the default retention mechanism.
+use count-based hot retention. The default prune plan keeps the latest 10 state-change snapshots per contract and marks older snapshots as delete candidates. The optional age grace flag may be used for short debugging windows, but it is not the default retention mechanism.
 
 ### Consequences
 
-- Dashboard snapshot retention is bounded by count instead of refresh frequency.
+- Dashboard snapshot creation is bounded by state changes, and snapshot retention is bounded by count instead of refresh frequency.
 - `latest.json`, schemas, index rows, Layer 1/2 data, SQL data, and canonical evidence are not deletion targets for the dashboard snapshot pruner.
 - If a dashboard snapshot contains the only copy of important evidence, that evidence must be moved to its canonical root before snapshot cleanup.
 - Destructive dashboard snapshot deletion still requires explicit apply plus a reviewed approval reference.

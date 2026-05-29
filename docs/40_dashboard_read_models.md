@@ -93,14 +93,16 @@ Dashboard summaries are owner-facing metadata caches. They are not canonical Lay
 Default lifecycle posture:
 
 - keep `latest.json` hot for every summary family;
-- keep schemas and compact index metadata;
-- keep a short recent snapshot window for charts/debugging;
-- prune high-frequency snapshots by count after the model-run cycle closes;
+- keep schemas and compact index metadata for accepted state-change snapshots;
+- keep a short recent snapshot window for charts/debugging, writing a new snapshot only when owner-facing state changes;
+- prune state-change snapshots by count after the model-run cycle closes;
 - never delete summaries that are the only remaining explanation for an unresolved alert;
 - preserve summary contract/version metadata for restore compatibility;
 - never use dashboard snapshot pruning to delete Layer 1/2 data, SQL data, schemas, index files, or `latest.json`.
 
 The current V0.1 snapshot-prune helper defaults to keeping the latest 10 snapshots per contract and marking older snapshots as delete candidates. The optional `--max-age-hours` flag can add a temporary age grace window, but the default is count-only. It is dry-run by default and requires `--apply` plus a reviewed approval reference for deletion.
+
+Refresh materialization is content-aware. A refresh that only advances `generated_at_utc` updates `latest.json` but does not write a timestamped snapshot or append an index row. Timestamped snapshots are state-change evidence for charts/debugging, not heartbeat logs.
 
 Operational hold: do not apply dashboard snapshot deletion while the event model is being redesigned and downstream models must be regenerated. These metadata snapshots may still be needed for comparison, debugging, and regeneration evidence until that cycle is closed and reviewed.
 
@@ -121,7 +123,7 @@ This document defines the storage-home boundary. `docs/41_dashboard_summary_layo
 
 Implemented storage-side support:
 
-- `src/trading_storage/dashboard_read_models.py` validates and materializes producer-supplied read-model JSON payloads into snapshot/latest/schema/index files under `storage/06_dashboard_cache/`.
+- `src/trading_storage/dashboard_read_models.py` validates and materializes producer-supplied read-model JSON payloads under `storage/06_dashboard_cache/`. It writes `latest.json` on every accepted refresh, but writes timestamped snapshots and index rows only when the non-volatile owner-facing state changes.
 - `src/trading_storage/dashboard_snapshot_lifecycle.py` and `scripts/dashboard/prune_dashboard_snapshots.py` plan or apply bounded deletion for old dashboard snapshot metadata while preserving `latest.json`, schemas, index files, Layer 1/2 data, and SQL.
 - `scripts/dashboard/materialize_read_model.py` exposes the helper as a CLI for one payload at a time.
 - `src/trading_storage/dashboard_refresh.py` and `scripts/dashboard/refresh_historical_task_progress_read_model.py` run the manager-owned `historical_task_progress_summary` producer and materialize the validated result; when no explicit coverage path is supplied, the refresh wrapper attaches the newest manager stage-coverage artifact so the Historical Task Progress page can show coverage instead of a blank placeholder.
@@ -129,7 +131,7 @@ Implemented storage-side support:
 - `src/trading_storage/dashboard_execution_runtime.py` and `scripts/dashboard/refresh_execution_runtime_status_read_model.py` build and materialize `execution_realtime_trading_runtime_status` from the execution-owned readiness artifact. Dashboard clients consume it through `/ws/read-models/execution_realtime_trading_runtime_status/latest`.
 - `src/trading_storage/dashboard_realtime_signals.py` and `scripts/dashboard/refresh_realtime_signal_summary_read_model.py` build and materialize `realtime_signal_summary` from execution-owned realtime monitor receipts. When no realtime monitor receipt exists, the producer emits an explicit safe `not_started` state rather than fabricating signal metrics.
 - `deploy/systemd/trading-storage-dashboard-read-model-refresh.service` and `.timer` define the fallback periodic refresh template. Manager workflow-state writes trigger primary progress refreshes, while the timer default is 60 seconds for calibration when an event is missed.
-- Tests cover envelope validation, path safety, future timestamp rejection, secret-like payload rejection, snapshot/latest/schema/index writes, the CLI materializer path, and refresh orchestration side-effect flags.
+- Tests cover envelope validation, path safety, future timestamp rejection, secret-like payload rejection, state-change snapshot/latest/schema/index writes, latest-only refreshes, the CLI materializer path, and refresh orchestration side-effect flags.
 
 Still not implemented:
 
