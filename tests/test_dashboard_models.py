@@ -276,6 +276,89 @@ def _write_group_promotion_version(storage_root: Path) -> None:
     )
 
 
+def _write_mismatched_group_promotion_version(storage_root: Path) -> None:
+    replay_root = (
+        storage_root
+        / "05_replay_datasets"
+        / "promotion_replay_candidate_policy"
+        / "replay_execution_runs"
+        / "crypto_replay_fixture"
+    )
+    replay_root.mkdir(parents=True, exist_ok=True)
+    replay_receipt_path = replay_root / "replay_execution_receipt.json"
+    replay_receipt_path.write_text(
+        json.dumps(
+            {
+                "contract_type": "evaluation_replay_execution_run",
+                "candidate_model_ref": "storage://trading-manager/model_group/2016-01_2016-06",
+                "target_refs": ["BTC", "ETH", "SOL"],
+                "decision_rows_ref": str(replay_root / "decision_rows.jsonl"),
+            }
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+    settlement_path = (
+        storage_root
+        / "05_replay_datasets"
+        / "promotion_replay_candidate_policy"
+        / "fold_settlement_runs"
+        / "model_group_evaluation_mismatch"
+        / "fold_settlement_run.json"
+    )
+    review_root = (
+        storage_root
+        / "05_replay_datasets"
+        / "promotion_replay_candidate_policy"
+        / "promotion_review_runs"
+        / "model_group_evaluation_mismatch"
+    )
+    settlement_path.parent.mkdir(parents=True, exist_ok=True)
+    review_root.mkdir(parents=True, exist_ok=True)
+    settlement_path.write_text(
+        json.dumps(
+            {
+                "contract_type": "fold_settlement_run",
+                "target_symbol": "AAPL",
+                "replay_result_ref": str(replay_receipt_path),
+                "metrics": {"decision_row_count": 5382, "auroc": 0.52},
+            }
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+    (review_root / "promotion_evaluation_review.json").write_text(
+        json.dumps(
+            {
+                "contract_type": "promotion_evaluation_review",
+                "target_symbol": "AAPL",
+                "recommendation": "insufficient_evidence",
+                "settlement_run_ref": str(settlement_path),
+                "created_at_utc": "2026-05-29T00:05:00Z",
+            }
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+    (review_root / "promotion_eligibility_decision.json").write_text(
+        json.dumps(
+            {
+                "contract_type": "promotion_eligibility_decision",
+                "fold_id": "fold_2016-01_2016-06",
+                "target_symbol": "AAPL",
+                "candidate_model_ref": "storage://trading-manager/model_group/aapl/2016-01_2016-06",
+                "decision_status": "deferred",
+                "agent_review_recommendation": "insufficient_evidence",
+                "settlement_run_ref": str(settlement_path),
+                "replay_validation_ref": str(replay_receipt_path),
+                "created_at_utc": "2026-05-29T00:05:00Z",
+            }
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+
+
 class DashboardModelsTests(unittest.TestCase):
     def test_builds_model_layer_readiness_from_existing_summaries(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
@@ -354,6 +437,21 @@ class DashboardModelsTests(unittest.TestCase):
 
             self.assertEqual(len(payload["chart_payload"]["group_versions"]), 1)
             self.assertEqual(payload["chart_payload"]["group_versions"][0]["version_label"], "AAPL 2016 fold1")
+
+    def test_model_group_versions_skip_replay_target_mismatch(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            storage_root = Path(tmp)
+            _write_latest(storage_root, "historical_task_progress_summary", _historical_payload())
+            _write_latest(storage_root, "execution_realtime_trading_runtime_status", _runtime_payload())
+            _write_mismatched_group_promotion_version(storage_root)
+
+            payload = build_model_promotion_posture_summary(
+                storage_root=storage_root,
+                generated_at_utc="2026-05-29T00:06:00Z",
+            )
+
+            self.assertEqual(payload["chart_payload"]["group_versions"], [])
+            self.assertEqual(payload["chart_payload"]["status_counts"], {})
 
     def test_refresh_materializes_model_summaries(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:

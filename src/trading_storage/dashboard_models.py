@@ -253,6 +253,37 @@ def _model_group_version_label(*, fold_id: str, candidate_model_ref: str, target
     return fallback
 
 
+def _string_set(value: Any) -> set[str]:
+    if isinstance(value, str):
+        stripped = value.strip()
+        return {stripped.upper()} if stripped else set()
+    if isinstance(value, (list, tuple, set)):
+        return {str(item).strip().upper() for item in value if str(item).strip()}
+    return set()
+
+
+def _model_group_version_scope_mismatch(decision: Mapping[str, Any], settlement: Mapping[str, Any] | None, target_symbol: str) -> str | None:
+    replay_ref = str(
+        decision.get("replay_validation_ref")
+        or decision.get("replay_result_ref")
+        or (settlement.get("replay_result_ref") if isinstance(settlement, Mapping) else "")
+        or ""
+    )
+    if not replay_ref:
+        return None
+    replay_receipt = _load_json_object(Path(replay_ref))
+    if replay_receipt is None:
+        return None
+    candidate_ref = str(replay_receipt.get("candidate_model_ref") or "")
+    if "current_deterministic_crypto_policy" in candidate_ref:
+        return "replay receipt used deterministic crypto placeholder policy"
+    target_refs = _string_set(replay_receipt.get("target_refs") or replay_receipt.get("candidate_target_refs"))
+    normalized_target = str(target_symbol or "").strip().upper()
+    if normalized_target and target_refs and normalized_target not in target_refs:
+        return f"replay receipt targets {', '.join(sorted(target_refs))} do not include model target {normalized_target}"
+    return None
+
+
 def _model_group_promotion_versions(storage_root: Path, *, active_ref: str | None) -> list[dict[str, Any]]:
     review_root = storage_root / "05_replay_datasets" / "promotion_replay_candidate_policy" / "promotion_review_runs"
     if not review_root.exists():
@@ -277,6 +308,8 @@ def _model_group_promotion_versions(storage_root: Path, *, active_ref: str | Non
             or _target_symbol_from_candidate_ref(candidate_model_ref)
             or ""
         ).strip().upper()
+        if _model_group_version_scope_mismatch(decision, settlement, target_symbol):
+            continue
         version_key = candidate_model_ref or fold_id or decision_path.parent.name
         version_label = _model_group_version_label(
             fold_id=fold_id,
