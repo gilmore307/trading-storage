@@ -95,6 +95,117 @@ LAYER_EVALUATION_CLAIMS = {
     },
 }
 
+METRIC_FAMILY_DESCRIPTIONS = {
+    "representation_context": "State/context coverage, stability, separability, and baseline improvement.",
+    "calibrated_prediction": "Binary probabilistic prediction metrics with valid point-in-time labels.",
+    "ranking_alpha": "Rank, spread, and score-bucket calibration for alpha/return ordering.",
+    "policy_utility": "Risk-policy and allocation utility under realistic constraints.",
+    "path_projection": "Projected path accuracy for exposure, risk, and state trajectories.",
+    "action_plan": "Action thesis, entry/target/stop, regret, and abstention quality.",
+    "option_expression": "Option contract/expression fit, feasibility, and payoff quality.",
+    "event_attribution": "Event-risk recall, attribution, intervention, and opportunity-cost quality.",
+    "integrity": "Point-in-time, leakage, lineage, and feasibility guardrails.",
+    "group_contribution": "Ablation/counterfactual contribution tests owned by the model group.",
+}
+
+
+def _metric_test(metric_id: str, label: str, family: str, role: str, eligibility: str, note: str) -> dict[str, str]:
+    return {
+        "metric_id": metric_id,
+        "label": label,
+        "metric_family": family,
+        "role": role,
+        "eligibility": eligibility,
+        "note": note,
+        "status": "insufficient_evidence" if role != "avoid" else "not_applicable",
+    }
+
+
+LAYER_METRIC_TESTS = {
+    1: [
+        _metric_test("regime_state_coverage", "Regime coverage", "representation_context", "primary", "Requires point-in-time market-state rows by date/session.", "Measures whether the context surface covers the fold without unexplained gaps."),
+        _metric_test("regime_transition_stability", "Transition stability", "representation_context", "primary", "Requires ordered regime-state outputs.", "Penalizes unstable state flips near fold boundaries."),
+        _metric_test("market_context_baseline_lift", "Baseline lift", "representation_context", "primary", "Requires broad-market labels or proxies.", "Compares state output against naive market buckets."),
+        _metric_test("macro_revision_leakage", "Macro/revision leakage", "integrity", "guardrail", "Requires source release clocks and revision timestamps.", "Blocks use of revised or future macro values."),
+        _metric_test("trade_pnl_as_regime_score", "Direct trade PnL", "group_contribution", "avoid", "Only allowed as model-group context.", "A broad context layer does not own final trade outcomes."),
+    ],
+    2: [
+        _metric_test("sector_relative_explanatory_power", "Sector-relative explanatory power", "representation_context", "primary", "Requires PIT sector/proxy rows and ETF/peer outcomes.", "Measures sector context beyond Layer 1."),
+        _metric_test("proxy_mapping_accuracy", "Proxy mapping accuracy", "representation_context", "primary", "Requires timestamped sector/proxy mapping evidence.", "Checks ETF/industry proxy relevance and stability."),
+        _metric_test("sector_residual_reduction", "Residual reduction vs L1", "group_contribution", "primary", "Requires counterfactual residual study with Layer 1 held fixed.", "Measures marginal context value over market regime."),
+        _metric_test("sector_map_survivorship", "Sector map survivorship", "integrity", "guardrail", "Requires point-in-time membership/proxy evidence.", "Blocks future sector membership leakage."),
+        _metric_test("target_trade_outcome_as_sector_score", "Target trade outcome", "group_contribution", "avoid", "Only allowed in model-group attribution.", "A sector context layer does not own target action or execution."),
+    ],
+    3: [
+        _metric_test("target_state_completeness", "State completeness", "representation_context", "primary", "Requires target-state vector rows and expected block schema.", "Measures coverage, missingness, and block completeness."),
+        _metric_test("baseline_ladder_improvement", "Baseline ladder improvement", "representation_context", "primary", "Requires target-state labels and baseline ladder definitions.", "Compares representation against naive/current-state baselines."),
+        _metric_test("state_quantile_separation", "Future-outcome quantile separation", "representation_context", "primary", "Requires future labels kept outside inference features.", "Checks whether state buckets separate future outcomes."),
+        _metric_test("target_identity_leakage", "Target identity leakage", "integrity", "guardrail", "Requires anonymous target candidate and split evidence.", "Blocks company identity leakage into fitting vectors."),
+        _metric_test("single_auroc_for_state_vector", "Single state-vector AUROC", "calibrated_prediction", "avoid", "Only allowed for an explicit binary probability head.", "A representation is not one binary classifier."),
+    ],
+    4: [
+        _metric_test("event_failure_precision_recall", "Event failure precision/recall", "event_attribution", "primary", "Requires known-event failure labels with PIT visibility.", "Measures event-family failure detection quality."),
+        _metric_test("event_failure_auroc_pr_auc", "Failure AUROC / PR-AUC", "calibrated_prediction", "primary", "Requires explicit binary probabilistic failure label.", "Valid only for probability of known event failure."),
+        _metric_test("lead_time_usefulness", "Lead-time usefulness", "event_attribution", "primary", "Requires event visibility time and decision time.", "Measures whether risk arrived early enough."),
+        _metric_test("post_event_article_leakage", "Post-event article leakage", "integrity", "guardrail", "Requires article/source timestamps.", "Blocks later coverage in pre-alpha risk."),
+        _metric_test("post_replay_residual_as_pre_alpha_input", "Post-replay residual attribution", "event_attribution", "avoid", "Owned by Layer 10, not Layer 4.", "Residual attribution must not leak into pre-alpha risk."),
+    ],
+    5: [
+        _metric_test("rank_ic_by_horizon", "Rank IC by horizon", "ranking_alpha", "primary", "Requires after-cost future return labels by horizon.", "Measures alpha-confidence ordering quality."),
+        _metric_test("decile_spread_after_cost", "After-cost decile spread", "ranking_alpha", "primary", "Requires score buckets and cost-adjusted outcomes.", "Checks whether higher scores realize better outcomes."),
+        _metric_test("expected_realized_calibration", "Expected vs realized calibration", "ranking_alpha", "primary", "Requires score buckets and realized after-cost return.", "Measures score magnitude calibration."),
+        _metric_test("positive_alpha_auroc_brier_ece", "Positive alpha AUROC / Brier / ECE", "calibrated_prediction", "primary", "Requires explicit probability of positive after-cost return.", "Valid only for a probabilistic binary alpha head."),
+        _metric_test("purged_embargoed_cv", "Purged / embargoed CV", "integrity", "guardrail", "Requires overlapping horizon metadata.", "Prevents horizon overlap and future label bleed."),
+        _metric_test("uncosted_win_rate", "Uncosted win rate", "ranking_alpha", "avoid", "Must be cost/slippage adjusted.", "Raw win rate overstates alpha quality."),
+    ],
+    6: [
+        _metric_test("risk_budget_utility", "Risk budget utility", "policy_utility", "primary", "Requires intended risk budget and realized risk evidence.", "Measures risk-adjusted exposure value."),
+        _metric_test("volatility_target_error", "Volatility targeting error", "policy_utility", "primary", "Requires ex-ante target risk and realized volatility.", "Checks realized risk versus intended risk."),
+        _metric_test("tail_loss_reduction", "Tail-loss reduction", "policy_utility", "primary", "Requires counterfactual baseline policy.", "Measures drawdown/tail containment value."),
+        _metric_test("hard_limit_compliance", "Hard-limit compliance", "integrity", "guardrail", "Requires timestamped account-independent limits.", "Blocks budget or exposure violations."),
+        _metric_test("auroc_as_risk_policy_primary", "AUROC primary score", "calibrated_prediction", "avoid", "Only allowed for an explicit binary risk-event probability.", "Risk policy is a utility/constraint layer."),
+    ],
+    7: [
+        _metric_test("exposure_path_error", "Exposure path error", "path_projection", "primary", "Requires projected and realized exposure paths.", "Measures delta/notional/gross/net projection accuracy."),
+        _metric_test("holding_period_accuracy", "Holding-period accuracy", "path_projection", "primary", "Requires planned and realized holding path labels.", "Checks duration and turnover fit."),
+        _metric_test("risk_trajectory_calibration", "Risk trajectory calibration", "path_projection", "primary", "Requires projected and realized risk trajectory.", "Measures path risk calibration."),
+        _metric_test("position_state_timestamp_audit", "Position timestamp audit", "integrity", "guardrail", "Requires point-in-time position state evidence.", "Blocks future fills/account state in projection."),
+        _metric_test("final_pnl_as_projection_metric", "Final PnL", "group_contribution", "avoid", "Only allowed as group contribution context.", "Projection does not own action execution."),
+    ],
+    8: [
+        _metric_test("target_before_stop_rate", "Target-before-stop rate", "action_plan", "primary", "Requires realistic path labels after planned entry.", "Measures price-path quality of the action thesis."),
+        _metric_test("realized_action_utility", "Realized action utility", "policy_utility", "primary", "Requires cost/slippage-adjusted action outcomes.", "Measures realized utility by action bucket."),
+        _metric_test("regret_vs_feasible_baseline", "Regret vs feasible baseline", "action_plan", "primary", "Requires feasible baseline action set.", "Compares selected action to available alternatives."),
+        _metric_test("abstention_quality", "Abstention quality", "action_plan", "primary", "Requires no-trade opportunity-cost and avoided-loss labels.", "Measures missed good trades and avoided bad trades."),
+        _metric_test("intrabar_path_leakage", "Intrabar path leakage", "integrity", "guardrail", "Requires bar/path timing rules.", "Blocks impossible target/stop ordering assumptions."),
+        _metric_test("uncosted_action_win_rate", "Uncosted action win rate", "action_plan", "avoid", "Must include costs/slippage and feasibility.", "Raw win rate can reward bad risk/reward."),
+    ],
+    9: [
+        _metric_test("contract_selection_quality", "Contract selection quality", "option_expression", "primary", "Requires PIT option candidates and selected contract outcome labels.", "Measures selected contract quality versus feasible candidates."),
+        _metric_test("option_profit_auroc_pr_auc", "Option profit AUROC / PR-AUC", "calibrated_prediction", "primary", "Requires explicit binary probability of profitable option outcome.", "Valid only for a binary option label."),
+        _metric_test("premium_efficiency", "Premium efficiency", "option_expression", "primary", "Requires premium, payoff, and spread-adjusted return labels.", "Measures payoff per premium/spread risk."),
+        _metric_test("greeks_iv_liquidity_fit", "Greeks / IV / liquidity fit", "option_expression", "primary", "Requires PIT chain Greeks, IV/skew/term, NBBO, OI/volume.", "Checks expression feasibility and thesis alignment."),
+        _metric_test("option_chain_timestamp_purity", "Option chain timestamp purity", "integrity", "guardrail", "Requires chain snapshot clocks and contract availability.", "Blocks expired/survivorship or future chain leakage."),
+        _metric_test("underlying_only_pnl_as_option_score", "Underlying-only PnL", "option_expression", "avoid", "Only valid as comparison context.", "Option layer must be judged on option outcomes and feasibility."),
+    ],
+    10: [
+        _metric_test("residual_event_attribution_accuracy", "Residual event attribution accuracy", "event_attribution", "primary", "Requires post-replay event-failure attribution labels.", "Measures attribution to the right event family."),
+        _metric_test("intervention_precision_recall", "Intervention precision/recall", "event_attribution", "primary", "Requires reviewed intervention/failure labels.", "Measures false block and false allow quality."),
+        _metric_test("avoided_loss_opportunity_cost", "Avoided loss / opportunity cost", "policy_utility", "primary", "Requires counterfactual and opportunity-cost accounting.", "Balances avoided losses against missed winners."),
+        _metric_test("severity_calibration", "Severity calibration", "event_attribution", "primary", "Requires severity labels or reviewed ordinal outcomes.", "Checks warning severity versus realized residual risk."),
+        _metric_test("post_replay_to_inference_leakage", "Post-replay leakage", "integrity", "guardrail", "Requires explicit inference-time route separation.", "Blocks replay-only evidence from live inference."),
+        _metric_test("causal_avoided_loss_claim", "Causal avoided-loss claim", "event_attribution", "avoid", "Requires counterfactual evidence before causality.", "Avoided loss is not causal proof by default."),
+    ],
+}
+
+MODEL_GROUP_SUPPLEMENTAL_TESTS = [
+    _metric_test("layer_ablation", "Layer ablation", "group_contribution", "primary", "Requires replay with one layer removed/frozen.", "Measures end-to-end layer impact without relabeling group PnL as layer-local."),
+    _metric_test("layer_replacement_baseline", "Layer replacement baseline", "group_contribution", "primary", "Requires null, heuristic, or previous-version substitute.", "Compares each layer against a controlled baseline."),
+    _metric_test("sequential_contribution", "Sequential contribution", "group_contribution", "primary", "Requires L1->L10 incremental replay.", "Measures marginal contribution as layers are added."),
+    _metric_test("cross_layer_consistency", "Cross-layer consistency", "group_contribution", "guardrail", "Requires full decision audit trail.", "Detects contradictory layer states."),
+    _metric_test("interaction_stress", "Interaction stress", "group_contribution", "guardrail", "Requires earnings/Fed/halt/volatility-shock windows.", "Tests stack behavior in known difficult regimes."),
+]
+
 
 def _read_latest(storage_root: Path, contract_type: str) -> dict[str, Any] | None:
     path = storage_root / "06_dashboard_cache" / "read_models" / contract_type / "latest.json"
@@ -724,6 +835,9 @@ def build_model_layer_readiness_summary(
 
 def _layer_evaluation_sections(layer: int, *, version: Mapping[str, Any] | None, group_versions: list[dict[str, Any]]) -> list[dict[str, Any]]:
     claim = LAYER_EVALUATION_CLAIMS[layer]
+    metric_tests = LAYER_METRIC_TESTS[layer]
+    primary_tests = [test["metric_id"] for test in metric_tests if test["role"] == "primary"]
+    guardrail_tests = [test["metric_id"] for test in metric_tests if test["role"] == "guardrail"]
     has_version = bool(version)
     group_reference_available = bool(group_versions)
     sections = [
@@ -742,8 +856,8 @@ def _layer_evaluation_sections(layer: int, *, version: Mapping[str, Any] | None,
             "section_id": "predictive_evidence",
             "label": "Predictive Evidence",
             "status": "insufficient_evidence",
-            "reason": "No layer-specific holdout metrics are published. Group metrics must not be relabeled as layer metrics.",
-            "required_evidence": claim["required_metrics"],
+            "reason": "Layer-local metric tests are defined, but no layer-specific holdout metric values are published yet. Group metrics must not be relabeled as layer metrics.",
+            "required_evidence": primary_tests,
         },
         {
             "section_id": "statistical_reliability",
@@ -778,7 +892,7 @@ def _layer_evaluation_sections(layer: int, *, version: Mapping[str, Any] | None,
             "label": "Integrity",
             "status": "insufficient_evidence",
             "reason": "No layer-specific leakage, label timing, point-in-time isolation, or artifact provenance check is published.",
-            "required_evidence": ["leakage_check", "label_timing_check", "train_test_isolation", "artifact_lineage"],
+            "required_evidence": guardrail_tests or ["leakage_check", "label_timing_check", "train_test_isolation", "artifact_lineage"],
         },
         {
             "section_id": "downstream_contribution",
@@ -793,6 +907,15 @@ def _layer_evaluation_sections(layer: int, *, version: Mapping[str, Any] | None,
         },
     ]
     return sections
+
+
+def _layer_metric_families(layer: int) -> list[str]:
+    families = []
+    for test in LAYER_METRIC_TESTS[layer]:
+        family = test["metric_family"]
+        if family not in families:
+            families.append(family)
+    return families
 
 
 def build_model_layer_evaluation_summary(
@@ -847,6 +970,8 @@ def build_model_layer_evaluation_summary(
                     "input_scope": lifecycle.get("summary") or "",
                     "output_contract": f"{model_id} layer output consumed by downstream model stack.",
                 },
+                "metric_families": _layer_metric_families(layer),
+                "metric_tests": LAYER_METRIC_TESTS[layer],
                 "sections": sections,
                 "group_context": {
                     "available": bool(group_versions),
@@ -872,6 +997,8 @@ def build_model_layer_evaluation_summary(
         "chart_payload": {
             "layers": rows,
             "required_artifact": "layer_evaluation_summary",
+            "metric_family_descriptions": METRIC_FAMILY_DESCRIPTIONS,
+            "model_group_supplemental_tests": MODEL_GROUP_SUPPLEMENTAL_TESTS,
             "state_vocabulary": ["evaluated", "insufficient_evidence", "not_applicable", "failed_validity", "reference_only"],
         },
         "profile_refs": [{"registry_ref": "MODEL_LAYER_EVALUATION_SUMMARY", "field": "contract_type"}],
