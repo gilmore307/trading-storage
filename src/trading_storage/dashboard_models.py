@@ -478,6 +478,32 @@ def _metric_summary_items(payload: Mapping[str, Any]) -> list[dict[str, Any]]:
                 }
             )
         return rows
+    summary = payload.get("summary")
+    if isinstance(summary, Mapping):
+        rows = []
+        for metric_id in ("model_row_count", "outcome_row_count", "label_row_count", "label_join_coverage_rate"):
+            value = summary.get(metric_id)
+            if isinstance(value, (int, float)):
+                rows.append(
+                    {
+                        "metric_id": metric_id,
+                        "value": value,
+                        "source": "summary",
+                        "status": "published",
+                    }
+                )
+        leakage_check = summary.get("leakage_check_passed")
+        if isinstance(leakage_check, bool):
+            rows.append(
+                {
+                    "metric_id": "leakage_check_passed",
+                    "value": 1.0 if leakage_check else 0.0,
+                    "source": "summary",
+                    "status": "published",
+                    "detail": {"raw_value": leakage_check},
+                }
+            )
+        return rows
     return []
 
 
@@ -517,6 +543,35 @@ def _parameter_items(payload: Mapping[str, Any]) -> list[dict[str, Any]]:
                     )
     if parameters:
         return parameters
+    summary = payload.get("summary")
+    if isinstance(summary, Mapping):
+        for key in ("evidence_source", "model_surface", "model_id", "promotion_gate_state"):
+            value = summary.get(key)
+            if value is not None:
+                parameters.append(
+                    {
+                        "parameter_id": key,
+                        "label": key,
+                        "value": value,
+                        "status": "published",
+                        "source": "summary",
+                        "role": "evaluation_summary_parameter",
+                    }
+                )
+        reason_codes = summary.get("reason_codes")
+        if reason_codes:
+            parameters.append(
+                {
+                    "parameter_id": "reason_codes",
+                    "label": "reason_codes",
+                    "value": reason_codes,
+                    "status": "published",
+                    "source": "summary",
+                    "role": "evaluation_summary_parameter",
+                }
+            )
+        if parameters:
+            return parameters
     return [
         {
             "parameter_id": "candidate_config",
@@ -544,6 +599,22 @@ def _population_summary(payload: Mapping[str, Any]) -> dict[str, Any]:
     row_counts = database_summary.get("row_counts") if isinstance(database_summary, Mapping) else None
     if isinstance(row_counts, Mapping):
         return {"status": "published", "row_counts": dict(row_counts)}
+    summary = payload.get("summary")
+    if isinstance(summary, Mapping):
+        row_counts = {}
+        for source_key, row_key in (
+            ("model_row_count", "model_rows"),
+            ("outcome_row_count", "outcome_rows"),
+            ("label_row_count", "label_rows"),
+        ):
+            value = summary.get(source_key)
+            if isinstance(value, (int, float)):
+                row_counts[row_key] = value
+        labels = payload.get("labels")
+        if isinstance(labels, list):
+            row_counts.setdefault("labels", len(labels))
+        if row_counts:
+            return {"status": "published", "row_counts": row_counts}
     return {"status": "not_published", "row_counts": {}}
 
 
@@ -559,6 +630,12 @@ def _artifact_status_from_legacy(payload: Mapping[str, Any] | None) -> tuple[str
     database_summary = payload.get("database_summary_evaluation")
     if isinstance(database_summary, Mapping) and str(database_summary.get("status") or "").startswith("completed"):
         return "evaluated_summary_mode", "Layer evaluation summary was normalized from a summary-mode database evaluation artifact."
+    summary = payload.get("summary")
+    if isinstance(summary, Mapping):
+        model_rows = summary.get("model_row_count")
+        label_rows = summary.get("label_row_count")
+        if isinstance(model_rows, (int, float)) and model_rows > 0 and isinstance(label_rows, (int, float)) and label_rows > 0:
+            return "evaluated_local_deferred", "Layer local evaluation summary was normalized from model rows and labels; production validity remains deferred."
     return "insufficient_evidence", "Source evaluation summary exists but does not publish a completed evaluation status."
 
 
@@ -645,7 +722,7 @@ def _build_layer_evaluation_artifact(
         "version_id": (version or {}).get("version_id"),
         "fold_id": _legacy_fold_id(legacy_path, version),
         "evaluation_status": status,
-        "validity_status": status if status != "evaluated_summary_mode" else "insufficient_evidence",
+        "validity_status": status if status in {"evaluated", "failed_validity"} else "insufficient_evidence",
         "validity_reason": reason,
         "evaluation_population": population,
         "metric_values": metric_values,
@@ -1344,7 +1421,7 @@ def build_model_layer_evaluation_summary(
             },
             "metric_family_descriptions": METRIC_FAMILY_DESCRIPTIONS,
             "model_group_supplemental_tests": MODEL_GROUP_SUPPLEMENTAL_TESTS,
-            "state_vocabulary": ["evaluated", "evaluated_summary_mode", "published", "insufficient_evidence", "not_applicable", "failed_validity", "reference_only"],
+            "state_vocabulary": ["evaluated", "evaluated_local_deferred", "evaluated_summary_mode", "published", "insufficient_evidence", "not_applicable", "failed_validity", "reference_only"],
         },
         "profile_refs": [{"registry_ref": "MODEL_LAYER_EVALUATION_SUMMARY", "field": "contract_type"}],
         "issue_refs": [

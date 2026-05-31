@@ -65,6 +65,33 @@ def _write_legacy_layer_evaluation(storage_root: Path, model_id: str = "model_05
     )
 
 
+def _write_local_layer_evaluation(storage_root: Path, model_id: str = "model_05_alpha_confidence") -> None:
+    path = storage_root / "03_model_artifacts" / "runtime" / model_id / "evaluation_summary_2016-01.json"
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(
+        json.dumps(
+            {
+                "summary": {
+                    "layer_number": 5,
+                    "model_surface": "model_05_alpha_confidence",
+                    "model_id": model_id,
+                    "evidence_source": "storage_runtime_model_rows_fixture_outcomes",
+                    "model_row_count": 77837,
+                    "outcome_row_count": 77837,
+                    "label_row_count": 77837,
+                    "label_join_coverage_rate": 1.0,
+                    "leakage_check_passed": True,
+                    "promotion_gate_state": "deferred",
+                    "reason_codes": ["fixture_or_local_evidence_must_defer"],
+                },
+                "labels": [{"label_id": "label_fixture"}],
+            }
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+
+
 def _historical_payload() -> dict:
     return {
         "contract_type": "historical_task_progress_summary",
@@ -687,6 +714,32 @@ class DashboardModelsTests(unittest.TestCase):
             self.assertEqual(predictive["status"], "published")
             self.assertIn("minimum_eval_labels", {row["parameter_id"] for row in layer_five["parameter_values"]})
             self.assertEqual(payload["chart_payload"]["artifact_status"]["artifact_count"], 10)
+
+    def test_materializes_local_layer_script_summary_artifacts(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            storage_root = Path(tmp)
+            _write_latest(storage_root, "historical_task_progress_summary", _historical_payload())
+            _write_latest(storage_root, "execution_realtime_trading_runtime_status", _runtime_payload())
+            _write_local_layer_evaluation(storage_root)
+
+            artifacts = materialize_layer_evaluation_summary_artifacts(
+                storage_root=storage_root,
+                generated_at_utc="2026-05-29T00:12:00Z",
+            )
+            layer_five_artifact = next(artifact for artifact in artifacts if artifact["layer"] == 5)
+
+            self.assertEqual(layer_five_artifact["evaluation_status"], "evaluated_local_deferred")
+            self.assertEqual(layer_five_artifact["validity_status"], "insufficient_evidence")
+            self.assertEqual(layer_five_artifact["evaluation_population"]["row_counts"]["model_rows"], 77837)
+            self.assertIn("label_join_coverage_rate", {row["metric_id"] for row in layer_five_artifact["metric_values"]})
+            self.assertIn("evidence_source", {row["parameter_id"] for row in layer_five_artifact["parameter_values"]})
+
+            payload = build_model_layer_evaluation_summary(storage_root=storage_root, generated_at_utc="2026-05-29T00:13:00Z")
+            layer_five = next(row for row in payload["chart_payload"]["layers"] if row["layer"] == 5)
+            self.assertEqual(layer_five["evidence_status"], "evaluated_local_deferred")
+            self.assertEqual(layer_five["validity_status"], "insufficient_evidence")
+            predictive = next(section for section in layer_five["sections"] if section["section_id"] == "predictive_evidence")
+            self.assertEqual(predictive["status"], "published")
 
     def test_model_group_versions_are_fold_level_not_review_run_level(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
