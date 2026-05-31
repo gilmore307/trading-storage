@@ -741,6 +741,47 @@ class DashboardModelsTests(unittest.TestCase):
             predictive = next(section for section in layer_five["sections"] if section["section_id"] == "predictive_evidence")
             self.assertEqual(predictive["status"], "published")
 
+    def test_layer_evaluation_prefers_dated_fold_artifact_over_fixture(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            storage_root = Path(tmp)
+            _write_latest(storage_root, "historical_task_progress_summary", _historical_payload())
+            _write_latest(storage_root, "execution_realtime_trading_runtime_status", _runtime_payload())
+            _write_local_layer_evaluation(storage_root)
+            fixture_path = storage_root / "03_model_artifacts/runtime/model_05_alpha_confidence/evaluation_summary_fixture.json"
+            fixture_path.write_text(
+                json.dumps(
+                    {
+                        "summary": {
+                            "layer_number": 5,
+                            "model_surface": "model_05_alpha_confidence",
+                            "model_id": "model_05_alpha_confidence",
+                            "evidence_source": "fixture_generated_model_rows_fixture_outcomes",
+                            "model_row_count": 1,
+                            "outcome_row_count": 1,
+                            "label_row_count": 1,
+                            "label_join_coverage_rate": 1.0,
+                            "leakage_check_passed": True,
+                            "promotion_gate_state": "deferred",
+                        },
+                        "labels": [{"label_id": "fixture_only"}],
+                    }
+                )
+                + "\n",
+                encoding="utf-8",
+            )
+
+            artifacts = materialize_layer_evaluation_summary_artifacts(
+                storage_root=storage_root,
+                generated_at_utc="2026-05-29T00:14:00Z",
+            )
+            layer_five_artifact = next(artifact for artifact in artifacts if artifact["layer"] == 5)
+
+            self.assertEqual(layer_five_artifact["evaluation_population"]["row_counts"]["model_rows"], 77837)
+            self.assertEqual(
+                layer_five_artifact["source_artifact_refs"],
+                [str(storage_root / "03_model_artifacts/runtime/model_05_alpha_confidence/evaluation_summary_2016-01.json")],
+            )
+
     def test_model_group_versions_are_fold_level_not_review_run_level(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             storage_root = Path(tmp)

@@ -439,7 +439,9 @@ def _layer_evaluation_artifact_path(storage_root: Path, model_id: str) -> Path:
 def _legacy_layer_evaluation_source(storage_root: Path, model_id: str) -> tuple[Path | None, dict[str, Any] | None]:
     model_root = storage_root / LAYER_EVALUATION_ARTIFACT_DIR / model_id
     candidates = sorted(model_root.glob("evaluation_summary_*.json"))
-    for path in reversed(candidates):
+    dated_candidates = [path for path in candidates if re.match(r"evaluation_summary_\d{4}-\d{2}\.json$", path.name)]
+    search_order = list(reversed(dated_candidates or candidates))
+    for path in search_order:
         payload = _load_json_object(path)
         if payload is not None:
             return path, payload
