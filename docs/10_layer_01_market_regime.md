@@ -7,11 +7,11 @@ This file records the `trading-storage` view of Layer 1 persistence. Semantic co
 Accepted Layer 1 physical destinations should preserve these canonical names:
 
 ```text
-trading_data.source_01_market_regime
-trading_data.feature_01_market_regime
-trading_model.model_01_market_regime
-trading_model.model_01_market_regime_explainability
-trading_model.model_01_market_regime_diagnostics
+trading_data.m01_market_regime_data_acquisition
+trading_data.m01_market_regime_feature_generation
+trading_model.m01_market_regime_model_generation
+trading_model.m01_market_regime_model_generation_explainability
+trading_model.m01_market_regime_model_generation_diagnostics
 ```
 
 ## Storage boundary
