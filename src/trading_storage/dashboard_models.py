@@ -11,14 +11,17 @@ import json
 import re
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Any, Mapping
+from typing import Any, Iterable, Mapping
 
 from .artifact_store import now_utc
+from .dashboard_read_models import _write_atomic_json
 from .dashboard_read_models import materialize_dashboard_read_model
 
+LAYER_EVALUATION_SUMMARY_CONTRACT = "layer_evaluation_summary"
 MODEL_LAYER_READINESS_CONTRACT = "model_layer_readiness_summary"
 MODEL_LAYER_EVALUATION_CONTRACT = "model_layer_evaluation_summary"
 MODEL_PROMOTION_POSTURE_CONTRACT = "model_promotion_posture_summary"
+LAYER_EVALUATION_SUMMARY_SCHEMA_REF = f"storage/03_model_artifacts/schemas/{LAYER_EVALUATION_SUMMARY_CONTRACT}.schema.json"
 MODEL_LAYER_READINESS_SCHEMA_REF = f"storage/06_dashboard_cache/schemas/{MODEL_LAYER_READINESS_CONTRACT}.schema.json"
 MODEL_LAYER_EVALUATION_SCHEMA_REF = f"storage/06_dashboard_cache/schemas/{MODEL_LAYER_EVALUATION_CONTRACT}.schema.json"
 MODEL_PROMOTION_POSTURE_SCHEMA_REF = f"storage/06_dashboard_cache/schemas/{MODEL_PROMOTION_POSTURE_CONTRACT}.schema.json"
@@ -28,6 +31,7 @@ EXECUTION_RUNTIME_STATUS_CONTRACT = "execution_realtime_trading_runtime_status"
 DEFAULT_STORAGE_ROOT = Path("storage")
 DEFAULT_STALE_AFTER_SECONDS = 900
 MODEL_GROUP_PROMOTION_PREVIEW_OVERRIDE_PATH = Path("06_dashboard_cache/config/model_group_promotion_preview_overrides.json")
+LAYER_EVALUATION_ARTIFACT_DIR = Path("03_model_artifacts/runtime")
 
 MODEL_LAYERS = (
     (1, "model_01_market_regime", "Market Regime"),
@@ -426,6 +430,296 @@ def _load_json_object(path: Path) -> dict[str, Any] | None:
     except (OSError, json.JSONDecodeError):
         return None
     return payload if isinstance(payload, dict) else None
+
+
+def _layer_evaluation_artifact_path(storage_root: Path, model_id: str) -> Path:
+    return storage_root / LAYER_EVALUATION_ARTIFACT_DIR / model_id / "layer_evaluation_summary_latest.json"
+
+
+def _legacy_layer_evaluation_source(storage_root: Path, model_id: str) -> tuple[Path | None, dict[str, Any] | None]:
+    model_root = storage_root / LAYER_EVALUATION_ARTIFACT_DIR / model_id
+    candidates = sorted(model_root.glob("evaluation_summary_*.json"))
+    for path in reversed(candidates):
+        payload = _load_json_object(path)
+        if payload is not None:
+            return path, payload
+    return None, None
+
+
+def _metric_summary_items(payload: Mapping[str, Any]) -> list[dict[str, Any]]:
+    metrics = payload.get("metric_value_summary")
+    if isinstance(metrics, Mapping):
+        return [
+            {
+                "metric_id": str(metric_id),
+                "value": value,
+                "source": "metric_value_summary",
+                "status": "published" if value is not None else "not_published",
+            }
+            for metric_id, value in sorted(metrics.items())
+        ]
+    tables = payload.get("tables")
+    metric_rows = tables.get("model_promotion_metric") if isinstance(tables, Mapping) else None
+    if isinstance(metric_rows, list):
+        rows = []
+        for row in metric_rows:
+            if not isinstance(row, Mapping):
+                continue
+            metric_name = row.get("metric_name")
+            if not metric_name:
+                continue
+            rows.append(
+                {
+                    "metric_id": str(metric_name),
+                    "value": row.get("metric_value"),
+                    "source": "tables.model_promotion_metric",
+                    "status": "published" if row.get("metric_value") is not None else "not_published",
+                    "detail": row.get("metric_payload_json") if isinstance(row.get("metric_payload_json"), Mapping) else None,
+                }
+            )
+        return rows
+    return []
+
+
+def _parameter_items(payload: Mapping[str, Any]) -> list[dict[str, Any]]:
+    parameters: list[dict[str, Any]] = []
+    threshold_payload = payload.get("acceptance_thresholds")
+    if isinstance(threshold_payload, Mapping):
+        for key, value in sorted(threshold_payload.items()):
+            parameters.append(
+                {
+                    "parameter_id": str(key),
+                    "label": str(key),
+                    "value": value,
+                    "status": "published",
+                    "source": "acceptance_thresholds",
+                    "role": "evaluation_acceptance_threshold",
+                }
+            )
+    tables = payload.get("tables")
+    requests = tables.get("model_dataset_request") if isinstance(tables, Mapping) else None
+    if isinstance(requests, list):
+        for request in requests:
+            if not isinstance(request, Mapping):
+                continue
+            request_payload = request.get("request_payload_json")
+            if isinstance(request_payload, Mapping):
+                for key, value in sorted(request_payload.items()):
+                    parameters.append(
+                        {
+                            "parameter_id": str(key),
+                            "label": str(key),
+                            "value": value,
+                            "status": "published",
+                            "source": "tables.model_dataset_request.request_payload_json",
+                            "role": "evaluation_request_parameter",
+                        }
+                    )
+    if parameters:
+        return parameters
+    return [
+        {
+            "parameter_id": "candidate_config",
+            "label": "candidate_config",
+            "value": None,
+            "status": "not_published",
+            "source": "layer_evaluation_summary",
+            "role": "model_configuration",
+        }
+    ]
+
+
+def _population_summary(payload: Mapping[str, Any]) -> dict[str, Any]:
+    tables = payload.get("tables")
+    if isinstance(tables, Mapping):
+        row_counts: dict[str, Any] = {}
+        for key, value in tables.items():
+            if isinstance(value, (int, float)):
+                row_counts[str(key)] = value
+            elif isinstance(value, list):
+                row_counts[str(key)] = len(value)
+        if row_counts:
+            return {"status": "published", "row_counts": row_counts}
+    database_summary = payload.get("database_summary_evaluation")
+    row_counts = database_summary.get("row_counts") if isinstance(database_summary, Mapping) else None
+    if isinstance(row_counts, Mapping):
+        return {"status": "published", "row_counts": dict(row_counts)}
+    return {"status": "not_published", "row_counts": {}}
+
+
+def _artifact_status_from_legacy(payload: Mapping[str, Any] | None) -> tuple[str, str]:
+    if payload is None:
+        return "insufficient_evidence", "No source evaluation summary has been published for this layer."
+    failed = payload.get("failed_thresholds")
+    if isinstance(failed, Mapping) and failed:
+        return "failed_validity", f"{len(failed)} acceptance thresholds failed."
+    run_status = str(payload.get("run_status") or payload.get("request_status") or "").lower()
+    if run_status in {"completed", "evaluated", "passed"}:
+        return "evaluated", "Layer evaluation summary was normalized from a legacy evaluation artifact."
+    database_summary = payload.get("database_summary_evaluation")
+    if isinstance(database_summary, Mapping) and str(database_summary.get("status") or "").startswith("completed"):
+        return "evaluated_summary_mode", "Layer evaluation summary was normalized from a summary-mode database evaluation artifact."
+    return "insufficient_evidence", "Source evaluation summary exists but does not publish a completed evaluation status."
+
+
+def _legacy_fold_id(path: Path | None, version: Mapping[str, Any] | None) -> str | None:
+    version_id = str((version or {}).get("version_id") or "")
+    if version_id:
+        return version_id.split(":", 1)[0]
+    if path is None:
+        return None
+    match = re.search(r"evaluation_summary_(?P<month>\d{4}-\d{2})\.json$", path.name)
+    return f"fold_{match.group('month')}" if match else None
+
+
+def _source_ref(path: Path | None) -> str | None:
+    return str(path) if path is not None else None
+
+
+def _layer_evaluation_schema() -> dict[str, Any]:
+    return {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "storage://trading-storage/03_model_artifacts/schemas/layer_evaluation_summary.schema.json",
+        "title": LAYER_EVALUATION_SUMMARY_CONTRACT,
+        "type": "object",
+        "required": [
+            "contract_type",
+            "schema_version",
+            "generated_at_utc",
+            "source_system",
+            "layer",
+            "layer_id",
+            "model_id",
+            "evaluation_status",
+            "validity_status",
+            "evaluation_population",
+            "metric_values",
+            "parameter_values",
+            "source_artifact_refs",
+            "schema_ref",
+        ],
+        "additionalProperties": True,
+        "properties": {
+            "contract_type": {"const": LAYER_EVALUATION_SUMMARY_CONTRACT},
+            "schema_version": {"type": "integer", "minimum": 1},
+            "generated_at_utc": {"type": "string", "format": "date-time"},
+            "source_system": {"type": "string", "minLength": 1},
+            "layer": {"type": "integer", "minimum": 1, "maximum": 10},
+            "layer_id": {"type": "string", "minLength": 1},
+            "model_id": {"type": "string", "minLength": 1},
+            "evaluation_status": {"type": "string", "minLength": 1},
+            "validity_status": {"type": "string", "minLength": 1},
+            "evaluation_population": {"type": "object"},
+            "metric_values": {"type": "array"},
+            "parameter_values": {"type": "array"},
+            "source_artifact_refs": {"type": "array"},
+            "schema_ref": {"type": "string", "minLength": 1},
+        },
+    }
+
+
+def _build_layer_evaluation_artifact(
+    *,
+    storage_root: Path,
+    layer: int,
+    model_id: str,
+    name: str,
+    version: Mapping[str, Any] | None,
+    generated_at_utc: str,
+) -> dict[str, Any]:
+    legacy_path, legacy_payload = _legacy_layer_evaluation_source(storage_root, model_id)
+    status, reason = _artifact_status_from_legacy(legacy_payload)
+    metric_values = _metric_summary_items(legacy_payload or {})
+    parameter_values = _parameter_items(legacy_payload or {})
+    population = _population_summary(legacy_payload or {})
+    source_ref = _source_ref(legacy_path)
+    return {
+        "contract_type": LAYER_EVALUATION_SUMMARY_CONTRACT,
+        "schema_version": 1,
+        "generated_at_utc": generated_at_utc,
+        "source_system": "trading-storage",
+        "layer": layer,
+        "layer_id": f"layer_{layer:02d}",
+        "model_id": model_id,
+        "name": name,
+        "version_id": (version or {}).get("version_id"),
+        "fold_id": _legacy_fold_id(legacy_path, version),
+        "evaluation_status": status,
+        "validity_status": status if status != "evaluated_summary_mode" else "insufficient_evidence",
+        "validity_reason": reason,
+        "evaluation_population": population,
+        "metric_values": metric_values,
+        "parameter_values": parameter_values,
+        "source_artifact_refs": [source_ref] if source_ref else [],
+        "missing_evidence": [] if legacy_payload is not None else ["source_evaluation_summary"],
+        "schema_ref": LAYER_EVALUATION_SUMMARY_SCHEMA_REF,
+    }
+
+
+def materialize_layer_evaluation_summary_artifacts(
+    *,
+    storage_root: Path = DEFAULT_STORAGE_ROOT,
+    generated_at_utc: str | None = None,
+) -> list[dict[str, Any]]:
+    """Normalize per-layer evaluation artifacts under storage/03_model_artifacts."""
+
+    generated_at_utc = generated_at_utc or now_utc()
+    storage_root = Path(storage_root)
+    layer_payload = build_model_layer_readiness_summary(storage_root=storage_root, generated_at_utc=generated_at_utc)
+    lifecycle_by_layer = {
+        int(layer["layer"]): layer
+        for layer in _chart(layer_payload).get("layers", [])
+        if isinstance(layer, Mapping) and isinstance(layer.get("layer"), int)
+    }
+    schema_path = storage_root / "03_model_artifacts" / "schemas" / "layer_evaluation_summary.schema.json"
+    _write_atomic_json(schema_path, _layer_evaluation_schema())
+    artifacts = []
+    for layer, model_id, name in MODEL_LAYERS:
+        lifecycle = lifecycle_by_layer.get(layer, {})
+        versions = lifecycle.get("versions") if isinstance(lifecycle.get("versions"), list) else []
+        version = versions[0] if versions and isinstance(versions[0], Mapping) else None
+        artifact = _build_layer_evaluation_artifact(
+            storage_root=storage_root,
+            layer=layer,
+            model_id=model_id,
+            name=name,
+            version=version,
+            generated_at_utc=generated_at_utc,
+        )
+        _write_atomic_json(_layer_evaluation_artifact_path(storage_root, model_id), artifact)
+        artifacts.append(artifact)
+    return artifacts
+
+
+def _load_layer_evaluation_artifacts(storage_root: Path) -> dict[int, dict[str, Any]]:
+    artifacts: dict[int, dict[str, Any]] = {}
+    for layer, model_id, _name in MODEL_LAYERS:
+        artifact = _load_json_object(_layer_evaluation_artifact_path(storage_root, model_id))
+        if artifact and artifact.get("contract_type") == LAYER_EVALUATION_SUMMARY_CONTRACT:
+            artifacts[layer] = artifact
+    return artifacts
+
+
+def _artifact_metric_lookup(metric_values: Iterable[Mapping[str, Any]]) -> dict[str, Mapping[str, Any]]:
+    lookup: dict[str, Mapping[str, Any]] = {}
+    for item in metric_values:
+        metric_id = str(item.get("metric_id") or "")
+        if metric_id:
+            lookup[metric_id] = item
+    return lookup
+
+
+def _mean_metric_value(value: Any) -> float | None:
+    if isinstance(value, (int, float)):
+        return float(value)
+    if isinstance(value, Mapping):
+        mean = value.get("mean")
+        if isinstance(mean, (int, float)):
+            return float(mean)
+        metric_value = value.get("value")
+        if isinstance(metric_value, (int, float)):
+            return float(metric_value)
+    return None
 
 
 def _model_group_version_label(*, fold_id: str, candidate_model_ref: str, target_symbol: str, fallback: str) -> str:
@@ -833,20 +1127,36 @@ def build_model_layer_readiness_summary(
     }
 
 
-def _layer_evaluation_sections(layer: int, *, version: Mapping[str, Any] | None, group_versions: list[dict[str, Any]]) -> list[dict[str, Any]]:
+def _layer_evaluation_sections(
+    layer: int,
+    *,
+    version: Mapping[str, Any] | None,
+    group_versions: list[dict[str, Any]],
+    artifact: Mapping[str, Any] | None = None,
+) -> list[dict[str, Any]]:
     claim = LAYER_EVALUATION_CLAIMS[layer]
     metric_tests = LAYER_METRIC_TESTS[layer]
     primary_tests = [test["metric_id"] for test in metric_tests if test["role"] == "primary"]
     guardrail_tests = [test["metric_id"] for test in metric_tests if test["role"] == "guardrail"]
     has_version = bool(version)
+    has_artifact = bool(artifact)
+    artifact_status = str((artifact or {}).get("evaluation_status") or "insufficient_evidence")
+    population = artifact.get("evaluation_population") if isinstance(artifact, Mapping) else None
+    metric_lookup = _artifact_metric_lookup(
+        item for item in (artifact or {}).get("metric_values", []) if isinstance(item, Mapping)
+    )
+    published_metrics = [metric_id for metric_id, item in metric_lookup.items() if item.get("status") == "published"]
+    guardrail_metrics = [metric_id for metric_id in guardrail_tests if metric_id in metric_lookup]
     group_reference_available = bool(group_versions)
     sections = [
         {
             "section_id": "evaluation_population",
             "label": "Evaluation Population",
-            "status": "insufficient_evidence",
+            "status": "published" if isinstance(population, Mapping) and population.get("status") == "published" else "insufficient_evidence",
             "reason": (
-                "Layer task coverage exists, but no layer_evaluation_summary artifact reports holdout rows, exclusions, labels, or split diagnostics."
+                "Normalized layer_evaluation_summary publishes evaluation population or table-count evidence."
+                if isinstance(population, Mapping) and population.get("status") == "published"
+                else "Layer task coverage exists, but no layer_evaluation_summary artifact reports holdout rows, exclusions, labels, or split diagnostics."
                 if has_version
                 else "No completed layer model version is available for evaluation."
             ),
@@ -855,8 +1165,12 @@ def _layer_evaluation_sections(layer: int, *, version: Mapping[str, Any] | None,
         {
             "section_id": "predictive_evidence",
             "label": "Predictive Evidence",
-            "status": "insufficient_evidence",
-            "reason": "Layer-local metric tests are defined, but no layer-specific holdout metric values are published yet. Group metrics must not be relabeled as layer metrics.",
+            "status": "published" if published_metrics else "insufficient_evidence",
+            "reason": (
+                f"Normalized layer_evaluation_summary publishes {len(published_metrics)} layer metric values."
+                if published_metrics
+                else "Layer-local metric tests are defined, but no layer-specific holdout metric values are published yet. Group metrics must not be relabeled as layer metrics."
+            ),
             "required_evidence": primary_tests,
         },
         {
@@ -890,8 +1204,12 @@ def _layer_evaluation_sections(layer: int, *, version: Mapping[str, Any] | None,
         {
             "section_id": "integrity",
             "label": "Integrity",
-            "status": "insufficient_evidence",
-            "reason": "No layer-specific leakage, label timing, point-in-time isolation, or artifact provenance check is published.",
+            "status": "published" if guardrail_metrics or has_artifact else "insufficient_evidence",
+            "reason": (
+                f"Normalized layer_evaluation_summary artifact is present with status {artifact_status}."
+                if has_artifact
+                else "No layer-specific leakage, label timing, point-in-time isolation, or artifact provenance check is published."
+            ),
             "required_evidence": guardrail_tests or ["leakage_check", "label_timing_check", "train_test_isolation", "artifact_lineage"],
         },
         {
@@ -941,15 +1259,31 @@ def build_model_layer_evaluation_summary(
         if isinstance(row, Mapping) and isinstance(row.get("layer"), int)
     }
     group_versions = [dict(row) for row in promotion_chart.get("group_versions", []) if isinstance(row, Mapping)]
+    artifacts_by_layer = _load_layer_evaluation_artifacts(storage_root)
     rows = []
+    evaluated_count = 0
     for layer, model_id, name in MODEL_LAYERS:
         lifecycle = lifecycle_by_layer.get(layer, {})
         promotion = promotion_by_layer.get(layer, {})
         versions = lifecycle.get("versions") if isinstance(lifecycle.get("versions"), list) else []
         version = versions[0] if versions and isinstance(versions[0], Mapping) else None
         claim = LAYER_EVALUATION_CLAIMS[layer]
-        sections = _layer_evaluation_sections(layer, version=version, group_versions=group_versions)
+        artifact = artifacts_by_layer.get(layer)
+        sections = _layer_evaluation_sections(layer, version=version, group_versions=group_versions, artifact=artifact)
         missing_count = sum(1 for section in sections if section.get("status") == "insufficient_evidence")
+        artifact_status = str((artifact or {}).get("evaluation_status") or "insufficient_evidence")
+        validity_status = str((artifact or {}).get("validity_status") or artifact_status)
+        if artifact_status not in {"insufficient_evidence", "not_published"}:
+            evaluated_count += 1
+        metric_lookup = _artifact_metric_lookup(
+            item for item in (artifact or {}).get("metric_values", []) if isinstance(item, Mapping)
+        )
+        metric_tests = []
+        for test in LAYER_METRIC_TESTS[layer]:
+            metric = metric_lookup.get(test["metric_id"])
+            metric_value = _mean_metric_value(metric.get("value")) if isinstance(metric, Mapping) else None
+            test_status = str((metric or {}).get("status") or test["status"]) if isinstance(metric, Mapping) else test["status"]
+            metric_tests.append({**test, "status": test_status, "metric_value": metric_value})
         rows.append(
             {
                 "layer": layer,
@@ -957,11 +1291,11 @@ def build_model_layer_evaluation_summary(
                 "model_id": model_id,
                 "name": name,
                 "version_id": version.get("version_id") if isinstance(version, Mapping) else None,
-                "evidence_status": "insufficient_evidence" if missing_count else "evaluated",
-                "validity_status": "insufficient_evidence",
+                "evidence_status": artifact_status,
+                "validity_status": validity_status,
                 "validity_decision": {
-                    "status": "insufficient_evidence",
-                    "reason": "No layer_evaluation_summary artifact with layer-specific metrics has been published yet.",
+                    "status": validity_status,
+                    "reason": str((artifact or {}).get("validity_reason") or "No layer_evaluation_summary artifact with layer-specific metrics has been published yet."),
                     "missing_section_count": missing_count,
                 },
                 "claim": {
@@ -971,8 +1305,13 @@ def build_model_layer_evaluation_summary(
                     "output_contract": f"{model_id} layer output consumed by downstream model stack.",
                 },
                 "metric_families": _layer_metric_families(layer),
-                "metric_tests": LAYER_METRIC_TESTS[layer],
+                "metric_tests": metric_tests,
                 "sections": sections,
+                "evaluation_population": (artifact or {}).get("evaluation_population") or {},
+                "metric_values": (artifact or {}).get("metric_values") or [],
+                "parameter_values": (artifact or {}).get("parameter_values") or [],
+                "artifact_ref": str(_layer_evaluation_artifact_path(storage_root, model_id)) if artifact else None,
+                "source_artifact_refs": (artifact or {}).get("source_artifact_refs") or [],
                 "group_context": {
                     "available": bool(group_versions),
                     "active_baseline_ref": group_versions[-1].get("version_id") if group_versions else None,
@@ -986,29 +1325,37 @@ def build_model_layer_evaluation_summary(
                 },
             }
         )
+    missing_artifact_count = len(MODEL_LAYERS) - len(artifacts_by_layer)
     return {
         "contract_type": MODEL_LAYER_EVALUATION_CONTRACT,
         "schema_version": 1,
         "generated_at_utc": generated_at_utc,
         "source_system": "trading-storage",
-        "status": "blocked",
-        "severity": "medium",
-        "summary": "Layer model evidence dossiers are published, but layer-specific statistical evaluation artifacts are still missing.",
+        "status": "blocked" if missing_artifact_count or evaluated_count < len(MODEL_LAYERS) else "ready",
+        "severity": "medium" if missing_artifact_count or evaluated_count < len(MODEL_LAYERS) else "info",
+        "summary": f"Layer model evidence dossiers consume normalized layer_evaluation_summary artifacts; {evaluated_count} of {len(MODEL_LAYERS)} layers publish source evaluation evidence.",
         "chart_payload": {
             "layers": rows,
             "required_artifact": "layer_evaluation_summary",
+            "artifact_status": {
+                "artifact_count": len(artifacts_by_layer),
+                "missing_artifact_count": missing_artifact_count,
+                "evaluated_layer_count": evaluated_count,
+            },
             "metric_family_descriptions": METRIC_FAMILY_DESCRIPTIONS,
             "model_group_supplemental_tests": MODEL_GROUP_SUPPLEMENTAL_TESTS,
-            "state_vocabulary": ["evaluated", "insufficient_evidence", "not_applicable", "failed_validity", "reference_only"],
+            "state_vocabulary": ["evaluated", "evaluated_summary_mode", "published", "insufficient_evidence", "not_applicable", "failed_validity", "reference_only"],
         },
         "profile_refs": [{"registry_ref": "MODEL_LAYER_EVALUATION_SUMMARY", "field": "contract_type"}],
         "issue_refs": [
             {
                 "issue_id": "missing_layer_evaluation_artifacts",
                 "severity": "medium",
-                "summary": "Per-layer subtabs cannot show model validity metrics until layer_evaluation_summary artifacts publish layer-specific evidence.",
+                "summary": "Some per-layer subtabs still lack source layer_evaluation_summary evidence with layer-specific statistical metrics.",
+                "missing_artifact_count": missing_artifact_count,
+                "evaluated_layer_count": evaluated_count,
             }
-        ],
+        ] if missing_artifact_count or evaluated_count < len(MODEL_LAYERS) else [],
         "diagnostic_refs": [],
         "lineage_refs": _source_refs(_read_latest(storage_root, HISTORICAL_TASK_PROGRESS_CONTRACT), _read_latest(storage_root, EXECUTION_RUNTIME_STATUS_CONTRACT)),
         "freshness": {"class": "derived_model_layer_evidence_summary", "status": "fresh", "stale_after_seconds": DEFAULT_STALE_AFTER_SECONDS},
@@ -1106,7 +1453,9 @@ def refresh_model_layer_readiness_summary_read_model(*, storage_root: Path = DEF
 
 
 def refresh_model_layer_evaluation_summary_read_model(*, storage_root: Path = DEFAULT_STORAGE_ROOT) -> dict[str, Any]:
-    payload = build_model_layer_evaluation_summary(storage_root=storage_root)
+    generated_at_utc = now_utc()
+    materialize_layer_evaluation_summary_artifacts(storage_root=storage_root, generated_at_utc=generated_at_utc)
+    payload = build_model_layer_evaluation_summary(storage_root=storage_root, generated_at_utc=generated_at_utc)
     materialized = materialize_dashboard_read_model(payload, storage_root=storage_root, expected_contract_type=MODEL_LAYER_EVALUATION_CONTRACT)
     return _refresh_receipt(MODEL_LAYER_EVALUATION_CONTRACT, materialized.index_row)
 
@@ -1134,9 +1483,11 @@ def _refresh_receipt(contract_type: str, materialized: Mapping[str, Any]) -> dic
 
 
 __all__ = [
+    "LAYER_EVALUATION_SUMMARY_CONTRACT",
     "MODEL_LAYER_READINESS_CONTRACT",
     "MODEL_LAYER_EVALUATION_CONTRACT",
     "MODEL_PROMOTION_POSTURE_CONTRACT",
+    "materialize_layer_evaluation_summary_artifacts",
     "build_model_layer_readiness_summary",
     "build_model_layer_evaluation_summary",
     "build_model_promotion_posture_summary",
