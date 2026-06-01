@@ -670,18 +670,7 @@ def _runtime_coefficient_items_from_model_artifacts(model_dir: Path) -> list[dic
 def _runtime_coefficient_items(payload: Mapping[str, Any], *, model_dir: Path) -> list[dict[str, Any]]:
     rows = _runtime_coefficient_items_from_payload(payload)
     rows.extend(_runtime_coefficient_items_from_model_artifacts(model_dir))
-    if rows:
-        return rows
-    return [
-        {
-            "coefficient_id": "runtime_coefficients",
-            "label": "Runtime coefficient payload",
-            "value": None,
-            "status": "not_published",
-            "source": "layer_evaluation_summary",
-            "role": "coefficient_publication_state",
-        }
-    ]
+    return rows
 
 
 def _population_summary(payload: Mapping[str, Any]) -> dict[str, Any]:

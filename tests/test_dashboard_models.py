@@ -761,14 +761,14 @@ class DashboardModelsTests(unittest.TestCase):
             self.assertEqual(layer_five_artifact["evaluation_population"]["row_counts"]["model_rows"], 77837)
             self.assertIn("label_join_coverage_rate", {row["metric_id"] for row in layer_five_artifact["metric_values"]})
             self.assertEqual(layer_five_artifact["parameter_values"], [])
-            self.assertIn("runtime_coefficients", {row["coefficient_id"] for row in layer_five_artifact["runtime_coefficients"]})
+            self.assertEqual(layer_five_artifact["runtime_coefficients"], [])
 
             payload = build_model_layer_evaluation_summary(storage_root=storage_root, generated_at_utc="2026-05-29T00:13:00Z")
             layer_five = next(row for row in payload["chart_payload"]["layers"] if row["layer"] == 5)
             self.assertEqual(layer_five["evidence_status"], "evaluated_local_deferred")
             self.assertEqual(layer_five["validity_status"], "insufficient_evidence")
             self.assertEqual(layer_five["parameter_values"], [])
-            self.assertIn("runtime_coefficients", {row["coefficient_id"] for row in layer_five["runtime_coefficients"]})
+            self.assertEqual(layer_five["runtime_coefficients"], [])
             predictive = next(section for section in layer_five["sections"] if section["section_id"] == "predictive_evidence")
             self.assertEqual(predictive["status"], "published")
 
