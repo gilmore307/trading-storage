@@ -92,6 +92,34 @@ def _write_local_layer_evaluation(storage_root: Path, model_id: str = "model_05_
     )
 
 
+def _write_runtime_model_artifact(storage_root: Path, model_id: str = "model_05_alpha_confidence") -> None:
+    path = storage_root / "03_model_artifacts" / "runtime" / model_id / "after_cost_alpha_model_fixture.json"
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(
+        json.dumps(
+            {
+                "model_id": model_id,
+                "artifacts_by_horizon": {
+                    "10min": {
+                        "booster_model": "\n".join(
+                            [
+                                "tree",
+                                "feature_importances:",
+                                "3_target_direction_score_10min=42",
+                                "1_market_direction_score=17",
+                                "",
+                                "parameters:",
+                            ]
+                        )
+                    }
+                },
+            }
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+
+
 def _historical_payload() -> dict:
     return {
         "contract_type": "historical_task_progress_summary",
@@ -732,14 +760,36 @@ class DashboardModelsTests(unittest.TestCase):
             self.assertEqual(layer_five_artifact["validity_status"], "insufficient_evidence")
             self.assertEqual(layer_five_artifact["evaluation_population"]["row_counts"]["model_rows"], 77837)
             self.assertIn("label_join_coverage_rate", {row["metric_id"] for row in layer_five_artifact["metric_values"]})
-            self.assertIn("evidence_source", {row["parameter_id"] for row in layer_five_artifact["parameter_values"]})
+            self.assertEqual(layer_five_artifact["parameter_values"], [])
+            self.assertIn("runtime_coefficients", {row["coefficient_id"] for row in layer_five_artifact["runtime_coefficients"]})
 
             payload = build_model_layer_evaluation_summary(storage_root=storage_root, generated_at_utc="2026-05-29T00:13:00Z")
             layer_five = next(row for row in payload["chart_payload"]["layers"] if row["layer"] == 5)
             self.assertEqual(layer_five["evidence_status"], "evaluated_local_deferred")
             self.assertEqual(layer_five["validity_status"], "insufficient_evidence")
+            self.assertEqual(layer_five["parameter_values"], [])
+            self.assertIn("runtime_coefficients", {row["coefficient_id"] for row in layer_five["runtime_coefficients"]})
             predictive = next(section for section in layer_five["sections"] if section["section_id"] == "predictive_evidence")
             self.assertEqual(predictive["status"], "published")
+
+    def test_materializes_runtime_feature_importance_from_model_artifact(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            storage_root = Path(tmp)
+            _write_latest(storage_root, "historical_task_progress_summary", _historical_payload())
+            _write_latest(storage_root, "execution_realtime_trading_runtime_status", _runtime_payload())
+            _write_local_layer_evaluation(storage_root)
+            _write_runtime_model_artifact(storage_root)
+
+            artifacts = materialize_layer_evaluation_summary_artifacts(
+                storage_root=storage_root,
+                generated_at_utc="2026-05-29T00:12:30Z",
+            )
+            layer_five_artifact = next(artifact for artifact in artifacts if artifact["layer"] == 5)
+            coefficient_rows = layer_five_artifact["runtime_coefficients"]
+
+            self.assertIn("3_target_direction_score_10min", {row["label"] for row in coefficient_rows})
+            self.assertIn("runtime_feature_importance", {row["role"] for row in coefficient_rows})
+            self.assertNotIn("evidence_source", {row.get("coefficient_id") for row in coefficient_rows})
 
     def test_layer_evaluation_prefers_dated_fold_artifact_over_fixture(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:

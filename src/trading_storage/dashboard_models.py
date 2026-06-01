@@ -32,6 +32,21 @@ DEFAULT_STORAGE_ROOT = Path("storage")
 DEFAULT_STALE_AFTER_SECONDS = 900
 MODEL_GROUP_PROMOTION_PREVIEW_OVERRIDE_PATH = Path("06_dashboard_cache/config/model_group_promotion_preview_overrides.json")
 LAYER_EVALUATION_ARTIFACT_DIR = Path("03_model_artifacts/runtime")
+RUNTIME_COEFFICIENT_PAYLOAD_KEYS = (
+    "runtime_coefficients",
+    "scoring_coefficients",
+    "model_coefficients",
+    "feature_coefficients",
+    "factor_coefficients",
+    "coefficient_values",
+    "feature_importance",
+    "feature_importances",
+    "factor_weights",
+    "scoring_weights",
+    "row_contributions",
+    "scoring_contributions",
+    "feature_contributions",
+)
 
 MODEL_LAYERS = (
     (1, "model_01_market_regime", "Market Regime"),
@@ -524,64 +539,147 @@ def _parameter_items(payload: Mapping[str, Any]) -> list[dict[str, Any]]:
                     "role": "evaluation_acceptance_threshold",
                 }
             )
-    tables = payload.get("tables")
-    requests = tables.get("model_dataset_request") if isinstance(tables, Mapping) else None
-    if isinstance(requests, list):
-        for request in requests:
-            if not isinstance(request, Mapping):
-                continue
-            request_payload = request.get("request_payload_json")
-            if isinstance(request_payload, Mapping):
-                for key, value in sorted(request_payload.items()):
-                    parameters.append(
-                        {
-                            "parameter_id": str(key),
-                            "label": str(key),
-                            "value": value,
-                            "status": "published",
-                            "source": "tables.model_dataset_request.request_payload_json",
-                            "role": "evaluation_request_parameter",
-                        }
-                    )
-    if parameters:
-        return parameters
-    summary = payload.get("summary")
-    if isinstance(summary, Mapping):
-        for key in ("evidence_source", "model_surface", "model_id", "promotion_gate_state"):
-            value = summary.get(key)
-            if value is not None:
-                parameters.append(
-                    {
-                        "parameter_id": key,
-                        "label": key,
-                        "value": value,
-                        "status": "published",
-                        "source": "summary",
-                        "role": "evaluation_summary_parameter",
-                    }
-                )
-        reason_codes = summary.get("reason_codes")
-        if reason_codes:
-            parameters.append(
+    return parameters
+
+
+def _coefficient_value(item: Mapping[str, Any]) -> Any:
+    for key in ("coefficient", "weight", "value", "importance", "gain", "contribution", "score"):
+        if key in item:
+            return item.get(key)
+    return None
+
+
+def _coefficient_items_from_value(value: Any, *, source: str, role: str) -> list[dict[str, Any]]:
+    rows: list[dict[str, Any]] = []
+    if isinstance(value, Mapping):
+        for key, coefficient in sorted(value.items()):
+            rows.append(
                 {
-                    "parameter_id": "reason_codes",
-                    "label": "reason_codes",
-                    "value": reason_codes,
+                    "coefficient_id": str(key),
+                    "label": str(key),
+                    "value": coefficient,
                     "status": "published",
-                    "source": "summary",
-                    "role": "evaluation_summary_parameter",
+                    "source": source,
+                    "role": role,
                 }
             )
-        if parameters:
-            return parameters
+    elif isinstance(value, list):
+        for index, item in enumerate(value):
+            if isinstance(item, Mapping):
+                label = item.get("label") or item.get("feature") or item.get("factor") or item.get("parameter_id") or item.get("name")
+                rows.append(
+                    {
+                        "coefficient_id": str(item.get("coefficient_id") or label or f"{role}_{index + 1}"),
+                        "label": str(label or f"{role}_{index + 1}"),
+                        "value": _coefficient_value(item),
+                        "status": str(item.get("status") or "published"),
+                        "source": source,
+                        "role": str(item.get("role") or role),
+                        "detail": {k: v for k, v in item.items() if k not in {"coefficient_id", "label", "feature", "factor", "parameter_id", "name", "value", "coefficient", "weight", "importance", "gain", "contribution", "score", "status", "role"}},
+                    }
+                )
+            else:
+                rows.append(
+                    {
+                        "coefficient_id": f"{role}_{index + 1}",
+                        "label": f"{role}_{index + 1}",
+                        "value": item,
+                        "status": "published",
+                        "source": source,
+                        "role": role,
+                    }
+                )
+    return rows
+
+
+def _runtime_coefficient_items_from_payload(payload: Mapping[str, Any]) -> list[dict[str, Any]]:
+    rows: list[dict[str, Any]] = []
+    for key in RUNTIME_COEFFICIENT_PAYLOAD_KEYS:
+        rows.extend(_coefficient_items_from_value(payload.get(key), source=key, role=key))
+    for container_name in ("summary", "metrics", "model_artifact", "explainability", "diagnostics"):
+        container = payload.get(container_name)
+        if not isinstance(container, Mapping):
+            continue
+        for key in RUNTIME_COEFFICIENT_PAYLOAD_KEYS:
+            rows.extend(_coefficient_items_from_value(container.get(key), source=f"{container_name}.{key}", role=key))
+    return rows
+
+
+def _parse_lightgbm_feature_importances(booster_model: str, *, source: str, horizon: str, limit: int = 12) -> list[dict[str, Any]]:
+    feature_importances: list[tuple[str, float]] = []
+    in_section = False
+    for line in booster_model.splitlines():
+        stripped = line.strip()
+        if stripped == "feature_importances:":
+            in_section = True
+            continue
+        if in_section and not stripped:
+            break
+        if not in_section or "=" not in stripped:
+            continue
+        feature, raw_value = stripped.split("=", 1)
+        try:
+            value = float(raw_value)
+        except ValueError:
+            continue
+        feature_importances.append((feature, value))
+    feature_importances.sort(key=lambda item: item[1], reverse=True)
     return [
         {
-            "parameter_id": "candidate_config",
-            "label": "candidate_config",
+            "coefficient_id": f"{horizon}:{feature}",
+            "label": feature,
+            "value": value,
+            "status": "published",
+            "source": source,
+            "role": "runtime_feature_importance",
+            "detail": {"horizon": horizon, "rank": index + 1},
+        }
+        for index, (feature, value) in enumerate(feature_importances[:limit])
+    ]
+
+
+def _runtime_coefficient_items_from_model_artifacts(model_dir: Path) -> list[dict[str, Any]]:
+    rows: list[dict[str, Any]] = []
+    if not model_dir.exists():
+        return rows
+    for path in sorted(model_dir.glob("*.json")):
+        if path.name.startswith(("evaluation_summary", "layer_evaluation_summary")):
+            continue
+        try:
+            payload = json.loads(path.read_text(encoding="utf-8"))
+        except (OSError, json.JSONDecodeError):
+            continue
+        if not isinstance(payload, Mapping):
+            continue
+        rows.extend(_runtime_coefficient_items_from_payload(payload))
+        artifacts_by_horizon = payload.get("artifacts_by_horizon")
+        if isinstance(artifacts_by_horizon, Mapping):
+            for horizon, artifact in sorted(artifacts_by_horizon.items()):
+                booster_model = artifact.get("booster_model") if isinstance(artifact, Mapping) else None
+                if isinstance(booster_model, str):
+                    rows.extend(
+                        _parse_lightgbm_feature_importances(
+                            booster_model,
+                            source=str(path),
+                            horizon=str(horizon),
+                        )
+                    )
+    return rows
+
+
+def _runtime_coefficient_items(payload: Mapping[str, Any], *, model_dir: Path) -> list[dict[str, Any]]:
+    rows = _runtime_coefficient_items_from_payload(payload)
+    rows.extend(_runtime_coefficient_items_from_model_artifacts(model_dir))
+    if rows:
+        return rows
+    return [
+        {
+            "coefficient_id": "runtime_coefficients",
+            "label": "Runtime coefficient payload",
             "value": None,
             "status": "not_published",
             "source": "layer_evaluation_summary",
-            "role": "model_configuration",
+            "role": "coefficient_publication_state",
         }
     ]
 
@@ -674,6 +772,7 @@ def _layer_evaluation_schema() -> dict[str, Any]:
             "evaluation_population",
             "metric_values",
             "parameter_values",
+            "runtime_coefficients",
             "source_artifact_refs",
             "schema_ref",
         ],
@@ -691,6 +790,7 @@ def _layer_evaluation_schema() -> dict[str, Any]:
             "evaluation_population": {"type": "object"},
             "metric_values": {"type": "array"},
             "parameter_values": {"type": "array"},
+            "runtime_coefficients": {"type": "array"},
             "source_artifact_refs": {"type": "array"},
             "schema_ref": {"type": "string", "minLength": 1},
         },
@@ -710,6 +810,10 @@ def _build_layer_evaluation_artifact(
     status, reason = _artifact_status_from_legacy(legacy_payload)
     metric_values = _metric_summary_items(legacy_payload or {})
     parameter_values = _parameter_items(legacy_payload or {})
+    runtime_coefficients = _runtime_coefficient_items(
+        legacy_payload or {},
+        model_dir=storage_root / LAYER_EVALUATION_ARTIFACT_DIR / model_id,
+    )
     population = _population_summary(legacy_payload or {})
     source_ref = _source_ref(legacy_path)
     return {
@@ -729,6 +833,7 @@ def _build_layer_evaluation_artifact(
         "evaluation_population": population,
         "metric_values": metric_values,
         "parameter_values": parameter_values,
+        "runtime_coefficients": runtime_coefficients,
         "source_artifact_refs": [source_ref] if source_ref else [],
         "missing_evidence": [] if legacy_payload is not None else ["source_evaluation_summary"],
         "schema_ref": LAYER_EVALUATION_SUMMARY_SCHEMA_REF,
@@ -1389,6 +1494,7 @@ def build_model_layer_evaluation_summary(
                 "evaluation_population": (artifact or {}).get("evaluation_population") or {},
                 "metric_values": (artifact or {}).get("metric_values") or [],
                 "parameter_values": (artifact or {}).get("parameter_values") or [],
+                "runtime_coefficients": (artifact or {}).get("runtime_coefficients") or [],
                 "artifact_ref": str(_layer_evaluation_artifact_path(storage_root, model_id)) if artifact else None,
                 "source_artifact_refs": (artifact or {}).get("source_artifact_refs") or [],
                 "group_context": {
