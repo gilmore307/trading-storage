@@ -9,6 +9,7 @@ from pathlib import Path
 from typing import Any, Callable
 
 from trading_storage.artifact_store import now_utc
+from trading_storage.dashboard_snapshot_lifecycle import build_dashboard_snapshot_lifecycle_plan, compact_dashboard_read_model_index
 from trading_storage.dashboard_execution_runtime import DEFAULT_EXECUTION_STATUS_PATH, EXECUTION_RUNTIME_STATUS_CONTRACT, refresh_execution_runtime_status_read_model
 from trading_storage.dashboard_models import (
     MODEL_LAYER_EVALUATION_CONTRACT,
@@ -105,10 +106,33 @@ def main(argv: list[str] | None = None) -> int:
             lambda: refresh_model_promotion_posture_summary_read_model(storage_root=args.storage_root),
         ),
     ]
+    maintenance: dict[str, Any] = {}
+    maintenance_failed = False
+    try:
+        prune_receipt = build_dashboard_snapshot_lifecycle_plan(
+            storage_root=args.storage_root,
+            apply=True,
+            approval_ref="dashboard_refresh_auto_prune:keep_latest_10",
+        )
+        maintenance["dashboard_snapshot_prune_summary"] = prune_receipt.summary
+        maintenance["dashboard_read_model_index_compaction"] = compact_dashboard_read_model_index(storage_root=args.storage_root)
+    except Exception as exc:  # noqa: BLE001 - maintenance failure should be explicit in the batch receipt
+        maintenance_failed = True
+        maintenance["dashboard_snapshot_prune_failure"] = {
+            "error_type": exc.__class__.__name__,
+            "message": str(exc),
+        }
     status = "succeeded" if all(row.get("status") == "succeeded" for row in results) else "degraded"
+    if maintenance_failed:
+        status = "degraded"
     print(
         json.dumps(
-            {"contract_type": "dashboard_read_model_refresh_batch_receipt", "status": status, "results": results},
+            {
+                "contract_type": "dashboard_read_model_refresh_batch_receipt",
+                "status": status,
+                "results": results,
+                "maintenance": maintenance,
+            },
             indent=2,
             sort_keys=True,
         )

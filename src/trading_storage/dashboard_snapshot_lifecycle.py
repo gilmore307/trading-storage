@@ -11,6 +11,8 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
+import tempfile
 from dataclasses import asdict, dataclass
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
@@ -23,6 +25,7 @@ from trading_storage.artifact_index import now_utc
 DEFAULT_STORAGE_ROOT = Path("storage")
 DEFAULT_OUTPUT = Path("storage/06_dashboard_cache/lifecycle/dashboard_snapshot_prune_plan.json")
 DEFAULT_SUMMARY_OUTPUT = Path("storage/06_dashboard_cache/lifecycle/dashboard_snapshot_prune_summary.json")
+DEFAULT_INDEX_PATH = Path("06_dashboard_cache/index/dashboard_read_model_index.jsonl")
 DEFAULT_MAX_AGE_HOURS = 0
 DEFAULT_KEEP_LATEST_PER_CONTRACT = 10
 
@@ -294,6 +297,60 @@ def write_dashboard_snapshot_lifecycle_plan(
         write_text_atomic(summary, plan.summary_json())
 
 
+def compact_dashboard_read_model_index(*, storage_root: Path = DEFAULT_STORAGE_ROOT) -> dict[str, Any]:
+    """Remove dashboard index rows whose snapshot files no longer exist."""
+
+    storage_root = Path(storage_root).resolve()
+    index_path = storage_root / DEFAULT_INDEX_PATH
+    summary: dict[str, Any] = {
+        "contract_type": "dashboard_read_model_index_compaction",
+        "storage_root": str(storage_root),
+        "index_path": str(index_path),
+        "input_rows": 0,
+        "retained_rows": 0,
+        "dropped_rows": 0,
+        "input_bytes": index_path.stat().st_size if index_path.exists() else 0,
+        "output_bytes": 0,
+        "mutation_performed": False,
+    }
+    if not index_path.exists():
+        return summary
+
+    index_path.parent.mkdir(parents=True, exist_ok=True)
+    fd, temp_name = tempfile.mkstemp(prefix=f".{index_path.name}.", suffix=".tmp", dir=index_path.parent)
+    try:
+        with os.fdopen(fd, "w", encoding="utf-8") as output, index_path.open("r", encoding="utf-8") as handle:
+            for line in handle:
+                if not line.strip():
+                    continue
+                summary["input_rows"] += 1
+                try:
+                    row = json.loads(line)
+                except json.JSONDecodeError:
+                    summary["dropped_rows"] += 1
+                    continue
+                snapshot_uri = str(row.get("snapshot_uri") or "")
+                if not snapshot_uri.startswith("storage://trading-storage/"):
+                    summary["dropped_rows"] += 1
+                    continue
+                snapshot_path = storage_root / snapshot_uri.removeprefix("storage://trading-storage/")
+                if not snapshot_path.exists():
+                    summary["dropped_rows"] += 1
+                    continue
+                output.write(json.dumps(row, sort_keys=True) + "\n")
+                summary["retained_rows"] += 1
+        os.replace(temp_name, index_path)
+        summary["output_bytes"] = index_path.stat().st_size
+        summary["mutation_performed"] = summary["dropped_rows"] > 0 or summary["output_bytes"] != summary["input_bytes"]
+    except Exception:
+        try:
+            Path(temp_name).unlink()
+        except OSError:
+            pass
+        raise
+    return summary
+
+
 def _parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Plan or apply dashboard read-model snapshot pruning.")
     parser.add_argument("--storage-root", default=str(DEFAULT_STORAGE_ROOT), help="Storage root containing 06_dashboard_cache/read_models.")
@@ -319,10 +376,18 @@ def main(argv: Sequence[str] | None = None) -> int:
     )
     if args.write:
         write_dashboard_snapshot_lifecycle_plan(plan, output_path=Path(args.output_path), summary_path=Path(args.summary_path))
+    index_compaction = compact_dashboard_read_model_index(storage_root=Path(args.storage_root)) if args.apply else None
     if args.json:
-        print(plan.to_json(), end="")
+        payload = plan.to_dict()
+        if index_compaction is not None:
+            payload["index_compaction"] = index_compaction
+        print(json.dumps(payload, indent=2, sort_keys=True) + "\n", end="")
     else:
-        print(plan.summary_json(), end="")
+        summary = plan.summary
+        if index_compaction is not None:
+            summary = dict(summary)
+            summary["index_compaction"] = index_compaction
+        print(json.dumps(summary, indent=2, sort_keys=True) + "\n", end="")
     return 0
 
 

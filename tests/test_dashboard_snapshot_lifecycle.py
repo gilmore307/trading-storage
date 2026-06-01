@@ -8,6 +8,7 @@ from pathlib import Path
 
 from trading_storage.dashboard_snapshot_lifecycle import (
     build_dashboard_snapshot_lifecycle_plan,
+    compact_dashboard_read_model_index,
     write_dashboard_snapshot_lifecycle_plan,
 )
 
@@ -161,6 +162,34 @@ class DashboardSnapshotLifecycleTests(unittest.TestCase):
                     apply=True,
                     now=NOW,
                 )
+
+    def test_index_compaction_drops_rows_for_deleted_snapshots(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            storage_root = Path(tmp) / "storage"
+            kept = _write_snapshot(storage_root, "current_system_status_summary", "20260516T110000Z")
+            removed = _write_snapshot(storage_root, "current_system_status_summary", "20260514T000000Z")
+            index = storage_root / "06_dashboard_cache" / "index" / "dashboard_read_model_index.jsonl"
+            index.parent.mkdir(parents=True, exist_ok=True)
+            rows = [
+                {
+                    "contract_type": "current_system_status_summary",
+                    "snapshot_uri": "storage://trading-storage/" + str(kept.relative_to(storage_root)).replace("\\", "/"),
+                },
+                {
+                    "contract_type": "current_system_status_summary",
+                    "snapshot_uri": "storage://trading-storage/" + str(removed.relative_to(storage_root)).replace("\\", "/"),
+                },
+            ]
+            index.write_text("".join(json.dumps(row, sort_keys=True) + "\n" for row in rows), encoding="utf-8")
+            removed.unlink()
+
+            summary = compact_dashboard_read_model_index(storage_root=storage_root)
+
+            self.assertEqual(summary["input_rows"], 2)
+            self.assertEqual(summary["retained_rows"], 1)
+            self.assertEqual(summary["dropped_rows"], 1)
+            compacted_rows = [json.loads(line) for line in index.read_text(encoding="utf-8").splitlines()]
+            self.assertEqual(compacted_rows, [rows[0]])
 
 
 if __name__ == "__main__":
