@@ -30,6 +30,8 @@ Owns the unified control-plane view for lifecycle maintenance: lifecycle request
 
 Manager may request, prioritize, schedule, and observe storage lifecycle work, but it does not delete files, compress SQL, mutate storage paths, choose physical storage actions by itself, or bypass storage protected-set checks.
 
+Model-group reruns use this same lifecycle boundary. A manager `model_group_rerun_plan` may declare rerun-invalidated artifact candidates and embed a `storage_lifecycle_request`, but that request is classification evidence only. Storage remains responsible for artifact-index coverage, protected-set clearance, quarantine/recheck, lifecycle review, physical mutation, receipts, and tombstones.
+
 ### trading-data
 
 Owns source acquisition, normalization, and feature/source artifact semantics. Completion receipts should describe artifact kind, reproducibility class, source provider, source times, lineage refs, rebuild hints, and recommended retention class so storage can classify outputs safely.
@@ -102,7 +104,23 @@ Includes target-symbol or experiment-specific source folders created for a bound
 
 Policy: delete by fold folder only after the full Layer 1-10 fold closes. The accepted folder boundary is `storage/01_source_data/fold_scoped/<fold_id>/...`; storage maintenance emits `storage_fold_source_cleanup_candidate` rows only for completed fold ids under that root. These candidates still require artifact-index coverage, protected-set clearance, quarantine/recheck, and deletion receipts before any destructive executor may remove bytes. Individual files inside a fold-scoped folder should not be independently deleted out of order.
 
-Architecture-driven model group reruns may also place bounded source-data partitions into a delete candidate set, but only when the manager `model_group_rerun_plan` cutpoint is `data_acquisition` and the source definition, provider/source parameters, acquisition contract, or existing source partition is itself stale or wrong. The delete scope must name the provider/source, target symbol where applicable, fold or month window, timeframe, artifact family, and contract/schema. Source data remains protected for reruns whose cutpoint is `feature_generation` or later.
+Architecture-driven model group reruns may also place bounded source-data partitions into lifecycle candidates, but only when the manager `model_group_rerun_plan` cutpoint is `data_acquisition` and the source definition, provider/source parameters, acquisition contract, or existing source partition is itself stale or wrong. The candidate scope must name the provider/source, target symbol where applicable, fold or month window, timeframe, artifact family, and contract/schema. Source data remains protected for reruns whose cutpoint is `feature_generation` or later. The rerun plan's `delete_set` is treated as lifecycle candidate input, not deletion authority.
+
+### Rerun-triggered lifecycle
+
+Reruns are lifecycle events. They can supersede downstream workflow state and mark generated artifacts as stale, but they do not get a separate cleanup path.
+
+Storage handles a rerun-triggered lifecycle request through the normal sequence:
+
+1. ingest the manager `storage_lifecycle_request` embedded in the rerun plan;
+2. match candidate refs to artifact-index records and physical paths;
+3. build protected-set evidence, including TE canonical source data, receipts, tombstones, promoted model bodies, and lineage-required source data;
+4. classify each candidate as retain, compress, archive, quarantine candidate, or no-policy retain;
+5. write plan/quarantine/recheck evidence before any destructive action;
+6. execute only reviewed storage-owned mutations;
+7. write receipts and tombstones while preserving reset receipts and lifecycle receipts.
+
+Anything not matched, not cleared, or not reviewed remains retained. Reset receipts and lifecycle receipts are evidence and are never deleted as part of the rerun that produced them.
 
 ### Later-layer model-run metadata
 

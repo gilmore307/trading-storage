@@ -708,6 +708,30 @@ Daily TE refreshes may create changed completion receipts and new month-bucketed
 
 All other numbered storage roots and TE-derived materializations stay ignored unless a later decision accepts a narrower Git exception.
 
+## D028 - Model group reruns enter storage lifecycle as requests
+
+Date: 2026-06-02
+Status: Accepted
+
+### Context
+
+Model group reruns can invalidate generated model outputs, workflow state, replay outputs, dashboard/read-model materializations, and sometimes bounded source partitions. Treating rerun cleanup as a separate manager-owned deletion path would duplicate the storage lifecycle system and risk deleting files before artifact-index, protected-set, quarantine, receipt, or tombstone evidence exists.
+
+### Decision
+
+Use the existing storage lifecycle system for rerun-related files.
+
+A manager `model_group_rerun_plan` may identify lifecycle candidates, protected refs, retained refs, and controlled roots, and it may embed a `storage_lifecycle_request`. That request is classification/routing evidence only. It does not authorize deletion, compression, archive, SQL mutation, or physical file mutation.
+
+Storage owns the next steps: artifact-index matching, protected-set clearance, lifecycle planning, quarantine/recheck, reviewed mutation, receipts, and tombstones. Reset receipts and lifecycle receipts are audit evidence and are retained by default.
+
+### Consequences
+
+- Rerun reset can invalidate bounded workflow state so the scheduler reenters correctly.
+- Physical artifact treatment is centralized under storage lifecycle policy.
+- Candidate refs that do not match an indexed artifact or do not clear review stay retained.
+- TE canonical source data remains protected and is never a rerun deletion candidate.
+
 ### Consequences
 
 - Canonical TE source files can be restored through Git history.
