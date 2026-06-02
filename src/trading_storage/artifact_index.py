@@ -462,7 +462,7 @@ def _retention_class(
             "model_08",
             "model_09",
             "model_10",
-            "feature_09",
+            "m09_option_expression_feature_generation",
             "feature_10",
             "source_09",
             "source_10",

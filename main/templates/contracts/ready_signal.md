@@ -49,13 +49,13 @@ A ready signal is narrower than a manifest: it is not a full run log and it does
   "signal_id": "rsig_...",
   "signal_type": "data_source_ready",
   "producer_repo": "trading-data",
-  "workflow_id": "source_03_target_state",
+  "workflow_id": "m03_target_state_vector_data_acquisition",
   "manifest_refs": ["mf_..."],
   "artifact_refs": ["art_..."],
   "ready_status": "ready",
   "ready_at": "2026-05-08T08:05:00Z",
   "valid_after": "2026-05-08T08:05:00Z",
-  "consumption_scope": "trading-model;feature_03_target_state_vector",
+  "consumption_scope": "trading-model;m03_target_state_vector_feature_generation",
   "blocking_policy": "consumers_must_wait_or_reject_when_not_ready"
 }
 ```
