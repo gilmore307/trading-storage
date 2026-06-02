@@ -102,6 +102,8 @@ Includes target-symbol or experiment-specific source folders created for a bound
 
 Policy: delete by fold folder only after the full Layer 1-10 fold closes. The accepted folder boundary is `storage/01_source_data/fold_scoped/<fold_id>/...`; storage maintenance emits `storage_fold_source_cleanup_candidate` rows only for completed fold ids under that root. These candidates still require artifact-index coverage, protected-set clearance, quarantine/recheck, and deletion receipts before any destructive executor may remove bytes. Individual files inside a fold-scoped folder should not be independently deleted out of order.
 
+Architecture-driven model group reruns may also place bounded source-data partitions into a delete candidate set, but only when the manager `model_group_rerun_plan` cutpoint is `data_acquisition` and the source definition, provider/source parameters, acquisition contract, or existing source partition is itself stale or wrong. The delete scope must name the provider/source, target symbol where applicable, fold or month window, timeframe, artifact family, and contract/schema. Source data remains protected for reruns whose cutpoint is `feature_generation` or later.
+
 ### Later-layer model-run metadata
 
 Includes Layer 3+ diagnostic summaries, runtime metadata, dashboard snapshots, staging/intermediate files, scratch feature files, failed-run temp files, duplicated dry-run payloads, and old stdout/stderr logs that are not the only remaining receipt/manifest/lineage evidence.
@@ -139,7 +141,7 @@ Source data is classified by reproducibility and reuse:
 - stable re-downloadable provider cache and one-off experiment pulls without lineage references: TTL delete may be allowed after quarantine;
 - shared normalized source data: retain or compress while any active/promoted/review lineage may reference it.
 
-Policy: source data is compressed before deletion unless the policy explicitly classifies it as disposable cache.
+Policy: source data is compressed before deletion unless the policy explicitly classifies it as disposable cache or a reviewed model-group rerun proves the bounded source partition is erroneous or obsolete and safely reproducible. Trading Economics canonical source remains append-only protected and is not covered by this rerun exception.
 
 ### SQL data
 
