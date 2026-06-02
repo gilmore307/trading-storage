@@ -41,7 +41,6 @@ Accepted implementation targets:
 - `realtime_signal_summary`
 - `execution_realtime_trading_runtime_status`
 - `model_layer_readiness_summary`
-- `model_layer_evaluation_summary`
 - `model_promotion_posture_summary`
 
 Parked future contracts:
@@ -144,7 +143,7 @@ The first storage-side materialization and refresh helpers are implemented:
 - `src/trading_storage/dashboard_refresh.py` and `scripts/dashboard/refresh_historical_task_progress_read_model.py` run the manager-owned `historical_task_progress_summary` producer and materialize the validated output.
 - `src/trading_storage/dashboard_realtime_signals.py` and `scripts/dashboard/refresh_realtime_signal_summary_read_model.py` build and materialize `realtime_signal_summary`.
 - `src/trading_storage/dashboard_execution_runtime.py` and `scripts/dashboard/refresh_execution_runtime_status_read_model.py` build and materialize `execution_realtime_trading_runtime_status`.
-- `src/trading_storage/dashboard_models.py` and `scripts/dashboard/refresh_public_dashboard_read_models.py` build and materialize the Models-page set: `model_layer_readiness_summary`, `model_layer_evaluation_summary`, and `model_promotion_posture_summary`. The model-layer evaluation refresh also normalizes per-layer `layer_evaluation_summary` artifacts under `storage/03_model_artifacts/runtime/<model_id>/layer_evaluation_summary_latest.json` before the dashboard read model is written.
+- `src/trading_storage/dashboard_models.py` and `scripts/dashboard/refresh_public_dashboard_read_models.py` build and materialize the Models-page set: `model_layer_readiness_summary` and `model_promotion_posture_summary`.
 - `deploy/systemd/trading-storage-dashboard-read-model-refresh.service` and `.timer` provide the reviewed fallback refresh template. Manager workflow-state writes trigger primary progress refreshes; the timer default is 60 seconds for calibration when an event is missed.
 
 Still not implemented: dashboard read adapters, lifecycle timers for dashboard snapshots, or dashboard UI/runtime pages.
@@ -158,6 +157,6 @@ Still not implemented: dashboard read adapters, lifecycle timers for dashboard s
 - `temporal_explorer_summary` for the Timewheel / Temporal Explorer page;
 - `realtime_signal_summary` for realtime monitor/signal readiness;
 - `execution_realtime_trading_runtime_status` for execution runtime readiness;
-- `model_layer_readiness_summary`, `model_layer_evaluation_summary`, and `model_promotion_posture_summary` for the Models page.
+- `model_layer_readiness_summary` and `model_promotion_posture_summary` for the Models page.
 
 The systemd refresh service uses this batch entrypoint so public pages update from storage-hosted read models without the dashboard querying raw component internals.
