@@ -692,7 +692,7 @@ Status: Accepted
 
 ### Context
 
-Trading Economics macro calendar payloads are provider-window source data and the subscription is no longer available. Chentong accepted a single TE source boundary: macro TE source data should have one canonical file home, while SQL rows, runtime receipts, control-plane filtered artifacts, dashboard read models, and lifecycle files remain derived or operational state.
+Trading Economics macro calendar payloads are provider-window source data. Chentong accepted a single TE source boundary: macro TE source data should have one canonical file home, while SQL rows, runtime receipts, control-plane filtered artifacts, dashboard read models, and lifecycle files remain derived or operational state.
 
 ### Decision
 
@@ -703,6 +703,8 @@ storage/01_source_data/monthly_backfill/trading_economics_calendar_web/
 ```
 
 Exclude `_manifests/` from Git tracking because it records consolidation routes, original roots, and process evidence rather than the current source payload body.
+
+Daily TE refreshes may create changed completion receipts and new month-bucketed `runs/<run_id>/` files under the canonical root. Those Git changes are normal source-data maintenance inputs, not cleanup residue; include them in maintenance or related acceptance commits so the append-only source boundary stays recoverable.
 
 All other numbered storage roots and TE-derived materializations stay ignored unless a later decision accepts a narrower Git exception.
 
