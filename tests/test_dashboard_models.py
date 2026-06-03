@@ -118,7 +118,12 @@ def _write_group_promotion_version(storage_root: Path) -> None:
             {
                 "contract_type": "evaluation_replay_execution_run",
                 "candidate_model_ref": "storage://trading-manager/model_group/aapl/2016-01_2016-06",
-                "target_refs": ["AAPL"],
+                "target_refs": ["AAPL_CANDIDATE_01", "AAPL_CANDIDATE_02"],
+                "candidate_handoff_status": "available",
+                "candidate_handoff_source": "layer_02_target_candidate_handoff",
+                "candidate_handoff_row_count": 2,
+                "candidate_handoff_symbol_count": 2,
+                "candidate_handoff_table_ref": "trading_data.m02_sector_context_data_acquisition",
                 "decision_rows_ref": str(replay_root / "decision_rows.jsonl"),
             }
         )
@@ -384,32 +389,6 @@ def _write_mismatched_group_promotion_version(storage_root: Path) -> None:
     )
 
 
-def _write_preview_override(storage_root: Path) -> None:
-    path = storage_root / "06_dashboard_cache/config/model_group_promotion_preview_overrides.json"
-    path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(
-        json.dumps(
-            {
-                "contract_type": "model_group_promotion_preview_overrides",
-                "schema_version": 1,
-                "status": "enabled",
-                "overrides": [
-                    {
-                        "fold_id": "fold_2016-01_2016-06",
-                        "target_symbol": "AAPL",
-                        "candidate_model_ref": "storage://trading-manager/model_group/aapl/2016-01_2016-06",
-                        "decision_status": "baseline_active",
-                        "identity": "active",
-                        "reason": "Temporary Models-page preview override.",
-                    }
-                ],
-            }
-        )
-        + "\n",
-        encoding="utf-8",
-    )
-
-
 def _write_unscoped_group_promotion_version(storage_root: Path) -> None:
     replay_root = (
         storage_root
@@ -609,7 +588,7 @@ class DashboardModelsTests(unittest.TestCase):
             self.assertEqual(len(payload["chart_payload"]["group_versions"]), 1)
             self.assertEqual(payload["chart_payload"]["group_versions"][0]["version_label"], "AAPL 2016 fold1")
 
-    def test_model_group_versions_skip_replay_target_mismatch(self) -> None:
+    def test_model_group_versions_skip_replay_without_candidate_handoff(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             storage_root = Path(tmp)
             _write_latest(storage_root, "historical_task_progress_summary", _historical_payload())
@@ -623,27 +602,7 @@ class DashboardModelsTests(unittest.TestCase):
 
             self.assertEqual(payload["chart_payload"]["group_versions"], [])
             self.assertEqual(payload["chart_payload"]["status_counts"], {})
-
-    def test_model_group_versions_allow_explicit_preview_override(self) -> None:
-        with tempfile.TemporaryDirectory() as tmp:
-            storage_root = Path(tmp)
-            _write_latest(storage_root, "historical_task_progress_summary", _historical_payload())
-            _write_latest(storage_root, "execution_realtime_trading_runtime_status", _runtime_payload())
-            _write_mismatched_group_promotion_version(storage_root)
-            _write_preview_override(storage_root)
-
-            payload = build_model_promotion_posture_summary(
-                storage_root=storage_root,
-                generated_at_utc="2026-05-29T00:07:00Z",
-            )
-
-            versions = payload["chart_payload"]["group_versions"]
-            self.assertEqual(len(versions), 1)
-            self.assertEqual(versions[0]["version_label"], "AAPL 2016 fold1")
-            self.assertEqual(versions[0]["decision_status"], "baseline_active")
-            self.assertEqual(versions[0]["identity"], "active")
-            self.assertTrue(versions[0]["preview_override"])
-            self.assertEqual(versions[0]["excluded_reason_codes_overridden"], ["replay_scope_target_mismatch"])
+            self.assertIn("replay_candidate_handoff_missing", payload["chart_payload"]["excluded_group_versions"][0]["reason_codes"])
 
     def test_model_group_versions_skip_unscoped_artifacts_and_report_exclusion(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:

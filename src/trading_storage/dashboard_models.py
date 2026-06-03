@@ -25,7 +25,6 @@ HISTORICAL_TASK_PROGRESS_CONTRACT = "historical_task_progress_summary"
 EXECUTION_RUNTIME_STATUS_CONTRACT = "execution_realtime_trading_runtime_status"
 DEFAULT_STORAGE_ROOT = Path("storage")
 DEFAULT_STALE_AFTER_SECONDS = 900
-MODEL_GROUP_PROMOTION_PREVIEW_OVERRIDE_PATH = Path("06_dashboard_cache/config/model_group_promotion_preview_overrides.json")
 
 MODEL_LAYERS = (
     (1, "model_01_market_regime", "Market Regime"),
@@ -286,16 +285,7 @@ def _model_group_version_label(*, fold_id: str, candidate_model_ref: str, target
     return fallback
 
 
-def _string_set(value: Any) -> set[str]:
-    if isinstance(value, str):
-        stripped = value.strip()
-        return {stripped.upper()} if stripped else set()
-    if isinstance(value, (list, tuple, set)):
-        return {str(item).strip().upper() for item in value if str(item).strip()}
-    return set()
-
-
-def _model_group_version_scope_mismatch(decision: Mapping[str, Any], settlement: Mapping[str, Any] | None, target_symbol: str) -> str | None:
+def _model_group_version_replay_contract_mismatch(decision: Mapping[str, Any], settlement: Mapping[str, Any] | None) -> str | None:
     replay_ref = str(
         decision.get("replay_validation_ref")
         or decision.get("replay_result_ref")
@@ -310,10 +300,9 @@ def _model_group_version_scope_mismatch(decision: Mapping[str, Any], settlement:
     candidate_ref = str(replay_receipt.get("candidate_model_ref") or "")
     if "current_deterministic_crypto_policy" in candidate_ref:
         return "replay receipt used deterministic crypto placeholder policy"
-    target_refs = _string_set(replay_receipt.get("target_refs") or replay_receipt.get("candidate_target_refs"))
-    normalized_target = str(target_symbol or "").strip().upper()
-    if normalized_target and target_refs and normalized_target not in target_refs:
-        return f"replay receipt targets {', '.join(sorted(target_refs))} do not include model target {normalized_target}"
+    candidate_handoff_status = str(replay_receipt.get("candidate_handoff_status") or "").strip().lower()
+    if candidate_handoff_status not in {"available", "override"}:
+        return "replay receipt lacks Layer 2 target-candidate handoff evidence"
     return None
 
 
@@ -338,40 +327,10 @@ def _model_group_version_exclusion_reasons(
                 "reason": f"candidate_model_ref target {candidate_target} does not match artifact target {normalized_target}",
             }
         )
-    scope_mismatch = _model_group_version_scope_mismatch(decision, settlement, normalized_target)
-    if scope_mismatch:
-        reasons.append({"reason_code": "replay_scope_target_mismatch", "reason": scope_mismatch})
+    replay_contract_mismatch = _model_group_version_replay_contract_mismatch(decision, settlement)
+    if replay_contract_mismatch:
+        reasons.append({"reason_code": "replay_candidate_handoff_missing", "reason": replay_contract_mismatch})
     return reasons
-
-
-def _model_group_promotion_preview_overrides(storage_root: Path) -> list[dict[str, Any]]:
-    payload = _load_json_object(storage_root / MODEL_GROUP_PROMOTION_PREVIEW_OVERRIDE_PATH)
-    if not payload or str(payload.get("status") or "").lower() not in {"enabled", "active"}:
-        return []
-    overrides = payload.get("overrides")
-    return [dict(item) for item in overrides] if isinstance(overrides, list) else []
-
-
-def _model_group_promotion_preview_override(
-    *,
-    storage_root: Path,
-    fold_id: str,
-    target_symbol: str,
-    candidate_model_ref: str,
-) -> dict[str, Any] | None:
-    normalized_fold = fold_id.strip().lower()
-    normalized_target = target_symbol.strip().upper()
-    normalized_ref = candidate_model_ref.strip().lower()
-    for override in _model_group_promotion_preview_overrides(storage_root):
-        override_fold = str(override.get("fold_id") or "").strip().lower()
-        override_target = str(override.get("target_symbol") or "").strip().upper()
-        override_ref = str(override.get("candidate_model_ref") or "").strip().lower()
-        fold_matches = not override_fold or override_fold == normalized_fold
-        target_matches = not override_target or override_target == normalized_target
-        ref_matches = not override_ref or override_ref == normalized_ref
-        if fold_matches and target_matches and ref_matches:
-            return override
-    return None
 
 
 def _diagnostic_availability(metrics: Mapping[str, Any]) -> dict[str, dict[str, str]]:
@@ -431,13 +390,7 @@ def _model_group_promotion_evidence(storage_root: Path, *, active_ref: str | Non
             target_symbol=target_symbol,
             candidate_model_ref=candidate_model_ref,
         )
-        preview_override = _model_group_promotion_preview_override(
-            storage_root=storage_root,
-            fold_id=fold_id,
-            target_symbol=target_symbol,
-            candidate_model_ref=candidate_model_ref,
-        )
-        if exclusion_reasons and not preview_override:
+        if exclusion_reasons:
             exclusions.append(
                 {
                     "promotion_run_id": decision_path.parent.name,
@@ -451,11 +404,6 @@ def _model_group_promotion_evidence(storage_root: Path, *, active_ref: str | Non
                 }
             )
             continue
-        if preview_override:
-            decision_status = str(preview_override.get("decision_status") or "promoted")
-            recommendation = str(preview_override.get("agent_review_recommendation") or recommendation or "preview_override")
-            target_symbol = str(preview_override.get("target_symbol") or target_symbol).strip().upper()
-            candidate_model_ref = str(preview_override.get("candidate_model_ref") or candidate_model_ref)
         version_key = candidate_model_ref or fold_id or decision_path.parent.name
         version_label = _model_group_version_label(
             fold_id=fold_id,
@@ -463,9 +411,7 @@ def _model_group_promotion_evidence(storage_root: Path, *, active_ref: str | Non
             target_symbol=target_symbol,
             fallback=decision_path.parent.name,
         )
-        if preview_override and preview_override.get("identity"):
-            identity = str(preview_override.get("identity"))
-        elif active_ref and candidate_model_ref and candidate_model_ref == active_ref:
+        if active_ref and candidate_model_ref and candidate_model_ref == active_ref:
             identity = "active"
         elif decision_status == "eligible":
             identity = "shadow"
@@ -544,13 +490,6 @@ def _model_group_promotion_evidence(storage_root: Path, *, active_ref: str | Non
                 "settlement_ref": settlement_ref,
             },
         }
-        if preview_override:
-            row["preview_override"] = True
-            row["preview_override_reason"] = str(
-                preview_override.get("reason")
-                or "Temporary dashboard preview override; this does not represent an accepted promotion decision."
-            )
-            row["excluded_reason_codes_overridden"] = [item["reason_code"] for item in exclusion_reasons]
         existing = rows_by_version_key.get(version_key)
         row_clock = str(row.get("created_at_utc") or row.get("promotion_run_id") or "")
         existing_clock = str((existing or {}).get("created_at_utc") or (existing or {}).get("promotion_run_id") or "")
