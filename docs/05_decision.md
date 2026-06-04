@@ -194,7 +194,7 @@ Status: Accepted
 
 ### Context
 
-The shared relative-strength combination table drives both Layer 1 broad market-state evidence and Layer 2 sector/industry candidate evidence. Chentong accepted the stricter boundary that all sector/industry rotation-related evidence should move to Layer 2 so Layer 1 stays clean. The `bkch_bitw` pair uses `BKCH`, a `sector_observation_etf`, but was still marked as `primary`, which caused crypto-related equity candidate/theme leadership evidence to remain in Layer 1.
+The shared relative-strength combination table drives both Layer 1 broad market-state evidence and Layer 2 broad sector-anchor plus crypto-context evidence. Chentong accepted the stricter boundary that all sector-rotation evidence should move to Layer 2 so Layer 1 stays clean. The `bkch_bitw` pair uses `BKCH`, a `sector_observation_etf`, but was still marked as `primary`, which caused crypto-related equity context evidence to remain in Layer 1.
 
 ### Decision
 
@@ -503,22 +503,20 @@ The rename is path clarity only. It does not split the mixed Layer 1/2 files, ch
 - Old filenames should appear only in immutable registry migration history or other historical artifacts.
 - Future shared files with model-layer semantics should follow the same path-level layer-prefix convention.
 
-## D020 - Target context mappings may have multiple Layer 2 rows per target
+## D020 - Target context mappings may have multiple broad Layer 2 rows per target
 
 Date: 2026-05-14
-Status: Accepted
+Status: Accepted; focused ETF examples superseded by D029
 
 ### Context
 
-Crypto proxy mappings proved the target-to-Layer-2 context contract, but ordinary equity targets can also need reviewed business context when they are not selected directly from a single Layer 2 ETF holding universe row. AAOI is the first concrete example: it has AI infrastructure demand exposure, broad technology-sector context, semiconductor/optical supply-chain context, and weaker downstream communication/platform infrastructure demand context.
+Crypto proxy mappings proved the target-to-Layer-2 context contract, but ordinary equity targets can also need more than one reviewed broad context row. D029 narrowed current Layer 2 to the 11 broad Select Sector SPDR anchors plus the `BKCH` crypto context-anchor exception, so focused industry-chain and theme ETF examples are no longer accepted Layer 2 mappings.
 
 ### Decision
 
-Allow `layer_02_target_context_mapping.csv` to contain multiple rows for one `target_symbol` when each row represents a distinct reviewed Layer 2 context relationship. The first equity example maps `AAOI` to:
+Allow `layer_02_target_context_mapping.csv` to contain multiple rows for one `target_symbol` when each row represents a distinct reviewed current Layer 2 context relationship. Current equity rows may map only to accepted broad Layer 2 anchors. The accepted `AAOI` example maps to:
 
-- `AIQ` as primary AI/technology thematic business context;
-- `XLK` as secondary broad technology sector context;
-- `SMH` as semiconductor and optical component supply-chain context;
+- `XLK` as primary broad technology sector context;
 - `XLC` as weak downstream demand-side communication/platform infrastructure context.
 
 For direct equity targets such as AAOI, auxiliary proxy fields may be empty and `optionable_proxy_status = not_applicable`; target-specific source/option/evidence tasks should use the target itself unless a later reviewed proxy row is added.
@@ -528,6 +526,7 @@ For direct equity targets such as AAOI, auxiliary proxy fields may be empty and 
 - `target_symbol` is not unique in the mapping CSV; consumers must group rows by target and preserve all reviewed context rows.
 - Multi-row business mappings do not add the target itself to Layer 1/2 ETF universes.
 - Mapping rows remain metadata/evidence boundaries and do not authorize provider calls, model activation, broker/account mutation, storage lifecycle mutation, or Layer 1/2 universe edits.
+- Focused industry-chain and thematic ETFs such as `AIQ`, `SMH`, `CIBR`, `ARK*`, or `XBI` require a separate reviewed proxy/theme layer before they can re-enter target-context routing.
 
 ## D021 - Storage maintenance is the scheduled action service
 
@@ -766,5 +765,6 @@ ETF holdings do not define the ordinary equity candidate universe. Ordinary equi
 
 - `main/shared/layer_01_02_market_context_etf_universe.csv` keeps only the 11 broad sector ETFs plus `BKCH` under `layer_02_sector_context`.
 - `main/shared/layer_01_02_market_context_relative_strength_combinations.csv` keeps Layer 2 combinations among broad sector anchors, `BKCH`, and broad market/crypto references, and removes focused industry/theme comparisons.
+- `main/shared/layer_02_target_context_mapping.csv` may reference only accepted broad Layer 2 anchors plus `BKCH` in `layer2_context_symbol`; focused industry/theme symbols are not valid current Layer 2 context symbols.
 - Historical replay should not borrow current ETF holdings to manufacture point-in-time candidate evidence.
 - Future use of `SMH`, `CIBR`, `ARK*`, `XBI`, or similar focused ETFs requires a new accepted proxy/theme contract instead of reintroducing mixed-granularity Layer 2.
