@@ -100,8 +100,16 @@ class SharedContractTests(unittest.TestCase):
                 "as_of_date",
             ],
         )
-        self.assertEqual(rows, [])
         self.assertTrue(symbols_path.exists())
+        self.assertGreater(len(rows), 0)
+        self.assertTrue(
+            {row["optionable_underlying_status"] for row in rows}.issubset(
+                {"accepted_optionable", "uncertain_verify_before_use"}
+            )
+        )
+        symbols = [line.strip() for line in symbols_path.read_text(encoding="utf-8").splitlines() if line.strip()]
+        self.assertEqual(symbols, [row["symbol"] for row in rows])
+        self.assertTrue(any("tradingview_screener_snapshot:" in row["source_refs"] for row in rows))
 
 
 if __name__ == "__main__":
