@@ -91,6 +91,8 @@ class SharedContractTests(unittest.TestCase):
                 "name",
                 "sector",
                 "optionable_underlying_status",
+                "pool_membership_status",
+                "pool_membership_reason",
                 "in_layer2_etf_holdings",
                 "in_recent_week_volume_top100",
                 "in_market_cap_top100",
@@ -104,11 +106,12 @@ class SharedContractTests(unittest.TestCase):
         self.assertGreater(len(rows), 0)
         self.assertTrue(
             {row["optionable_underlying_status"] for row in rows}.issubset(
-                {"accepted_optionable", "uncertain_verify_before_use"}
+                {"accepted_optionable", "uncertain_verify_before_use", "no_listed_options_or_unverified"}
             )
         )
+        self.assertTrue({row["pool_membership_status"] for row in rows}.issubset({"active", "inactive"}))
         symbols = [line.strip() for line in symbols_path.read_text(encoding="utf-8").splitlines() if line.strip()]
-        self.assertEqual(symbols, [row["symbol"] for row in rows])
+        self.assertEqual(symbols, [row["symbol"] for row in rows if row["pool_membership_status"] == "active"])
         self.assertTrue(any("tradingview_screener_snapshot:" in row["source_refs"] for row in rows))
 
 
