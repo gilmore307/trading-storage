@@ -111,9 +111,9 @@ class SharedContractTests(unittest.TestCase):
         self.assertEqual(symbols, [row["symbol"] for row in rows if row["pool_membership_status"] == "active"])
         self.assertTrue(any("tradingview_screener_snapshot:" in row["source_refs"] for row in rows))
 
-    def test_historical_equity_candidate_universe_contract_exists(self):
-        universe_path = SHARED_ROOT / "historical_equity_candidate_universe.csv"
-        symbols_path = SHARED_ROOT / "historical_equity_candidate_universe.symbols.txt"
+    def test_historical_candidate_universe_contract_exists(self):
+        universe_path = SHARED_ROOT / "historical_candidate_universe.csv"
+        symbols_path = SHARED_ROOT / "historical_candidate_universe.symbols.txt"
 
         with universe_path.open(newline="") as csv_file:
             reader = csv.DictReader(csv_file)
@@ -123,8 +123,13 @@ class SharedContractTests(unittest.TestCase):
             reader.fieldnames,
             [
                 "symbol",
+                "target_ref",
+                "asset_class",
+                "instrument_type",
                 "name",
-                "sector",
+                "tradingview_sector",
+                "layer2_context_symbol",
+                "layer2_context_method",
                 "optionable_underlying_status",
                 "replay_candidate_status",
                 "replay_candidate_reason",
@@ -142,6 +147,9 @@ class SharedContractTests(unittest.TestCase):
         self.assertGreater(len(rows), 0)
         self.assertEqual({row["replay_candidate_status"] for row in rows}, {"active"})
         self.assertEqual({row["universe_policy_ref"] for row in rows}, {"fixed_current_realtime_pool_snapshot_for_historical_replay"})
+        self.assertEqual({row["layer2_context_symbol"] for row in rows if row["asset_class"] == "crypto_spot"}, {"BKCH"})
+        self.assertEqual({row["symbol"] for row in rows if row["asset_class"] == "crypto_spot"}, {"BTC", "ETH", "SOL"})
+        self.assertTrue({row["layer2_context_symbol"] for row in rows if row["asset_class"] == "us_equity"}.issubset({"XLB", "XLC", "XLE", "XLF", "XLI", "XLK", "XLP", "XLRE", "XLU", "XLV", "XLY"}))
         symbols = [line.strip() for line in symbols_path.read_text(encoding="utf-8").splitlines() if line.strip()]
         self.assertEqual(symbols, [row["symbol"] for row in rows])
 
