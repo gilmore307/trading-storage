@@ -111,6 +111,40 @@ class SharedContractTests(unittest.TestCase):
         self.assertEqual(symbols, [row["symbol"] for row in rows if row["pool_membership_status"] == "active"])
         self.assertTrue(any("tradingview_screener_snapshot:" in row["source_refs"] for row in rows))
 
+    def test_historical_equity_candidate_universe_contract_exists(self):
+        universe_path = SHARED_ROOT / "historical_equity_candidate_universe.csv"
+        symbols_path = SHARED_ROOT / "historical_equity_candidate_universe.symbols.txt"
+
+        with universe_path.open(newline="") as csv_file:
+            reader = csv.DictReader(csv_file)
+            rows = list(reader)
+
+        self.assertEqual(
+            reader.fieldnames,
+            [
+                "symbol",
+                "name",
+                "sector",
+                "optionable_underlying_status",
+                "replay_candidate_status",
+                "replay_candidate_reason",
+                "source_pool_as_of_date",
+                "in_recent_week_volume_top300",
+                "in_market_cap_top300",
+                "volume_rank",
+                "market_cap_rank",
+                "source_refs",
+                "freeze_as_of_date",
+                "universe_policy_ref",
+            ],
+        )
+        self.assertTrue(symbols_path.exists())
+        self.assertGreater(len(rows), 0)
+        self.assertEqual({row["replay_candidate_status"] for row in rows}, {"active"})
+        self.assertEqual({row["universe_policy_ref"] for row in rows}, {"fixed_current_realtime_pool_snapshot_for_historical_replay"})
+        symbols = [line.strip() for line in symbols_path.read_text(encoding="utf-8").splitlines() if line.strip()]
+        self.assertEqual(symbols, [row["symbol"] for row in rows])
+
 
 if __name__ == "__main__":
     unittest.main()
