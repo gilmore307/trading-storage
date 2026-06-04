@@ -1,0 +1,7 @@
+{
+  "feed": "07_feed_trading_economics_calendar_web",
+  "month": "2026-06",
+  "persistence": "monthly bucket copied from one bounded recent Trading Economics refresh",
+  "row_count": 285,
+  "source_request_manifest": "/root/projects/trading-storage/storage/01_source_data/monthly_backfill/trading_economics_calendar_web/_manifests/recent_refresh_runs/calendar_maintenance_20260604T080825Z_te/request_manifest.json"
+}
