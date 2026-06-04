@@ -20,7 +20,6 @@ dba_dbc,primary,layer_01_market_regime,DBA,DBC,1m,1m,1m,agriculture pressure vs 
 slv_gld,primary,layer_01_market_regime,SLV,GLD,1m,1m,1m,silver beta vs gold safety
 gld_uup,primary,layer_01_market_regime,GLD,UUP,1m,1m,1m,gold safety vs dollar pressure
 bitw_spy,primary,layer_01_market_regime,BITW,SPY,1m,1m,1m,broad crypto basket beta vs equities
-bkch_bitw,sector_rotation,layer_02_sector_context,BKCH,BITW,1m,1m,1m,crypto-related equities leadership vs broad crypto basket
 xlb_spy,sector_rotation,layer_02_sector_context,XLB,SPY,1m,1m,1m,materials leadership vs broad market
 xlc_spy,sector_rotation,layer_02_sector_context,XLC,SPY,1m,1m,1m,communication services leadership vs broad market
 xle_spy,sector_rotation,layer_02_sector_context,XLE,SPY,1m,1m,1m,energy leadership/inflation sensitivity vs broad market
@@ -38,16 +37,3 @@ xli_xlu,sector_rotation,layer_02_sector_context,XLI,XLU,1m,1m,1m,industrial cycl
 xlf_xlu,sector_rotation,layer_02_sector_context,XLF,XLU,1m,1m,1m,financials/rates risk vs utilities defense
 xle_xlp,sector_rotation,layer_02_sector_context,XLE,XLP,1m,1m,1m,energy/inflation pressure vs staples defense
 xlre_xlu,sector_rotation,layer_02_sector_context,XLRE,XLU,1m,1m,1m,real estate vs utilities rate sensitivity
-smh_xlk,context_rotation,layer_02_sector_context,SMH,XLK,1m,1m,1m,semiconductor chain leadership vs broad technology
-igv_xlk,context_rotation,layer_02_sector_context,IGV,XLK,1m,1m,1m,software leadership vs broad technology
-xop_xle,context_rotation,layer_02_sector_context,XOP,XLE,1m,1m,1m,upstream energy chain leadership vs energy sector
-xme_xlb,context_rotation,layer_02_sector_context,XME,XLB,1m,1m,1m,metals/mining chain leadership vs materials sector
-xrt_xly,context_rotation,layer_02_sector_context,XRT,XLY,1m,1m,1m,retail leadership vs consumer discretionary
-iyt_xli,context_rotation,layer_02_sector_context,IYT,XLI,1m,1m,1m,transport leadership vs industrials
-xbi_xlv,context_rotation,layer_02_sector_context,XBI,XLV,1m,1m,1m,biotech risk appetite vs healthcare
-aiq_qqq,context_rotation,layer_02_sector_context,AIQ,QQQ,1m,1m,1m,thematic AI/growth appetite vs QQQ
-arkf_qqq,context_rotation,layer_02_sector_context,ARKF,QQQ,1m,1m,1m,fintech/blockchain thematic growth appetite vs QQQ
-arkg_qqq,context_rotation,layer_02_sector_context,ARKG,QQQ,1m,1m,1m,genomics thematic growth appetite vs QQQ
-arkw_qqq,context_rotation,layer_02_sector_context,ARKW,QQQ,1m,1m,1m,internet thematic growth appetite vs QQQ
-arkx_qqq,context_rotation,layer_02_sector_context,ARKX,QQQ,1m,1m,1m,space/defense thematic growth appetite vs QQQ
-cibr_qqq,context_rotation,layer_02_sector_context,CIBR,QQQ,1m,1m,1m,cybersecurity thematic growth appetite vs QQQ

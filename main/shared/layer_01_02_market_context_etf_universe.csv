@@ -1,16 +1,5 @@
 symbol,universe_type,model_layer,exposure_type,feature_grain,fund_name,issuer_name,interpretation
-AIQ,sector_observation_etf,layer_02_sector_context,thematic_growth,1m,Global X Artificial Intelligence & Technology ETF,Global X,Artificial intelligence and technology thematic equity ETF.
-ARKF,sector_observation_etf,layer_02_sector_context,thematic_growth,1m,ARK Blockchain & Fintech Innovation ETF,ARK Invest,Fintech and blockchain innovation thematic equity ETF.
-ARKG,sector_observation_etf,layer_02_sector_context,thematic_growth,1m,ARK Genomic Revolution ETF,ARK Invest,Genomics and biotech innovation thematic equity ETF.
-ARKW,sector_observation_etf,layer_02_sector_context,thematic_growth,1m,ARK Next Generation Internet ETF,ARK Invest,Next-generation internet and platform growth thematic equity ETF.
-ARKX,sector_observation_etf,layer_02_sector_context,thematic_growth,1m,ARK Space & Defense Innovation ETF,ARK Invest,"Space, aerospace, and defense innovation thematic equity ETF."
 BITW,market_state_etf,layer_01_market_regime,crypto_beta,1m,Bitwise 10 Crypto Index ETF,Bitwise Asset Management,Broad crypto basket ETF used to observe aggregate crypto beta.
-BKCH,sector_observation_etf,layer_02_sector_context,crypto_beta,1m,Global X Blockchain ETF,Global X,Blockchain and crypto-related equity ETF proxy.
-CIBR,sector_observation_etf,layer_02_sector_context,industry_chain,1m,First Trust Nasdaq Cybersecurity ETF,First Trust,Cybersecurity industry equity ETF.
-IGV,sector_observation_etf,layer_02_sector_context,industry_chain,1m,iShares Expanded Tech-Software Sector ETF,BlackRock / iShares,Software sector ETF used to observe software leadership.
-IYT,sector_observation_etf,layer_02_sector_context,industry_chain,1m,iShares U.S. Transportation ETF,BlackRock / iShares,US transportation ETF used to observe transport and logistics cyclicality.
-SMH,sector_observation_etf,layer_02_sector_context,industry_chain,1m,VanEck Semiconductor ETF,VanEck,Semiconductor ETF used to observe semiconductor leadership.
-XBI,sector_observation_etf,layer_02_sector_context,thematic_growth,1m,SPDR S&P Biotech ETF,State Street / SPDR,Biotech ETF used to observe high-beta biotech risk appetite.
 XLB,sector_observation_etf,layer_02_sector_context,sp500_sector,1m,Materials Select Sector SPDR Fund,State Street / SPDR,Materials sector ETF used to observe materials leadership.
 XLC,sector_observation_etf,layer_02_sector_context,sp500_sector,1m,Communication Services Select Sector SPDR Fund,State Street / SPDR,Communication services sector ETF used to observe communication/platform leadership.
 XLE,sector_observation_etf,layer_02_sector_context,sp500_sector,1m,Energy Select Sector SPDR Fund,State Street / SPDR,Energy sector ETF used to observe energy and inflation sensitivity.
@@ -22,9 +11,6 @@ XLRE,sector_observation_etf,layer_02_sector_context,sp500_sector,1m,Real Estate 
 XLU,sector_observation_etf,layer_02_sector_context,sp500_sector,1m,Utilities Select Sector SPDR Fund,State Street / SPDR,Utilities sector ETF used to observe defensive and rate-sensitive utility exposure.
 XLV,sector_observation_etf,layer_02_sector_context,sp500_sector,1m,Health Care Select Sector SPDR Fund,State Street / SPDR,Health care sector ETF used to observe defensive health care exposure.
 XLY,sector_observation_etf,layer_02_sector_context,sp500_sector,1m,Consumer Discretionary Select Sector SPDR Fund,State Street / SPDR,Consumer discretionary sector ETF used to observe cyclical consumer risk appetite.
-XME,sector_observation_etf,layer_02_sector_context,industry_chain,1m,SPDR S&P Metals & Mining ETF,State Street / SPDR,Metals and mining ETF used to observe mining/materials chain beta.
-XOP,sector_observation_etf,layer_02_sector_context,industry_chain,1m,SPDR S&P Oil & Gas Exploration & Production ETF,State Street / SPDR,Oil and gas exploration ETF used to observe upstream energy beta.
-XRT,sector_observation_etf,layer_02_sector_context,industry_chain,1m,SPDR S&P Retail ETF,State Street / SPDR,Retail ETF used to observe consumer retail cyclicality.
 CPER,market_state_etf,layer_01_market_regime,commodities,1m,United States Copper Index Fund,USCF Investments,Copper fund used to observe industrial metal and cyclical commodity impulse.
 DBA,market_state_etf,layer_01_market_regime,commodities,1m,Invesco DB Agriculture Fund,Invesco,Agriculture commodity fund used to observe agriculture price pressure.
 DBC,market_state_etf,layer_01_market_regime,commodities,1m,Invesco DB Commodity Index Tracking Fund,Invesco,Broad commodity basket ETF used to observe aggregate commodity pressure.
