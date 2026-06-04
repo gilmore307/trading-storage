@@ -91,9 +91,9 @@ class SharedContractTests(unittest.TestCase):
                 "optionable_underlying_status",
                 "pool_membership_status",
                 "pool_membership_reason",
-                "in_recent_week_volume_top300",
+                "in_dollar_volume_top300",
                 "in_market_cap_top300",
-                "volume_rank",
+                "dollar_volume_rank",
                 "market_cap_rank",
                 "source_refs",
                 "as_of_date",
@@ -134,9 +134,9 @@ class SharedContractTests(unittest.TestCase):
                 "replay_candidate_status",
                 "replay_candidate_reason",
                 "source_pool_as_of_date",
-                "in_recent_week_volume_top300",
+                "in_dollar_volume_top300",
                 "in_market_cap_top300",
-                "volume_rank",
+                "dollar_volume_rank",
                 "market_cap_rank",
                 "source_refs",
                 "freeze_as_of_date",
@@ -149,7 +149,7 @@ class SharedContractTests(unittest.TestCase):
         self.assertEqual({row["universe_policy_ref"] for row in rows}, {"fixed_current_realtime_pool_snapshot_for_historical_replay"})
         self.assertEqual({row["layer2_context_symbol"] for row in rows if row["asset_class"] == "crypto_spot"}, {"BKCH"})
         self.assertEqual({row["symbol"] for row in rows if row["asset_class"] == "crypto_spot"}, {"BTC", "ETH", "SOL"})
-        self.assertTrue({row["layer2_context_symbol"] for row in rows if row["asset_class"] == "us_equity"}.issubset({"XLB", "XLC", "XLE", "XLF", "XLI", "XLK", "XLP", "XLRE", "XLU", "XLV", "XLY"}))
+        self.assertTrue({row["layer2_context_symbol"] for row in rows if row["asset_class"] == "us_equity"}.issubset({"BKCH", "XLB", "XLC", "XLE", "XLF", "XLI", "XLK", "XLP", "XLRE", "XLU", "XLV", "XLY"}))
         symbols = [line.strip() for line in symbols_path.read_text(encoding="utf-8").splitlines() if line.strip()]
         self.assertEqual(symbols, [row["symbol"] for row in rows])
 
