@@ -36,7 +36,7 @@ class SharedContractTests(unittest.TestCase):
         by_target: dict[str, list[dict[str, str]]] = {}
         for row in mapping_rows:
             by_target.setdefault(row["target_symbol"], []).append(row)
-        self.assertEqual(set(by_target), {"BTC", "ETH", "SOL", "AAOI"})
+        self.assertEqual(set(by_target), {"BTC", "ETH", "SOL", "AAPL", "AAOI"})
         self.assertEqual(by_target["BTC"][0]["layer2_context_symbol"], "BKCH")
         self.assertEqual(by_target["BTC"][0]["listed_proxy_symbol"], "IBIT")
         self.assertEqual(by_target["BTC"][0]["optionable_proxy_status"], "accepted_optionable_proxy")
@@ -56,6 +56,9 @@ class SharedContractTests(unittest.TestCase):
                 "weak_demand_side_context",
             },
         )
+        self.assertEqual(by_target["AAPL"][0]["layer2_context_symbol"], "XLK")
+        self.assertEqual(by_target["AAPL"][0]["layer2_mapping_method_type"], "primary_sector_context")
+        self.assertEqual(by_target["AAPL"][0]["proxy_role_type"], "no_auxiliary_proxy_type")
         self.assertTrue(all(row["optionable_proxy_status"] == "not_applicable" for row in by_target["AAOI"]))
 
         with universe_path.open(newline="") as csv_file:
@@ -72,6 +75,33 @@ class SharedContractTests(unittest.TestCase):
         self.assertEqual({row["numerator_bar_grain"] for row in combination_rows}, {"1m"})
         self.assertEqual({row["denominator_bar_grain"] for row in combination_rows}, {"1m"})
         self.assertEqual({row["feature_bar_grain"] for row in combination_rows}, {"1m"})
+
+    def test_equity_total_symbol_pool_contract_exists(self):
+        pool_path = SHARED_ROOT / "equity_total_symbol_pool.csv"
+        symbols_path = SHARED_ROOT / "equity_total_symbol_pool.symbols.txt"
+
+        with pool_path.open(newline="") as csv_file:
+            reader = csv.DictReader(csv_file)
+            rows = list(reader)
+
+        self.assertEqual(
+            reader.fieldnames,
+            [
+                "symbol",
+                "name",
+                "sector",
+                "optionable_underlying_status",
+                "in_layer2_etf_holdings",
+                "in_recent_week_volume_top100",
+                "in_market_cap_top100",
+                "volume_rank",
+                "market_cap_rank",
+                "source_refs",
+                "as_of_date",
+            ],
+        )
+        self.assertEqual(rows, [])
+        self.assertTrue(symbols_path.exists())
 
 
 if __name__ == "__main__":
