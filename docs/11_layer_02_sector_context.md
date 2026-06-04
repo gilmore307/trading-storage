@@ -15,7 +15,7 @@ trading_model.m02_sector_context_model_generation_diagnostics
 
 There is no separate Layer 2 source storage artifact. The conceptual Layer 2 model output is per-ETF `context_etf_state`; the current physical table is `trading_model.m02_sector_context_model_generation` with the `sector_context_state` vocabulary.
 
-Layer 2 sector context is restricted to the 11 broad Select Sector SPDR anchor ETFs in `main/shared/layer_01_02_market_context_etf_universe.csv`. Focused industry-chain, theme, and special-beta ETFs such as semiconductor, cybersecurity, ARK, biotech, retail, and blockchain funds are not Layer 2 sector anchors. They are outside the current Layer 2 contract unless a later reviewed proxy/theme layer is introduced.
+Layer 2 sector context is restricted to the 11 broad Select Sector SPDR anchor ETFs plus the `BKCH` crypto context-anchor exception in `main/shared/layer_01_02_market_context_etf_universe.csv`. Focused industry-chain and theme ETFs such as semiconductor, cybersecurity, ARK, biotech, retail, and similar funds are not Layer 2 sector anchors. They are outside the current Layer 2 contract unless a later reviewed proxy/theme layer is introduced.
 
 ETF holdings are not the candidate universe. Ordinary equity candidates come from the reviewed total-symbol pool and target metadata, while Layer 2 supplies the broad sector anchor state attached to those candidates.
 
@@ -52,7 +52,7 @@ Layer 2 storage changes are acceptable when they:
 
 - preserve canonical Layer 2 artifact names and point-in-time availability;
 - avoid adding a separate Layer 2 source artifact unless a later accepted contract creates it;
-- keep Layer 2 sector context restricted to broad sector anchors, not focused industry/theme ETFs;
+- keep Layer 2 sector context restricted to broad sector anchors plus the crypto context-anchor exception, not focused industry/theme ETFs;
 - keep ETF holdings out of ordinary equity candidate-universe definition;
 - avoid durable `context_etf_cross_section_row` output rows when their values are construction evidence already embedded in `context_etf_state`;
 - preserve the three target-context routing cases before introducing new storage tables for `target_context_profile`;

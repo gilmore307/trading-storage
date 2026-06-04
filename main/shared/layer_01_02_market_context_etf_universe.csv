@@ -1,5 +1,6 @@
 symbol,universe_type,model_layer,exposure_type,feature_grain,fund_name,issuer_name,interpretation
 BITW,market_state_etf,layer_01_market_regime,crypto_beta,1m,Bitwise 10 Crypto Index ETF,Bitwise Asset Management,Broad crypto basket ETF used to observe aggregate crypto beta.
+BKCH,sector_observation_etf,layer_02_sector_context,crypto_beta,1m,Global X Blockchain ETF,Global X,Blockchain and crypto-related equity ETF used as the Layer 2 crypto context anchor exception.
 XLB,sector_observation_etf,layer_02_sector_context,sp500_sector,1m,Materials Select Sector SPDR Fund,State Street / SPDR,Materials sector ETF used to observe materials leadership.
 XLC,sector_observation_etf,layer_02_sector_context,sp500_sector,1m,Communication Services Select Sector SPDR Fund,State Street / SPDR,Communication services sector ETF used to observe communication/platform leadership.
 XLE,sector_observation_etf,layer_02_sector_context,sp500_sector,1m,Energy Select Sector SPDR Fund,State Street / SPDR,Energy sector ETF used to observe energy and inflation sensitivity.

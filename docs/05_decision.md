@@ -739,30 +739,32 @@ Storage owns the next steps: artifact-index matching, protected-set clearance, l
 - SQL TE rows and dashboard TE read models are rebuildable materializations, not source-of-truth data.
 - New TE source refresh files under the canonical root should be committed after secret/path sanity checks.
 
-## D029 - Layer 2 sector context uses broad sector anchors only
+## D029 - Layer 2 context uses broad sector anchors plus crypto exception
 
 Date: 2026-06-04
 Status: Accepted
 
 ### Context
 
-The prior Layer 2 ETF universe mixed broad sector anchors such as `XLE` and `XLK` with focused industry-chain, theme, and special-beta ETFs such as `SMH`, `CIBR`, `ARKW`, `AIQ`, `XBI`, and `BKCH`. That mixed granularity made Layer 2 semantics unclear and contributed to replay/candidate handoff confusion: context ETF refs were too easy to treat as ordinary tradable candidates or candidate-source evidence.
+The prior Layer 2 ETF universe mixed broad sector anchors such as `XLE` and `XLK` with focused industry-chain and theme ETFs such as `SMH`, `CIBR`, `ARKW`, `AIQ`, and `XBI`. That mixed granularity made Layer 2 semantics unclear and contributed to replay/candidate handoff confusion: context ETF refs were too easy to treat as ordinary tradable candidates or candidate-source evidence.
+
+Crypto requires one explicit exception because crypto targets are not covered by the GICS sector anchors.
 
 ### Decision
 
-Restrict Layer 2 sector context to the 11 broad Select Sector SPDR anchor ETFs:
+Restrict Layer 2 context to the 11 broad Select Sector SPDR anchor ETFs plus the `BKCH` crypto context-anchor exception:
 
 ```text
-XLB XLC XLE XLF XLI XLK XLP XLRE XLU XLV XLY
+XLB XLC XLE XLF XLI XLK XLP XLRE XLU XLV XLY BKCH
 ```
 
-Focused industry-chain, thematic-growth, and special-beta ETFs are not current Layer 2 sector anchors. They may be reconsidered only through a separately reviewed proxy/theme layer with explicit target-specific semantics.
+Focused industry-chain and thematic-growth ETFs are not current Layer 2 sector anchors. They may be reconsidered only through a separately reviewed proxy/theme layer with explicit target-specific semantics.
 
 ETF holdings do not define the ordinary equity candidate universe. Ordinary equity candidates come from the reviewed total-symbol pool and target metadata; Layer 2 supplies broad sector-anchor state attached to those candidates.
 
 ### Consequences
 
-- `main/shared/layer_01_02_market_context_etf_universe.csv` keeps only the 11 broad sector ETFs under `layer_02_sector_context`.
-- `main/shared/layer_01_02_market_context_relative_strength_combinations.csv` keeps Layer 2 combinations among broad sector anchors and broad market references, and removes focused industry/theme comparisons.
+- `main/shared/layer_01_02_market_context_etf_universe.csv` keeps only the 11 broad sector ETFs plus `BKCH` under `layer_02_sector_context`.
+- `main/shared/layer_01_02_market_context_relative_strength_combinations.csv` keeps Layer 2 combinations among broad sector anchors, `BKCH`, and broad market/crypto references, and removes focused industry/theme comparisons.
 - Historical replay should not borrow current ETF holdings to manufacture point-in-time candidate evidence.
-- Future use of `SMH`, `CIBR`, `ARK*`, `XBI`, `BKCH`, or similar focused ETFs requires a new accepted proxy/theme contract instead of reintroducing mixed-granularity Layer 2.
+- Future use of `SMH`, `CIBR`, `ARK*`, `XBI`, or similar focused ETFs requires a new accepted proxy/theme contract instead of reintroducing mixed-granularity Layer 2.
