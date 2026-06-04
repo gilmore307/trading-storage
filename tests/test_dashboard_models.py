@@ -120,10 +120,10 @@ def _write_group_promotion_version(storage_root: Path) -> None:
                 "candidate_model_ref": "storage://trading-manager/model_group/aapl/2016-01_2016-06",
                 "target_refs": ["AAPL_CANDIDATE_01", "AAPL_CANDIDATE_02"],
                 "candidate_handoff_status": "available",
-                "candidate_handoff_source": "layer_02_target_candidate_handoff",
+                "candidate_handoff_source": "point_in_time_replay_candidate_universe",
                 "candidate_handoff_row_count": 2,
                 "candidate_handoff_symbol_count": 2,
-                "candidate_handoff_table_ref": "trading_data.m02_sector_context_data_acquisition",
+                "candidate_handoff_table_ref": "feed_acquisition_plan.csv",
                 "decision_rows_ref": str(replay_root / "decision_rows.jsonl"),
             }
         )

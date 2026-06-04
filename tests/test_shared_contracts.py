@@ -45,14 +45,12 @@ class SharedContractTests(unittest.TestCase):
         )
         self.assertEqual(
             {row["layer2_context_symbol"] for row in by_target["AAOI"]},
-            {"AIQ", "XLK", "SMH", "XLC"},
+            {"XLK", "XLC"},
         )
         self.assertEqual(
             {row["layer2_mapping_method_type"] for row in by_target["AAOI"]},
             {
-                "primary_business_context",
-                "secondary_sector_context",
-                "industry_chain_context",
+                "primary_sector_context",
                 "weak_demand_side_context",
             },
         )
@@ -93,9 +91,8 @@ class SharedContractTests(unittest.TestCase):
                 "optionable_underlying_status",
                 "pool_membership_status",
                 "pool_membership_reason",
-                "in_layer2_etf_holdings",
-                "in_recent_week_volume_top100",
-                "in_market_cap_top100",
+                "in_recent_week_volume_top300",
+                "in_market_cap_top300",
                 "volume_rank",
                 "market_cap_rank",
                 "source_refs",
