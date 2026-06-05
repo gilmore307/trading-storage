@@ -313,6 +313,41 @@ def _mark_missing_event_outputs_waiting(source_outputs: list[dict[str, Any]]) ->
     return marked
 
 
+def _mark_parked_execution_outputs(
+    source_outputs: list[dict[str, Any]],
+    *,
+    services: list[Mapping[str, Any]],
+) -> list[dict[str, Any]]:
+    execution_output_kinds = {
+        "execution_runtime_status",
+        "execution_realtime_monitor_receipt",
+        "execution_realtime_monitor_cycle",
+    }
+    execution_runtime_units = {
+        "trading-execution-realtime-monitor-loop.service",
+        "trading-execution-realtime-runtime-check.service",
+        "trading-execution-realtime-runtime-check.timer",
+        "trading-execution-realtime-runtime-check.path",
+    }
+    realtime_active = any(
+        service.get("unit") in execution_runtime_units and service.get("active_state") == "active"
+        for service in services
+    )
+    if realtime_active:
+        return source_outputs
+    marked: list[dict[str, Any]] = []
+    for output in source_outputs:
+        updated = dict(output)
+        if updated.get("kind") in execution_output_kinds and updated.get("status") in {"available", "missing"}:
+            updated["status"] = "parked"
+            updated["freshness_note"] = (
+                "Execution realtime services are not active; this is the last recorded artifact from the parked realtime path, "
+                "not an expected live heartbeat."
+            )
+        marked.append(updated)
+    return marked
+
+
 def _read_env_file(path: Path) -> dict[str, str]:
     values: dict[str, str] = {}
     try:
@@ -869,6 +904,7 @@ def build_current_system_status_summary(*, storage_root: Path, generated_at_utc:
     runtime_throughput = _historical_scheduler_runtime_throughput(values=runtime_values, manager_storage_root=manager_storage_root)
     services = [_systemd_unit(unit) for unit in _trading_systemd_unit_names()]
     source_outputs = _dashboard_source_outputs(storage_root=storage_root, manager_storage_root=manager_storage_root, now_epoch=now_epoch)
+    source_outputs = _mark_parked_execution_outputs(source_outputs, services=services)
     scheduler_active = _historical_scheduler_is_active(services)
     if not scheduler_active:
         source_outputs = _mark_source_outputs_not_started(source_outputs)

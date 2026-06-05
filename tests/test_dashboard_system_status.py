@@ -12,6 +12,7 @@ from trading_storage.dashboard_system_status import (
     _dashboard_source_outputs,
     _historical_scheduler_runtime_throughput,
     _mark_missing_event_outputs_waiting,
+    _mark_parked_execution_outputs,
     _mark_source_outputs_not_started,
     _systemd_unit_is_healthy,
     _trading_systemd_unit_names,
@@ -216,6 +217,66 @@ class DashboardSystemStatusTests(unittest.TestCase):
         self.assertEqual(outputs[0]["status"], "not_recorded_yet")
         self.assertIn("Event-driven source output", outputs[0]["freshness_note"])
         self.assertEqual(outputs[1]["status"], "missing")
+
+    def test_execution_outputs_are_parked_when_realtime_units_are_inactive(self) -> None:
+        outputs = _mark_parked_execution_outputs(
+            [
+                {
+                    "label": "Latest Realtime Monitor Cycle",
+                    "kind": "execution_realtime_monitor_cycle",
+                    "status": "available",
+                    "exists": True,
+                    "age_seconds": 100,
+                    "latest_updated_at_utc": "2026-05-26T19:24:19Z",
+                    "freshness_class": "heartbeat",
+                    "freshness_note": "old note",
+                },
+                {
+                    "label": "Status Read Model",
+                    "kind": "storage_dashboard_current_status_latest",
+                    "status": "available",
+                    "exists": True,
+                    "age_seconds": 1,
+                    "latest_updated_at_utc": "2026-06-05T03:00:00Z",
+                    "freshness_class": "heartbeat",
+                    "freshness_note": "old note",
+                },
+            ],
+            services=[
+                {
+                    "unit": "trading-execution-realtime-monitor-loop.service",
+                    "active_state": "inactive",
+                }
+            ],
+        )
+
+        self.assertEqual(outputs[0]["status"], "parked")
+        self.assertIn("Execution realtime services are not active", outputs[0]["freshness_note"])
+        self.assertEqual(outputs[1]["status"], "available")
+
+    def test_execution_outputs_remain_available_when_realtime_unit_is_active(self) -> None:
+        outputs = _mark_parked_execution_outputs(
+            [
+                {
+                    "label": "Latest Realtime Monitor Cycle",
+                    "kind": "execution_realtime_monitor_cycle",
+                    "status": "available",
+                    "exists": True,
+                    "age_seconds": 1,
+                    "latest_updated_at_utc": "2026-06-05T03:00:00Z",
+                    "freshness_class": "heartbeat",
+                    "freshness_note": "old note",
+                }
+            ],
+            services=[
+                {
+                    "unit": "trading-execution-realtime-monitor-loop.service",
+                    "active_state": "active",
+                }
+            ],
+        )
+
+        self.assertEqual(outputs[0]["status"], "available")
 
     def test_refresh_materializes_current_system_status_latest(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
