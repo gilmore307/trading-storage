@@ -359,6 +359,152 @@ def _diagnostic_availability(metrics: Mapping[str, Any]) -> dict[str, dict[str, 
     }
 
 
+def _metrics_with_replay_return_path_ohlc(
+    metrics: Mapping[str, Any],
+    *,
+    settlement: Mapping[str, Any] | None,
+    settlement_path: Path,
+) -> dict[str, Any]:
+    enriched = dict(metrics)
+    temporal = enriched.get("temporal_stability_diagnostics")
+    if not isinstance(temporal, Mapping):
+        return enriched
+    slices = temporal.get("slices")
+    if not isinstance(slices, list):
+        return enriched
+    if all(isinstance(item, Mapping) and isinstance(item.get("net_return_path_ohlc"), Mapping) for item in slices):
+        return enriched
+    ohlc_by_month = _replay_return_path_ohlc_by_month(settlement=settlement, settlement_path=settlement_path)
+    if not ohlc_by_month:
+        return enriched
+    enriched_slices: list[Any] = []
+    for item in slices:
+        if not isinstance(item, Mapping):
+            enriched_slices.append(item)
+            continue
+        month = str(item.get("month") or "")
+        row = dict(item)
+        if not isinstance(row.get("net_return_path_ohlc"), Mapping) and month in ohlc_by_month:
+            row["net_return_path_ohlc"] = ohlc_by_month[month]
+        enriched_slices.append(row)
+    enriched_temporal = dict(temporal)
+    enriched_temporal["slices"] = enriched_slices
+    enriched["temporal_stability_diagnostics"] = enriched_temporal
+    return enriched
+
+
+def _replay_return_path_ohlc_by_month(
+    *,
+    settlement: Mapping[str, Any] | None,
+    settlement_path: Path,
+) -> dict[str, dict[str, float]]:
+    decision_rows_path = _decision_rows_path_for_settlement(settlement=settlement, settlement_path=settlement_path)
+    if decision_rows_path is None:
+        return {}
+    by_month: dict[str, list[tuple[int, Mapping[str, Any]]]] = {}
+    try:
+        with decision_rows_path.open("r", encoding="utf-8") as handle:
+            for index, line in enumerate(handle):
+                if not line.strip():
+                    continue
+                try:
+                    row = json.loads(line)
+                except json.JSONDecodeError:
+                    continue
+                if not isinstance(row, Mapping):
+                    continue
+                if str(row.get("entry_threshold_calibration_role") or "test") == "validation":
+                    continue
+                month = _month_key(row.get("timestamp") or row.get("decision_timestamp"))
+                if month:
+                    by_month.setdefault(month, []).append((index, row))
+    except OSError:
+        return {}
+    ohlc: dict[str, dict[str, float]] = {}
+    for month, rows in by_month.items():
+        ordered = sorted(rows, key=lambda item: (str(item[1].get("timestamp") or item[1].get("decision_timestamp") or ""), item[0]))
+        returns = [_row_net_return(row) for _index, row in ordered]
+        ohlc[month] = _return_path_ohlc(returns)
+    return ohlc
+
+
+def _decision_rows_path_for_settlement(
+    *,
+    settlement: Mapping[str, Any] | None,
+    settlement_path: Path,
+) -> Path | None:
+    receipt_candidates: list[Path] = []
+    direct_ref = str((settlement or {}).get("replay_result_ref") or "")
+    if direct_ref:
+        receipt_candidates.append(Path(direct_ref))
+    dataset_root = settlement_path.parent.parent.parent
+    replay_root = dataset_root / "replay_execution_runs"
+    if replay_root.exists():
+        receipt_candidates.extend(sorted(replay_root.glob("*/replay_execution_receipt.json")))
+    expected_candidate_ref = str((settlement or {}).get("candidate_model_ref") or "")
+    selected: tuple[float, Path] | None = None
+    seen: set[Path] = set()
+    for receipt_path in receipt_candidates:
+        if receipt_path in seen:
+            continue
+        seen.add(receipt_path)
+        receipt = _load_json_object(receipt_path)
+        if receipt is None:
+            continue
+        if expected_candidate_ref and str(receipt.get("candidate_model_ref") or "") != expected_candidate_ref:
+            continue
+        decision_rows_ref = str(receipt.get("decision_rows_ref") or "")
+        decision_rows_path = Path(decision_rows_ref) if decision_rows_ref else receipt_path.parent / "decision_rows.jsonl"
+        if not decision_rows_path.exists():
+            continue
+        try:
+            clock = receipt_path.stat().st_mtime
+        except OSError:
+            clock = 0.0
+        if selected is None or clock >= selected[0]:
+            selected = (clock, decision_rows_path)
+    return selected[1] if selected else None
+
+
+def _month_key(value: Any) -> str | None:
+    match = re.search(r"(?P<month>\d{4}-\d{2})", str(value or ""))
+    return match.group("month") if match else None
+
+
+def _row_net_return(row: Mapping[str, Any]) -> float:
+    gross = _float_value(row, "net_return", "realized_return", "candidate_return")
+    cost = _float_value(row, "cost", "trading_cost", "cost_drag")
+    return gross - cost
+
+
+def _float_value(row: Mapping[str, Any], *keys: str) -> float:
+    for key in keys:
+        value = row.get(key)
+        if value is None:
+            continue
+        try:
+            return float(value)
+        except (TypeError, ValueError):
+            continue
+    return 0.0
+
+
+def _return_path_ohlc(returns: list[float]) -> dict[str, float]:
+    current = 0.0
+    high = 0.0
+    low = 0.0
+    for value in returns:
+        current += float(value)
+        high = max(high, current)
+        low = min(low, current)
+    return {
+        "open": 1.0,
+        "high": round(1.0 + high, 6),
+        "low": round(1.0 + low, 6),
+        "close": round(1.0 + current, 6),
+    }
+
+
 def _model_group_promotion_evidence(storage_root: Path, *, active_ref: str | None) -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
     review_root = storage_root / "05_replay_datasets" / "promotion_replay_candidate_policy" / "promotion_review_runs"
     if not review_root.exists():
@@ -371,8 +517,10 @@ def _model_group_promotion_evidence(storage_root: Path, *, active_ref: str | Non
             continue
         review = _load_json_object(decision_path.parent / "promotion_evaluation_review.json") or {}
         settlement_ref = str(decision.get("settlement_run_ref") or review.get("settlement_run_ref") or "")
-        settlement = _load_json_object(Path(settlement_ref)) if settlement_ref else None
-        metrics = settlement.get("metrics") if isinstance(settlement, Mapping) and isinstance(settlement.get("metrics"), Mapping) else {}
+        settlement_path = Path(settlement_ref) if settlement_ref else decision_path.parent / "fold_settlement_run.json"
+        settlement = _load_json_object(settlement_path) if settlement_ref else None
+        raw_metrics = settlement.get("metrics") if isinstance(settlement, Mapping) and isinstance(settlement.get("metrics"), Mapping) else {}
+        metrics = _metrics_with_replay_return_path_ohlc(raw_metrics, settlement=settlement, settlement_path=settlement_path)
         decision_status = str(decision.get("decision_status") or "not_reported")
         recommendation = str(decision.get("agent_review_recommendation") or review.get("recommendation") or "")
         candidate_model_ref = str(decision.get("candidate_model_ref") or review.get("candidate_model_ref") or "")

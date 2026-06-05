@@ -130,6 +130,36 @@ def _write_group_promotion_version(storage_root: Path) -> None:
         + "\n",
         encoding="utf-8",
     )
+    (replay_root / "decision_rows.jsonl").write_text(
+        "\n".join(
+            json.dumps(row, sort_keys=True)
+            for row in [
+                {
+                    "timestamp": "2021-01-31T16:00:00-05:00",
+                    "entry_threshold_calibration_role": "validation",
+                    "realized_return": 0.5,
+                    "cost": 0.0,
+                },
+                {
+                    "timestamp": "2021-02-01T16:00:00-05:00",
+                    "realized_return": 0.1,
+                    "cost": 0.0,
+                },
+                {
+                    "timestamp": "2021-02-02T16:00:00-05:00",
+                    "realized_return": -0.2,
+                    "cost": 0.0,
+                },
+                {
+                    "timestamp": "2021-02-03T16:00:00-05:00",
+                    "realized_return": 0.05,
+                    "cost": 0.0,
+                },
+            ]
+        )
+        + "\n",
+        encoding="utf-8",
+    )
     settlement_path = (
         storage_root
         / "05_replay_datasets"
@@ -205,7 +235,11 @@ def _write_group_promotion_version(storage_root: Path) -> None:
                     "calibration_diagnostics": {"ece": 0.12, "mce": 0.22},
                     "economic_diagnostics": {"profit_factor": 1.4, "tail_loss_p05": -0.021},
                     "data_integrity_diagnostics": {"status": "passed", "leakage_check_status": "passed"},
-                    "temporal_stability_diagnostics": {"month_slice_count": 6, "worst_month_return": -0.18},
+                    "temporal_stability_diagnostics": {
+                        "month_slice_count": 6,
+                        "slices": [{"month": "2021-02", "net_return_total": -0.05}],
+                        "worst_month_return": -0.18,
+                    },
                     "baseline_comparison_diagnostics": {"candidate_minus_no_trade": 1.98},
                     "uncertainty_diagnostics": {"available": False, "reason": "single fold"},
                     "scorecards": {
@@ -558,6 +592,11 @@ class DashboardModelsTests(unittest.TestCase):
             scorecards = payload["chart_payload"]["group_versions"][0]["metrics"]["scorecards"]
             self.assertEqual(scorecards["selection_quality"]["taken_good_count"], 2100)
             self.assertFalse(payload["chart_payload"]["group_versions"][0]["metrics"]["evaluation_disagreement_report"]["promotion_gate_basis"]["auroc_is_hard_gate"])
+            temporal = payload["chart_payload"]["group_versions"][0]["metrics"]["temporal_stability_diagnostics"]
+            self.assertEqual(
+                temporal["slices"][0]["net_return_path_ohlc"],
+                {"open": 1.0, "high": 1.1, "low": 0.9, "close": 0.95},
+            )
 
     def test_model_group_versions_are_fold_level_not_review_run_level(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
