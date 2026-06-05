@@ -14,7 +14,7 @@ from trading_storage.dashboard_read_models import materialize_dashboard_read_mod
 
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(
-        description="Validate a dashboard read-model envelope and write snapshot/latest/index files under storage/06_dashboard_cache."
+        description="Validate a dashboard read-model envelope and write latest/schema files under storage/06_dashboard_cache."
     )
     parser.add_argument("payload", type=Path, help="Dashboard read-model JSON payload.")
     parser.add_argument("--contract-type", help="Expected contract_type; rejects mismatched payloads.")

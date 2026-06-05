@@ -106,7 +106,7 @@ def main(argv: list[str] | None = None) -> int:
         prune_receipt = build_dashboard_snapshot_lifecycle_plan(
             storage_root=args.storage_root,
             apply=True,
-            approval_ref="dashboard_refresh_auto_prune:keep_latest_10",
+            approval_ref="dashboard_refresh_auto_prune:latest_only",
         )
         maintenance["dashboard_snapshot_prune_summary"] = prune_receipt.summary
         maintenance["dashboard_read_model_index_compaction"] = compact_dashboard_read_model_index(storage_root=args.storage_root)

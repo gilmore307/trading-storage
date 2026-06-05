@@ -20,8 +20,6 @@ from pathlib import Path
 from typing import Any, Mapping
 
 from trading_storage.artifact_store import canonical_json_bytes, now_utc
-from trading_storage.io import append_text_locked
-
 DEFAULT_STORAGE_ROOT = Path("storage")
 DASHBOARD_ROOT = Path("06_dashboard_cache")
 INDEX_PATH = DASHBOARD_ROOT / "index" / "dashboard_read_model_index.jsonl"
@@ -79,7 +77,7 @@ class DashboardReadModelError(ValueError):
 
 @dataclass(frozen=True)
 class MaterializedDashboardReadModel:
-    """Metadata for one materialized dashboard read-model snapshot."""
+    """Metadata for one materialized dashboard read model."""
 
     contract_type: str
     latest_path: Path
@@ -276,10 +274,11 @@ def materialize_dashboard_read_model(
     expected_contract_type: str | None = None,
     now: datetime | None = None,
 ) -> MaterializedDashboardReadModel:
-    """Validate and materialize one dashboard read-model snapshot.
+    """Validate and materialize one dashboard read model.
 
-    The validated snapshot is written first, then ``latest.json`` is replaced
-    atomically, then a compact JSONL index row is appended.
+    The dashboard consumes ``latest.json`` as the current summary boundary.
+    Timestamped full snapshots are intentionally not written; they are metadata
+    cache duplicates, not canonical source evidence.
     """
 
     storage_root = Path(storage_root)
@@ -316,23 +315,11 @@ def materialize_dashboard_read_model(
     content = canonical_json_bytes(payload_to_write)
     content_hash = "sha256:" + hashlib.sha256(content).hexdigest()
     state_hash = _snapshot_state_hash(payload_to_write)
-    latest_payload = _read_json_object(latest_path)
-    latest_state_hash = _snapshot_state_hash(latest_payload) if latest_payload is not None else None
-    write_snapshot = latest_state_hash != state_hash
-
-    if write_snapshot:
-        snapshot_content = _write_atomic_json(snapshot_path, payload_to_write)
-        latest_content = _write_atomic_json(latest_path, payload_to_write)
-        if latest_content != snapshot_content:
-            raise DashboardReadModelError("latest.json content diverged from validated snapshot")
-        byte_count = len(snapshot_content)
-        storage_uri = _storage_uri(storage_root, snapshot_path)
-        write_mode = "snapshot_and_latest"
-    else:
-        latest_content = _write_atomic_json(latest_path, payload_to_write)
-        byte_count = len(latest_content)
-        storage_uri = _storage_uri(storage_root, latest_path)
-        write_mode = "latest_only_state_unchanged"
+    latest_content = _write_atomic_json(latest_path, payload_to_write)
+    byte_count = len(latest_content)
+    storage_uri = _storage_uri(storage_root, latest_path)
+    write_snapshot = False
+    write_mode = "latest_only"
 
     index_row = {
         "contract_type": contract_type,
@@ -340,7 +327,7 @@ def materialize_dashboard_read_model(
         "generated_at_utc": payload["generated_at_utc"],
         "indexed_at_utc": now_utc(),
         "latest_uri": _storage_uri(storage_root, latest_path),
-        "snapshot_uri": _storage_uri(storage_root, snapshot_path),
+        "snapshot_uri": None,
         "schema_uri": _storage_uri(storage_root, schema_path),
         "content_hash_sha256": content_hash,
         "snapshot_state_hash_sha256": state_hash,
@@ -352,8 +339,6 @@ def materialize_dashboard_read_model(
         "index_written": write_snapshot,
         "write_mode": write_mode,
     }
-    if write_snapshot:
-        append_text_locked(index_path, json.dumps(index_row, sort_keys=True) + "\n")
 
     return MaterializedDashboardReadModel(
         contract_type=contract_type,

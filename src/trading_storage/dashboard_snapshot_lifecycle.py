@@ -27,7 +27,7 @@ DEFAULT_OUTPUT = Path("storage/06_dashboard_cache/lifecycle/dashboard_snapshot_p
 DEFAULT_SUMMARY_OUTPUT = Path("storage/06_dashboard_cache/lifecycle/dashboard_snapshot_prune_summary.json")
 DEFAULT_INDEX_PATH = Path("06_dashboard_cache/index/dashboard_read_model_index.jsonl")
 DEFAULT_MAX_AGE_HOURS = 0
-DEFAULT_KEEP_LATEST_PER_CONTRACT = 10
+DEFAULT_KEEP_LATEST_PER_CONTRACT = 0
 
 
 @dataclass(frozen=True)
@@ -154,6 +154,13 @@ def _prune_empty_snapshot_dirs(storage_root: Path, path: Path) -> None:
 
 
 def _has_unresolved_issue_ref(path: Path) -> bool:
+    """Return whether a snapshot carries an explicit evidence-retention issue.
+
+    Ordinary dashboard ``issue_refs`` are current-state pointers and are still
+    represented by ``latest.json`` or their canonical diagnostic/task roots.
+    They should not make every historical dashboard cache snapshot protected.
+    """
+
     try:
         payload = json.loads(path.read_text(encoding="utf-8"))
     except (OSError, json.JSONDecodeError):
@@ -166,6 +173,14 @@ def _has_unresolved_issue_ref(path: Path) -> bool:
     resolved_statuses = {"resolved", "closed", "completed", "not_planned", "false_positive"}
     for issue in issue_refs:
         if not isinstance(issue, dict):
+            continue
+        retention_required = bool(
+            issue.get("snapshot_retention_required")
+            or issue.get("retention_required")
+            or issue.get("preserve_snapshot")
+            or issue.get("only_remaining_evidence")
+        )
+        if not retention_required:
             continue
         status = str(issue.get("status") or issue.get("resolution_status") or "open").strip().lower()
         if status not in resolved_statuses:
@@ -187,8 +202,8 @@ def build_dashboard_snapshot_lifecycle_plan(
 
     if max_age_hours < 0:
         raise ValueError("max_age_hours must be >= 0")
-    if keep_latest_per_contract < 1:
-        raise ValueError("keep_latest_per_contract must be >= 1")
+    if keep_latest_per_contract < 0:
+        raise ValueError("keep_latest_per_contract must be >= 0")
     if apply and not (approval_ref or "").strip():
         raise ValueError("approval_ref is required when applying dashboard snapshot pruning")
     storage_root = Path(storage_root).resolve()
@@ -205,7 +220,10 @@ def build_dashboard_snapshot_lifecycle_plan(
         decorated.sort(key=lambda item: item[0], reverse=True)
         keep_paths = {path for _timestamp, path in decorated[:keep_latest_per_contract]}
         for timestamp, path in decorated:
-            stat = path.stat()
+            try:
+                stat = path.stat()
+            except FileNotFoundError:
+                continue
             generated_text = timestamp.replace(microsecond=0).isoformat().replace("+00:00", "Z")
             relative = _relative(storage_root, path)
             if path in keep_paths:

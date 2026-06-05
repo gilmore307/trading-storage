@@ -2,9 +2,9 @@
 
 This module owns storage-side refresh orchestration for dashboard read models:
 it runs an upstream semantic producer, validates the returned dashboard envelope,
-and materializes the storage-owned latest plus state-change snapshot/index layout.  It does
-not interpret manager internals, call providers, activate models, submit broker
-orders, or mutate account state.
+and materializes the storage-owned latest summary layout. It does not interpret
+manager internals, call providers, activate models, submit broker orders, or
+mutate account state.
 """
 
 from __future__ import annotations

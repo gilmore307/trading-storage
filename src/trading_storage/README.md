@@ -6,11 +6,11 @@ Importable storage helper implementation lives here.
 
 - `artifact_store.py` owns canonical JSON payload writes and `artifact_ref` metadata generation for storage-owned local artifacts.
 - `artifact_index.py` owns conservative filesystem artifact-index scanning and optional JSONL/summary output for lifecycle inventory.
-- `dashboard_read_models.py` owns storage-side validation and materialization of dashboard read-model latest files plus state-change snapshot/index files.
+- `dashboard_read_models.py` owns storage-side validation and materialization of dashboard read-model latest files plus schemas.
 - `dashboard_temporal_explorer.py` owns the storage-side read model for the dashboard Timewheel/Temporal Explorer page.
 - `dashboard_models.py` owns storage-side model lifecycle and promotion posture read models for the dashboard Models page.
 - `dashboard_refresh.py` owns storage-side refresh orchestration that runs accepted semantic producers and materializes validated dashboard read models.
-- `dashboard_snapshot_lifecycle.py` owns bounded pruning of dashboard read-model snapshot metadata outside the recent-count hot window; it preserves latest summaries, schemas, index files, Layer 1/2 data, and SQL.
+- `dashboard_snapshot_lifecycle.py` owns pruning of old dashboard read-model snapshot metadata; it preserves latest summaries, schemas, Layer 1/2 data, and SQL.
 - `file_lifecycle_acceptance.py` owns the one-pass safe file-lifecycle acceptance over current index/protected-set/plan/quarantine/scaffold/compression/dashboard-prune helpers.
 - `lifecycle.py` owns local retention planning and application for ignored runtime files, including guards that keep evidence-shaped lifecycle receipts/manifests/tombstones/plans in transient run/output folders until they are extracted to canonical evidence directories.
 - `lifecycle_execution_scaffold.py` owns non-mutating compression/archive/restore manifest and receipt drafts for future lifecycle executors.

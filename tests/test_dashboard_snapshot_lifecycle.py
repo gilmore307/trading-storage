@@ -33,17 +33,20 @@ def _write_snapshot(storage_root: Path, contract: str, stamp: str, size: int = 1
     return path
 
 
-def _write_issue_snapshot(storage_root: Path, contract: str, stamp: str) -> Path:
+def _write_issue_snapshot(storage_root: Path, contract: str, stamp: str, *, retention_required: bool = True) -> Path:
     path = _write_snapshot(storage_root, contract, stamp)
+    issue = {"issue_type": "test_alert", "status": "open"}
+    if retention_required:
+        issue["snapshot_retention_required"] = True
     path.write_text(
-        json.dumps({"contract_type": contract, "issue_refs": [{"issue_type": "test_alert", "status": "open"}]}),
+        json.dumps({"contract_type": contract, "issue_refs": [issue]}),
         encoding="utf-8",
     )
     return path
 
 
 class DashboardSnapshotLifecycleTests(unittest.TestCase):
-    def test_default_policy_keeps_only_recent_few_per_contract(self):
+    def test_default_policy_marks_all_timestamped_snapshots_for_delete(self):
         with tempfile.TemporaryDirectory() as tmp:
             storage_root = Path(tmp) / "storage"
             for hour in range(12):
@@ -56,9 +59,9 @@ class DashboardSnapshotLifecycleTests(unittest.TestCase):
                 generated_at="2026-05-16T12:00:00Z",
             )
 
-            self.assertEqual(plan.keep_latest_per_contract, 10)
+            self.assertEqual(plan.keep_latest_per_contract, 0)
             self.assertEqual(plan.max_age_hours, 0)
-            self.assertEqual(plan.summary["action_counts"], {"delete_candidate": 2, "retain_recent_snapshot": 10})
+            self.assertEqual(plan.summary["action_counts"], {"delete_candidate": 12})
             self.assertFalse(plan.summary["mutation_performed"])
 
     def test_dry_run_marks_old_snapshots_without_deleting_latest(self):
@@ -72,7 +75,7 @@ class DashboardSnapshotLifecycleTests(unittest.TestCase):
             plan = build_dashboard_snapshot_lifecycle_plan(
                 storage_root=storage_root,
                 max_age_hours=24,
-                keep_latest_per_contract=1,
+                keep_latest_per_contract=0,
                 apply=False,
                 now=NOW,
                 generated_at="2026-05-16T12:00:00Z",
@@ -81,11 +84,11 @@ class DashboardSnapshotLifecycleTests(unittest.TestCase):
             self.assertTrue(old.exists())
             self.assertTrue(recent.exists())
             self.assertTrue(latest.exists())
-            self.assertEqual(plan.summary["action_counts"], {"delete_candidate": 1, "retain_recent_snapshot": 1})
+            self.assertEqual(plan.summary["action_counts"], {"delete_candidate": 1, "retain_within_ttl": 1})
             self.assertFalse(plan.summary["mutation_performed"])
             self.assertFalse(plan.summary["latest_json_deleted"])
 
-    def test_apply_deletes_only_old_snapshot_files(self):
+    def test_apply_deletes_only_timestamped_snapshot_files(self):
         with tempfile.TemporaryDirectory() as tmp:
             storage_root = Path(tmp) / "storage"
             old = _write_snapshot(storage_root, "historical_task_progress_summary", "20260514T000000Z")
@@ -96,7 +99,7 @@ class DashboardSnapshotLifecycleTests(unittest.TestCase):
             plan = build_dashboard_snapshot_lifecycle_plan(
                 storage_root=storage_root,
                 max_age_hours=24,
-                keep_latest_per_contract=1,
+                keep_latest_per_contract=0,
                 apply=True,
                 now=NOW,
                 approval_ref="accepted_storage_lifecycle_decision_ref:test",
@@ -105,7 +108,7 @@ class DashboardSnapshotLifecycleTests(unittest.TestCase):
             self.assertFalse(old.exists())
             self.assertTrue(recent.exists())
             self.assertTrue(latest.exists())
-            self.assertEqual(plan.summary["action_counts"], {"deleted": 1, "retain_recent_snapshot": 1})
+            self.assertEqual(plan.summary["action_counts"], {"deleted": 1, "retain_within_ttl": 1})
             self.assertTrue(plan.summary["mutation_performed"])
             self.assertFalse(plan.summary["layer_01_02_data_deleted"])
             self.assertFalse(plan.summary["sql_mutation_performed"])
@@ -119,7 +122,7 @@ class DashboardSnapshotLifecycleTests(unittest.TestCase):
             plan = build_dashboard_snapshot_lifecycle_plan(
                 storage_root=storage_root,
                 max_age_hours=24,
-                keep_latest_per_contract=1,
+                keep_latest_per_contract=0,
                 apply=True,
                 now=NOW,
                 approval_ref="accepted_storage_lifecycle_decision_ref:test",
@@ -129,8 +132,30 @@ class DashboardSnapshotLifecycleTests(unittest.TestCase):
             self.assertTrue(recent.exists())
             self.assertEqual(
                 plan.summary["action_counts"],
-                {"retain_recent_snapshot": 1, "retain_unresolved_issue_snapshot": 1},
+                {"retain_unresolved_issue_snapshot": 1, "retain_within_ttl": 1},
             )
+
+    def test_ordinary_issue_snapshot_does_not_block_pruning(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            storage_root = Path(tmp) / "storage"
+            old = _write_issue_snapshot(
+                storage_root,
+                "current_system_status_summary",
+                "20260514T000000Z",
+                retention_required=False,
+            )
+
+            plan = build_dashboard_snapshot_lifecycle_plan(
+                storage_root=storage_root,
+                max_age_hours=0,
+                keep_latest_per_contract=0,
+                apply=True,
+                now=NOW,
+                approval_ref="accepted_storage_lifecycle_decision_ref:test",
+            )
+
+            self.assertFalse(old.exists())
+            self.assertEqual(plan.summary["action_counts"], {"deleted": 1})
 
     def test_write_plan_outputs_json_and_summary(self):
         with tempfile.TemporaryDirectory() as tmp:
@@ -148,6 +173,16 @@ class DashboardSnapshotLifecycleTests(unittest.TestCase):
             summary = json.loads((storage_root / "06_dashboard_cache" / "lifecycle" / "summary.json").read_text(encoding="utf-8"))
             self.assertEqual(payload["contract_type"], "dashboard_snapshot_prune_plan")
             self.assertEqual(summary["contract_type"], "dashboard_snapshot_prune_summary")
+
+    def test_missing_snapshot_during_scan_is_ignored(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            storage_root = Path(tmp) / "storage"
+            snapshot = _write_snapshot(storage_root, "current_system_status_summary", "20260516T110000Z")
+            snapshot.unlink()
+
+            plan = build_dashboard_snapshot_lifecycle_plan(storage_root=storage_root, now=NOW)
+
+            self.assertEqual(plan.summary["record_count"], 0)
 
     def test_apply_requires_approval_ref(self):
         with tempfile.TemporaryDirectory() as tmp:
