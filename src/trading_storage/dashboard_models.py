@@ -582,6 +582,7 @@ def _model_group_promotion_evidence(storage_root: Path, *, active_ref: str | Non
             "metrics": {
                 "auroc": metrics.get("auroc"),
                 "decision_row_count": metrics.get("decision_row_count"),
+                "net_return_total": metrics.get("net_return_total"),
                 "excess_return_total": metrics.get("excess_return_total"),
                 "max_drawdown": metrics.get("max_drawdown"),
                 "hit_rate": metrics.get("hit_rate"),

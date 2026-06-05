@@ -185,6 +185,7 @@ def _write_group_promotion_version(storage_root: Path) -> None:
                 "replay_result_ref": str(replay_receipt_path),
                 "metrics": {
                     "decision_row_count": 5382,
+                    "net_return_total": 2.1,
                     "auroc": 0.5246,
                     "excess_return_total": 1.98,
                     "max_drawdown": -0.288,
@@ -579,6 +580,7 @@ class DashboardModelsTests(unittest.TestCase):
             self.assertEqual(payload["chart_payload"]["status_counts"], {"deferred": 1})
             self.assertEqual(payload["chart_payload"]["identity_counts"], {"retired": 1})
             self.assertEqual(payload["chart_payload"]["group_versions"][0]["version_label"], "AAPL 2016 fold1")
+            self.assertEqual(payload["chart_payload"]["group_versions"][0]["metrics"]["net_return_total"], 2.1)
             self.assertEqual(payload["chart_payload"]["group_versions"][0]["metrics"]["auroc"], 0.5246)
             self.assertEqual(payload["chart_payload"]["group_versions"][0]["metrics"]["pr_auc"], 0.61)
             self.assertEqual(payload["chart_payload"]["group_versions"][0]["metrics"]["data_integrity_status"], "passed")
