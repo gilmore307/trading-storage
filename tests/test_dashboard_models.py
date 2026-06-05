@@ -55,7 +55,7 @@ def _historical_payload() -> dict:
                     "month": "2016-fold1",
                     "task_id": "model_group.evaluation",
                     "task_label": "Model Evaluation",
-                    "task_state": "future",
+                    "task_state": "current",
                     "status": "ready",
                     "stage_type": "model_evaluation",
                     "status_updated_at_utc": "2026-05-29T00:02:00Z",
@@ -573,7 +573,7 @@ class DashboardModelsTests(unittest.TestCase):
 
             self.assertEqual(payload["contract_type"], MODEL_PROMOTION_POSTURE_CONTRACT)
             self.assertEqual(validate_dashboard_read_model(payload), MODEL_PROMOTION_POSTURE_CONTRACT)
-            self.assertEqual(len(payload["chart_payload"]["models"]), 10)
+            self.assertEqual(len(payload["chart_payload"]["models"]), 1)
             layer_five = next(row for row in payload["chart_payload"]["models"] if row["layer"] == 5)
             self.assertEqual(layer_five["version_id"], "2016-fold1:model_05_alpha_confidence")
             self.assertEqual(layer_five["evaluation_status"], "ready")
@@ -599,6 +599,22 @@ class DashboardModelsTests(unittest.TestCase):
                 temporal["slices"][0]["net_return_path_ohlc"],
                 {"open": 1.0, "high": 1.1, "low": 0.9, "close": 0.95},
             )
+
+    def test_model_group_versions_wait_for_public_evaluation_task(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            storage_root = Path(tmp)
+            historical = _historical_payload()
+            for task in historical["chart_payload"]["task_timeline"]:
+                if str(task.get("task_id", "")).startswith("model_group."):
+                    task["task_state"] = "future"
+            _write_latest(storage_root, "historical_task_progress_summary", historical)
+            _write_latest(storage_root, "execution_realtime_trading_runtime_status", _runtime_payload())
+            _write_group_promotion_version(storage_root)
+
+            payload = build_model_promotion_posture_summary(storage_root=storage_root, generated_at_utc="2026-05-29T00:04:00Z")
+
+            self.assertEqual(payload["chart_payload"]["group_versions"], [])
+            self.assertEqual(payload["chart_payload"]["excluded_group_versions"], [])
 
     def test_model_group_versions_are_fold_level_not_review_run_level(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:

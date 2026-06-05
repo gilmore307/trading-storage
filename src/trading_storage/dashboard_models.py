@@ -208,6 +208,22 @@ def _global_task(tasks: list[dict[str, Any]], task_id: str) -> dict[str, Any] | 
     return max(matches, key=lambda task: str(task.get("status_updated_at_utc") or task.get("updated_at_utc") or task.get("created_at_utc") or ""))
 
 
+def _model_group_evidence_publishable(tasks: list[dict[str, Any]], *, active_ref: str | None) -> bool:
+    if active_ref:
+        return True
+    publishable_ids = {
+        "model_group.evaluation",
+        "model_group.promotion",
+        "model_group.maintenance",
+    }
+    for task in tasks:
+        task_id = str(task.get("task_id") or "")
+        task_state = str(task.get("task_state") or "").lower()
+        if task_id in publishable_ids and task_state != "future":
+            return True
+    return False
+
+
 def _task_summary(task: Mapping[str, Any] | None) -> dict[str, Any] | None:
     if not task:
         return None
@@ -688,7 +704,10 @@ def build_model_layer_readiness_summary(
     evaluation_task = _global_task(tasks, "model_group.evaluation")
     promotion_task = _global_task(tasks, "model_group.promotion")
     active_ref = _active_ref(runtime)
-    group_versions, excluded_group_versions = _model_group_promotion_evidence(storage_root, active_ref=active_ref)
+    if _model_group_evidence_publishable(tasks, active_ref=active_ref):
+        group_versions, excluded_group_versions = _model_group_promotion_evidence(storage_root, active_ref=active_ref)
+    else:
+        group_versions, excluded_group_versions = [], []
     latest_group_promotion = group_versions[-1] if group_versions else None
     layers = []
     version_count = 0
@@ -768,7 +787,10 @@ def build_model_promotion_posture_summary(
     evaluation_task = _global_task(tasks, "model_group.evaluation")
     promotion_task = _global_task(tasks, "model_group.promotion")
     active_ref = _active_ref(runtime)
-    group_versions, excluded_group_versions = _model_group_promotion_evidence(storage_root, active_ref=active_ref)
+    if _model_group_evidence_publishable(tasks, active_ref=active_ref):
+        group_versions, excluded_group_versions = _model_group_promotion_evidence(storage_root, active_ref=active_ref)
+    else:
+        group_versions, excluded_group_versions = [], []
     rows = []
     blocked_count = 0
     active_count = 0
@@ -783,24 +805,25 @@ def build_model_promotion_posture_summary(
             blocked_count += 1
         if is_active:
             active_count += 1
-        rows.append(
-            {
-                "layer": layer,
-                "layer_id": f"layer_{layer:02d}",
-                "model_id": model_id,
-                "model_ref": version["version_id"] if version else model_id,
-                "version_id": version["version_id"] if version else None,
-                "model_name": name,
-                "promotion_status": "active" if is_active else promotion_status,
-                "activation_status": "active" if is_active else "not_active",
-                "evaluation_status": _task_status(evaluation_task) if evaluation_task else "not_evaluated",
-                "latest_agent_decision_status": None,
-                "missing_evidence_categories": [] if version else ["registered_model_version"],
-                "blockers": blockers,
-                "latest_updated_at_utc": _latest_update(layer_tasks),
-                "summary": f"{name} promotion posture derived from dashboard lifecycle evidence.",
-            }
-        )
+        if version or is_active or blockers:
+            rows.append(
+                {
+                    "layer": layer,
+                    "layer_id": f"layer_{layer:02d}",
+                    "model_id": model_id,
+                    "model_ref": version["version_id"] if version else model_id,
+                    "version_id": version["version_id"] if version else None,
+                    "model_name": name,
+                    "promotion_status": "active" if is_active else promotion_status,
+                    "activation_status": "active" if is_active else "not_active",
+                    "evaluation_status": _task_status(evaluation_task) if evaluation_task else "not_evaluated",
+                    "latest_agent_decision_status": None,
+                    "missing_evidence_categories": [] if version else ["registered_model_version"],
+                    "blockers": blockers,
+                    "latest_updated_at_utc": _latest_update(layer_tasks),
+                    "summary": f"{name} promotion posture derived from dashboard lifecycle evidence.",
+                }
+            )
     status_counts: dict[str, int] = {}
     for version in group_versions:
         status = str(version.get("decision_status") or "not_reported")
