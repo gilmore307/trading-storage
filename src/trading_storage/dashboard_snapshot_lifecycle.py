@@ -1,10 +1,11 @@
 """Lifecycle planner/executor for dashboard read-model snapshots.
 
 Dashboard snapshots are owner-facing metadata caches, not canonical Layer 1/2
-source data.  This helper keeps a small count-based hot window per read-model
-contract and can remove older snapshot files after review.  It never deletes
-``latest.json``, schemas, index rows, Layer 1/2 source artifacts, SQL data, or
-non-dashboard paths.
+source data.  The current default is latest-only: keep no timestamped full
+snapshots per read-model contract unless a debugging grace window is explicitly
+approved.  This helper removes only timestamped snapshot files after review. It
+never deletes ``latest.json``, schemas, index rows, Layer 1/2 source artifacts,
+SQL data, or non-dashboard paths.
 """
 
 from __future__ import annotations
