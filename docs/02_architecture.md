@@ -19,6 +19,7 @@ The storage lifecycle design lives in the current module files:
 
 - `20_storage_lifecycle_policy.md`
 - `21_lifecycle_receipts.md`
+- `22_storage_maintenance_playbook.md`
 - `30_artifact_index.md`
 - `31_protected_set.md`
 - `32_compression_archive.md`
@@ -35,7 +36,7 @@ This file maps those modules and records the implemented local ignored-file help
 | Model artifacts | `storage/03_model_artifacts/` | `trading-model` with storage-owned placement | Model research artifacts, training/runtime outputs, diagnostics, and promotion-adjacent model evidence. |
 | Execution artifacts | `storage/04_execution_artifacts/` | `trading-execution` with storage-owned placement | Realtime monitor receipts, execution-side observations, shadow/live evidence, and execution runtime files. |
 | Replay datasets | `storage/05_replay_datasets/` | `trading-evaluation` with storage-owned placement | Frozen replay preparation bundles, replay dataset manifests, acquisition plans, reusable Layer 1/2 and event/news replay inputs, model-pipeline replay result summaries, and model-specific temporary replay downloads. |
-| Dashboard cache | `storage/06_dashboard_cache/` | `trading-storage` dashboard read-model helpers | Materialized latest/snapshot/schema/index JSON used by dashboard readers; `latest`, schema, and index files are retained while timestamped snapshots keep only a small recent count by default. |
+| Dashboard cache | `storage/06_dashboard_cache/` | `trading-storage` dashboard read-model helpers | Materialized latest/schema/index JSON used by dashboard readers; `latest`, schema, and compact index files are retained while timestamped full snapshots default to zero-retention. |
 | Local durable artifact evidence | `storage/02_control_plane/artifacts/` | `trading-storage` helper | Retained until reviewed promotion/deletion policy supersedes it. Not committed. |
 | Lifecycle evidence | `storage/90_lifecycle/{artifact_index,protected_set,plans,quarantine_recheck,receipts,tombstones}/` | `trading-storage` lifecycle helpers | Canonical lifecycle evidence and audit records. Formal receipts/tombstones and executed decision evidence are retained and must not live only in transient run/output folders. |
 | Lifecycle transient runtime | `storage/90_lifecycle/{tmp,cache,logs,runs,outputs,staging}/` | retention helper | Runtime scratch, logs, run directories, output dumps, and staging. Ordinary files roll off by TTL; formal evidence found here is retained until extracted to canonical lifecycle evidence directories. |

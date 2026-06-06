@@ -34,6 +34,7 @@ docs/
   11_layer_02_sector_context.md
   20_storage_lifecycle_policy.md
   21_lifecycle_receipts.md
+  22_storage_maintenance_playbook.md
   30_artifact_index.md
   31_protected_set.md
   32_compression_archive.md

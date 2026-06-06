@@ -15,6 +15,7 @@ This directory contains the current documentation spine for `trading-storage`.
 - `11_layer_02_sector_context.md` — Layer 02 - Sector Context Storage.
 - `20_storage_lifecycle_policy.md` — Storage Lifecycle Policy.
 - `21_lifecycle_receipts.md` — Lifecycle Receipts.
+- `22_storage_maintenance_playbook.md` — Storage Maintenance Playbook.
 - `30_artifact_index.md` — Artifact Index and Dependency Graph.
 - `31_protected_set.md` — Protected Set Policy.
 - `32_compression_archive.md` — Compression and Archive.

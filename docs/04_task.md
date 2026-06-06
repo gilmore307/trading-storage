@@ -17,6 +17,7 @@ This is the active storage task ledger. Keep lifecycle and dashboard work dry-ru
 - Dashboard read-model materialization is implemented through `src/trading_storage/dashboard_read_models.py` and `scripts/dashboard/materialize_read_model.py`.
 - Public dashboard refresh orchestration is implemented through `scripts/dashboard/refresh_public_dashboard_read_models.py` plus the contract-specific refresh helpers.
 - Lifecycle policy and receipts are documented in `docs/20_storage_lifecycle_policy.md` and `docs/21_lifecycle_receipts.md`.
+- Per-file-class storage cleanup decisions are documented in `docs/22_storage_maintenance_playbook.md`.
 - Artifact index, protected-set, compression/archive, and dashboard read-model details are owned by `docs/30_artifact_index.md`, `docs/31_protected_set.md`, `docs/32_compression_archive.md`, `docs/40_dashboard_read_models.md`, and `docs/41_dashboard_summary_layout.md`.
 
 ## Storage Maintenance Review Queue

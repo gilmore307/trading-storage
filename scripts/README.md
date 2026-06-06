@@ -4,12 +4,12 @@ Executable storage maintenance and artifact helpers live here. Scripts may impor
 
 ## Dashboard helpers
 
-- `dashboard/materialize_read_model.py` validates a dashboard read-model common envelope, updates storage-owned `latest.json`, and writes snapshot/index files only when owner-facing state changes under `storage/06_dashboard_cache/`.
+- `dashboard/materialize_read_model.py` validates a dashboard read-model common envelope, atomically updates storage-owned `latest.json`, writes schema placeholders, and appends a compact materialization index under `storage/06_dashboard_cache/`.
 - `dashboard/refresh_historical_task_progress_read_model.py` runs the manager-owned `historical_task_progress_summary` producer and materializes the validated payload into the accepted storage layout.
-- `dashboard/refresh_temporal_explorer_summary_read_model.py` builds the primary Timewheel/Temporal Explorer summary from calendar substrate tables and chart cache.
+- `dashboard/refresh_temporal_explorer_summary_read_model.py` builds the primary Temporal Explorer summary from calendar substrate tables and chart cache.
 - `dashboard/refresh_realtime_signal_summary_read_model.py` builds the execution-owned realtime signal summary from monitor receipts and materializes the validated payload into the accepted storage layout.
 - `dashboard/refresh_execution_runtime_status_read_model.py` builds the execution realtime runtime status read model from the execution-owned readiness artifact for WebSocket clients.
-- `dashboard/refresh_public_dashboard_read_models.py` refreshes the public dashboard read-model set, currently including current system status, historical task progress, realtime signal summary, and execution runtime status.
+- `dashboard/refresh_public_dashboard_read_models.py` refreshes the public dashboard read-model set, currently including current system status, historical task progress, Temporal Explorer, realtime signal summary, execution runtime status, model layer readiness, and model promotion posture.
 
 Examples:
 
