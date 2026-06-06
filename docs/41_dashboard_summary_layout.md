@@ -17,14 +17,14 @@ storage/06_dashboard_cache/
 Accepted subpaths:
 
 ```text
-storage/06_dashboard_cache/read_models/<contract_type>/latest.json
+storage/06_dashboard_cache/read_models/<contract_type>.json
 storage/06_dashboard_cache/schemas/<contract_type>.schema.json
 ```
 
 Where:
 
 - `<contract_type>` is the registered payload value, for example `current_system_status_summary`.
-- `latest.json` is the newest accepted summary for fast dashboard reads.
+- `read_models/<contract_type>.json` is the newest accepted summary for fast dashboard reads.
 - `schemas/` holds JSON Schema contracts for validation once implementation begins.
 
 ## Registered Initial Contracts
@@ -89,7 +89,7 @@ A writer may aggregate multiple owner summaries, but the document must preserve 
 
 ## Validation Boundary
 
-Implementation must validate each summary before `latest.json` is replaced.
+Implementation must validate each summary before the current read-model file is replaced.
 
 Minimum validation requirements:
 
@@ -99,7 +99,7 @@ Minimum validation requirements:
 4. `schema_ref` resolves to the schema used for validation.
 5. `diagnostic_refs` are issue-focused and not a general raw artifact/log/table browser.
 6. No secret-like values appear in summary, chart, profile, issue, diagnostic, or lineage payloads.
-7. `latest.json` update is atomic after validation succeeds.
+7. Current read-model file update is atomic after validation succeeds.
 8. Timestamped full snapshots are not written by the current read-model writer.
 
 ## Lifecycle Posture
@@ -108,7 +108,7 @@ Dashboard summaries are small durable owner-facing read models.
 
 Default lifecycle posture:
 
-- retain `latest.json` for every registered summary contract;
+- retain one current read-model file for every registered summary contract;
 - do not retain full timestamped snapshots as long-term dashboard evidence;
 - use compact metric series for historical chart needs instead of repeating full read-model JSON;
 - prune existing timestamped snapshots after reviewed approval;
@@ -121,7 +121,7 @@ The accepted default is latest-only retention: keep zero timestamped snapshots p
 
 `trading-dashboard` may read:
 
-- `latest.json`;
+- one current read-model file;
 - compact metric series explicitly published for charts;
 - schema/profile metadata needed for explanations;
 - issue-focused diagnostic refs linked from visible owner-facing problems.
@@ -132,7 +132,7 @@ It must not use this layout to create primary views over raw artifacts, raw rece
 
 The storage-side materialization and refresh helpers are implemented:
 
-- `src/trading_storage/dashboard_read_models.py` validates the common dashboard read-model envelope, rejects unsafe contract paths, rejects future timestamps beyond accepted clock skew, scans for secret-like values, atomically replaces `latest.json`, and creates the common schema placeholder for the contract.
+- `src/trading_storage/dashboard_read_models.py` validates the common dashboard read-model envelope, rejects unsafe contract paths, rejects future timestamps beyond accepted clock skew, scans for secret-like values, atomically replaces `read_models/<contract_type>.json`, and creates the common schema placeholder for the contract.
 - `scripts/dashboard/materialize_read_model.py` is the executable wrapper for validating and materializing one producer-supplied read-model JSON payload.
 - `src/trading_storage/dashboard_refresh.py` and `scripts/dashboard/refresh_historical_task_progress_read_model.py` run the manager-owned `historical_task_progress_summary` producer and materialize the validated output.
 - `src/trading_storage/dashboard_realtime_signals.py` and `scripts/dashboard/refresh_realtime_signal_summary_read_model.py` build and materialize `realtime_signal_summary`.

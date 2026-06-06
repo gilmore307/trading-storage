@@ -27,7 +27,7 @@ The first implementation slice is conservative and filesystem-only:
 - replay reusable Layer 1/2 and event/news inputs classify as `compress_and_retain`;
 - replay model-specific option snapshot/download hints classify as `ttl_delete_allowed` after replay close when summaries, manifests, and receipts are retained;
 - `fold_complete_delete_allowed` is reserved for explicitly fold-scoped target/source artifacts that may become quarantine candidates only after full-fold completion; reusable Layer 1/2 source foundations must not use this class;
-- dashboard `latest.json` read models classify as `dashboard_latest_retained` and protected;
+- current dashboard read models classify as `dashboard_latest_retained` and protected;
 - explicitly indexed dashboard snapshots classify as `ttl_delete_allowed` because they are metadata caches, not canonical Layer 1/2 data; the dashboard snapshot pruner uses latest-only retention and keeps zero timestamped snapshots per contract by default.
 
 This is enough for dry-run inventory and protected-set preparation. It is not a production deletion authorization surface. Do not point a routine scan at an unbounded snapshot-heavy read-model tree unless the caller deliberately wants that full inventory cost; use the bounded dashboard snapshot lifecycle helper for snapshot metadata pruning.
@@ -86,7 +86,7 @@ Initial retention classes:
 - `archive_retain`: online detail that can be detached/exported but must remain restorable;
 - `ttl_delete_allowed`: regenerable scratch, cache, timestamped dashboard snapshots, Layer 1/2 runtime/log/intermediate files, and later-layer model-run metadata that may be deleted after TTL/quarantine/run-cycle closure;
 - `fold_complete_delete_allowed`: target-symbol or experiment-specific source artifacts scoped to one completed model-worker fold and managed as a fold folder, not reusable Layer 1/2 foundations;
-- `dashboard_latest_retained`: current dashboard `latest.json` summaries that should remain hot and protected;
+- `dashboard_latest_retained`: current dashboard read-model summaries that should remain hot and protected;
 - `metadata_only_after_archive`: detail can leave online storage after summary/manifest/archive is verified;
 - `manual_review_required`: default for ambiguous or high-risk artifacts.
 

@@ -4,8 +4,8 @@ Dashboard snapshots are owner-facing metadata caches, not canonical Layer 1/2
 source data.  The current default is latest-only: keep no timestamped full
 snapshots per read-model contract unless a debugging grace window is explicitly
 approved.  This helper removes only timestamped snapshot files after review. It
-never deletes ``latest.json``, schemas, index rows, Layer 1/2 source artifacts,
-SQL data, or non-dashboard paths.
+never deletes current read-model files, schemas, legacy index rows, Layer 1/2
+source artifacts, SQL data, or non-dashboard paths.
 """
 
 from __future__ import annotations
@@ -158,7 +158,8 @@ def _has_unresolved_issue_ref(path: Path) -> bool:
     """Return whether a snapshot carries an explicit evidence-retention issue.
 
     Ordinary dashboard ``issue_refs`` are current-state pointers and are still
-    represented by ``latest.json`` or their canonical diagnostic/task roots.
+    represented by current read-model files or their canonical diagnostic/task
+    roots.
     They should not make every historical dashboard cache snapshot protected.
     """
 

@@ -69,7 +69,7 @@ class DashboardSnapshotLifecycleTests(unittest.TestCase):
             storage_root = Path(tmp) / "storage"
             old = _write_snapshot(storage_root, "historical_task_progress_summary", "20260514T000000Z")
             recent = _write_snapshot(storage_root, "historical_task_progress_summary", "20260516T110000Z")
-            latest = storage_root / "06_dashboard_cache" / "read_models" / "historical_task_progress_summary" / "latest.json"
+            latest = storage_root / "06_dashboard_cache" / "read_models" / "historical_task_progress_summary.json"
             latest.write_text("latest", encoding="utf-8")
 
             plan = build_dashboard_snapshot_lifecycle_plan(
@@ -93,7 +93,7 @@ class DashboardSnapshotLifecycleTests(unittest.TestCase):
             storage_root = Path(tmp) / "storage"
             old = _write_snapshot(storage_root, "historical_task_progress_summary", "20260514T000000Z")
             recent = _write_snapshot(storage_root, "historical_task_progress_summary", "20260516T110000Z")
-            latest = storage_root / "06_dashboard_cache" / "read_models" / "historical_task_progress_summary" / "latest.json"
+            latest = storage_root / "06_dashboard_cache" / "read_models" / "historical_task_progress_summary.json"
             latest.write_text("latest", encoding="utf-8")
 
             plan = build_dashboard_snapshot_lifecycle_plan(

@@ -69,11 +69,11 @@ class FileLifecycleAcceptanceTests(unittest.TestCase):
     def test_dashboard_latest_reason_is_protected_reason(self) -> None:
         with tempfile.TemporaryDirectory() as raw_tmp:
             root = Path(raw_tmp)
-            latest = root / "storage" / "06_dashboard_cache" / "read_models" / "current_status" / "latest.json"
+            latest = root / "storage" / "06_dashboard_cache" / "read_models" / "current_status.json"
             latest.parent.mkdir(parents=True)
             latest.write_text('{"contract_type":"current_status"}\n', encoding="utf-8")
 
-            index = build_artifact_index(root=root, include_roots=("storage/06_dashboard_cache/read_models/current_status/latest.json",))
+            index = build_artifact_index(root=root, include_roots=("storage/06_dashboard_cache/read_models/current_status.json",))
             protected = build_protected_set(index)
 
             self.assertEqual(index.records[0].retention_class, "dashboard_latest_retained")

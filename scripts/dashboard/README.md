@@ -2,8 +2,8 @@
 
 Executable helpers for storage-hosted dashboard summary/read-model payloads.
 
-- `materialize_read_model.py` validates one dashboard read-model JSON envelope and writes the accepted storage layout: `latest.json` plus schema.
-- `prune_dashboard_snapshots.py` plans or applies deletion of old timestamped dashboard read-model snapshot metadata while preserving `latest.json`, schemas, Layer 1/2 data, and SQL.
+- `materialize_read_model.py` validates one dashboard read-model JSON envelope and writes the accepted storage layout: `read_models/<contract_type>.json` plus schema.
+- `prune_dashboard_snapshots.py` plans or applies deletion of old timestamped dashboard read-model snapshot metadata while preserving current read-model files, schemas, Layer 1/2 data, and SQL.
 - `refresh_historical_task_progress_read_model.py` runs the manager-owned `historical_task_progress_summary` semantic producer and materializes the validated payload under `storage/06_dashboard_cache/`.
 - `refresh_current_system_status_read_model.py` refreshes `current_system_status_summary` from read-only infrastructure observations.
 - `refresh_temporal_explorer_summary_read_model.py` refreshes `temporal_explorer_summary`, the primary Timewheel/Temporal Explorer page model.

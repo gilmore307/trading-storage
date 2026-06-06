@@ -422,7 +422,7 @@ def _lane_payloads(*, statuses: Mapping[str, Mapping[str, Any]], rows: Mapping[s
 
 
 def _model_event_marker_lane(storage_root: Path) -> dict[str, Any]:
-    runtime_summary = _read_json(storage_root / "06_dashboard_cache/read_models/execution_realtime_trading_runtime_status/latest.json")
+    runtime_summary = _read_json(storage_root / "06_dashboard_cache/read_models/execution_realtime_trading_runtime_status.json")
     if not runtime_summary:
         return {"lane_id": "model_event_markers", "label": "Model Event Markers", "status": "missing", "item_count": 0}
     active_pointer = runtime_summary.get("chart_payload", {}).get("active_model_pointer", {})

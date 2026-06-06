@@ -74,7 +74,7 @@ class ExecutionRuntimeStatusReadModelTests(unittest.TestCase):
                 encoding="utf-8",
             )
             receipt = refresh_execution_runtime_status_read_model(storage_root=root / "storage", status_path=status_path)
-            latest = root / "storage/06_dashboard_cache/read_models/execution_realtime_trading_runtime_status/latest.json"
+            latest = root / "storage/06_dashboard_cache/read_models/execution_realtime_trading_runtime_status.json"
             self.assertEqual(receipt["refreshed_contract_type"], EXECUTION_RUNTIME_STATUS_CONTRACT)
             self.assertTrue(latest.exists())
 

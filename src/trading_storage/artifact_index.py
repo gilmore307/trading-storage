@@ -227,7 +227,7 @@ def _producer_component(relative_path: Path, data: Mapping[str, Any] | None) -> 
             if value:
                 return str(value)
     if len(relative_path.parts) >= 4 and relative_path.parts[:3] == ("storage", "06_dashboard_cache", "read_models"):
-        return relative_path.parts[3]
+        return relative_path.stem
     if len(relative_path.parts) >= 4 and relative_path.parts[:3] == ("storage", "02_control_plane", "artifacts"):
         return relative_path.parts[3]
     return "filesystem_scan"
@@ -338,7 +338,7 @@ def _is_dashboard_snapshot(relative_path: Path) -> bool:
 
 
 def _is_dashboard_latest(relative_path: Path) -> bool:
-    return len(relative_path.parts) >= 5 and relative_path.parts[:3] == ("storage", "06_dashboard_cache", "read_models") and relative_path.name == "latest.json"
+    return len(relative_path.parts) == 4 and relative_path.parts[:3] == ("storage", "06_dashboard_cache", "read_models") and relative_path.suffix == ".json"
 
 
 def _has_layer_01_02_marker(text: str) -> bool:
@@ -580,7 +580,7 @@ def _parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
         "--include-root",
         action="append",
         dest="include_roots",
-        help="Relative root/file to include. May be repeated. Defaults to storage artifacts only; add specific read-model latest files or bounded roots explicitly.",
+        help="Relative root/file to include. May be repeated. Defaults to storage artifacts only; add specific current read-model files or bounded roots explicitly.",
     )
     parser.add_argument("--write", action="store_true", help="Write JSONL index and summary files. Default prints summary only.")
     parser.add_argument("--index-path", default=str(DEFAULT_INDEX_OUTPUT), help="Relative/absolute JSONL index output path.")

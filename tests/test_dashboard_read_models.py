@@ -50,10 +50,9 @@ class DashboardReadModelTests(unittest.TestCase):
             storage_root = Path(tmp)
             materialized = materialize_dashboard_read_model(sample_payload(), storage_root=storage_root, now=FIXED_NOW)
 
-            self.assertFalse(materialized.snapshot_path.exists())
+            self.assertIsNone(materialized.snapshot_path)
             self.assertTrue(materialized.latest_path.exists())
             self.assertTrue(materialized.schema_path.exists())
-            self.assertFalse(materialized.index_path.exists())
 
             latest = json.loads(materialized.latest_path.read_text(encoding="utf-8"))
             schema = json.loads(materialized.schema_path.read_text(encoding="utf-8"))
@@ -63,7 +62,7 @@ class DashboardReadModelTests(unittest.TestCase):
             self.assertFalse(materialized.snapshot_written)
             self.assertFalse(materialized.index_written)
             self.assertEqual(materialized.write_mode, "latest_only")
-            self.assertEqual(materialized.storage_uri, "storage://trading-storage/06_dashboard_cache/read_models/current_system_status_summary/latest.json")
+            self.assertEqual(materialized.storage_uri, "storage://trading-storage/06_dashboard_cache/read_models/current_system_status_summary.json")
 
     def test_latest_only_refresh_when_state_is_unchanged(self):
         with tempfile.TemporaryDirectory() as tmp:
@@ -72,19 +71,19 @@ class DashboardReadModelTests(unittest.TestCase):
             second_payload = sample_payload(generated_at_utc="2026-05-12T00:00:30Z")
             second = materialize_dashboard_read_model(second_payload, storage_root=storage_root, now=FIXED_NOW)
 
-            self.assertFalse(first.snapshot_path.exists())
-            self.assertFalse(second.snapshot_path.exists())
+            self.assertIsNone(first.snapshot_path)
+            self.assertIsNone(second.snapshot_path)
             self.assertTrue(second.latest_path.exists())
             self.assertFalse(second.snapshot_written)
             self.assertFalse(second.index_written)
             self.assertEqual(second.write_mode, "latest_only")
-            self.assertEqual(second.storage_uri, "storage://trading-storage/06_dashboard_cache/read_models/current_system_status_summary/latest.json")
+            self.assertEqual(second.storage_uri, "storage://trading-storage/06_dashboard_cache/read_models/current_system_status_summary.json")
 
             latest = json.loads(second.latest_path.read_text(encoding="utf-8"))
 
             self.assertEqual(latest["generated_at_utc"], "2026-05-12T00:00:30Z")
 
-    def test_state_change_replaces_latest_without_snapshot_or_index_row(self):
+    def test_state_change_replaces_current_file_without_snapshot_or_index_file(self):
         with tempfile.TemporaryDirectory() as tmp:
             storage_root = Path(tmp)
             first = materialize_dashboard_read_model(sample_payload(), storage_root=storage_root, now=FIXED_NOW)
@@ -100,14 +99,13 @@ class DashboardReadModelTests(unittest.TestCase):
                 now=FIXED_NOW,
             )
 
-            self.assertFalse(first.snapshot_path.exists())
-            self.assertFalse(changed.snapshot_path.exists())
+            self.assertIsNone(first.snapshot_path)
+            self.assertIsNone(changed.snapshot_path)
             self.assertFalse(changed.snapshot_written)
             self.assertFalse(changed.index_written)
             self.assertNotEqual(first.snapshot_state_hash, changed.snapshot_state_hash)
             latest = json.loads(changed.latest_path.read_text(encoding="utf-8"))
             self.assertEqual(latest["status"], "degraded")
-            self.assertFalse(changed.index_path.exists())
 
     def test_rejects_contract_type_mismatch(self):
         with self.assertRaises(DashboardReadModelError):
@@ -171,7 +169,7 @@ class DashboardReadModelTests(unittest.TestCase):
                 result = main([str(payload_path), "--contract-type", "current_system_status_summary", "--storage-root", str(storage_root)])
 
             self.assertEqual(result, 0)
-            self.assertTrue((storage_root / "06_dashboard_cache/read_models/current_system_status_summary/latest.json").exists())
+            self.assertTrue((storage_root / "06_dashboard_cache/read_models/current_system_status_summary.json").exists())
 
 
 if __name__ == "__main__":

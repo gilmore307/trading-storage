@@ -181,7 +181,7 @@ Policy: never compress PostgreSQL live data files directly. Archive through dump
 - PIT/vintage/source history: compress and retain by default;
 - Trading Economics calendar/source payloads: keep forever; no delete candidates, no destructive pruning, only append/incremental additions under the canonical month-bucketed TE source root;
 - dashboard/read-model latest summaries: retained as derived read models;
-- dashboard/read-model state-change snapshots: delete after explicit reviewed approval; current default prune plan keeps zero timestamped snapshots per contract and marks timestamped dashboard snapshots as delete candidates while preserving `latest.json`, schemas, SQL, and source data;
+- dashboard/read-model state-change snapshots: delete after explicit reviewed approval; current default prune plan keeps zero timestamped snapshots per contract and marks timestamped dashboard snapshots as delete candidates while preserving current read-model files, schemas, SQL, and source data;
 - lifecycle receipts, tombstones, executed protected sets, executed lifecycle plans, and quarantine/recheck evidence: retained as audit evidence;
 - lifecycle `runs`, `outputs`, and `staging`: ordinary runtime context rolls off after about 30 days; formal lifecycle evidence found there is retained until extracted to canonical `storage/90_lifecycle` evidence directories;
 - Layer 3+ model-run metadata/intermediates: delete by TTL after run-cycle close when reproducible or no longer lineage-required;

@@ -82,7 +82,7 @@ class RealtimeSignalSummaryTests(unittest.TestCase):
                 execution_root=root / "execution",
             )
 
-            latest = root / "storage/06_dashboard_cache/read_models/realtime_signal_summary/latest.json"
+            latest = root / "storage/06_dashboard_cache/read_models/realtime_signal_summary.json"
             self.assertEqual(receipt["refreshed_contract_type"], REALTIME_SIGNAL_SUMMARY_CONTRACT)
             self.assertTrue(latest.exists())
 

@@ -40,7 +40,7 @@ MODEL_LAYERS = (
 )
 
 def _read_latest(storage_root: Path, contract_type: str) -> dict[str, Any] | None:
-    path = storage_root / "06_dashboard_cache" / "read_models" / contract_type / "latest.json"
+    path = storage_root / "06_dashboard_cache" / "read_models" / f"{contract_type}.json"
     try:
         payload = json.loads(path.read_text(encoding="utf-8"))
     except (OSError, json.JSONDecodeError):

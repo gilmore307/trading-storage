@@ -17,7 +17,7 @@ from trading_storage.dashboard_read_models import validate_dashboard_read_model
 
 
 def _write_latest(storage_root: Path, contract_type: str, payload: dict) -> None:
-    path = storage_root / "06_dashboard_cache" / "read_models" / contract_type / "latest.json"
+    path = storage_root / "06_dashboard_cache" / "read_models" / f"{contract_type}.json"
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(json.dumps(payload), encoding="utf-8")
 
@@ -692,8 +692,8 @@ class DashboardModelsTests(unittest.TestCase):
 
             self.assertEqual(layer_receipt["refreshed_contract_type"], MODEL_LAYER_READINESS_CONTRACT)
             self.assertEqual(promotion_receipt["refreshed_contract_type"], MODEL_PROMOTION_POSTURE_CONTRACT)
-            self.assertTrue((storage_root / "06_dashboard_cache/read_models/model_layer_readiness_summary/latest.json").exists())
-            self.assertTrue((storage_root / "06_dashboard_cache/read_models/model_promotion_posture_summary/latest.json").exists())
+            self.assertTrue((storage_root / "06_dashboard_cache/read_models/model_layer_readiness_summary.json").exists())
+            self.assertTrue((storage_root / "06_dashboard_cache/read_models/model_promotion_posture_summary.json").exists())
 
 
 if __name__ == "__main__":

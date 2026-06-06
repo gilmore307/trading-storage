@@ -19,10 +19,9 @@ from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from typing import Any, Mapping
 
-from trading_storage.artifact_store import canonical_json_bytes, now_utc
+from trading_storage.artifact_store import canonical_json_bytes
 DEFAULT_STORAGE_ROOT = Path("storage")
 DASHBOARD_ROOT = Path("06_dashboard_cache")
-INDEX_PATH = DASHBOARD_ROOT / "index" / "dashboard_read_model_index.jsonl"
 CLOCK_SKEW = timedelta(minutes=5)
 
 REFRESHABLE_CONTRACT_TYPES = frozenset(
@@ -81,9 +80,8 @@ class MaterializedDashboardReadModel:
 
     contract_type: str
     latest_path: Path
-    snapshot_path: Path
+    snapshot_path: Path | None
     schema_path: Path
-    index_path: Path
     content_hash: str
     snapshot_state_hash: str
     byte_count: int
@@ -253,9 +251,9 @@ def _read_json_object(path: Path) -> Mapping[str, Any] | None:
 def _snapshot_state_hash(payload: Mapping[str, Any]) -> str:
     """Hash dashboard state while excluding volatile materialization time.
 
-    ``generated_at_utc`` changes on every refresh and should keep
-    ``latest.json`` current, but it should not create a new timestamped
-    snapshot when the owner-facing state did not change.
+    ``generated_at_utc`` changes on every refresh and should keep the current
+    read-model file fresh, but it should not create a timestamped snapshot when
+    the owner-facing state did not change.
     """
 
     stable_payload = dict(payload)
@@ -267,6 +265,13 @@ def _storage_uri(storage_root: Path, path: Path) -> str:
     return "storage://trading-storage/" + str(path.relative_to(storage_root)).replace("\\", "/")
 
 
+def dashboard_read_model_path(storage_root: Path, contract_type: str) -> Path:
+    """Return the compact current read-model path for a contract."""
+
+    contract_type = _safe_contract_type(contract_type)
+    return Path(storage_root) / DASHBOARD_ROOT / "read_models" / f"{contract_type}.json"
+
+
 def materialize_dashboard_read_model(
     payload: Mapping[str, Any],
     *,
@@ -276,30 +281,16 @@ def materialize_dashboard_read_model(
 ) -> MaterializedDashboardReadModel:
     """Validate and materialize one dashboard read model.
 
-    The dashboard consumes ``latest.json`` as the current summary boundary.
-    Timestamped full snapshots are intentionally not written; they are metadata
-    cache duplicates, not canonical source evidence.
+    The dashboard consumes one current ``<contract>.json`` file as the summary
+    boundary. Timestamped full snapshots and materialization index rows are
+    intentionally not written; they are metadata cache duplicates, not canonical
+    source evidence.
     """
 
     storage_root = Path(storage_root)
     contract_type = validate_dashboard_read_model(payload, expected_contract_type=expected_contract_type, now=now)
-    compact = _compact_timestamp(str(payload["generated_at_utc"]))
-    parsed = _parse_utc_timestamp(str(payload["generated_at_utc"]), field="generated_at_utc")
-
-    snapshot_path = (
-        storage_root
-        / DASHBOARD_ROOT
-        / "read_models"
-        / contract_type
-        / "snapshots"
-        / parsed.strftime("%Y")
-        / parsed.strftime("%m")
-        / parsed.strftime("%d")
-        / f"{compact}.json"
-    )
-    latest_path = storage_root / DASHBOARD_ROOT / "read_models" / contract_type / "latest.json"
+    latest_path = dashboard_read_model_path(storage_root, contract_type)
     schema_path = storage_root / DASHBOARD_ROOT / "schemas" / f"{contract_type}.schema.json"
-    index_path = storage_root / INDEX_PATH
 
     if not schema_path.exists():
         _write_atomic_json(schema_path, common_dashboard_schema(contract_type))
@@ -325,7 +316,7 @@ def materialize_dashboard_read_model(
         "contract_type": contract_type,
         "schema_version": payload["schema_version"],
         "generated_at_utc": payload["generated_at_utc"],
-        "indexed_at_utc": now_utc(),
+        "indexed_at_utc": None,
         "latest_uri": _storage_uri(storage_root, latest_path),
         "snapshot_uri": None,
         "schema_uri": _storage_uri(storage_root, schema_path),
@@ -343,9 +334,8 @@ def materialize_dashboard_read_model(
     return MaterializedDashboardReadModel(
         contract_type=contract_type,
         latest_path=latest_path,
-        snapshot_path=snapshot_path,
+        snapshot_path=None,
         schema_path=schema_path,
-        index_path=index_path,
         content_hash=content_hash,
         snapshot_state_hash=state_hash,
         byte_count=byte_count,

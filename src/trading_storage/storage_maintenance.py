@@ -27,7 +27,7 @@ ORDERED_STORAGE_ROOTS: tuple[tuple[str, str, str, str], ...] = (
     ("03_model_artifacts", "storage/03_model_artifacts", "durable_model", "Model training, diagnostics, research, and promotion-adjacent artifacts."),
     ("04_execution_artifacts", "storage/04_execution_artifacts", "durable_execution", "Realtime observation, shadow/live, and execution-side artifacts."),
     ("05_replay_datasets", "storage/05_replay_datasets", "durable_replay", "Frozen replay datasets, acquisition plans, and replay inputs."),
-    ("06_dashboard_cache", "storage/06_dashboard_cache", "managed_cache", "Dashboard read-model latest/snapshot/schema/index cache."),
+    ("06_dashboard_cache", "storage/06_dashboard_cache", "managed_cache", "Dashboard read-model current/schema cache."),
     ("90_lifecycle", "storage/90_lifecycle", "lifecycle_control", "Lifecycle plans, indexes, protected sets, receipts, archives, cache, staging, and logs."),
 )
 

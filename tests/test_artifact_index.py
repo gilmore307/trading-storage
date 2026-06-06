@@ -49,7 +49,7 @@ class ArtifactIndexTests(unittest.TestCase):
     def test_dashboard_read_model_payload_is_indexed(self):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
-            latest = root / "storage" / "06_dashboard_cache" / "read_models" / "current_system_status_summary" / "latest.json"
+            latest = root / "storage" / "06_dashboard_cache" / "read_models" / "current_system_status_summary.json"
             latest.parent.mkdir(parents=True, exist_ok=True)
             latest.write_text(
                 json.dumps(
@@ -62,7 +62,7 @@ class ArtifactIndexTests(unittest.TestCase):
                 encoding="utf-8",
             )
 
-            index = build_artifact_index(root=root, include_roots=("storage/06_dashboard_cache/read_models/current_system_status_summary/latest.json",))
+            index = build_artifact_index(root=root, include_roots=("storage/06_dashboard_cache/read_models/current_system_status_summary.json",))
 
             self.assertEqual(index.summary["artifact_kind_counts"], {"current_system_status_summary": 1})
             self.assertEqual(index.records[0].producer_component, "current_system_status_summary")

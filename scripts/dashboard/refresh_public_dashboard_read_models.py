@@ -9,7 +9,7 @@ from pathlib import Path
 from typing import Any, Callable
 
 from trading_storage.artifact_store import now_utc
-from trading_storage.dashboard_snapshot_lifecycle import build_dashboard_snapshot_lifecycle_plan, compact_dashboard_read_model_index
+from trading_storage.dashboard_snapshot_lifecycle import build_dashboard_snapshot_lifecycle_plan
 from trading_storage.dashboard_execution_runtime import DEFAULT_EXECUTION_STATUS_PATH, EXECUTION_RUNTIME_STATUS_CONTRACT, refresh_execution_runtime_status_read_model
 from trading_storage.dashboard_models import (
     MODEL_LAYER_READINESS_CONTRACT,
@@ -109,7 +109,6 @@ def main(argv: list[str] | None = None) -> int:
             approval_ref="dashboard_refresh_auto_prune:latest_only",
         )
         maintenance["dashboard_snapshot_prune_summary"] = prune_receipt.summary
-        maintenance["dashboard_read_model_index_compaction"] = compact_dashboard_read_model_index(storage_root=args.storage_root)
     except Exception as exc:  # noqa: BLE001 - maintenance failure should be explicit in the batch receipt
         maintenance_failed = True
         maintenance["dashboard_snapshot_prune_failure"] = {

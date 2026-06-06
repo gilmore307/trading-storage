@@ -15,7 +15,7 @@ class DashboardTemporalExplorerTests(unittest.TestCase):
     def test_builds_timewheel_payload(self):
         with tempfile.TemporaryDirectory() as tmp:
             storage_root = Path(tmp) / "storage"
-            runtime_summary = storage_root / "06_dashboard_cache/read_models/execution_realtime_trading_runtime_status/latest.json"
+            runtime_summary = storage_root / "06_dashboard_cache/read_models/execution_realtime_trading_runtime_status.json"
             runtime_summary.parent.mkdir(parents=True)
             runtime_summary.write_text(
                 json.dumps(
@@ -102,7 +102,7 @@ class DashboardTemporalExplorerTests(unittest.TestCase):
             root = Path(tmp) / "storage"
             receipt = refresh_temporal_explorer_summary_read_model(storage_root=root)
             self.assertEqual(receipt["refreshed_contract_type"], TEMPORAL_EXPLORER_SUMMARY_CONTRACT)
-            self.assertTrue((root / "06_dashboard_cache/read_models/temporal_explorer_summary/latest.json").exists())
+            self.assertTrue((root / "06_dashboard_cache/read_models/temporal_explorer_summary.json").exists())
 
 
 if __name__ == "__main__":

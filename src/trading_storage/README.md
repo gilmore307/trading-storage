@@ -6,7 +6,7 @@ Importable storage helper implementation lives here.
 
 - `artifact_store.py` owns canonical JSON payload writes and `artifact_ref` metadata generation for storage-owned local artifacts.
 - `artifact_index.py` owns conservative filesystem artifact-index scanning and optional JSONL/summary output for lifecycle inventory.
-- `dashboard_read_models.py` owns storage-side validation and materialization of dashboard read-model latest files plus schemas.
+- `dashboard_read_models.py` owns storage-side validation and materialization of dashboard current read-model files plus schemas.
 - `dashboard_temporal_explorer.py` owns the storage-side read model for the dashboard Timewheel/Temporal Explorer page.
 - `dashboard_models.py` owns storage-side model lifecycle and promotion posture read models for the dashboard Models page.
 - `dashboard_refresh.py` owns storage-side refresh orchestration that runs accepted semantic producers and materializes validated dashboard read models.

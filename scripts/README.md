@@ -4,7 +4,7 @@ Executable storage maintenance and artifact helpers live here. Scripts may impor
 
 ## Dashboard helpers
 
-- `dashboard/materialize_read_model.py` validates a dashboard read-model common envelope, atomically updates storage-owned `latest.json`, writes schema placeholders, and appends a compact materialization index under `storage/06_dashboard_cache/`.
+- `dashboard/materialize_read_model.py` validates a dashboard read-model common envelope, atomically updates `storage/06_dashboard_cache/read_models/<contract_type>.json`, and writes schema placeholders.
 - `dashboard/refresh_historical_task_progress_read_model.py` runs the manager-owned `historical_task_progress_summary` producer and materializes the validated payload into the accepted storage layout.
 - `dashboard/refresh_temporal_explorer_summary_read_model.py` builds the primary Temporal Explorer summary from calendar substrate tables and chart cache.
 - `dashboard/refresh_realtime_signal_summary_read_model.py` builds the execution-owned realtime signal summary from monitor receipts and materializes the validated payload into the accepted storage layout.
