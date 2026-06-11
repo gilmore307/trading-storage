@@ -276,7 +276,7 @@ def _metadata_text(row: Mapping[str, Any], field: str) -> str:
 
 
 def _is_layer10_accepted_event(row: Mapping[str, Any]) -> bool:
-    """Return true only for event kinds accepted by Layer 10/review for chart markers."""
+    """Return true only for event kinds accepted by M06/review for chart markers."""
 
     accepted_values = {
         "accepted",
@@ -347,7 +347,7 @@ def _event_payloads(rows: Mapping[str, Sequence[Mapping[str, Any]]]) -> list[dic
                 "scope": "event",
                 "status": _row_text(row, "layer10_status") or "accepted",
                 "source_priority": "result_artifact",
-                "summary": "Accepted Layer 10 event result is available.",
+                "summary": "Accepted M06 event result is available.",
                 "source_name": "calendar_event_result",
                 "reference_type": "artifact",
                 "reference": str(row.get("raw_artifact_ref") or ""),
@@ -368,7 +368,7 @@ def _event_payloads(rows: Mapping[str, Sequence[Mapping[str, Any]]]) -> list[dic
                 "symbol": row.get("symbol"),
                 "status": _row_text(row, "layer10_status") or str(row.get("dedup_status") or "accepted"),
                 "source_priority": str(row.get("source") or ""),
-                "summary": str(row.get("headline") or "Accepted Layer 10 news event."),
+                "summary": str(row.get("headline") or "Accepted M06 news event."),
                 "source_name": str(row.get("source") or "calendar_news_event_index"),
                 "reference_type": "artifact",
                 "reference": str(row.get("raw_artifact_ref") or row.get("interpreted_event_ref") or ""),

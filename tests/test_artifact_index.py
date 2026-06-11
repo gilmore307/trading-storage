@@ -223,7 +223,7 @@ class ArtifactIndexTests(unittest.TestCase):
                 / "storage"
                 / "05_replay_datasets"
                 / "model_specific_downloads"
-                / "model_09_option_expression"
+                / "model_05_option_expression"
                 / "option_snapshot"
                 / "AAPL_2016-01-15.json"
             )
@@ -311,7 +311,7 @@ class ArtifactIndexTests(unittest.TestCase):
                 json.dumps(
                     {
                         "contract_type": "model_10_volatility_surface_runtime_summary",
-                        "model_layer": "layer_10_volatility_surface",
+                        "model_layer": "model_06_volatility_surface",
                     }
                 ),
                 encoding="utf-8",

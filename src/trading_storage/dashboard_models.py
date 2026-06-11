@@ -35,8 +35,8 @@ MODEL_LAYERS = (
     (6, "model_06_dynamic_risk_policy", "Dynamic Risk Policy"),
     (7, "model_07_position_projection", "Position Projection"),
     (8, "model_08_underlying_action", "Underlying Action"),
-    (9, "model_09_option_expression", "Option Expression"),
-    (10, "model_10_event_risk_governor", "Event Risk Governor"),
+    (9, "model_05_option_expression", "Option Expression"),
+    (10, "model_06_residual_event_governance", "Event Risk Governor"),
 )
 
 def _read_latest(storage_root: Path, contract_type: str) -> dict[str, Any] | None:
@@ -64,7 +64,7 @@ def _task_row_key(task: Mapping[str, Any]) -> str:
 
 def _layer_tasks(tasks: list[dict[str, Any]], layer: int) -> list[dict[str, Any]]:
     if layer == 10:
-        return [task for task in tasks if task.get("task_id") == "model_group.model_10_event_risk_governor" or task.get("layer") == 10]
+        return [task for task in tasks if task.get("task_id") == "model_group.model_06_residual_event_governance" or task.get("layer") == 10]
     return [task for task in tasks if task.get("layer") == layer]
 
 
