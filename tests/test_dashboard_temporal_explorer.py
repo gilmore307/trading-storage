@@ -52,7 +52,7 @@ class DashboardTemporalExplorerTests(unittest.TestCase):
                             "event_type": "cpi_release",
                             "event_scope": "macro",
                             "source_priority": "approved_calendar",
-                            "metadata_json": {"title": "US CPI release", "summary": "Accepted CPI event family.", "layer10_status": "accepted"},
+                            "metadata_json": {"title": "US CPI release", "summary": "Accepted CPI event family.", "m06_residual_event_governance_status": "accepted"},
                         },
                         {
                             "event_id": "ordinary-macro-20260526",
@@ -86,7 +86,7 @@ class DashboardTemporalExplorerTests(unittest.TestCase):
             self.assertEqual(chart["viewport"]["frame"], "1D")
             self.assertEqual(len(chart["timewheel_ticks"]), 21)
             self.assertEqual(len(chart["events"]), 1)
-            self.assertEqual(chart["events"][0]["lane"], "layer10_accepted_event")
+            self.assertEqual(chart["events"][0]["lane"], "m06_residual_event_governance_accepted_event")
             self.assertEqual(chart["events"][0]["title"], "US CPI release")
             self.assertEqual(chart["events"][0]["summary"], "Accepted CPI event family.")
             self.assertEqual(chart["chart"]["status"], "populated")

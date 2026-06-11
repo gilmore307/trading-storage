@@ -275,19 +275,19 @@ def _metadata_text(row: Mapping[str, Any], field: str) -> str:
     return str(value).strip()
 
 
-def _is_layer10_accepted_event(row: Mapping[str, Any]) -> bool:
+def _is_m06_residual_event_governance_accepted_event(row: Mapping[str, Any]) -> bool:
     """Return true only for event kinds accepted by M06/review for chart markers."""
 
     accepted_values = {
         "accepted",
-        "layer10_accepted",
-        "accepted_layer10_event",
+        "m06_residual_event_governance_accepted",
+        "accepted_m06_residual_event_governance_event",
         "accepted_layer4_event_family",
         "production_accepted",
     }
     candidate_fields = (
-        "layer10_status",
-        "layer10_disposition",
+        "m06_residual_event_governance_status",
+        "m06_residual_event_governance_disposition",
         "event_family_status",
         "promotion_status",
         "review_status",
@@ -312,7 +312,7 @@ def _event_detail_summary(row: Mapping[str, Any], fallback: str) -> str:
 def _event_payloads(rows: Mapping[str, Sequence[Mapping[str, Any]]]) -> list[dict[str, Any]]:
     events: list[dict[str, Any]] = []
     for row in rows.get("scheduled_events", []):
-        if not _is_layer10_accepted_event(row):
+        if not _is_m06_residual_event_governance_accepted_event(row):
             continue
         at = _event_time(row)
         title = _metadata_text(row, "title") or str(row.get("event_type") or "Accepted event")
@@ -321,11 +321,11 @@ def _event_payloads(rows: Mapping[str, Sequence[Mapping[str, Any]]]) -> list[dic
                 "event_id": str(row.get("event_id")),
                 "event_time": _iso_utc(at or datetime.now(UTC)),
                 "title": title,
-                "lane": "layer10_accepted_event",
+                "lane": "m06_residual_event_governance_accepted_event",
                 "event_type": str(row.get("event_type") or "scheduled"),
                 "scope": str(row.get("event_scope") or ""),
                 "symbol": row.get("symbol"),
-                "status": _row_text(row, "layer10_status") or _metadata_text(row, "layer10_status") or "accepted",
+                "status": _row_text(row, "m06_residual_event_governance_status") or _metadata_text(row, "m06_residual_event_governance_status") or "accepted",
                 "source_priority": str(row.get("source_priority") or ""),
                 "summary": _event_detail_summary(row, title),
                 "source_name": _metadata_text(row, "source_name") or str(row.get("source_priority") or ""),
@@ -334,7 +334,7 @@ def _event_payloads(rows: Mapping[str, Sequence[Mapping[str, Any]]]) -> list[dic
             }
         )
     for row in rows.get("event_results", []):
-        if not _is_layer10_accepted_event(row):
+        if not _is_m06_residual_event_governance_accepted_event(row):
             continue
         at = _event_time(row)
         events.append(
@@ -342,10 +342,10 @@ def _event_payloads(rows: Mapping[str, Sequence[Mapping[str, Any]]]) -> list[dic
                 "event_id": str(row.get("event_id")),
                 "event_time": _iso_utc(at or datetime.now(UTC)),
                 "title": "Released event result",
-                "lane": "layer10_accepted_event",
+                "lane": "m06_residual_event_governance_accepted_event",
                 "event_type": "result",
                 "scope": "event",
-                "status": _row_text(row, "layer10_status") or "accepted",
+                "status": _row_text(row, "m06_residual_event_governance_status") or "accepted",
                 "source_priority": "result_artifact",
                 "summary": "Accepted M06 event result is available.",
                 "source_name": "calendar_event_result",
@@ -354,7 +354,7 @@ def _event_payloads(rows: Mapping[str, Sequence[Mapping[str, Any]]]) -> list[dic
             }
         )
     for row in rows.get("news_events", []):
-        if not _is_layer10_accepted_event(row):
+        if not _is_m06_residual_event_governance_accepted_event(row):
             continue
         at = _event_time(row)
         events.append(
@@ -362,11 +362,11 @@ def _event_payloads(rows: Mapping[str, Sequence[Mapping[str, Any]]]) -> list[dic
                 "event_id": str(row.get("news_event_id")),
                 "event_time": _iso_utc(at or datetime.now(UTC)),
                 "title": str(row.get("headline") or "News event"),
-                "lane": "layer10_accepted_event",
+                "lane": "m06_residual_event_governance_accepted_event",
                 "event_type": str(row.get("event_family_candidate") or "news"),
                 "scope": "news",
                 "symbol": row.get("symbol"),
-                "status": _row_text(row, "layer10_status") or str(row.get("dedup_status") or "accepted"),
+                "status": _row_text(row, "m06_residual_event_governance_status") or str(row.get("dedup_status") or "accepted"),
                 "source_priority": str(row.get("source") or ""),
                 "summary": str(row.get("headline") or "Accepted M06 news event."),
                 "source_name": str(row.get("source") or "calendar_news_event_index"),
