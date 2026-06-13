@@ -8,6 +8,7 @@ from pathlib import Path
 from trading_storage.storage_maintenance import (
     detect_completed_model_worker_folds,
     detect_fold_scoped_source_cleanup_candidates,
+    detect_lifecycle_gap_findings,
     run_storage_maintenance,
     write_storage_maintenance_summary,
 )
@@ -38,6 +39,8 @@ class StorageMaintenanceTests(unittest.TestCase):
                 "90_lifecycle",
             ],
         )
+        self.assertEqual(summary.lifecycle_gap_audit_summary["finding_count"], 0)
+        self.assertEqual(summary.lifecycle_gap_findings, ())
         self.assertFalse(summary.provider_calls_performed)
         self.assertFalse(summary.model_activation_performed)
         self.assertFalse(summary.broker_execution_performed)
@@ -53,6 +56,7 @@ class StorageMaintenanceTests(unittest.TestCase):
         self.assertEqual(payload["contract_type"], "storage_scheduled_maintenance_summary")
         self.assertEqual(payload["generated_at_utc"], "2026-05-19T12:00:00Z")
         self.assertEqual(payload["storage_root_inventory_summary"]["root_count"], 7)
+        self.assertEqual(payload["lifecycle_gap_audit_summary"]["contract_type"], "storage_lifecycle_gap_audit_summary")
 
     def test_root_inventory_records_numbered_storage_roots(self) -> None:
         with tempfile.TemporaryDirectory() as raw_tmp:
@@ -163,6 +167,52 @@ class StorageMaintenanceTests(unittest.TestCase):
         self.assertFalse(candidates[0]["deletion_performed"])
         self.assertEqual(summary.fold_source_cleanup_candidate_count, 1)
         self.assertEqual(summary.fold_source_cleanup_phase_status, "ready_for_quarantine_review")
+
+    def test_lifecycle_gap_audit_reports_known_unbounded_classes_without_mutation(self) -> None:
+        with tempfile.TemporaryDirectory() as raw_tmp:
+            root = Path(raw_tmp)
+            replay_run = (
+                root
+                / "storage"
+                / "05_replay_datasets"
+                / "promotion_replay_candidate_policy"
+                / "replay_execution_runs"
+                / "model_group_replay_20260613T111021Z"
+            )
+            replay_run.mkdir(parents=True)
+            (replay_run / "decision_rows.jsonl").write_text("row\n", encoding="utf-8")
+            task_key = (
+                root
+                / "storage"
+                / "02_control_plane"
+                / "runtime"
+                / "model_05_option_expression"
+                / "option_chain_state_source"
+                / "2025-01"
+                / "AAPL"
+                / "task_key.json"
+            )
+            task_key.parent.mkdir(parents=True)
+            task_key.write_text("{}", encoding="utf-8")
+
+            findings = detect_lifecycle_gap_findings(root=root)
+            summary = run_storage_maintenance(
+                root=root,
+                include_local_retention=False,
+                generated_at_utc="2026-05-19T12:00:00Z",
+            )
+
+        by_ref = {finding["artifact_ref"]: finding for finding in findings}
+        replay_ref = "storage/05_replay_datasets/promotion_replay_candidate_policy/replay_execution_runs"
+        task_key_ref = "storage/02_control_plane/runtime/model_05_option_expression"
+        self.assertEqual(by_ref[replay_ref]["action"], "compact")
+        self.assertEqual(by_ref[replay_ref]["final_handling_method"], "delete")
+        self.assertEqual(by_ref[replay_ref]["file_count"], 1)
+        self.assertFalse(by_ref[replay_ref]["mutation_performed"])
+        self.assertEqual(by_ref[task_key_ref]["issue"], "per_request_task_key_sprawl")
+        self.assertEqual(by_ref[task_key_ref]["file_count"], 1)
+        self.assertEqual(summary.lifecycle_gap_audit_summary["finding_count"], 2)
+        self.assertFalse(summary.lifecycle_gap_audit_summary["mutation_performed"])
 
 
 if __name__ == "__main__":

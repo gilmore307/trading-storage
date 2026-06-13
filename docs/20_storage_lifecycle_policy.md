@@ -1,12 +1,12 @@
 # Storage Lifecycle Policy
 
-Status: V0.1 dry-run planner, quarantine/recheck evidence, execution scaffold, narrow single-file compression executor, reviewed file-backed SQL archive executor, archive restore verifier, no-mutation quarantine/delete receipt builder, and one-pass safe file-lifecycle acceptance available; destructive mutation executors remain deferred
+Status: V0.2 state-triggered lifecycle policy, dry-run planner, gap audit selectors, quarantine/recheck evidence, execution scaffold, narrow single-file compression executor, reviewed file-backed SQL archive executor, archive restore verifier, no-mutation quarantine/delete receipt builder, and one-pass safe file-lifecycle acceptance available; broad destructive mutation executors remain deferred
 
 ## Purpose
 
 `trading-storage` owns lifecycle maintenance for durable trading artifacts, source data, model artifacts, SQL archives, local files, restore metadata, and deletion evidence.
 
-The policy goal is not merely to free disk space. The goal is to make compression, archiving, restore, and deletion auditable lifecycle operations with dependency checks and receipts.
+The policy goal is not merely to free disk space. The goal is to make retention, compression, rolling retention, restore, and deletion auditable lifecycle operations with dependency checks and receipts.
 
 Core rule:
 
@@ -14,13 +14,38 @@ Core rule:
 Layer 1 and Layer 2 data are persistent source/feature foundations and must be retained, compressed, and protected from deletion by default.
 Reusable source data, including Layer 1/2 market-regime and sector-context foundations, is never a fold-completion delete target.
 Target-specific or experiment-specific source data that will not be reused may enter deletion planning only as an explicit fold-scoped folder after the full Layer 1-10 fold closes.
-Later-layer model-run metadata and dashboard/cache snapshots may be deleted only after the model run cycle closes, provided latest summaries, receipts, manifests, lineage refs, unresolved-alert evidence, and any needed regeneration/debug evidence remain. While the event model is being redesigned and downstream models must be regenerated, dashboard/model-run metadata pruning is on hold.
+Later-layer model-run metadata and dashboard/cache snapshots may be handled only after the model run cycle closes, provided latest summaries, receipts, manifests, lineage refs, unresolved-alert evidence, and any needed regeneration/debug evidence remain. While the event model is being redesigned and downstream models must be regenerated, dashboard/model-run metadata pruning is on hold unless a bounded reviewed slice says otherwise.
 Promoted model bodies are preserved permanently.
-Regenerable intermediate training data may be deleted after TTL.
-Downloaded source data is compressed before deletion and deleted only when safely reproducible and unreferenced.
+Regenerable intermediate training data may be deleted after the owning run/fold/replay closes and compact evidence proves no active consumer remains.
+Downloaded source data is compressed before deletion and deleted only when safely reproducible, unreferenced, and covered by a reviewed lifecycle policy.
 SQL detail is partition/table archived through export + compression; live database files are never compressed directly.
 Every compression, archive, delete, and restore action writes manifest/receipt evidence.
 ```
+
+## Lifecycle action taxonomy
+
+Reviewable lifecycle actions are broader than final byte handling.
+
+Reviewable actions:
+
+- `backup`: create or validate a protective copy, logical dump, restore point, or evidence snapshot.
+- `restore`: recover or read back a prior artifact, table, path, or state.
+- `keep`: explicitly retain an artifact because it has current consumer, audit, source, restore, or canonical value.
+- `retention_update`: change lifecycle policy, retention window, protected status, or exception rules.
+- `cleanup`: execute a defined lifecycle policy over a target scope.
+- `compact`: produce a concise summary, manifest, aggregate, decision contract, or read model before final handling.
+- `archive`: move evidence into compressed cold storage with an index and restore route.
+- `migrate`, `retire`, `replace`: transition actions after the owning project/domain route is accepted.
+
+Final artifact handling should normally reduce to:
+
+- `delete`: for unused, safely rebuildable, replaceable, erroneous, obsolete, or out-of-scope artifacts after active/retry/failure consumers are closed and any compact summary exists.
+- `compress`: for normally unread artifacts that still have audit, restore, or lineage value and are not safely rebuildable or reacquirable.
+- `rolling_retention`: for repeated runtime, dashboard, log, loop, snapshot, and read-model artifacts where only recent windows and exception evidence matter.
+
+`compact` is a preparation step, not a final state. It preserves the minimum manifest, summary, decision contract, or read model needed before delete, compress, or rolling retention.
+
+Do not use blind scheduled deletion as the primary lifecycle mechanism. Preferred triggers are producer/state-machine events: batch completion, stage completion, provider acquisition completion, replay completion, repair closure, dashboard refresh completion, compact manifest verification, route replacement acceptance, audit-window closure, or rolling-window advancement. Periodic automation may audit/report gaps or execute explicit reviewed policies; it must not broadly delete unknown-scope artifacts merely because a timer fired.
 
 ## Repository responsibilities
 
@@ -96,7 +121,7 @@ Policy: persist by default. Prefer compression and archive over deletion. Do not
 
 Includes Layer 1/2 scratch, staging, intermediate files, runtime directories, failed-run temp files, and stdout/stderr/log files that are not the only remaining receipt, manifest, lineage reference, reusable source/feature foundation, or compact summary.
 
-Policy: delete by TTL after the run or fold closes and after compact summaries, receipts, manifests, and reusable Layer 1/2 outputs are preserved. These files may enter quarantine planning even though Layer 1/2 final source/feature foundations remain protected.
+Policy: delete after the run or fold closes and after compact summaries, receipts, manifests, and reusable Layer 1/2 outputs are preserved. These files may enter quarantine planning even though Layer 1/2 final source/feature foundations remain protected.
 
 ### Fold-scoped target source data
 
@@ -126,7 +151,7 @@ Anything not matched, not cleared, or not reviewed remains retained. Reset recei
 
 Includes Layer 3+ diagnostic summaries, runtime metadata, dashboard snapshots, staging/intermediate files, scratch feature files, failed-run temp files, duplicated dry-run payloads, and old stdout/stderr logs that are not the only remaining receipt/manifest/lineage evidence.
 
-Policy: delete by TTL after the model run cycle closes and after latest summaries, receipts, manifests, lineage refs, and unresolved-alert evidence are preserved. Keep only compact summary/receipt evidence after the retention window.
+Policy: delete or roll forward after the model run cycle closes and after latest summaries, receipts, manifests, lineage refs, and unresolved-alert evidence are preserved. Keep only compact summary/receipt evidence after the accepted rolling window.
 
 ## Materialization classes
 
@@ -136,7 +161,7 @@ Storage lifecycle decisions classify files by the role they play, not only by pa
 - `durable_evidence`: model artifacts, replay/evaluation/promotion evidence, lifecycle receipts, and mutation/audit receipts. Keep for lineage or audit lifetime.
 - `control_state`: concise current facts, pointers, locks, workflow state, and readiness state used to run the system. Keep current; archive only through reviewed state policy.
 - `derived_read_model`: dashboard/status/task summaries and other rebuildable materialized views. Keep `latest` hot; do not retain full timestamped dashboard snapshots as long-term evidence.
-- `debug_sidecar`: stdout/stderr, dry-run dumps, duplicate JSONL extracts, scratch manifests, and diagnostic context that is not the only evidence. TTL delete or compress after the owning run closes.
+- `debug_sidecar`: stdout/stderr, dry-run dumps, duplicate JSONL extracts, scratch manifests, and diagnostic context that is not the only evidence. Delete, compress, or roll forward after the owning run closes.
 
 When one logical fact appears in more than one class, the narrower canonical class owns the fact. For example, TE calendar source payloads are `canonical_source`; dashboard rows summarizing TE freshness are `derived_read_model`.
 
@@ -146,7 +171,7 @@ Replay storage separates reusable replay inputs, model-specific temporary downlo
 
 Reusable replay inputs include Layer 1 market-regime inputs, Layer 2 sector-context inputs, and event/news inputs collected for replay/replay use. Policy: retain or compress/archive because later model pipelines and replay windows can reuse them.
 
-Model-specific replay downloads include one-off files pulled only because a particular model pipeline needed them for a replay run, such as point-in-time option snapshots. Policy: delete by TTL after the replay closes once result summaries, manifests, acquisition receipts, and any reusable inputs are preserved.
+Model-specific replay downloads include one-off files pulled only because a particular model pipeline needed them for a replay run, such as point-in-time option snapshots. Policy: delete after the replay closes once result summaries, manifests, acquisition receipts, and any reusable inputs are preserved.
 
 Model-pipeline replay result summaries are permanent. Each model pipeline must retain its compact replay result summary, scorecard/baseline comparison, manifest refs, and receipt evidence so later promotions remain comparable without keeping every non-reusable downloaded file online.
 
@@ -155,15 +180,15 @@ Model-pipeline replay result summaries are permanent. Each model pipeline must r
 Source data is classified by reproducibility and reuse:
 
 - point-in-time, vintage, revision-sensitive, provider-window-limited, expensive, paid-window, option history, SEC filing snapshots, GDELT historical pulls, and lineage-referenced source data: compress and retain by default;
-- Trading Economics (`trading_economics_calendar_web`, including `te_recent_calendar_refresh_*`) source data is append-only protected provider-window evidence; never delete existing TE source rows/payloads, and add new/latest data incrementally under the canonical root. The canonical active source root is `storage/01_source_data/monthly_backfill/trading_economics_calendar_web/YYYY-MM/runs/<run_id>/`; old monthly/realtime/replay originals belong under that root's `_manifests/source_consolidation_*` evidence area, not as separate active TE source roots. Daily refresh changes in this tree are normal maintenance inputs and should be committed with the relevant acceptance batch so the source remains Git-recoverable. TE side products are different from TE data: duplicate per-run receipts/manifests after compact provenance exists, failure diagnostics, no-op run context, provisional web-search fallback evidence after formal TE rows arrive, control-plane filtered artifacts, runtime receipts, SQL rows, and dashboard read-model outputs derived from TE are rebuildable materializations or debug evidence. They may be periodically deleted, compacted, or compressed under normal storage lifecycle rules as long as canonical TE source rows/payloads and one concise provenance trail remain.
-- stable re-downloadable provider cache and one-off experiment pulls without lineage references: TTL delete may be allowed after quarantine;
+- Trading Economics (`trading_economics_calendar_web`, including `te_recent_calendar_refresh_*`) source data is append-only protected provider-window evidence; never delete existing TE source rows/payloads, and add new/latest data incrementally under the canonical root. The canonical active source root is `storage/01_source_data/monthly_backfill/trading_economics_calendar_web/YYYY-MM/runs/<run_id>/`; old monthly/realtime/replay originals belong under that root's `_manifests/source_consolidation_*` evidence area, not as separate active TE source roots. Daily refresh changes in this tree are normal maintenance inputs and should be committed with the relevant acceptance batch so the source remains Git-recoverable. TE side products are different from TE data: duplicate per-run receipts/manifests after compact provenance exists, failure diagnostics, no-op run context, provisional web-search fallback evidence after formal TE rows arrive, control-plane filtered artifacts, runtime receipts, SQL rows, and dashboard read-model outputs derived from TE are rebuildable materializations or debug evidence. They may be deleted, compacted, compressed, or rolled forward under reviewed storage lifecycle rules as long as canonical TE source rows/payloads and one concise provenance trail remain.
+- stable re-downloadable provider cache and one-off experiment pulls without lineage references: delete may be allowed after the producer closes and quarantine clears;
 - shared normalized source data: retain or compress while any active/promoted/review lineage may reference it.
 
 Policy: source data is compressed before deletion unless the policy explicitly classifies it as disposable cache or a reviewed model-group rerun proves the bounded source partition is erroneous or obsolete and safely reproducible. Trading Economics canonical source remains append-only protected and is not covered by this rerun exception.
 
 ### SQL data
 
-Online summary and current control-plane facts remain online. Closed row-level detail, old feature partitions, historical source partitions, and old evaluation details may be exported and compressed. SQL temporary/intermediate tables may be deleted by TTL when reproducible.
+Online summary and current control-plane facts remain online. Closed row-level detail, old feature partitions, historical source partitions, and old evaluation details may be exported and compressed. SQL temporary/intermediate tables may be deleted after the owning producer closes when reproducible.
 
 Policy: never compress PostgreSQL live data files directly. Archive through dump/export and restore smoke.
 
@@ -171,21 +196,21 @@ Policy: never compress PostgreSQL live data files directly. Archive through dump
 
 - Layer 1 market-regime data: persistent; compress/archive if needed, do not auto-delete;
 - Layer 2 sector-context data: persistent; compress/archive if needed, do not auto-delete;
-- Layer 1/2 intermediate/runtime/log files: TTL delete after run/fold close when summaries, receipts, manifests, and reusable outputs are retained;
+- Layer 1/2 intermediate/runtime/log files: delete after run/fold close when summaries, receipts, manifests, and reusable outputs are retained;
 - promoted model bodies: permanent;
 - promotion/review/activation/deactivation receipts: permanent;
 - dataset snapshot/split manifests: permanent or lineage lifetime;
 - model-pipeline replay result summaries and scorecards: permanent;
 - replay Layer 1/2 and event/news reusable inputs: retain or compress/archive;
-- model-specific replay downloads such as one-off option snapshots: TTL delete after replay close when summaries/manifests/receipts are retained;
+- model-specific replay downloads such as one-off option snapshots: delete after replay close when summaries/manifests/receipts are retained;
 - PIT/vintage/source history: compress and retain by default;
 - Trading Economics calendar/source rows and payloads: keep forever; no delete candidates, no destructive pruning, only append/incremental additions under the canonical month-bucketed TE source root;
-- Trading Economics side products: periodically compact, compress, or delete through normal lifecycle after canonical TE data and concise provenance remain available. This includes duplicate run-local receipts/manifests, failure diagnostics, no-op run context, provisional web-search fallback artifacts after formal TE capture, and derived dashboard/control-plane/SQL materializations.
+- Trading Economics side products: compact to month-level provenance/read models, then delete, compress, or roll forward after canonical TE data and concise provenance remain available. This includes duplicate run-local receipts/manifests, failure diagnostics, no-op run context, provisional web-search fallback artifacts after formal TE capture, and derived dashboard/control-plane/SQL materializations.
 - dashboard/read-model latest summaries: retained as derived read models;
 - dashboard/read-model state-change snapshots: delete after explicit reviewed approval; current default prune plan keeps zero timestamped snapshots per contract and marks timestamped dashboard snapshots as delete candidates while preserving current read-model files, schemas, SQL, and source data;
 - lifecycle receipts, tombstones, executed protected sets, executed lifecycle plans, and quarantine/recheck evidence: retained as audit evidence;
 - lifecycle `runs`, `outputs`, and `staging`: ordinary runtime context rolls off after about 30 days; formal lifecycle evidence found there is retained until extracted to canonical `storage/90_lifecycle` evidence directories;
-- Layer 3+ model-run metadata/intermediates: delete by TTL after run-cycle close when reproducible or no longer lineage-required;
+- Layer 3+ model-run metadata/intermediates: delete after run-cycle close when reproducible or no longer lineage-required;
 - failed/blocked run scratch: 7-14 days;
 - ordinary logs: 30 days, then delete or compress if important;
 - unpromoted candidate intermediates: 30-60 days;
@@ -212,9 +237,9 @@ delete_uncompressed_after_verify: true
 
 Scripts may implement the policy, but policy review must be possible without reading every code branch.
 
-## Current scheduled root inventory
+## Current scheduled root inventory and lifecycle gap audit
 
-Scheduled maintenance emits a `storage_root_inventory_summary` inside each `storage_scheduled_maintenance_summary`. This is the formal lifecycle-management view of the numbered storage layout:
+Scheduled maintenance emits a `storage_root_inventory_summary` and `storage_lifecycle_gap_audit_summary` inside each `storage_scheduled_maintenance_summary`. This is the formal lifecycle-management view of the numbered storage layout and known unbounded classes. It is report-only evidence; it does not authorize mutation:
 
 - `storage/01_source_data`
 - `storage/02_control_plane`
@@ -224,9 +249,9 @@ Scheduled maintenance emits a `storage_root_inventory_summary` inside each `stor
 - `storage/06_dashboard_cache`
 - `storage/90_lifecycle`
 
-The inventory records existence, file count, directory count, byte count, lifecycle role, and managed root ids. It does not hash payloads and does not authorize mutation. Hashing, protected-set checks, compression planning, quarantine/recheck, and deletion gates remain in the artifact-index and lifecycle-plan pipeline.
+The inventory records existence, file count, directory count, byte count, lifecycle role, and managed root ids. The gap audit records known classes that need a compact contract, rolling retention, compression, deletion, or owner classification. Neither hashes payloads nor authorizes mutation. Hashing, protected-set checks, compression planning, quarantine/recheck, and deletion gates remain in the artifact-index and lifecycle-plan pipeline.
 
-Scheduled maintenance also reads completed ten-layer fold state from manager. For completed folds, it may report `storage_fold_sql_backup_candidate` rows and, when `storage/01_source_data/fold_scoped/<fold_id>/` exists, `storage_fold_source_cleanup_candidate` rows. Cleanup candidates are folder-level planning evidence only; the scheduled maintenance pass does not delete those folders.
+Scheduled maintenance also reads completed ten-layer fold state from manager. For completed folds, it may report `storage_fold_sql_backup_candidate` rows and, when `storage/01_source_data/fold_scoped/<fold_id>/` exists, `storage_fold_source_cleanup_candidate` rows. Cleanup candidates and gap findings are planning evidence only; the scheduled maintenance pass does not delete those folders or any other durable artifacts.
 
 ## Current V0.1 dry-run planner
 
