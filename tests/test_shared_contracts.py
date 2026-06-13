@@ -77,6 +77,7 @@ class SharedContractTests(unittest.TestCase):
     def test_equity_total_symbol_pool_contract_exists(self):
         pool_path = SHARED_ROOT / "equity_total_symbol_pool.csv"
         symbols_path = SHARED_ROOT / "equity_total_symbol_pool.symbols.txt"
+        additions_path = SHARED_ROOT / "equity_total_symbol_pool_reviewed_additions.csv"
 
         with pool_path.open(newline="") as csv_file:
             reader = csv.DictReader(csv_file)
@@ -100,6 +101,7 @@ class SharedContractTests(unittest.TestCase):
             ],
         )
         self.assertTrue(symbols_path.exists())
+        self.assertTrue(additions_path.exists())
         self.assertGreater(len(rows), 0)
         self.assertTrue(
             {row["optionable_underlying_status"] for row in rows}.issubset(
@@ -110,6 +112,22 @@ class SharedContractTests(unittest.TestCase):
         symbols = [line.strip() for line in symbols_path.read_text(encoding="utf-8").splitlines() if line.strip()]
         self.assertEqual(symbols, [row["symbol"] for row in rows if row["pool_membership_status"] == "active"])
         self.assertTrue(any("tradingview_screener_snapshot:" in row["source_refs"] for row in rows))
+        with additions_path.open(newline="") as csv_file:
+            addition_rows = list(csv.DictReader(csv_file))
+        self.assertEqual(
+            list(addition_rows[0].keys()),
+            [
+                "symbol",
+                "name",
+                "sector",
+                "optionable_underlying_status",
+                "eligibility_start_date",
+                "reviewed_addition_reason",
+                "source_refs",
+                "as_of_date",
+            ],
+        )
+        self.assertIn("SPCX", {row["symbol"] for row in addition_rows})
 
     def test_historical_candidate_universe_contract_exists(self):
         universe_path = SHARED_ROOT / "historical_candidate_universe.csv"

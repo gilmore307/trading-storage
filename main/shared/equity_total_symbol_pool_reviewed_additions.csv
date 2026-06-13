@@ -1,0 +1,2 @@
+symbol,name,sector,optionable_underlying_status,eligibility_start_date,reviewed_addition_reason,source_refs,as_of_date
+SPCX,Space Exploration Technologies Corp.,Technology Services,uncertain_verify_before_use,2026-06-12,new_listing_high_attention,nasdaq_quote:https://www.nasdaq.com/market-activity/stocks/spcx;nasdaq_private_market:https://www.nasdaqprivatemarket.com/company/spacex/;operator_review:discord_2026-06-13_spcx_listing_attention,2026-06-13
