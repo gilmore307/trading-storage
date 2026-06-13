@@ -3,6 +3,7 @@ from __future__ import annotations
 import json
 import tempfile
 import unittest
+import gzip
 from pathlib import Path
 
 from trading_storage.storage_maintenance import (
@@ -179,8 +180,14 @@ class StorageMaintenanceTests(unittest.TestCase):
                 / "replay_execution_runs"
                 / "model_group_replay_20260613T111021Z"
             )
-            replay_run.mkdir(parents=True)
-            (replay_run / "decision_rows.jsonl").write_text("row\n", encoding="utf-8")
+            for index in range(4):
+                run = replay_run.parent / f"model_group_replay_2026061{index}T111021Z"
+                run.mkdir(parents=True)
+                (run / "decision_rows.jsonl").write_text("row\n", encoding="utf-8")
+                (run / "replay_execution_receipt.json").write_text(
+                    json.dumps({"validation_status": "passed", "replay_execution_run_id": run.name}),
+                    encoding="utf-8",
+                )
             task_key = (
                 root
                 / "storage"
@@ -213,6 +220,83 @@ class StorageMaintenanceTests(unittest.TestCase):
         self.assertEqual(by_ref[task_key_ref]["file_count"], 1)
         self.assertEqual(summary.lifecycle_gap_audit_summary["finding_count"], 2)
         self.assertFalse(summary.lifecycle_gap_audit_summary["mutation_performed"])
+
+    def test_lifecycle_gap_actions_apply_only_explicit_compact_safe_mutations(self) -> None:
+        with tempfile.TemporaryDirectory() as raw_tmp:
+            root = Path(raw_tmp)
+            replay_old = (
+                root
+                / "storage"
+                / "05_replay_datasets"
+                / "promotion_replay_candidate_policy"
+                / "replay_execution_runs"
+                / "replay_20260610T000000Z"
+            )
+            replay_new = replay_old.parent / "replay_20260613T000000Z"
+            for run in (replay_old, replay_new):
+                run.mkdir(parents=True)
+                (run / "replay_execution_receipt.json").write_text(
+                    json.dumps({"validation_status": "passed", "replay_execution_run_id": run.name}),
+                    encoding="utf-8",
+                )
+                (run / "decision_rows.jsonl").write_text("row\n", encoding="utf-8")
+
+            triage = (
+                root
+                / "storage"
+                / "05_replay_datasets"
+                / "promotion_replay_candidate_policy"
+                / "post_replay_failure_triage_runs"
+                / "triage_20260613T000000Z"
+            )
+            triage.mkdir(parents=True)
+            (triage / "failure_triage_rows.jsonl").write_text("triage\n", encoding="utf-8")
+
+            refresh_old = (
+                root
+                / "storage"
+                / "01_source_data"
+                / "monthly_backfill"
+                / "trading_economics_calendar_web"
+                / "_manifests"
+                / "recent_refresh_runs"
+                / "calendar_20260610T000000Z"
+            )
+            refresh_new = refresh_old.parent / "calendar_20260613T000000Z"
+            for run in (refresh_old, refresh_new):
+                run.mkdir(parents=True)
+                (run / "completion_receipt.json").write_text("{}", encoding="utf-8")
+
+            realtime_old = root / "storage" / "04_execution_artifacts" / "runtime" / "realtime_monitor" / "20260610T000000Z"
+            realtime_new = realtime_old.parent / "20260613T000000Z"
+            for run in (realtime_old, realtime_new):
+                run.mkdir(parents=True)
+                (run / "loop_receipt.json").write_text(json.dumps({"loop_status": "completed", "failed_cycle_indexes": []}), encoding="utf-8")
+
+            summary = run_storage_maintenance(
+                root=root,
+                include_local_retention=False,
+                apply_lifecycle_gap_actions=True,
+                retain_recent_replay_runs=1,
+                retain_recent_te_refresh_runs=1,
+                retain_recent_realtime_loops=1,
+                generated_at_utc="2026-06-13T12:00:00Z",
+            )
+
+            self.assertTrue(summary.lifecycle_gap_action_summary["mutation_performed"])
+            self.assertFalse((replay_old / "decision_rows.jsonl").exists())
+            self.assertTrue((replay_new / "decision_rows.jsonl").exists())
+            compressed = triage / "failure_triage_rows.jsonl.gz"
+            self.assertTrue(compressed.exists())
+            self.assertFalse((triage / "failure_triage_rows.jsonl").exists())
+            with gzip.open(compressed, "rt", encoding="utf-8") as handle:
+                self.assertEqual(handle.read(), "triage\n")
+            self.assertFalse(refresh_old.exists())
+            self.assertTrue(refresh_new.exists())
+            self.assertFalse(realtime_old.exists())
+            self.assertTrue(realtime_new.exists())
+            compact_root = root / "storage" / "90_lifecycle" / "maintenance" / "compact_contracts"
+            self.assertTrue((compact_root / "replay_execution_runs_compact_manifest.json").exists())
 
 
 if __name__ == "__main__":

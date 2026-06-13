@@ -3,7 +3,10 @@
 from __future__ import annotations
 
 import argparse
+import gzip
+import hashlib
 import json
+import shutil
 from dataclasses import dataclass
 from datetime import UTC, datetime
 from pathlib import Path
@@ -12,10 +15,13 @@ from typing import Any, Mapping, Sequence
 from .lifecycle import apply_retention_plan, plan_retention
 
 DEFAULT_MAINTENANCE_OUTPUT = Path("storage/90_lifecycle/maintenance/storage_maintenance_summary.json")
+DEFAULT_COMPACT_OUTPUT_ROOT = Path("storage/90_lifecycle/maintenance/compact_contracts")
 MODEL_WORKER_STAGE_TYPES = {"model_generation", "model_evaluation", "promotion_review", "maintenance"}
 COMPLETE_STATUSES = {"succeeded", "not_applicable"}
 FOLD_STATE_GLOB = "model_training_fold_state_*.json"
 FOLD_SCOPED_SOURCE_ROOT = Path("storage/01_source_data/fold_scoped")
+REPLAY_VERBOSE_FILE_NAMES = {"decision_rows.jsonl", "option_feature_requirements.jsonl", "replay_progress.jsonl"}
+ATTRIBUTION_VERBOSE_FILE_NAMES = {"event_interpretations.jsonl", "event_family_occurrence_scan.jsonl"}
 LIFECYCLE_GAP_SELECTORS: tuple[dict[str, Any], ...] = (
     {
         "artifact_ref": "storage/05_replay_datasets/promotion_replay_candidate_policy/replay_execution_runs",
@@ -185,6 +191,8 @@ class StorageMaintenanceSummary:
     fold_source_cleanup_candidate_count: int
     lifecycle_gap_audit_summary: dict[str, Any]
     lifecycle_gap_findings: tuple[dict[str, Any], ...]
+    lifecycle_gap_action_summary: dict[str, Any]
+    lifecycle_gap_action_receipts: tuple[dict[str, Any], ...]
     fold_sql_backup_phase_status: str
     fold_source_cleanup_phase_status: str
     deletion_phase_status: str
@@ -212,6 +220,8 @@ class StorageMaintenanceSummary:
             "fold_source_cleanup_candidate_count": self.fold_source_cleanup_candidate_count,
             "lifecycle_gap_audit_summary": self.lifecycle_gap_audit_summary,
             "lifecycle_gap_findings": list(self.lifecycle_gap_findings),
+            "lifecycle_gap_action_summary": self.lifecycle_gap_action_summary,
+            "lifecycle_gap_action_receipts": list(self.lifecycle_gap_action_receipts),
             "fold_sql_backup_phase_status": self.fold_sql_backup_phase_status,
             "fold_source_cleanup_phase_status": self.fold_source_cleanup_phase_status,
             "deletion_phase_status": self.deletion_phase_status,
@@ -351,8 +361,173 @@ def _task_key_inventory(path: Path) -> dict[str, Any]:
     }
 
 
+def _named_file_inventory(path: Path, names: set[str]) -> dict[str, Any]:
+    if not path.exists():
+        return _path_inventory(path)
+    file_count = 0
+    directory_count = 0
+    byte_count = 0
+    largest_file_path: str | None = None
+    largest_file_bytes = 0
+    parent_dirs: set[str] = set()
+    for candidate in path.rglob("*"):
+        if candidate.is_symlink() or not candidate.is_file() or candidate.name not in names:
+            continue
+        try:
+            size = candidate.stat().st_size
+        except OSError:
+            continue
+        file_count += 1
+        byte_count += size
+        parent_dirs.add(candidate.parent.as_posix())
+        if size > largest_file_bytes:
+            largest_file_bytes = size
+            largest_file_path = candidate.as_posix()
+    directory_count = len(parent_dirs)
+    return {
+        "exists": True,
+        "file_count": file_count,
+        "directory_count": directory_count,
+        "byte_count": byte_count,
+        "largest_file_path": largest_file_path,
+        "largest_file_bytes": largest_file_bytes,
+    }
+
+
+def _rolling_dir_inventory(path: Path, *, retain_recent_count: int) -> dict[str, Any]:
+    if not path.exists():
+        return _path_inventory(path)
+    runs = _run_dirs(path)
+    candidates = runs[: max(len(runs) - retain_recent_count, 0)]
+    file_count = 0
+    directory_count = len(candidates)
+    byte_count = 0
+    largest_file_path: str | None = None
+    largest_file_bytes = 0
+    for run in candidates:
+        inventory = _path_inventory(run)
+        file_count += int(inventory["file_count"])
+        byte_count += int(inventory["byte_count"])
+        if int(inventory["largest_file_bytes"]) > largest_file_bytes:
+            largest_file_bytes = int(inventory["largest_file_bytes"])
+            largest_file_path = inventory["largest_file_path"]
+    return {
+        "exists": True,
+        "file_count": file_count,
+        "directory_count": directory_count,
+        "byte_count": byte_count,
+        "largest_file_path": largest_file_path,
+        "largest_file_bytes": largest_file_bytes,
+    }
+
+
+def _named_file_rolling_inventory(path: Path, names: set[str], *, retain_recent_count: int) -> dict[str, Any]:
+    if not path.exists():
+        return _path_inventory(path)
+    runs = _run_dirs(path)
+    retained = {run for run in runs[-retain_recent_count:]} if retain_recent_count > 0 else set()
+    candidates = [run for run in runs if run not in retained]
+    file_count = 0
+    byte_count = 0
+    largest_file_path: str | None = None
+    largest_file_bytes = 0
+    for run in candidates:
+        inventory = _named_file_inventory(run, names)
+        file_count += int(inventory["file_count"])
+        byte_count += int(inventory["byte_count"])
+        if int(inventory["largest_file_bytes"]) > largest_file_bytes:
+            largest_file_bytes = int(inventory["largest_file_bytes"])
+            largest_file_path = inventory["largest_file_path"]
+    return {
+        "exists": True,
+        "file_count": file_count,
+        "directory_count": len([run for run in candidates if _named_file_inventory(run, names)["file_count"]]),
+        "byte_count": byte_count,
+        "largest_file_path": largest_file_path,
+        "largest_file_bytes": largest_file_bytes,
+    }
+
+
+def _replay_execution_gap_inventory(path: Path, *, retain_recent_count: int) -> dict[str, Any]:
+    if not path.exists():
+        return _path_inventory(path)
+    runs = _run_dirs(path)
+    retained = {run for run in runs[-retain_recent_count:]} if retain_recent_count > 0 else set()
+    file_count = 0
+    directory_count = 0
+    byte_count = 0
+    largest_file_path: str | None = None
+    largest_file_bytes = 0
+    for run in runs:
+        if run in retained:
+            continue
+        receipt = _read_json_object(run / "replay_execution_receipt.json") or {}
+        validation_status = str(receipt.get("validation_status") or "").lower()
+        if validation_status not in {"passed", "succeeded", "success"}:
+            continue
+        inventory = _named_file_inventory(run, REPLAY_VERBOSE_FILE_NAMES)
+        if int(inventory["file_count"]) > 0:
+            directory_count += 1
+        file_count += int(inventory["file_count"])
+        byte_count += int(inventory["byte_count"])
+        if int(inventory["largest_file_bytes"]) > largest_file_bytes:
+            largest_file_bytes = int(inventory["largest_file_bytes"])
+            largest_file_path = inventory["largest_file_path"]
+    return {
+        "exists": True,
+        "file_count": file_count,
+        "directory_count": directory_count,
+        "byte_count": byte_count,
+        "largest_file_path": largest_file_path,
+        "largest_file_bytes": largest_file_bytes,
+    }
+
+
+def _realtime_monitor_gap_inventory(path: Path, *, retain_recent_count: int) -> dict[str, Any]:
+    if not path.exists():
+        return _path_inventory(path)
+    runs = _run_dirs(path)
+    retained = {run for run in runs[-retain_recent_count:]} if retain_recent_count > 0 else set()
+    candidates: list[Path] = []
+    for run in runs:
+        if run in retained:
+            continue
+        if _realtime_loop_has_exception(_read_json_object(run / "loop_receipt.json")):
+            continue
+        candidates.append(run)
+    file_count = 0
+    byte_count = 0
+    largest_file_path: str | None = None
+    largest_file_bytes = 0
+    for run in candidates:
+        inventory = _path_inventory(run)
+        file_count += int(inventory["file_count"])
+        byte_count += int(inventory["byte_count"])
+        if int(inventory["largest_file_bytes"]) > largest_file_bytes:
+            largest_file_bytes = int(inventory["largest_file_bytes"])
+            largest_file_path = inventory["largest_file_path"]
+    return {
+        "exists": True,
+        "file_count": file_count,
+        "directory_count": len(candidates),
+        "byte_count": byte_count,
+        "largest_file_path": largest_file_path,
+        "largest_file_bytes": largest_file_bytes,
+    }
+
+
 def _lifecycle_gap_inventory(root: Path, artifact_ref: str) -> dict[str, Any]:
     path = root / artifact_ref
+    if artifact_ref.endswith("replay_execution_runs"):
+        return _replay_execution_gap_inventory(path, retain_recent_count=3)
+    if artifact_ref.endswith("post_replay_attribution_runs"):
+        return _named_file_rolling_inventory(path, ATTRIBUTION_VERBOSE_FILE_NAMES, retain_recent_count=3)
+    if artifact_ref.endswith("post_replay_failure_triage_runs"):
+        return _named_file_inventory(path, {"failure_triage_rows.jsonl"})
+    if artifact_ref.endswith("_manifests/recent_refresh_runs"):
+        return _rolling_dir_inventory(path, retain_recent_count=24)
+    if artifact_ref.endswith("realtime_monitor"):
+        return _realtime_monitor_gap_inventory(path, retain_recent_count=100)
     if artifact_ref.endswith("provider_task_keys") or artifact_ref.endswith("model_05_option_expression"):
         return _task_key_inventory(path)
     return _path_inventory(path)
@@ -403,6 +578,634 @@ def _lifecycle_gap_audit_summary(findings: Sequence[Mapping[str, Any]]) -> dict[
         },
         "pending_final_handling_count": sum(1 for row in findings if not row.get("final_handling_method")),
         "mutation_performed": False,
+    }
+
+
+def _relative_path(root: Path, path: Path) -> str:
+    try:
+        return path.resolve().relative_to(root.resolve()).as_posix()
+    except ValueError:
+        return path.as_posix()
+
+
+def _read_json_object(path: Path) -> dict[str, Any] | None:
+    try:
+        payload = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError, UnicodeDecodeError):
+        return None
+    return dict(payload) if isinstance(payload, Mapping) else None
+
+
+def _sha256_file(path: Path) -> str:
+    digest = hashlib.sha256()
+    with path.open("rb") as handle:
+        for chunk in iter(lambda: handle.read(1024 * 1024), b""):
+            digest.update(chunk)
+    return digest.hexdigest()
+
+
+def _write_json_object(path: Path, payload: Mapping[str, Any]) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+
+
+def _directory_inventory(path: Path, *, root: Path) -> dict[str, Any]:
+    inventory = _path_inventory(path)
+    inventory["artifact_ref"] = _relative_path(root, path)
+    return inventory
+
+
+def _run_dirs(path: Path) -> list[Path]:
+    if not path.exists():
+        return []
+    return sorted((candidate for candidate in path.iterdir() if candidate.is_dir() and not candidate.is_symlink()), key=lambda item: item.name)
+
+
+def _file_row(path: Path, *, root: Path, include_hash: bool = False) -> dict[str, Any]:
+    stat = path.stat()
+    row: dict[str, Any] = {
+        "path": _relative_path(root, path),
+        "byte_count": stat.st_size,
+    }
+    if include_hash:
+        row["sha256"] = _sha256_file(path)
+    return row
+
+
+def _delete_file(path: Path, *, root: Path, include_hash: bool) -> dict[str, Any]:
+    row = _file_row(path, root=root, include_hash=include_hash)
+    path.unlink()
+    row["mutation"] = "deleted"
+    return row
+
+
+def _delete_tree(path: Path, *, root: Path) -> dict[str, Any]:
+    inventory = _directory_inventory(path, root=root)
+    shutil.rmtree(path)
+    inventory["mutation"] = "deleted_tree"
+    return inventory
+
+
+def _compress_file(path: Path, *, root: Path, include_hash: bool) -> dict[str, Any]:
+    source = _file_row(path, root=root, include_hash=include_hash)
+    output_path = path.with_suffix(path.suffix + ".gz")
+    with path.open("rb") as source_handle, gzip.open(output_path, "wb", compresslevel=9) as output_handle:
+        shutil.copyfileobj(source_handle, output_handle)
+    compressed = _file_row(output_path, root=root, include_hash=include_hash)
+    path.unlink()
+    return {
+        "source": source,
+        "compressed": compressed,
+        "compression_method": "gzip",
+        "mutation": "compressed_and_deleted_source",
+    }
+
+
+def _compact_replay_execution_runs(
+    *,
+    root: Path,
+    output_root: Path,
+    generated_at_utc: str,
+    apply: bool,
+    retain_recent_count: int,
+    include_hashes: bool,
+) -> dict[str, Any]:
+    artifact_root = root / "storage/05_replay_datasets/promotion_replay_candidate_policy/replay_execution_runs"
+    runs = _run_dirs(artifact_root)
+    retained = {path for path in runs[-retain_recent_count:]} if retain_recent_count > 0 else set()
+    run_rows: list[dict[str, Any]] = []
+    deleted_rows: list[dict[str, Any]] = []
+    skipped_count = 0
+    candidate_count = 0
+    for run in runs:
+        receipt = _read_json_object(run / "replay_execution_receipt.json") or {}
+        verbose_files = [path for path in sorted(run.iterdir()) if path.is_file() and path.name in REPLAY_VERBOSE_FILE_NAMES]
+        if run not in retained:
+            candidate_count += len(verbose_files)
+        validation_status = str(receipt.get("validation_status") or "").lower()
+        row = {
+            "run_id": run.name,
+            "run_ref": _relative_path(root, run),
+            "validation_status": validation_status or None,
+            "candidate_model_ref": receipt.get("candidate_model_ref"),
+            "candidate_fold_id": receipt.get("candidate_fold_id"),
+            "decision_row_count": receipt.get("decision_row_count"),
+            "target_refs": receipt.get("target_refs"),
+            "verbose_file_count": len(verbose_files),
+            "verbose_byte_count": sum(path.stat().st_size for path in verbose_files),
+            "retained_full_verbose": run in retained,
+        }
+        if apply and run not in retained and validation_status in {"passed", "succeeded", "success"}:
+            for path in verbose_files:
+                deleted_rows.append(_delete_file(path, root=root, include_hash=include_hashes))
+        elif verbose_files and run not in retained:
+            skipped_count += len(verbose_files)
+        run_rows.append(row)
+    compact = {
+        "contract_type": "storage_replay_execution_compact_manifest",
+        "generated_at_utc": generated_at_utc,
+        "artifact_ref": _relative_path(root, artifact_root),
+        "run_count": len(runs),
+        "recent_full_run_retention_count": retain_recent_count,
+        "run_summaries": run_rows,
+        "deleted_verbose_file_count": len(deleted_rows),
+        "deleted_verbose_byte_count": sum(int(row.get("byte_count") or 0) for row in deleted_rows),
+        "skipped_verbose_file_count": skipped_count,
+        "mutation_performed": bool(deleted_rows),
+    }
+    output_path = output_root / "replay_execution_runs_compact_manifest.json"
+    if apply:
+        _write_json_object(output_path, compact)
+    return {
+        "contract_type": "storage_lifecycle_gap_action_receipt",
+        "artifact_ref": _relative_path(root, artifact_root),
+        "action": "compact_then_delete",
+        "final_handling_method": "delete",
+        "compact_ref": _relative_path(root, output_path),
+        "candidate_count": candidate_count,
+        "mutated_count": len(deleted_rows),
+        "mutated_byte_count": compact["deleted_verbose_byte_count"],
+        "skipped_count": skipped_count,
+        "mutation_performed": bool(deleted_rows),
+    }
+
+
+def _compact_post_replay_attribution_runs(
+    *,
+    root: Path,
+    output_root: Path,
+    generated_at_utc: str,
+    apply: bool,
+    retain_recent_count: int,
+    include_hashes: bool,
+) -> dict[str, Any]:
+    artifact_root = root / "storage/05_replay_datasets/promotion_replay_candidate_policy/post_replay_attribution_runs"
+    runs = _run_dirs(artifact_root)
+    retained = {path for path in runs[-retain_recent_count:]} if retain_recent_count > 0 else set()
+    deleted_rows: list[dict[str, Any]] = []
+    run_rows: list[dict[str, Any]] = []
+    candidate_count = 0
+    for run in runs:
+        receipt = _read_json_object(run / "post_replay_residual_event_governance_receipt.json") or {}
+        verbose_files = [path for path in sorted(run.iterdir()) if path.is_file() and path.name in ATTRIBUTION_VERBOSE_FILE_NAMES]
+        if run not in retained:
+            candidate_count += len(verbose_files)
+        run_rows.append(
+            {
+                "run_id": run.name,
+                "run_ref": _relative_path(root, run),
+                "status": receipt.get("status") or receipt.get("decision_status"),
+                "verbose_file_count": len(verbose_files),
+                "verbose_byte_count": sum(path.stat().st_size for path in verbose_files),
+                "retained_full_verbose": run in retained,
+            }
+        )
+        if apply and run not in retained:
+            for path in verbose_files:
+                deleted_rows.append(_delete_file(path, root=root, include_hash=include_hashes))
+    compact = {
+        "contract_type": "storage_post_replay_attribution_compact_manifest",
+        "generated_at_utc": generated_at_utc,
+        "artifact_ref": _relative_path(root, artifact_root),
+        "run_count": len(runs),
+        "recent_full_run_retention_count": retain_recent_count,
+        "run_summaries": run_rows,
+        "deleted_verbose_file_count": len(deleted_rows),
+        "deleted_verbose_byte_count": sum(int(row.get("byte_count") or 0) for row in deleted_rows),
+        "mutation_performed": bool(deleted_rows),
+    }
+    output_path = output_root / "post_replay_attribution_compact_manifest.json"
+    if apply:
+        _write_json_object(output_path, compact)
+    return {
+        "contract_type": "storage_lifecycle_gap_action_receipt",
+        "artifact_ref": _relative_path(root, artifact_root),
+        "action": "compact_then_rolling_retention",
+        "final_handling_method": "rolling_retention",
+        "compact_ref": _relative_path(root, output_path),
+        "candidate_count": candidate_count,
+        "mutated_count": len(deleted_rows),
+        "mutated_byte_count": compact["deleted_verbose_byte_count"],
+        "skipped_count": 0,
+        "mutation_performed": bool(deleted_rows),
+    }
+
+
+def _compact_failure_triage_runs(
+    *,
+    root: Path,
+    output_root: Path,
+    generated_at_utc: str,
+    apply: bool,
+    include_hashes: bool,
+) -> dict[str, Any]:
+    artifact_root = root / "storage/05_replay_datasets/promotion_replay_candidate_policy/post_replay_failure_triage_runs"
+    runs = _run_dirs(artifact_root)
+    compressed_rows: list[dict[str, Any]] = []
+    skipped_count = 0
+    run_rows: list[dict[str, Any]] = []
+    candidate_count = 0
+    for run in runs:
+        receipt = _read_json_object(run / "post_replay_failure_triage_receipt.json") or {}
+        row_file = run / "failure_triage_rows.jsonl"
+        if row_file.exists():
+            candidate_count += 1
+        row = {
+            "run_id": run.name,
+            "run_ref": _relative_path(root, run),
+            "status": receipt.get("status") or receipt.get("decision_status"),
+            "row_file_ref": _relative_path(root, row_file) if row_file.exists() else None,
+            "row_file_bytes": row_file.stat().st_size if row_file.exists() else 0,
+        }
+        if apply and row_file.exists():
+            compressed_rows.append(_compress_file(row_file, root=root, include_hash=include_hashes))
+        elif row_file.exists():
+            skipped_count += 1
+        run_rows.append(row)
+    compact = {
+        "contract_type": "storage_post_replay_failure_triage_compact_manifest",
+        "generated_at_utc": generated_at_utc,
+        "artifact_ref": _relative_path(root, artifact_root),
+        "run_count": len(runs),
+        "run_summaries": run_rows,
+        "compressed_file_count": len(compressed_rows),
+        "compressed_source_byte_count": sum(int(row["source"].get("byte_count") or 0) for row in compressed_rows),
+        "mutation_performed": bool(compressed_rows),
+    }
+    output_path = output_root / "post_replay_failure_triage_compact_manifest.json"
+    if apply:
+        _write_json_object(output_path, compact)
+    return {
+        "contract_type": "storage_lifecycle_gap_action_receipt",
+        "artifact_ref": _relative_path(root, artifact_root),
+        "action": "compact_then_compress",
+        "final_handling_method": "compress",
+        "compact_ref": _relative_path(root, output_path),
+        "candidate_count": candidate_count,
+        "mutated_count": len(compressed_rows),
+        "mutated_byte_count": compact["compressed_source_byte_count"],
+        "skipped_count": skipped_count,
+        "mutation_performed": bool(compressed_rows),
+    }
+
+
+def _compact_recent_refresh_runs(
+    *,
+    root: Path,
+    output_root: Path,
+    generated_at_utc: str,
+    apply: bool,
+    retain_recent_count: int,
+) -> dict[str, Any]:
+    artifact_root = root / "storage/01_source_data/monthly_backfill/trading_economics_calendar_web/_manifests/recent_refresh_runs"
+    runs = _run_dirs(artifact_root)
+    retained = {path for path in runs[-retain_recent_count:]} if retain_recent_count > 0 else set()
+    deleted_rows: list[dict[str, Any]] = []
+    for run in runs:
+        if apply and run not in retained:
+            deleted_rows.append(_delete_tree(run, root=root))
+    compact = {
+        "contract_type": "storage_te_recent_refresh_compact_manifest",
+        "generated_at_utc": generated_at_utc,
+        "artifact_ref": _relative_path(root, artifact_root),
+        "run_count": len(runs),
+        "recent_full_run_retention_count": retain_recent_count,
+        "latest_run_refs": [_relative_path(root, path) for path in runs[-retain_recent_count:]],
+        "deleted_run_count": len(deleted_rows),
+        "deleted_byte_count": sum(int(row.get("byte_count") or 0) for row in deleted_rows),
+        "mutation_performed": bool(deleted_rows),
+    }
+    output_path = output_root / "te_recent_refresh_compact_manifest.json"
+    if apply:
+        _write_json_object(output_path, compact)
+    return {
+        "contract_type": "storage_lifecycle_gap_action_receipt",
+        "artifact_ref": _relative_path(root, artifact_root),
+        "action": "compact_then_rolling_retention",
+        "final_handling_method": "rolling_retention",
+        "compact_ref": _relative_path(root, output_path),
+        "candidate_count": max(len(runs) - retain_recent_count, 0),
+        "mutated_count": len(deleted_rows),
+        "mutated_byte_count": compact["deleted_byte_count"],
+        "skipped_count": 0,
+        "mutation_performed": bool(deleted_rows),
+    }
+
+
+def _realtime_loop_has_exception(receipt: Mapping[str, Any] | None) -> bool:
+    if not receipt:
+        return True
+    if str(receipt.get("loop_status") or "").lower() not in {"completed", "succeeded", "success"}:
+        return True
+    failed = receipt.get("failed_cycle_indexes")
+    if isinstance(failed, Sequence) and not isinstance(failed, (str, bytes)) and len(failed) > 0:
+        return True
+    if receipt.get("broker_calls_performed") or receipt.get("account_mutation_performed") or receipt.get("model_activation_performed"):
+        return True
+    return False
+
+
+def _compact_realtime_monitor(
+    *,
+    root: Path,
+    output_root: Path,
+    generated_at_utc: str,
+    apply: bool,
+    retain_recent_count: int,
+) -> dict[str, Any]:
+    artifact_root = root / "storage/04_execution_artifacts/runtime/realtime_monitor"
+    runs = _run_dirs(artifact_root)
+    retained = {path for path in runs[-retain_recent_count:]} if retain_recent_count > 0 else set()
+    deleted_rows: list[dict[str, Any]] = []
+    exception_count = 0
+    status_counts: dict[str, int] = {}
+    for run in runs:
+        receipt = _read_json_object(run / "loop_receipt.json")
+        status = str((receipt or {}).get("loop_status") or "missing")
+        status_counts[status] = status_counts.get(status, 0) + 1
+        has_exception = _realtime_loop_has_exception(receipt)
+        if has_exception:
+            exception_count += 1
+        if apply and run not in retained and not has_exception:
+            deleted_rows.append(_delete_tree(run, root=root))
+    compact = {
+        "contract_type": "storage_realtime_monitor_rolling_summary",
+        "generated_at_utc": generated_at_utc,
+        "artifact_ref": _relative_path(root, artifact_root),
+        "loop_count": len(runs),
+        "status_counts": dict(sorted(status_counts.items())),
+        "exception_loop_count": exception_count,
+        "recent_full_loop_retention_count": retain_recent_count,
+        "latest_loop_refs": [_relative_path(root, path) for path in runs[-retain_recent_count:]],
+        "deleted_loop_count": len(deleted_rows),
+        "deleted_byte_count": sum(int(row.get("byte_count") or 0) for row in deleted_rows),
+        "mutation_performed": bool(deleted_rows),
+    }
+    output_path = output_root / "realtime_monitor_rolling_summary.json"
+    if apply:
+        _write_json_object(output_path, compact)
+    return {
+        "contract_type": "storage_lifecycle_gap_action_receipt",
+        "artifact_ref": _relative_path(root, artifact_root),
+        "action": "compact_then_rolling_retention",
+        "final_handling_method": "rolling_retention",
+        "compact_ref": _relative_path(root, output_path),
+        "candidate_count": max(len(runs) - retain_recent_count - exception_count, 0),
+        "mutated_count": len(deleted_rows),
+        "mutated_byte_count": compact["deleted_byte_count"],
+        "skipped_count": exception_count,
+        "mutation_performed": bool(deleted_rows),
+    }
+
+
+def _compact_task_keys(
+    *,
+    root: Path,
+    output_root: Path,
+    generated_at_utc: str,
+    artifact_ref: str,
+    apply: bool,
+) -> dict[str, Any]:
+    artifact_root = root / artifact_ref
+    task_keys = sorted(artifact_root.rglob("task_key.json")) if artifact_root.exists() else []
+    by_source: dict[str, int] = {}
+    by_month: dict[str, int] = {}
+    missing_status_count = 0
+    for path in task_keys:
+        payload = _read_json_object(path) or {}
+        source = str(payload.get("source") or path.parent.parent.name if len(path.parts) >= 2 else "unknown")
+        by_source[source] = by_source.get(source, 0) + 1
+        controls = payload.get("manager_controls") if isinstance(payload.get("manager_controls"), Mapping) else {}
+        month = str(controls.get("start_month") or path.parent.parent.name if len(path.parts) >= 2 else "unknown")
+        by_month[month] = by_month.get(month, 0) + 1
+        if not any(payload.get(key) for key in ("status", "task_status", "request_status", "stage_status", "result_status")):
+            missing_status_count += 1
+    compact = {
+        "contract_type": "storage_task_key_compact_manifest",
+        "generated_at_utc": generated_at_utc,
+        "artifact_ref": artifact_ref,
+        "task_key_count": len(task_keys),
+        "missing_status_count": missing_status_count,
+        "by_source": dict(sorted(by_source.items())),
+        "by_month": dict(sorted(by_month.items())),
+        "delete_performed": False,
+        "delete_blocker": "task_key_status_missing" if missing_status_count else None,
+    }
+    output_path = output_root / (artifact_ref.replace("/", "__") + "_task_key_compact_manifest.json")
+    if apply:
+        _write_json_object(output_path, compact)
+    return {
+        "contract_type": "storage_lifecycle_gap_action_receipt",
+        "artifact_ref": artifact_ref,
+        "action": "compact_delete_blocked",
+        "final_handling_method": "delete",
+        "compact_ref": _relative_path(root, output_path),
+        "candidate_count": len(task_keys),
+        "mutated_count": 0,
+        "mutated_byte_count": 0,
+        "skipped_count": len(task_keys),
+        "mutation_performed": False,
+        "blocker": "task_key_status_missing",
+    }
+
+
+def _compact_jsonl_rollup(
+    *,
+    root: Path,
+    output_root: Path,
+    generated_at_utc: str,
+    artifact_ref: str,
+    contract_type: str,
+    output_name: str,
+    apply: bool,
+) -> dict[str, Any]:
+    artifact_path = root / artifact_ref
+    line_count = 0
+    first_line: str | None = None
+    last_line: str | None = None
+    if artifact_path.exists():
+        with artifact_path.open("r", encoding="utf-8", errors="replace") as handle:
+            for line in handle:
+                stripped = line.strip()
+                if stripped:
+                    first_line = first_line or stripped[:500]
+                    last_line = stripped[:500]
+                    line_count += 1
+    compact = {
+        "contract_type": contract_type,
+        "generated_at_utc": generated_at_utc,
+        "artifact_ref": artifact_ref,
+        "line_count": line_count,
+        "byte_count": artifact_path.stat().st_size if artifact_path.exists() else 0,
+        "first_line_preview": first_line,
+        "last_line_preview": last_line,
+        "mutation_performed": False,
+    }
+    output_path = output_root / output_name
+    if apply:
+        _write_json_object(output_path, compact)
+    return {
+        "contract_type": "storage_lifecycle_gap_action_receipt",
+        "artifact_ref": artifact_ref,
+        "action": "compact_rollup_only",
+        "final_handling_method": "rolling_retention",
+        "compact_ref": _relative_path(root, output_path),
+        "candidate_count": 1 if artifact_path.exists() else 0,
+        "mutated_count": 0,
+        "mutated_byte_count": 0,
+        "skipped_count": 1 if artifact_path.exists() else 0,
+        "mutation_performed": False,
+        "blocker": "append_only_log_not_segmented",
+    }
+
+
+def _compact_snapshot_dir(
+    *,
+    root: Path,
+    output_root: Path,
+    generated_at_utc: str,
+    artifact_ref: str,
+    contract_type: str,
+    output_name: str,
+    apply: bool,
+) -> dict[str, Any]:
+    artifact_root = root / artifact_ref
+    inventory = _path_inventory(artifact_root)
+    compact = {
+        "contract_type": contract_type,
+        "generated_at_utc": generated_at_utc,
+        "artifact_ref": artifact_ref,
+        **inventory,
+        "mutation_performed": False,
+    }
+    output_path = output_root / output_name
+    if apply:
+        _write_json_object(output_path, compact)
+    return {
+        "contract_type": "storage_lifecycle_gap_action_receipt",
+        "artifact_ref": artifact_ref,
+        "action": "compact_rollup_only",
+        "final_handling_method": "rolling_retention",
+        "compact_ref": _relative_path(root, output_path),
+        "candidate_count": int(inventory.get("file_count") or 0),
+        "mutated_count": 0,
+        "mutated_byte_count": 0,
+        "skipped_count": int(inventory.get("file_count") or 0),
+        "mutation_performed": False,
+        "blocker": "snapshot_latest_pointer_not_verified",
+    }
+
+
+def execute_lifecycle_gap_actions(
+    *,
+    root: Path,
+    output_root: Path = DEFAULT_COMPACT_OUTPUT_ROOT,
+    apply: bool = False,
+    generated_at_utc: str | None = None,
+    retain_recent_replay_runs: int = 3,
+    retain_recent_attribution_runs: int = 3,
+    retain_recent_te_refresh_runs: int = 24,
+    retain_recent_realtime_loops: int = 100,
+    include_hashes: bool = False,
+) -> tuple[dict[str, Any], ...]:
+    generated = generated_at_utc or _now_utc()
+    resolved_output_root = _resolve(root.resolve(), output_root)
+    receipts = [
+        _compact_replay_execution_runs(
+            root=root,
+            output_root=resolved_output_root,
+            generated_at_utc=generated,
+            apply=apply,
+            retain_recent_count=retain_recent_replay_runs,
+            include_hashes=include_hashes,
+        ),
+        _compact_post_replay_attribution_runs(
+            root=root,
+            output_root=resolved_output_root,
+            generated_at_utc=generated,
+            apply=apply,
+            retain_recent_count=retain_recent_attribution_runs,
+            include_hashes=include_hashes,
+        ),
+        _compact_failure_triage_runs(
+            root=root,
+            output_root=resolved_output_root,
+            generated_at_utc=generated,
+            apply=apply,
+            include_hashes=include_hashes,
+        ),
+        _compact_recent_refresh_runs(
+            root=root,
+            output_root=resolved_output_root,
+            generated_at_utc=generated,
+            apply=apply,
+            retain_recent_count=retain_recent_te_refresh_runs,
+        ),
+        _compact_realtime_monitor(
+            root=root,
+            output_root=resolved_output_root,
+            generated_at_utc=generated,
+            apply=apply,
+            retain_recent_count=retain_recent_realtime_loops,
+        ),
+        _compact_task_keys(
+            root=root,
+            output_root=resolved_output_root,
+            generated_at_utc=generated,
+            artifact_ref="storage/02_control_plane/runtime/model_05_option_expression",
+            apply=apply,
+        ),
+        _compact_task_keys(
+            root=root,
+            output_root=resolved_output_root,
+            generated_at_utc=generated,
+            artifact_ref="storage/02_control_plane/runtime/provider_task_keys",
+            apply=apply,
+        ),
+        _compact_jsonl_rollup(
+            root=root,
+            output_root=resolved_output_root,
+            generated_at_utc=generated,
+            artifact_ref="storage/02_control_plane/runtime/historical_scheduler_decisions.jsonl",
+            contract_type="storage_scheduler_decision_rollup_summary",
+            output_name="historical_scheduler_decisions_rollup_summary.json",
+            apply=apply,
+        ),
+        _compact_snapshot_dir(
+            root=root,
+            output_root=resolved_output_root,
+            generated_at_utc=generated,
+            artifact_ref="storage/02_control_plane/runtime/stage_coverage",
+            contract_type="storage_stage_coverage_rollup_summary",
+            output_name="stage_coverage_rollup_summary.json",
+            apply=apply,
+        ),
+        _compact_snapshot_dir(
+            root=root,
+            output_root=resolved_output_root,
+            generated_at_utc=generated,
+            artifact_ref="storage/02_control_plane/runtime/stage_run_dashboard",
+            contract_type="storage_stage_run_dashboard_rollup_summary",
+            output_name="stage_run_dashboard_rollup_summary.json",
+            apply=apply,
+        ),
+    ]
+    return tuple(receipts)
+
+
+def _lifecycle_gap_action_summary(receipts: Sequence[Mapping[str, Any]], *, apply: bool) -> dict[str, Any]:
+    return {
+        "contract_type": "storage_lifecycle_gap_action_summary",
+        "apply": apply,
+        "receipt_count": len(receipts),
+        "mutation_performed": any(bool(row.get("mutation_performed")) for row in receipts),
+        "mutated_count": sum(int(row.get("mutated_count") or 0) for row in receipts),
+        "mutated_byte_count": sum(int(row.get("mutated_byte_count") or 0) for row in receipts),
+        "skipped_count": sum(int(row.get("skipped_count") or 0) for row in receipts),
+        "by_final_handling_method": {
+            method: sum(1 for row in receipts if row.get("final_handling_method") == method)
+            for method in ("delete", "compress", "rolling_retention")
+        },
     }
 
 
@@ -563,13 +1366,21 @@ def run_storage_maintenance(
     *,
     root: Path = Path("."),
     archive_root: Path = Path("storage/90_lifecycle/archive"),
+    compact_output_root: Path = DEFAULT_COMPACT_OUTPUT_ROOT,
     manager_root: Path | None = None,
     apply_local_retention: bool = False,
+    apply_lifecycle_gap_actions: bool = False,
     include_local_retention: bool = True,
     include_fold_monitor: bool = True,
+    include_hashes: bool = False,
+    retain_recent_replay_runs: int = 3,
+    retain_recent_attribution_runs: int = 3,
+    retain_recent_te_refresh_runs: int = 24,
+    retain_recent_realtime_loops: int = 100,
     generated_at_utc: str | None = None,
 ) -> StorageMaintenanceSummary:
     root = root.resolve()
+    generated = generated_at_utc or _now_utc()
     storage_root_inventory = _build_storage_root_inventory(root)
     local_retention_summary = {"archive": 0, "delete": 0, "retain": 0, "skip": 0}
     if include_local_retention:
@@ -589,6 +1400,17 @@ def run_storage_maintenance(
         completed_fold_ids=completed_fold_ids,
     )
     lifecycle_gap_findings = detect_lifecycle_gap_findings(root=root)
+    lifecycle_gap_action_receipts = execute_lifecycle_gap_actions(
+        root=root,
+        output_root=compact_output_root,
+        apply=apply_lifecycle_gap_actions,
+        generated_at_utc=generated,
+        retain_recent_replay_runs=retain_recent_replay_runs,
+        retain_recent_attribution_runs=retain_recent_attribution_runs,
+        retain_recent_te_refresh_runs=retain_recent_te_refresh_runs,
+        retain_recent_realtime_loops=retain_recent_realtime_loops,
+        include_hashes=include_hashes,
+    )
     fold_source_cleanup_phase = (
         "ready_for_quarantine_review" if fold_source_cleanup_candidates else "no_fold_scoped_source_cleanup_candidates"
     )
@@ -596,7 +1418,7 @@ def run_storage_maintenance(
         fold_source_cleanup_phase = "fold_monitor_skipped"
     return StorageMaintenanceSummary(
         contract_type="storage_scheduled_maintenance_summary",
-        generated_at_utc=generated_at_utc or _now_utc(),
+        generated_at_utc=generated,
         root=str(root),
         local_retention_enabled=include_local_retention,
         local_retention_apply=apply_local_retention,
@@ -612,6 +1434,11 @@ def run_storage_maintenance(
         fold_source_cleanup_candidate_count=len(fold_source_cleanup_candidates),
         lifecycle_gap_audit_summary=_lifecycle_gap_audit_summary(lifecycle_gap_findings),
         lifecycle_gap_findings=lifecycle_gap_findings,
+        lifecycle_gap_action_summary=_lifecycle_gap_action_summary(
+            lifecycle_gap_action_receipts,
+            apply=apply_lifecycle_gap_actions,
+        ),
+        lifecycle_gap_action_receipts=lifecycle_gap_action_receipts,
         fold_sql_backup_phase_status="ready_for_storage_backup" if fold_candidates else "no_completed_fold_detected",
         fold_source_cleanup_phase_status=fold_source_cleanup_phase,
         deletion_phase_status="local_retention_only" if include_local_retention else "local_retention_skipped",
@@ -632,9 +1459,20 @@ def main(argv: Sequence[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description="Run the storage-owned scheduled maintenance pass.")
     parser.add_argument("--root", type=Path, default=Path("."), help="Repository root. Defaults to current directory.")
     parser.add_argument("--archive-root", type=Path, default=Path("storage/90_lifecycle/archive"))
+    parser.add_argument("--compact-output-root", type=Path, default=DEFAULT_COMPACT_OUTPUT_ROOT)
     parser.add_argument("--manager-root", type=Path, help="Manager repository root for fold-state monitoring.")
     parser.add_argument("--output-path", type=Path, default=DEFAULT_MAINTENANCE_OUTPUT)
     parser.add_argument("--apply-local-retention", action="store_true", help="Archive/delete eligible local runtime files.")
+    parser.add_argument(
+        "--apply-lifecycle-gap-actions",
+        action="store_true",
+        help="Write compact contracts and apply explicit state-triggered lifecycle gap actions.",
+    )
+    parser.add_argument("--include-hashes", action="store_true", help="Hash mutated source artifacts in action receipts.")
+    parser.add_argument("--retain-recent-replay-runs", type=int, default=3)
+    parser.add_argument("--retain-recent-attribution-runs", type=int, default=3)
+    parser.add_argument("--retain-recent-te-refresh-runs", type=int, default=24)
+    parser.add_argument("--retain-recent-realtime-loops", type=int, default=100)
     parser.add_argument("--skip-local-retention", action="store_true", help="Skip local retention planning.")
     parser.add_argument("--skip-fold-monitor", action="store_true", help="Skip direct manager fold-state reads.")
     parser.add_argument("--json", action="store_true", help="Print the summary JSON to stdout.")
@@ -642,10 +1480,17 @@ def main(argv: Sequence[str] | None = None) -> int:
     summary = run_storage_maintenance(
         root=args.root,
         archive_root=args.archive_root,
+        compact_output_root=args.compact_output_root,
         manager_root=args.manager_root,
         apply_local_retention=args.apply_local_retention,
+        apply_lifecycle_gap_actions=args.apply_lifecycle_gap_actions,
         include_local_retention=not args.skip_local_retention,
         include_fold_monitor=not args.skip_fold_monitor,
+        include_hashes=args.include_hashes,
+        retain_recent_replay_runs=args.retain_recent_replay_runs,
+        retain_recent_attribution_runs=args.retain_recent_attribution_runs,
+        retain_recent_te_refresh_runs=args.retain_recent_te_refresh_runs,
+        retain_recent_realtime_loops=args.retain_recent_realtime_loops,
     )
     write_storage_maintenance_summary(summary, output_path=args.output_path, root=args.root)
     if args.json:
@@ -655,10 +1500,12 @@ def main(argv: Sequence[str] | None = None) -> int:
 
 __all__ = [
     "DEFAULT_MAINTENANCE_OUTPUT",
+    "DEFAULT_COMPACT_OUTPUT_ROOT",
     "StorageMaintenanceSummary",
     "detect_completed_model_worker_folds",
     "detect_fold_scoped_source_cleanup_candidates",
     "detect_lifecycle_gap_findings",
+    "execute_lifecycle_gap_actions",
     "run_storage_maintenance",
     "write_storage_maintenance_summary",
 ]

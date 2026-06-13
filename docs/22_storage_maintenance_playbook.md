@@ -66,10 +66,11 @@ Use this sequence for every class except dashboard timestamped snapshots, which 
 
 1. Dashboard timestamped snapshots: already implemented as latest-only; monitor for regression.
 2. Alpaca bars duplicate payloads: completed 2026-06-06; JSONL/CSV payload copies were deleted after operator confirmation that bars are retained in SQL.
-3. Replay execution and post-replay attribution: implement replay run manifests, attribution summaries, and exception rules before deleting or rolling verbose JSONL evidence.
-4. M05 task keys: implement compact batch manifests, then delete per-request keys for completed stages.
-5. M05 gate reviews: refresh stale 103M evidence, then define compact gate-review contract before compressing/removing any verbose diagnostic payloads.
-6. Realtime monitor cycles: implement latest/current-window plus compact time-series summary.
-7. Scheduler/stage dashboard logs: roll up JSONL and snapshots into compact summaries.
-8. TE refresh and manifests: preserve TE source rows; compact/delete/compress/roll side products after month-level provenance and fallback reconciliation evidence exist.
-9. Layer 3 materialization and M05 source duplication: close through lineage and shared option-source contracts.
+3. Replay execution and post-replay attribution: implemented in `run_storage_maintenance.py --apply-lifecycle-gap-actions`. The executor writes compact manifests, keeps recent full runs, deletes completed rebuildable replay verbose rows, rolls repeated attribution verbose rows, and preserves compact evidence.
+4. Post-replay failure triage: implemented in the same maintenance apply mode. The executor writes a compact manifest and gzip-compresses `failure_triage_rows.jsonl` before removing uncompressed originals.
+5. Realtime monitor cycles: implemented for normal completed loops. The executor writes a rolling summary, keeps recent full loops and exception loops, and removes older normal completed timestamp directories.
+6. TE recent refresh manifests: implemented for `_manifests/recent_refresh_runs`. The executor writes compact provenance, keeps recent receipt directories, and rolls older duplicate receipt directories without touching canonical TE source rows.
+7. M05 task keys: compact aggregate manifests are implemented, but deletion remains blocked because existing task keys lack explicit terminal status fields.
+8. Scheduler/stage dashboard logs: compact rollups are implemented, but JSONL truncation and snapshot deletion remain blocked until segmented tails/latest pointers are verified.
+9. M05 gate reviews: refresh stale 103M evidence, then define compact gate-review contract before compressing/removing any verbose diagnostic payloads.
+10. Layer 3 materialization and M05 source duplication: close through lineage and shared option-source contracts.

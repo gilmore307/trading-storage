@@ -1,6 +1,6 @@
 # Storage Lifecycle Policy
 
-Status: V0.2 state-triggered lifecycle policy, dry-run planner, gap audit selectors, quarantine/recheck evidence, execution scaffold, narrow single-file compression executor, reviewed file-backed SQL archive executor, archive restore verifier, no-mutation quarantine/delete receipt builder, and one-pass safe file-lifecycle acceptance available; broad destructive mutation executors remain deferred
+Status: V0.3 state-triggered lifecycle policy, dry-run planner, gap audit selectors, compact-contract maintenance actions, quarantine/recheck evidence, execution scaffold, narrow single-file compression executor, reviewed file-backed SQL archive executor, archive restore verifier, no-mutation quarantine/delete receipt builder, and one-pass safe file-lifecycle acceptance available; broad unknown-scope destructive mutation executors remain deferred
 
 ## Purpose
 
@@ -237,9 +237,9 @@ delete_uncompressed_after_verify: true
 
 Scripts may implement the policy, but policy review must be possible without reading every code branch.
 
-## Current scheduled root inventory and lifecycle gap audit
+## Current maintenance inventory and lifecycle gap actions
 
-Scheduled maintenance emits a `storage_root_inventory_summary` and `storage_lifecycle_gap_audit_summary` inside each `storage_scheduled_maintenance_summary`. This is the formal lifecycle-management view of the numbered storage layout and known unbounded classes. It is report-only evidence; it does not authorize mutation:
+Storage maintenance emits a `storage_root_inventory_summary`, `storage_lifecycle_gap_audit_summary`, and `storage_lifecycle_gap_action_summary` inside each `storage_scheduled_maintenance_summary`. This is the formal lifecycle-management view of the numbered storage layout and known unbounded classes:
 
 - `storage/01_source_data`
 - `storage/02_control_plane`
@@ -249,9 +249,21 @@ Scheduled maintenance emits a `storage_root_inventory_summary` and `storage_life
 - `storage/06_dashboard_cache`
 - `storage/90_lifecycle`
 
-The inventory records existence, file count, directory count, byte count, lifecycle role, and managed root ids. The gap audit records known classes that need a compact contract, rolling retention, compression, deletion, or owner classification. Neither hashes payloads nor authorizes mutation. Hashing, protected-set checks, compression planning, quarantine/recheck, and deletion gates remain in the artifact-index and lifecycle-plan pipeline.
+The inventory records existence, file count, directory count, byte count, lifecycle role, and managed root ids. The gap audit records known classes that need a compact contract, rolling retention, compression, deletion, or owner classification.
 
-Scheduled maintenance also reads completed ten-layer fold state from manager. For completed folds, it may report `storage_fold_sql_backup_candidate` rows and, when `storage/01_source_data/fold_scoped/<fold_id>/` exists, `storage_fold_source_cleanup_candidate` rows. Cleanup candidates and gap findings are planning evidence only; the scheduled maintenance pass does not delete those folders or any other durable artifacts.
+By default, `scripts/lifecycle/run_storage_maintenance.py` is report-only. It does not mutate lifecycle gap artifacts unless invoked with `--apply-lifecycle-gap-actions`. That explicit apply mode is not a blind timer cleanup path. It is a state-triggered reviewed action executor for the narrow classes whose compact/read-model evidence is produced in the same pass:
+
+- replay execution verbose rows: compact replay run manifest, keep recent full runs, delete rebuildable completed verbose rows;
+- post-replay attribution verbose rows: compact attribution manifest, keep recent full runs, roll older repeated verbose rows forward;
+- post-replay failure-triage rows: compact failure-triage manifest, gzip verbose rows, remove uncompressed originals;
+- TE `_manifests/recent_refresh_runs`: compact TE recent-refresh provenance, keep recent receipts, roll older duplicate receipt directories forward without touching canonical TE source rows;
+- realtime monitor timestamp directories: compact rolling summary, keep recent full loops and exception loops, roll older normal completed loop directories forward;
+- M05/provider task keys: compact aggregate manifests only; deletion remains blocked while task-key status fields are missing;
+- scheduler JSONL and stage dashboard/coverage snapshots: compact rollup summaries only; truncation/deletion remains blocked until segmented tails/latest pointers are verified.
+
+Hashing, protected-set checks, compression planning, quarantine/recheck, and deletion gates remain in the artifact-index and lifecycle-plan pipeline for broad or unknown-scope lifecycle actions. The maintenance gap executor is only for the explicitly listed state-triggered classes.
+
+Maintenance also reads completed ten-layer fold state from manager. For completed folds, it may report `storage_fold_sql_backup_candidate` rows and, when `storage/01_source_data/fold_scoped/<fold_id>/` exists, `storage_fold_source_cleanup_candidate` rows. Fold-scoped source cleanup candidates remain planning evidence only; the maintenance gap executor does not delete those folders.
 
 ## Current V0.1 dry-run planner
 
