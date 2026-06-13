@@ -20,6 +20,8 @@ MODEL_WORKER_STAGE_TYPES = {"model_generation", "model_evaluation", "promotion_r
 COMPLETE_STATUSES = {"succeeded", "not_applicable"}
 FOLD_STATE_GLOB = "model_training_fold_state_*.json"
 FOLD_SCOPED_SOURCE_ROOT = Path("storage/01_source_data/fold_scoped")
+TE_MONTHLY_SOURCE_ROOT = Path("storage/01_source_data/monthly_backfill/trading_economics_calendar_web")
+TE_RUN_SIDE_PRODUCT_FILE_NAMES = {"completion_receipt.json", "request_manifest.json"}
 REPLAY_VERBOSE_FILE_NAMES = {"decision_rows.jsonl", "option_feature_requirements.jsonl", "replay_progress.jsonl"}
 ATTRIBUTION_VERBOSE_FILE_NAMES = {"event_interpretations.jsonl", "event_family_occurrence_scan.jsonl"}
 LIFECYCLE_GAP_SELECTORS: tuple[dict[str, Any], ...] = (
@@ -62,6 +64,16 @@ LIFECYCLE_GAP_SELECTORS: tuple[dict[str, Any], ...] = (
         "trigger_required": "calendar_refresh_completed",
         "consumer_or_use": "TE source provenance and freshness dashboard",
         "required_followup": "write month-level provenance/read-model and preserve canonical TE source rows before rolling duplicate receipts",
+    },
+    {
+        "artifact_ref": TE_MONTHLY_SOURCE_ROOT.as_posix(),
+        "artifact_class": "runtime_evidence",
+        "issue": "monthly_run_side_products",
+        "action": "compact",
+        "final_handling_method": "rolling_retention",
+        "trigger_required": "calendar_refresh_completed",
+        "consumer_or_use": "TE canonical source payload provenance and freshness dashboard",
+        "required_followup": "write month-level source provenance and roll duplicate run-local receipts/manifests without touching saved or cleaned TE source rows",
     },
     {
         "artifact_ref": "storage/04_execution_artifacts/runtime/realtime_monitor",
@@ -516,6 +528,60 @@ def _realtime_monitor_gap_inventory(path: Path, *, retain_recent_count: int) -> 
     }
 
 
+def _te_monthly_run_dirs(path: Path) -> list[Path]:
+    if not path.exists():
+        return []
+    runs: list[Path] = []
+    for month_dir in sorted(path.iterdir()):
+        if not month_dir.is_dir() or month_dir.is_symlink() or len(month_dir.name) != 7 or month_dir.name[4] != "-":
+            continue
+        run_root = month_dir / "runs"
+        if not run_root.exists():
+            continue
+        runs.extend(candidate for candidate in run_root.iterdir() if candidate.is_dir() and not candidate.is_symlink())
+    return sorted(runs, key=lambda item: (item.parent.parent.name, item.name))
+
+
+def _te_monthly_run_side_product_inventory(path: Path, *, retain_recent_count: int) -> dict[str, Any]:
+    if not path.exists():
+        return _path_inventory(path)
+    runs = _te_monthly_run_dirs(path)
+    retained = {run for run in runs[-retain_recent_count:]} if retain_recent_count > 0 else set()
+    file_count = 0
+    directory_count = 0
+    byte_count = 0
+    largest_file_path: str | None = None
+    largest_file_bytes = 0
+    for run in runs:
+        if run in retained:
+            continue
+        run_file_count = 0
+        for name in sorted(TE_RUN_SIDE_PRODUCT_FILE_NAMES):
+            candidate = run / name
+            if candidate.is_symlink() or not candidate.is_file():
+                continue
+            try:
+                size = candidate.stat().st_size
+            except OSError:
+                continue
+            file_count += 1
+            run_file_count += 1
+            byte_count += size
+            if size > largest_file_bytes:
+                largest_file_bytes = size
+                largest_file_path = candidate.as_posix()
+        if run_file_count:
+            directory_count += 1
+    return {
+        "exists": True,
+        "file_count": file_count,
+        "directory_count": directory_count,
+        "byte_count": byte_count,
+        "largest_file_path": largest_file_path,
+        "largest_file_bytes": largest_file_bytes,
+    }
+
+
 def _lifecycle_gap_inventory(root: Path, artifact_ref: str) -> dict[str, Any]:
     path = root / artifact_ref
     if artifact_ref.endswith("replay_execution_runs"):
@@ -526,6 +592,8 @@ def _lifecycle_gap_inventory(root: Path, artifact_ref: str) -> dict[str, Any]:
         return _named_file_inventory(path, {"failure_triage_rows.jsonl"})
     if artifact_ref.endswith("_manifests/recent_refresh_runs"):
         return _rolling_dir_inventory(path, retain_recent_count=24)
+    if artifact_ref == TE_MONTHLY_SOURCE_ROOT.as_posix():
+        return _te_monthly_run_side_product_inventory(path, retain_recent_count=24)
     if artifact_ref.endswith("realtime_monitor"):
         return _realtime_monitor_gap_inventory(path, retain_recent_count=100)
     if artifact_ref.endswith("provider_task_keys") or artifact_ref.endswith("model_05_option_expression"):
@@ -892,6 +960,90 @@ def _compact_recent_refresh_runs(
     }
 
 
+def _compact_te_monthly_run_side_products(
+    *,
+    root: Path,
+    output_root: Path,
+    generated_at_utc: str,
+    apply: bool,
+    retain_recent_count: int,
+    include_hashes: bool,
+) -> dict[str, Any]:
+    artifact_root = root / TE_MONTHLY_SOURCE_ROOT
+    runs = _te_monthly_run_dirs(artifact_root)
+    retained = {path for path in runs[-retain_recent_count:]} if retain_recent_count > 0 else set()
+    deleted_rows: list[dict[str, Any]] = []
+    run_rows: list[dict[str, Any]] = []
+    candidate_count = 0
+    source_file_names = {
+        "saved/trading_economics_calendar_event.csv",
+        "cleaned/trading_economics_calendar_event.jsonl",
+        "cleaned/schema.json",
+    }
+    for run in runs:
+        side_products = [run / name for name in sorted(TE_RUN_SIDE_PRODUCT_FILE_NAMES) if (run / name).is_file()]
+        source_files = [run / name for name in sorted(source_file_names) if (run / name).is_file()]
+        if run not in retained:
+            candidate_count += len(side_products)
+        receipt = _read_json_object(run / "completion_receipt.json") or {}
+        row_counts: Mapping[str, Any] = {}
+        if isinstance(receipt.get("row_counts"), Mapping):
+            row_counts = dict(receipt["row_counts"])
+        elif isinstance(receipt.get("runs"), list):
+            for item in receipt["runs"]:
+                if isinstance(item, Mapping) and isinstance(item.get("row_counts"), Mapping):
+                    row_counts = dict(item["row_counts"])
+                    break
+        run_rows.append(
+            {
+                "month": run.parent.parent.name,
+                "run_id": run.name,
+                "run_ref": _relative_path(root, run),
+                "status": receipt.get("status"),
+                "started_at": receipt.get("started_at"),
+                "completed_at": receipt.get("completed_at"),
+                "row_counts": row_counts,
+                "source_payload_refs": [_relative_path(root, path) for path in source_files],
+                "source_payload_byte_count": sum(path.stat().st_size for path in source_files),
+                "side_product_refs": [_relative_path(root, path) for path in side_products],
+                "side_product_byte_count": sum(path.stat().st_size for path in side_products),
+                "retained_full_side_products": run in retained,
+            }
+        )
+        if apply and run not in retained:
+            for path in side_products:
+                deleted_rows.append(_delete_file(path, root=root, include_hash=include_hashes))
+    compact = {
+        "contract_type": "storage_te_monthly_source_provenance_manifest",
+        "generated_at_utc": generated_at_utc,
+        "artifact_ref": _relative_path(root, artifact_root),
+        "run_count": len(runs),
+        "recent_full_run_side_product_retention_count": retain_recent_count,
+        "latest_run_refs": [_relative_path(root, path) for path in runs[-retain_recent_count:]],
+        "run_summaries": run_rows,
+        "deleted_side_product_file_count": len(deleted_rows),
+        "deleted_side_product_byte_count": sum(int(row.get("byte_count") or 0) for row in deleted_rows),
+        "source_payload_mutation_performed": False,
+        "mutation_performed": bool(deleted_rows),
+    }
+    output_path = output_root / "te_monthly_source_provenance_manifest.json"
+    if apply:
+        _write_json_object(output_path, compact)
+    return {
+        "contract_type": "storage_lifecycle_gap_action_receipt",
+        "artifact_ref": _relative_path(root, artifact_root),
+        "action": "compact_then_rolling_retention",
+        "final_handling_method": "rolling_retention",
+        "compact_ref": _relative_path(root, output_path),
+        "candidate_count": candidate_count,
+        "mutated_count": len(deleted_rows),
+        "mutated_byte_count": compact["deleted_side_product_byte_count"],
+        "skipped_count": max(candidate_count - len(deleted_rows), 0),
+        "mutation_performed": bool(deleted_rows),
+        "source_payload_mutation_performed": False,
+    }
+
+
 def _realtime_loop_has_exception(receipt: Mapping[str, Any] | None) -> bool:
     if not receipt:
         return True
@@ -1105,6 +1257,7 @@ def execute_lifecycle_gap_actions(
     retain_recent_replay_runs: int = 3,
     retain_recent_attribution_runs: int = 3,
     retain_recent_te_refresh_runs: int = 24,
+    retain_recent_te_monthly_runs: int = 24,
     retain_recent_realtime_loops: int = 100,
     include_hashes: bool = False,
 ) -> tuple[dict[str, Any], ...]:
@@ -1140,6 +1293,14 @@ def execute_lifecycle_gap_actions(
             generated_at_utc=generated,
             apply=apply,
             retain_recent_count=retain_recent_te_refresh_runs,
+        ),
+        _compact_te_monthly_run_side_products(
+            root=root,
+            output_root=resolved_output_root,
+            generated_at_utc=generated,
+            apply=apply,
+            retain_recent_count=retain_recent_te_monthly_runs,
+            include_hashes=include_hashes,
         ),
         _compact_realtime_monitor(
             root=root,
@@ -1376,6 +1537,7 @@ def run_storage_maintenance(
     retain_recent_replay_runs: int = 3,
     retain_recent_attribution_runs: int = 3,
     retain_recent_te_refresh_runs: int = 24,
+    retain_recent_te_monthly_runs: int = 24,
     retain_recent_realtime_loops: int = 100,
     generated_at_utc: str | None = None,
 ) -> StorageMaintenanceSummary:
@@ -1408,6 +1570,7 @@ def run_storage_maintenance(
         retain_recent_replay_runs=retain_recent_replay_runs,
         retain_recent_attribution_runs=retain_recent_attribution_runs,
         retain_recent_te_refresh_runs=retain_recent_te_refresh_runs,
+        retain_recent_te_monthly_runs=retain_recent_te_monthly_runs,
         retain_recent_realtime_loops=retain_recent_realtime_loops,
         include_hashes=include_hashes,
     )
@@ -1472,6 +1635,7 @@ def main(argv: Sequence[str] | None = None) -> int:
     parser.add_argument("--retain-recent-replay-runs", type=int, default=3)
     parser.add_argument("--retain-recent-attribution-runs", type=int, default=3)
     parser.add_argument("--retain-recent-te-refresh-runs", type=int, default=24)
+    parser.add_argument("--retain-recent-te-monthly-runs", type=int, default=24)
     parser.add_argument("--retain-recent-realtime-loops", type=int, default=100)
     parser.add_argument("--skip-local-retention", action="store_true", help="Skip local retention planning.")
     parser.add_argument("--skip-fold-monitor", action="store_true", help="Skip direct manager fold-state reads.")
@@ -1490,6 +1654,7 @@ def main(argv: Sequence[str] | None = None) -> int:
         retain_recent_replay_runs=args.retain_recent_replay_runs,
         retain_recent_attribution_runs=args.retain_recent_attribution_runs,
         retain_recent_te_refresh_runs=args.retain_recent_te_refresh_runs,
+        retain_recent_te_monthly_runs=args.retain_recent_te_monthly_runs,
         retain_recent_realtime_loops=args.retain_recent_realtime_loops,
     )
     write_storage_maintenance_summary(summary, output_path=args.output_path, root=args.root)

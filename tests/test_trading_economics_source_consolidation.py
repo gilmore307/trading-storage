@@ -38,7 +38,8 @@ class TradingEconomicsSourceConsolidationTests(unittest.TestCase):
             self.assertTrue(list((canonical / "2026-05" / "runs").glob("monthly_old_monthly_*")))
             self.assertTrue(list((canonical / "2026-06" / "runs").glob("realtime_rt_run_*")))
             manifest = json.loads((canonical / "_manifests" / "source_consolidation_unit" / "manifest.json").read_text())
-            self.assertEqual(manifest["active_layout"], "storage/01_source_data/monthly_backfill/trading_economics_calendar_web/YYYY-MM/runs/<run_id>/{saved,cleaned,request_manifest.json,completion_receipt.json}")
+            self.assertIn("YYYY-MM/runs/<run_id>/{saved,cleaned}", manifest["active_layout"])
+            self.assertIn("rolling retention", manifest["active_layout"])
             rejected = (canonical / "_manifests" / "source_consolidation_unit" / "rejected_rows.csv").read_text()
             self.assertIn("Rejected Date Only", rejected)
 

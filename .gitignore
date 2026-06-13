@@ -35,6 +35,8 @@ htmlcov/
 !/storage/01_source_data/monthly_backfill/trading_economics_calendar_web/
 !/storage/01_source_data/monthly_backfill/trading_economics_calendar_web/**
 /storage/01_source_data/monthly_backfill/trading_economics_calendar_web/_manifests/
+/storage/01_source_data/monthly_backfill/trading_economics_calendar_web/**/completion_receipt.json
+/storage/01_source_data/monthly_backfill/trading_economics_calendar_web/**/request_manifest.json
 
 # Secrets and credentials
 secrets/

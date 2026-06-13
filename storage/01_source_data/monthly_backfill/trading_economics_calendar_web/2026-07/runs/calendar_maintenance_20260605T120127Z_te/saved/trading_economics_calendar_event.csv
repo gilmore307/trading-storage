@@ -1,0 +1,7 @@
+event_time,country,event,source_event_type,reference,actual,previous,consensus,te_forecast,revised,importance,symbol
+2026-07-01T05:30:00-04:00,United States,Challenger Job Cuts,challenger job cuts,JUN,,97.006K,,,,3,
+2026-07-01T07:00:00-04:00,United States,MBA 30-Year Mortgage Rate,mortgage rate,JUN/26,,,,,,3,
+2026-07-01T07:00:00-04:00,United States,MBA Mortgage Applications,mortgage applications,JUN/26,,,,,,3,
+2026-07-01T07:00:00-04:00,United States,MBA Mortgage Market Index,mba mortgage market index,JUN/26,,,,,,3,
+2026-07-01T07:00:00-04:00,United States,MBA Mortgage Refinance Index,mba mortgage refinance index,JUN/26,,,,,,3,
+2026-07-01T07:00:00-04:00,United States,MBA Purchase Index,mba purchase index,JUN/26,,,,,,3,

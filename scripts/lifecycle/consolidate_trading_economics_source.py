@@ -189,7 +189,7 @@ def execute_consolidation(source_data_root: Path, stamp: str, *, execute: bool) 
         "run_bucket_count": len(buckets),
         "legacy_roots_moved": [],
         "monthly_originals_moved": False,
-        "active_layout": "storage/01_source_data/monthly_backfill/trading_economics_calendar_web/YYYY-MM/runs/<run_id>/{saved,cleaned,request_manifest.json,completion_receipt.json}",
+        "active_layout": "storage/01_source_data/monthly_backfill/trading_economics_calendar_web/YYYY-MM/runs/<run_id>/{saved,cleaned}; request_manifest.json and completion_receipt.json are run-local side products under rolling retention after compact provenance exists",
     }
     if not execute:
         return summary

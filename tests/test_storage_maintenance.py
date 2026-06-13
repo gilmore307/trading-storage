@@ -267,6 +267,28 @@ class StorageMaintenanceTests(unittest.TestCase):
                 run.mkdir(parents=True)
                 (run / "completion_receipt.json").write_text("{}", encoding="utf-8")
 
+            te_month_old = (
+                root
+                / "storage"
+                / "01_source_data"
+                / "monthly_backfill"
+                / "trading_economics_calendar_web"
+                / "2026-06"
+                / "runs"
+                / "calendar_maintenance_20260610T000000Z_te"
+            )
+            te_month_new = te_month_old.parent / "calendar_maintenance_20260613T000000Z_te"
+            for run in (te_month_old, te_month_new):
+                (run / "saved").mkdir(parents=True)
+                (run / "cleaned").mkdir(parents=True)
+                (run / "saved" / "trading_economics_calendar_event.csv").write_text("event_time,event\n", encoding="utf-8")
+                (run / "cleaned" / "trading_economics_calendar_event.jsonl").write_text('{"event":"NFP"}\n', encoding="utf-8")
+                (run / "request_manifest.json").write_text("{}", encoding="utf-8")
+                (run / "completion_receipt.json").write_text(
+                    json.dumps({"status": "succeeded", "row_counts": {"trading_economics_calendar_event": 1}}),
+                    encoding="utf-8",
+                )
+
             realtime_old = root / "storage" / "04_execution_artifacts" / "runtime" / "realtime_monitor" / "20260610T000000Z"
             realtime_new = realtime_old.parent / "20260613T000000Z"
             for run in (realtime_old, realtime_new):
@@ -279,6 +301,7 @@ class StorageMaintenanceTests(unittest.TestCase):
                 apply_lifecycle_gap_actions=True,
                 retain_recent_replay_runs=1,
                 retain_recent_te_refresh_runs=1,
+                retain_recent_te_monthly_runs=1,
                 retain_recent_realtime_loops=1,
                 generated_at_utc="2026-06-13T12:00:00Z",
             )
@@ -293,10 +316,16 @@ class StorageMaintenanceTests(unittest.TestCase):
                 self.assertEqual(handle.read(), "triage\n")
             self.assertFalse(refresh_old.exists())
             self.assertTrue(refresh_new.exists())
+            self.assertTrue((te_month_old / "saved" / "trading_economics_calendar_event.csv").exists())
+            self.assertTrue((te_month_old / "cleaned" / "trading_economics_calendar_event.jsonl").exists())
+            self.assertFalse((te_month_old / "completion_receipt.json").exists())
+            self.assertFalse((te_month_old / "request_manifest.json").exists())
+            self.assertTrue((te_month_new / "completion_receipt.json").exists())
             self.assertFalse(realtime_old.exists())
             self.assertTrue(realtime_new.exists())
             compact_root = root / "storage" / "90_lifecycle" / "maintenance" / "compact_contracts"
             self.assertTrue((compact_root / "replay_execution_runs_compact_manifest.json").exists())
+            self.assertTrue((compact_root / "te_monthly_source_provenance_manifest.json").exists())
 
 
 if __name__ == "__main__":
