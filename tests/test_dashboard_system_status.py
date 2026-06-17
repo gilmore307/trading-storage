@@ -355,6 +355,32 @@ class DashboardSystemStatusTests(unittest.TestCase):
             )
         )
 
+    def test_successful_inactive_transient_service_is_healthy(self) -> None:
+        self.assertTrue(
+            _systemd_unit_is_healthy(
+                unit_kind="service",
+                unit_type="simple",
+                load_state="loaded",
+                active_state="inactive",
+                enabled_state="transient",
+                substate="dead",
+                result="success",
+            )
+        )
+
+    def test_failed_inactive_transient_service_is_unhealthy(self) -> None:
+        self.assertFalse(
+            _systemd_unit_is_healthy(
+                unit_kind="service",
+                unit_type="simple",
+                load_state="loaded",
+                active_state="inactive",
+                enabled_state="transient",
+                substate="dead",
+                result="exit-code",
+            )
+        )
+
 
 if __name__ == "__main__":
     unittest.main()

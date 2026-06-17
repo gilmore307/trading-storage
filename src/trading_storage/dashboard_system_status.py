@@ -242,6 +242,8 @@ def _systemd_unit_is_healthy(
     if active_state == "inactive" and result in {"", "success"}:
         if unit_type == "oneshot":
             return True
+        if unit_kind == "service" and enabled_state == "transient":
+            return True
         if enabled_state in {"disabled", "indirect", "static"}:
             return True
         if unit_kind in {"path", "timer"} and enabled_state == "disabled":
