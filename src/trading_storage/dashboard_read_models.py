@@ -31,7 +31,7 @@ REFRESHABLE_CONTRACT_TYPES = frozenset(
         "realtime_signal_summary",
         "temporal_explorer_summary",
         "execution_realtime_trading_runtime_status",
-        "model_layer_readiness_summary",
+        "model_readiness_summary",
         "model_promotion_posture_summary",
     }
 )

@@ -11,9 +11,9 @@ The policy goal is not merely to free disk space. The goal is to make retention,
 Core rule:
 
 ```text
-Layer 1 and Layer 2 data are persistent source/feature foundations and must be retained, compressed, and protected from deletion by default.
-Reusable source data, including Layer 1/2 market-regime and sector-context foundations, is never a fold-completion delete target.
-Target-specific or experiment-specific source data that will not be reused may enter deletion planning only as an explicit fold-scoped folder after the full Layer 1-10 fold closes.
+M01 and M02 data are persistent source/feature foundations and must be retained, compressed, and protected from deletion by default.
+Reusable source data, including M01/M02 market-regime and sector-context foundations, is never a fold-completion delete target.
+Target-specific or experiment-specific source data that will not be reused may enter deletion planning only as an explicit fold-scoped folder after the full M01-M06 fold closes.
 Later-layer model-run metadata and dashboard/cache snapshots may be handled only after the model run cycle closes, provided latest summaries, receipts, manifests, lineage refs, unresolved-alert evidence, and any needed regeneration/debug evidence remain. While the event model is being redesigned and downstream models must be regenerated, dashboard/model-run metadata pruning is on hold unless a bounded reviewed slice says otherwise.
 Promoted model bodies are preserved permanently.
 Regenerable intermediate training data may be deleted after the owning run/fold/replay closes and compact evidence proves no active consumer remains.
@@ -111,23 +111,23 @@ Includes promoted and old-promoted model artifacts, configs, schema/feature cont
 
 Policy: preserve permanently. Do not automatically delete old promoted model bodies.
 
-### Layer 1 and Layer 2 foundation data
+### M01 and M02 foundation data
 
-Includes Layer 1 market-regime and Layer 2 sector-context source/feature foundations, plus lineage-required PIT inputs needed to rebuild downstream model runs.
+Includes M01 market-regime and M02 sector-context source/feature foundations, plus lineage-required PIT inputs needed to rebuild downstream model runs.
 
-Policy: persist by default. Prefer compression and archive over deletion. Do not classify Layer 1/2 data as disposable metadata merely because a model run completed.
+Policy: persist by default. Prefer compression and archive over deletion. Do not classify M01/M02 data as disposable metadata merely because a model run completed.
 
-### Layer 1 and Layer 2 intermediate/runtime files
+### M01 and M02 intermediate/runtime files
 
-Includes Layer 1/2 scratch, staging, intermediate files, runtime directories, failed-run temp files, and stdout/stderr/log files that are not the only remaining receipt, manifest, lineage reference, reusable source/feature foundation, or compact summary.
+Includes M01/M02 scratch, staging, intermediate files, runtime directories, failed-run temp files, and stdout/stderr/log files that are not the only remaining receipt, manifest, lineage reference, reusable source/feature foundation, or compact summary.
 
-Policy: delete after the run or fold closes and after compact summaries, receipts, manifests, and reusable Layer 1/2 outputs are preserved. These files may enter quarantine planning even though Layer 1/2 final source/feature foundations remain protected.
+Policy: delete after the run or fold closes and after compact summaries, receipts, manifests, and reusable M01/M02 outputs are preserved. These files may enter quarantine planning even though M01/M02 final source/feature foundations remain protected.
 
 ### Fold-scoped target source data
 
-Includes target-symbol or experiment-specific source folders created for a bounded six-month model-worker fold, where the folder is not intended to serve as reusable Layer 1/2 source foundation or durable replay/source history.
+Includes target-symbol or experiment-specific source folders created for a bounded six-month model-worker fold, where the folder is not intended to serve as reusable M01/M02 source foundation or durable replay/source history.
 
-Policy: delete by fold folder only after the full Layer 1-10 fold closes. The accepted folder boundary is `storage/01_source_data/fold_scoped/<fold_id>/...`; storage maintenance emits `storage_fold_source_cleanup_candidate` rows only for completed fold ids under that root. These candidates still require artifact-index coverage, protected-set clearance, quarantine/recheck, and deletion receipts before any destructive executor may remove bytes. Individual files inside a fold-scoped folder should not be independently deleted out of order.
+Policy: delete by fold folder only after the full M01-M06 fold closes. The accepted folder boundary is `storage/01_source_data/fold_scoped/<fold_id>/...`; storage maintenance emits `storage_fold_source_cleanup_candidate` rows only for completed fold ids under that root. These candidates still require artifact-index coverage, protected-set clearance, quarantine/recheck, and deletion receipts before any destructive executor may remove bytes. Individual files inside a fold-scoped folder should not be independently deleted out of order.
 
 Architecture-driven model group reruns may also place bounded source-data partitions into lifecycle candidates, but only when the manager `model_group_rerun_plan` cutpoint is `data_acquisition` and the source definition, provider/source parameters, acquisition contract, or existing source partition is itself stale or wrong. The candidate scope must name the provider/source, target symbol where applicable, fold or month window, timeframe, artifact family, and contract/schema. Source data remains protected for reruns whose cutpoint is `feature_generation` or later. The rerun plan's `delete_set` is treated as lifecycle candidate input, not deletion authority.
 
@@ -149,7 +149,7 @@ Anything not matched, not cleared, or not reviewed remains retained. Reset recei
 
 ### Later-layer model-run metadata
 
-Includes Layer 3+ diagnostic summaries, runtime metadata, dashboard snapshots, staging/intermediate files, scratch feature files, failed-run temp files, duplicated dry-run payloads, and old stdout/stderr logs that are not the only remaining receipt/manifest/lineage evidence.
+Includes M02+ diagnostic summaries, runtime metadata, dashboard snapshots, staging/intermediate files, scratch feature files, failed-run temp files, duplicated dry-run payloads, and old stdout/stderr logs that are not the only remaining receipt/manifest/lineage evidence.
 
 Policy: delete or roll forward after the model run cycle closes and after latest summaries, receipts, manifests, lineage refs, and unresolved-alert evidence are preserved. Keep only compact summary/receipt evidence after the accepted rolling window.
 
@@ -169,7 +169,7 @@ When one logical fact appears in more than one class, the narrower canonical cla
 
 Replay storage separates reusable replay inputs, model-specific temporary downloads, and permanent model-pipeline replay results.
 
-Reusable replay inputs include Layer 1 market-regime inputs, Layer 2 sector-context inputs, and event/news inputs collected for replay/replay use. Policy: retain or compress/archive because later model pipelines and replay windows can reuse them.
+Reusable replay inputs include M01 market-regime inputs, M02 sector-context inputs, and event/news inputs collected for replay/replay use. Policy: retain or compress/archive because later model pipelines and replay windows can reuse them.
 
 Model-specific replay downloads include one-off files pulled only because a particular model pipeline needed them for a replay run, such as point-in-time option snapshots. Policy: delete after the replay closes once result summaries, manifests, acquisition receipts, and any reusable inputs are preserved.
 
@@ -194,14 +194,14 @@ Policy: never compress PostgreSQL live data files directly. Archive through dump
 
 ## Retention defaults
 
-- Layer 1 market-regime data: persistent; compress/archive if needed, do not auto-delete;
-- Layer 2 sector-context data: persistent; compress/archive if needed, do not auto-delete;
-- Layer 1/2 intermediate/runtime/log files: delete after run/fold close when summaries, receipts, manifests, and reusable outputs are retained;
+- M01 market-regime data: persistent; compress/archive if needed, do not auto-delete;
+- M02 sector-context data: persistent; compress/archive if needed, do not auto-delete;
+- M01/M02 intermediate/runtime/log files: delete after run/fold close when summaries, receipts, manifests, and reusable outputs are retained;
 - promoted model bodies: permanent;
 - promotion/review/activation/deactivation receipts: permanent;
 - dataset snapshot/split manifests: permanent or lineage lifetime;
 - model-pipeline replay result summaries and scorecards: permanent;
-- replay Layer 1/2 and event/news reusable inputs: retain or compress/archive;
+- replay M01/M02 and event/news reusable inputs: retain or compress/archive;
 - model-specific replay downloads such as one-off option snapshots: delete after replay close when summaries/manifests/receipts are retained;
 - PIT/vintage/source history: compress and retain by default;
 - Trading Economics calendar/source rows and payloads: keep forever; no delete candidates, no destructive pruning, only append/incremental additions under the canonical month-bucketed TE source root;
@@ -210,7 +210,7 @@ Policy: never compress PostgreSQL live data files directly. Archive through dump
 - dashboard/read-model state-change snapshots: delete after explicit reviewed approval; current default prune plan keeps zero timestamped snapshots per contract and marks timestamped dashboard snapshots as delete candidates while preserving current read-model files, schemas, SQL, and source data;
 - lifecycle receipts, tombstones, executed protected sets, executed lifecycle plans, and quarantine/recheck evidence: retained as audit evidence;
 - lifecycle `runs`, `outputs`, and `staging`: ordinary runtime context rolls off after about 30 days; formal lifecycle evidence found there is retained until extracted to canonical `storage/90_lifecycle` evidence directories;
-- Layer 3+ model-run metadata/intermediates: delete after run-cycle close when reproducible or no longer lineage-required;
+- M02+ model-run metadata/intermediates: delete after run-cycle close when reproducible or no longer lineage-required;
 - failed/blocked run scratch: 7-14 days;
 - ordinary logs: 30 days, then delete or compress if important;
 - unpromoted candidate intermediates: 30-60 days;
@@ -264,7 +264,7 @@ By default, `scripts/lifecycle/run_storage_maintenance.py` is report-only. It do
 
 Hashing, protected-set checks, compression planning, quarantine/recheck, and deletion gates remain in the artifact-index and lifecycle-plan pipeline for broad or unknown-scope lifecycle actions. The maintenance gap executor is only for the explicitly listed state-triggered classes.
 
-Maintenance also reads completed ten-layer fold state from manager. For completed folds, it may report `storage_fold_sql_backup_candidate` rows and, when `storage/01_source_data/fold_scoped/<fold_id>/` exists, `storage_fold_source_cleanup_candidate` rows. Fold-scoped source cleanup candidates remain planning evidence only; the maintenance gap executor does not delete those folders.
+Maintenance also reads completed retired serial fold state from manager. For completed folds, it may report `storage_fold_sql_backup_candidate` rows and, when `storage/01_source_data/fold_scoped/<fold_id>/` exists, `storage_fold_source_cleanup_candidate` rows. Fold-scoped source cleanup candidates remain planning evidence only; the maintenance gap executor does not delete those folders.
 
 ## Current V0.1 dry-run planner
 

@@ -4,7 +4,7 @@
 
 | Docs band | Implementation surface | Purpose |
 |---|---|---|
-| `10_*` | layer-specific storage docs | Storage boundaries for model/data layer artifacts. |
+| `10_*` | model-specific storage docs | Storage boundaries for model/data layer artifacts. |
 | `20_*` | `scripts/lifecycle/` | Storage lifecycle policy and lifecycle receipts. |
 | `30_*` | `scripts/artifacts/`, storage artifact layouts | Artifact index, protected set, compression, and archive rules. |
 | `40_*` | `scripts/dashboard/` | Dashboard read models and summary layouts. |
@@ -31,11 +31,11 @@ This file maps those modules and records the implemented local ignored-file help
 | Class | Path | Owner | Rule |
 |---|---|---|---|
 | Source-controlled contracts/assets | `docs/`, `main/`, `src/`, `scripts/`, `tests/` | Git | Reviewed and committed. No generated output belongs here. |
-| Source data and source outputs | `storage/01_source_data/` | data-producing repositories with storage-owned placement | Reusable Layer 1/2 foundations, downloaded/provider/source evidence, monthly backfill data, realtime source evidence, source-output artifacts, event evidence, and explicitly fold-scoped target/source folders. Reusable Layer 1/2 data is not deleted; fold-scoped target/source folders may become deletion candidates only after the full fold closes. |
+| Source data and source outputs | `storage/01_source_data/` | data-producing repositories with storage-owned placement | Reusable M01/M02 foundations, downloaded/provider/source evidence, monthly backfill data, realtime source evidence, source-output artifacts, event evidence, and explicitly fold-scoped target/source folders. Reusable M01/M02 data is not deleted; fold-scoped target/source folders may become deletion candidates only after the full fold closes. |
 | Control-plane state | `storage/02_control_plane/` | `trading-manager` with storage-owned placement | Manager task payloads, scheduler state, locks, coverage, dispatch receipts, and workflow checkpoints. |
 | Model artifacts | `storage/03_model_artifacts/` | `trading-model` with storage-owned placement | Model research artifacts, training/runtime outputs, diagnostics, and promotion-adjacent model evidence. |
 | Execution artifacts | `storage/04_execution_artifacts/` | `trading-execution` with storage-owned placement | Realtime monitor receipts, execution-side observations, shadow/live evidence, and execution runtime files. |
-| Replay datasets | `storage/05_replay_datasets/` | `trading-evaluation` with storage-owned placement | Frozen replay preparation bundles, replay dataset manifests, acquisition plans, reusable Layer 1/2 and event/news replay inputs, model-pipeline replay result summaries, and model-specific temporary replay downloads. |
+| Replay datasets | `storage/05_replay_datasets/` | `trading-evaluation` with storage-owned placement | Frozen replay preparation bundles, replay dataset manifests, acquisition plans, reusable M01/M02 and event/news replay inputs, model-pipeline replay result summaries, and model-specific temporary replay downloads. |
 | Dashboard cache | `storage/06_dashboard_cache/` | `trading-storage` dashboard read-model helpers | One current JSON file per read-model contract plus schemas; timestamped full snapshots and materialization index files are legacy cleanup targets. |
 | Local durable artifact evidence | `storage/02_control_plane/artifacts/` | `trading-storage` helper | Retained until reviewed promotion/deletion policy supersedes it. Not committed. |
 | Lifecycle evidence | `storage/90_lifecycle/{artifact_index,protected_set,plans,quarantine_recheck,receipts,tombstones}/` | `trading-storage` lifecycle helpers | Canonical lifecycle evidence and audit records. Formal receipts/tombstones and executed decision evidence are retained and must not live only in transient run/output folders. |
@@ -81,8 +81,8 @@ The command emits a JSON plan with counts for `archive`, `delete`, `retain`, and
 ## Safety Rules
 
 - Dry-run is the default.
-- Durable numbered roots are report-only by default in local retention; the helper does not delete source data, control-plane evidence, model artifacts, execution artifacts, replay datasets, completion receipts, or other storage-owned artifact evidence. Artifact-index lifecycle planning may still classify disposable Layer 1/2 runtime/log/intermediate files as TTL cleanup candidates after run/fold close.
-- `storage/01_source_data/fold_scoped/<fold_id>/` is the only accepted source-data folder boundary for fold-completion cleanup candidates. Scheduled maintenance may report those folders after a completed ten-layer fold, but real deletion still requires artifact-index coverage, protected-set clearance, quarantine/recheck, and a deletion receipt.
+- Durable numbered roots are report-only by default in local retention; the helper does not delete source data, control-plane evidence, model artifacts, execution artifacts, replay datasets, completion receipts, or other storage-owned artifact evidence. Artifact-index lifecycle planning may still classify disposable M01/M02 runtime/log/intermediate files as TTL cleanup candidates after run/fold close.
+- `storage/01_source_data/fold_scoped/<fold_id>/` is the only accepted source-data folder boundary for fold-completion cleanup candidates. Scheduled maintenance may report those folders after a completed retired serial fold, but real deletion still requires artifact-index coverage, protected-set clearance, quarantine/recheck, and a deletion receipt.
 - Repository-local `logs/`, `runs/`, and `outputs/` are copied to `storage/90_lifecycle/archive/` before active files are removed.
 - Repository-local `tmp/` is disposable and is deleted after its TTL without archiving.
 - Target `storage/90_lifecycle/logs/`, `storage/90_lifecycle/runs/`, `storage/90_lifecycle/outputs/`, `storage/90_lifecycle/tmp/`, `storage/90_lifecycle/staging/<component>/`, and `storage/90_lifecycle/cache/<component>/` roots are covered by the lifecycle helper.

@@ -15,10 +15,10 @@ class FileLifecycleAcceptanceTests(unittest.TestCase):
     def test_acceptance_writes_evidence_and_compresses_only_copies(self) -> None:
         with tempfile.TemporaryDirectory() as raw_tmp:
             root = Path(raw_tmp)
-            source_dir = root / "storage" / "02_control_plane" / "artifacts" / "layer_01_market_regime"
+            source_dir = root / "storage" / "02_control_plane" / "artifacts" / "model_01_market_context"
             source_dir.mkdir(parents=True)
-            source = source_dir / "layer_01_payload.json"
-            source.write_text('{"contract_type":"layer_01_source_data","model_layer":"layer_01_market_regime"}\n', encoding="utf-8")
+            source = source_dir / "model_01_payload.json"
+            source.write_text('{"contract_type":"model_01_source_data","model_layer":"model_01_market_context"}\n', encoding="utf-8")
             snapshot_dir = root / "storage" / "06_dashboard_cache" / "read_models" / "current_status" / "snapshots" / "2026" / "05" / "01"
             snapshot_dir.mkdir(parents=True)
             (snapshot_dir / "20260501T000000Z.json").write_text('{"contract_type":"current_status"}\n', encoding="utf-8")

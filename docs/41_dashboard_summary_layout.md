@@ -35,7 +35,7 @@ Accepted implementation targets:
 - `historical_task_progress_summary`
 - `realtime_signal_summary`
 - `execution_realtime_trading_runtime_status`
-- `model_layer_readiness_summary`
+- `model_readiness_summary`
 - `model_promotion_posture_summary`
 
 Parked future contracts:
@@ -79,7 +79,7 @@ Semantic producers remain separate:
 | Summary family | Semantic owner |
 |---|---|
 | Current status, task progress, model promotion posture, alert aggregation | `trading-manager` |
-| Model layer readiness, model evidence requirements, and model metrics | `trading-model` |
+| Model readiness, model evidence requirements, and model metrics | `trading-model` |
 | Realtime task/signal state and execution connectivity | `trading-execution` |
 | Provider/data freshness details | `trading-data` |
 | Storage lifecycle/pressure/restore posture | `trading-storage` |
@@ -137,7 +137,7 @@ The storage-side materialization and refresh helpers are implemented:
 - `src/trading_storage/dashboard_refresh.py` and `scripts/dashboard/refresh_historical_task_progress_read_model.py` run the manager-owned `historical_task_progress_summary` producer and materialize the validated output.
 - `src/trading_storage/dashboard_realtime_signals.py` and `scripts/dashboard/refresh_realtime_signal_summary_read_model.py` build and materialize `realtime_signal_summary`.
 - `src/trading_storage/dashboard_execution_runtime.py` and `scripts/dashboard/refresh_execution_runtime_status_read_model.py` build and materialize `execution_realtime_trading_runtime_status`.
-- `src/trading_storage/dashboard_models.py` and `scripts/dashboard/refresh_public_dashboard_read_models.py` build and materialize the Models-page set: `model_layer_readiness_summary` and `model_promotion_posture_summary`.
+- `src/trading_storage/dashboard_models.py` and `scripts/dashboard/refresh_public_dashboard_read_models.py` build and materialize the Models-page set: `model_readiness_summary` and `model_promotion_posture_summary`.
 - `deploy/systemd/trading-storage-dashboard-read-model-refresh.service` and `.timer` provide the reviewed fallback refresh template. Manager workflow-state writes trigger primary progress refreshes; the timer default is 60 seconds for calibration when an event is missed.
 
 Still not implemented: compact metric time-series publishers for dashboard history charts.
@@ -151,6 +151,6 @@ Still not implemented: compact metric time-series publishers for dashboard histo
 - `temporal_explorer_summary` for the Temporal Explorer page;
 - `realtime_signal_summary` for realtime monitor/signal readiness;
 - `execution_realtime_trading_runtime_status` for execution runtime readiness;
-- `model_layer_readiness_summary` and `model_promotion_posture_summary` for the Models page.
+- `model_readiness_summary` and `model_promotion_posture_summary` for the Models page.
 
 The systemd refresh service uses this batch entrypoint so public pages update from storage-hosted read models without the dashboard querying raw component internals.

@@ -95,7 +95,7 @@ class ArtifactIndexTests(unittest.TestCase):
     def test_layer_one_two_artifacts_are_compress_and_retain(self):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
-            artifact = root / "storage" / "02_control_plane" / "artifacts" / "layer_01_market_regime" / "bars.csv"
+            artifact = root / "storage" / "02_control_plane" / "artifacts" / "model_01_market_context" / "bars.csv"
             artifact.parent.mkdir(parents=True, exist_ok=True)
             artifact.write_text("date,symbol,close\n2016-01-04,SPY,200\n", encoding="utf-8")
 
@@ -107,7 +107,7 @@ class ArtifactIndexTests(unittest.TestCase):
     def test_layer_one_two_runtime_logs_are_ttl_delete_allowed(self):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
-            artifact = root / "storage" / "03_model_artifacts" / "layer_02_sector_context" / "runs" / "run_1" / "stdout.log"
+            artifact = root / "storage" / "03_model_artifacts" / "model_01_sector_context" / "runs" / "run_1" / "stdout.log"
             artifact.parent.mkdir(parents=True, exist_ok=True)
             artifact.write_text("run log\n", encoding="utf-8")
 
@@ -171,7 +171,7 @@ class ArtifactIndexTests(unittest.TestCase):
     def test_reusable_replay_layer_and_news_inputs_are_compress_and_retain(self):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
-            layer_input = root / "storage" / "05_replay_datasets" / "reusable_inputs" / "layer_01_market_regime" / "bars.csv"
+            layer_input = root / "storage" / "05_replay_datasets" / "reusable_inputs" / "model_01_market_context" / "bars.csv"
             news_input = root / "storage" / "05_replay_datasets" / "reusable_inputs" / "event_news" / "news.jsonl"
             layer_input.parent.mkdir(parents=True, exist_ok=True)
             news_input.parent.mkdir(parents=True, exist_ok=True)
@@ -182,7 +182,7 @@ class ArtifactIndexTests(unittest.TestCase):
 
             by_path = {record.physical_path: record for record in index.records}
             self.assertEqual(
-                by_path["storage/05_replay_datasets/reusable_inputs/layer_01_market_regime/bars.csv"].retention_class,
+                by_path["storage/05_replay_datasets/reusable_inputs/model_01_market_context/bars.csv"].retention_class,
                 "compress_and_retain",
             )
             self.assertEqual(
@@ -302,16 +302,16 @@ class ArtifactIndexTests(unittest.TestCase):
             self.assertEqual(len({record.artifact_id for record in index.records}), 2)
             self.assertTrue(all(record.artifact_id.startswith("art_idx_") for record in index.records))
 
-    def test_layer_ten_runtime_metadata_is_ttl_delete_allowed(self):
+    def test_m06_runtime_metadata_is_ttl_delete_allowed(self):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
-            artifact = root / "storage" / "02_control_plane" / "artifacts" / "model_10_volatility_surface" / "runtime_summary.json"
+            artifact = root / "storage" / "02_control_plane" / "artifacts" / "model_06_residual_event_governance" / "runtime_summary.json"
             artifact.parent.mkdir(parents=True, exist_ok=True)
             artifact.write_text(
                 json.dumps(
                     {
-                        "contract_type": "model_10_volatility_surface_runtime_summary",
-                        "model_layer": "model_06_volatility_surface",
+                        "contract_type": "model_06_residual_event_governance_runtime_summary",
+                        "model_layer": "model_06_residual_event_governance",
                     }
                 ),
                 encoding="utf-8",

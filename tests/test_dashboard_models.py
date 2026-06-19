@@ -6,11 +6,11 @@ import unittest
 from pathlib import Path
 
 from trading_storage.dashboard_models import (
-    MODEL_LAYER_READINESS_CONTRACT,
+    MODEL_READINESS_CONTRACT,
     MODEL_PROMOTION_POSTURE_CONTRACT,
-    build_model_layer_readiness_summary,
+    build_model_readiness_summary,
     build_model_promotion_posture_summary,
-    refresh_model_layer_readiness_summary_read_model,
+    refresh_model_readiness_summary_read_model,
     refresh_model_promotion_posture_summary_read_model,
 )
 from trading_storage.dashboard_read_models import validate_dashboard_read_model
@@ -36,17 +36,17 @@ def _historical_payload() -> dict:
             "active_task": {"layer": 5},
             "task_timeline": [
                 {
-                    "task_uid": "l5-train",
+                    "task_uid": "m05-train",
                     "month": "2016-fold1",
-                    "task_id": "layer_05_alpha_confidence.model_generation.train",
-                    "task_label": "Layer 5 Alpha Confidence Model",
+                    "task_id": "model_05_option_expression.model_generation.train",
+                    "task_label": "M05 Option Expression Model",
                     "task_state": "completed",
                     "status": "succeeded",
                     "stage_type": "model_generation",
                     "layer": 5,
                     "status_updated_at_utc": "2026-05-29T00:01:00Z",
                     "detail": {
-                        "receipt_refs": ["storage/02_control_plane/runtime/model_training_stage_receipts/layer_05_alpha_confidence__model_generation__test/receipt.json"],
+                        "receipt_refs": ["storage/02_control_plane/runtime/model_training_stage_receipts/model_05_option_expression__model_generation__test/receipt.json"],
                         "progress": {"status": "complete"},
                     },
                 },
@@ -511,21 +511,21 @@ def _write_unscoped_group_promotion_version(storage_root: Path) -> None:
 
 
 class DashboardModelsTests(unittest.TestCase):
-    def test_builds_model_layer_readiness_from_existing_summaries(self) -> None:
+    def test_builds_model_readiness_from_existing_summaries(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             storage_root = Path(tmp)
             _write_latest(storage_root, "historical_task_progress_summary", _historical_payload())
             _write_latest(storage_root, "execution_realtime_trading_runtime_status", _runtime_payload())
             _write_group_promotion_version(storage_root)
 
-            payload = build_model_layer_readiness_summary(storage_root=storage_root, generated_at_utc="2026-05-29T00:04:00Z")
+            payload = build_model_readiness_summary(storage_root=storage_root, generated_at_utc="2026-05-29T00:04:00Z")
 
-            self.assertEqual(payload["contract_type"], MODEL_LAYER_READINESS_CONTRACT)
-            self.assertEqual(validate_dashboard_read_model(payload), MODEL_LAYER_READINESS_CONTRACT)
+            self.assertEqual(payload["contract_type"], MODEL_READINESS_CONTRACT)
+            self.assertEqual(validate_dashboard_read_model(payload), MODEL_READINESS_CONTRACT)
             layers = payload["chart_payload"]["layers"]
-            self.assertEqual(len(layers), 10)
+            self.assertEqual(len(layers), 6)
             layer_five = next(layer for layer in layers if layer["layer"] == 5)
-            self.assertEqual(layer_five["versions"][0]["version_id"], "2016-fold1:model_05_alpha_confidence")
+            self.assertEqual(layer_five["versions"][0]["version_id"], "2016-fold1:model_05_option_expression")
             self.assertEqual(layer_five["promotion"]["status"], "deferred")
             self.assertEqual(len(payload["chart_payload"]["group_versions"]), 1)
 
@@ -537,8 +537,8 @@ class DashboardModelsTests(unittest.TestCase):
                 {
                     "task_uid": "l5-fold2-partial",
                     "month": "2016-fold2",
-                    "task_id": "layer_05_alpha_confidence",
-                    "task_label": "Layer 5 Alpha Confidence Model",
+                    "task_id": "model_05_option_expression",
+                    "task_label": "M05 Option Expression Model",
                     "task_state": "future",
                     "status": "blocked",
                     "stage_type": "model_task",
@@ -546,21 +546,21 @@ class DashboardModelsTests(unittest.TestCase):
                     "status_updated_at_utc": "2026-05-29T00:09:00Z",
                     "detail": {
                         "receipt_refs": [
-                            "storage/02_control_plane/runtime/model_training_stage_receipts/layer_05_alpha_confidence__data_acquisition/receipt.json",
-                            "storage/02_control_plane/runtime/model_training_stage_receipts/layer_05_alpha_confidence__feature_generation/receipt.json",
+                            "storage/02_control_plane/runtime/model_training_stage_receipts/model_05_option_expression__data_acquisition/receipt.json",
+                            "storage/02_control_plane/runtime/model_training_stage_receipts/model_05_option_expression__feature_generation/receipt.json",
                         ],
                         "progress": {"status": "blocked"},
-                        "blockers": ["upstream_layer_04_model_generation_complete"],
+                        "blockers": ["upstream_model_03_generation_complete"],
                     },
                 }
             )
             _write_latest(storage_root, "historical_task_progress_summary", historical)
             _write_latest(storage_root, "execution_realtime_trading_runtime_status", _runtime_payload())
 
-            payload = build_model_layer_readiness_summary(storage_root=storage_root, generated_at_utc="2026-05-29T00:10:00Z")
+            payload = build_model_readiness_summary(storage_root=storage_root, generated_at_utc="2026-05-29T00:10:00Z")
 
             layer_five = next(layer for layer in payload["chart_payload"]["layers"] if layer["layer"] == 5)
-            self.assertEqual(layer_five["versions"][0]["version_id"], "2016-fold1:model_05_alpha_confidence")
+            self.assertEqual(layer_five["versions"][0]["version_id"], "2016-fold1:model_05_option_expression")
 
     def test_builds_model_promotion_posture_rows(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
@@ -575,7 +575,7 @@ class DashboardModelsTests(unittest.TestCase):
             self.assertEqual(validate_dashboard_read_model(payload), MODEL_PROMOTION_POSTURE_CONTRACT)
             self.assertEqual(len(payload["chart_payload"]["models"]), 1)
             layer_five = next(row for row in payload["chart_payload"]["models"] if row["layer"] == 5)
-            self.assertEqual(layer_five["version_id"], "2016-fold1:model_05_alpha_confidence")
+            self.assertEqual(layer_five["version_id"], "2016-fold1:model_05_option_expression")
             self.assertEqual(layer_five["evaluation_status"], "ready")
             self.assertEqual(payload["chart_payload"]["status_counts"], {"deferred": 1})
             self.assertEqual(payload["chart_payload"]["identity_counts"], {"retired": 1})
@@ -687,12 +687,12 @@ class DashboardModelsTests(unittest.TestCase):
             _write_latest(storage_root, "historical_task_progress_summary", _historical_payload())
             _write_latest(storage_root, "execution_realtime_trading_runtime_status", _runtime_payload())
 
-            layer_receipt = refresh_model_layer_readiness_summary_read_model(storage_root=storage_root)
+            layer_receipt = refresh_model_readiness_summary_read_model(storage_root=storage_root)
             promotion_receipt = refresh_model_promotion_posture_summary_read_model(storage_root=storage_root)
 
-            self.assertEqual(layer_receipt["refreshed_contract_type"], MODEL_LAYER_READINESS_CONTRACT)
+            self.assertEqual(layer_receipt["refreshed_contract_type"], MODEL_READINESS_CONTRACT)
             self.assertEqual(promotion_receipt["refreshed_contract_type"], MODEL_PROMOTION_POSTURE_CONTRACT)
-            self.assertTrue((storage_root / "06_dashboard_cache/read_models/model_layer_readiness_summary.json").exists())
+            self.assertTrue((storage_root / "06_dashboard_cache/read_models/model_readiness_summary.json").exists())
             self.assertTrue((storage_root / "06_dashboard_cache/read_models/model_promotion_posture_summary.json").exists())
 
 

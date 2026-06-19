@@ -178,7 +178,7 @@ Move those assets into `trading-storage/main/`.
 This includes:
 
 - `main/templates/` for reusable drafting and implementation templates.
-- `main/shared/` for reviewed shared static files such as `layer_01_02_market_context_etf_universe.csv`.
+- `main/shared/` for reviewed shared static files such as `model_01_background_context_etf_universe.csv`.
 
 ### Consequences
 
@@ -187,14 +187,14 @@ This includes:
 - Shared names and template-introduced vocabulary still route through the `trading-manager` SQL registry before cross-repository use.
 - Generated outputs, runtime artifacts, logs, notebooks, caches, and secrets remain out of Git.
 
-## D009 - Sector-observation combinations belong to Layer 2
+## D009 - Sector-observation combinations belong to M02
 
 Date: 2026-04-30
 Status: Accepted
 
 ### Context
 
-The shared relative-strength combination table drives both Layer 1 broad market-state evidence and Layer 2 broad sector-anchor plus crypto-context evidence. Chentong accepted the stricter boundary that all sector-rotation evidence should move to Layer 2 so Layer 1 stays clean. The `bkch_bitw` pair uses `BKCH`, a `sector_observation_etf`, but was still marked as `primary`, which caused crypto-related equity context evidence to remain in Layer 1.
+The shared relative-strength combination table drives both M01 broad market-state evidence and M02 broad sector-anchor plus crypto-context evidence. Chentong accepted the stricter boundary that all sector-rotation evidence should move to M02 so M01 stays clean. The `bkch_bitw` pair uses `BKCH`, a `sector_observation_etf`, but was still marked as `primary`, which caused crypto-related equity context evidence to remain in M01.
 
 ### Decision
 
@@ -202,9 +202,9 @@ Classify `bkch_bitw` as `sector_rotation` instead of `primary`.
 
 ### Consequences
 
-- `m01_market_regime_feature_generation` does not generate `bkch_bitw_*` Layer 1 payload keys.
-- `m02_sector_context_feature_generation` emits `bkch_bitw` as a Layer 2 candidate-comparison row.
-- Future combinations involving `sector_observation_etf` candidates should default to Layer 2 unless explicitly reviewed as broad market/cross-asset evidence.
+- `m01_market_regime_feature_generation` does not generate `bkch_bitw_*` M01 payload keys.
+- `m02_sector_context_feature_generation` emits `bkch_bitw` as a M02 candidate-comparison row.
+- Future combinations involving `sector_observation_etf` candidates should default to M02 unless explicitly reviewed as broad market/cross-asset evidence.
 
 
 ## D010 - Storage preserves compact numeric layer field names
@@ -423,7 +423,7 @@ The common envelope requires contract metadata, generation freshness, source own
 - Registry names and storage layout policy are registered through `trading-manager` before implementation depends on them.
 - This decision does not enable lifecycle timers, provider calls, model activation, broker execution, account mutation, or dashboard-originated workflow control.
 
-## D014 - Single-asset crypto ETFs are target proxies, not Layer 1/2 context ETFs
+## D014 - Single-asset crypto ETFs are target proxies, not M01/M02 context ETFs
 
 Date: 2026-05-14
 Status: Accepted
@@ -435,67 +435,67 @@ Crypto has two distinct roles in the model stack:
 - broad crypto market-state evidence;
 - target-specific listed ETF proxies used when studying an underlying crypto asset such as BTC, ETH, or SOL.
 
-The curated ETF universe previously included single-asset crypto ETFs (`IBIT`, `ETHA`, `FSOL`) as Layer 1 `crypto_beta` rows. That makes the Layer 1 state too target-specific and can leak a target's own proxy into upstream context when the studied target is BTC, ETH, or SOL.
+The curated ETF universe previously included single-asset crypto ETFs (`IBIT`, `ETHA`, `FSOL`) as M01 `crypto_beta` rows. That makes the M01 state too target-specific and can leak a target's own proxy into upstream context when the studied target is BTC, ETH, or SOL.
 
 ### Decision
 
-Keep broad crypto context in the Layer 1/2 universe only where it is not a single-asset target proxy:
+Keep broad crypto context in the M01/M02 universe only where it is not a single-asset target proxy:
 
-- `BITW` remains Layer 1 broad crypto-basket market-state evidence.
-- `BKCH` remains Layer 2 blockchain/crypto-related equity sector context.
-- `IBIT`, `ETHA`, and `FSOL` are removed from Layer 1/2 ETF universe and relative-strength combinations.
+- `BITW` remains M01 broad crypto-basket market-state evidence.
+- `BKCH` remains M02 blockchain/crypto-related equity sector context.
+- `IBIT`, `ETHA`, and `FSOL` are removed from M01/M02 ETF universe and relative-strength combinations.
 
 Single-asset crypto ETFs should be referenced only as auxiliary target/proxy instruments for the corresponding crypto target, for example `BTC -> IBIT` when optionable ETF proxy data, option activity, or listed-market expression evidence is needed.
 
 ### Consequences
 
-- Layer 1 crypto state no longer includes single-asset BTC/ETH/SOL ETF proxy rows.
-- Layer 2 crypto sector context remains `BKCH` unless a reviewed additional crypto sector ETF is added.
-- Crypto target studies may still use single-asset ETF proxies as target-specific auxiliary data, but those proxies are not broad Layer 1/2 context inputs by default.
+- M01 crypto state no longer includes single-asset BTC/ETH/SOL ETF proxy rows.
+- M02 crypto sector context remains `BKCH` unless a reviewed additional crypto sector ETF is added.
+- Crypto target studies may still use single-asset ETF proxies as target-specific auxiliary data, but those proxies are not broad M01/M02 context inputs by default.
 
-## D015 - Target Layer 2 context mapping owns crypto auxiliary proxy references
+## D015 - Target M02 context mapping owns crypto auxiliary proxy references
 
 Date: 2026-05-14
 Status: Accepted
 
 ### Context
 
-Layer 3+ target studies need an explicit way to map targets back to Layer 2 context without polluting the Layer 1/2 ETF context universe. Crypto targets are the first concrete case: BTC, ETH, and SOL need crypto-sector context, but their single-asset ETF products are target-specific listed-market proxies rather than broad market or sector ETFs.
+M02+ target studies need an explicit way to map targets back to M02 context without polluting the M01/M02 ETF context universe. Crypto targets are the first concrete case: BTC, ETH, and SOL need crypto-sector context, but their single-asset ETF products are target-specific listed-market proxies rather than broad market or sector ETFs.
 
 ### Decision
 
-Add `trading-storage/main/shared/layer_02_target_context_mapping.csv` as the reviewed shared contract for target-to-Layer-2 context and auxiliary proxy references.
+Add `trading-storage/main/shared/model_02_target_context_mapping.csv` as the reviewed shared contract for target-to-M02 context and auxiliary proxy references.
 
 The first accepted rows map:
 
-- `BTC -> BKCH` for Layer 2 crypto equity context, with `IBIT` as a target-specific listed/optionable proxy.
-- `ETH -> BKCH` for Layer 2 crypto equity context, with `ETHA` as a target-specific listed proxy candidate whose option use must be reviewed before option-specific provider tasks.
-- `SOL -> BKCH` for Layer 2 crypto equity context, with `FSOL` as a target-specific listed proxy candidate whose listing and option use must be reviewed before option-specific provider tasks.
+- `BTC -> BKCH` for M02 crypto equity context, with `IBIT` as a target-specific listed/optionable proxy.
+- `ETH -> BKCH` for M02 crypto equity context, with `ETHA` as a target-specific listed proxy candidate whose option use must be reviewed before option-specific provider tasks.
+- `SOL -> BKCH` for M02 crypto equity context, with `FSOL` as a target-specific listed proxy candidate whose listing and option use must be reviewed before option-specific provider tasks.
 
 ### Consequences
 
-- `layer_02_target_context_mapping.csv` is a Layer 3+ target-study helper, not a Layer 1/2 universe extension.
-- A symbol appearing as `listed_proxy_symbol` or `optionable_proxy_symbol` does not imply it belongs in `layer_01_02_market_context_etf_universe.csv` or relative-strength combinations.
+- `model_02_target_context_mapping.csv` is a M02+ target-study helper, not a M01/M02 universe extension.
+- A symbol appearing as `listed_proxy_symbol` or `optionable_proxy_symbol` does not imply it belongs in `model_01_background_context_etf_universe.csv` or relative-strength combinations.
 - Option-specific tasks must respect `optionable_proxy_status`; `verify_before_option_use` is not approval to call option feeds.
 
-## D019 - Shared Layer 1/2 context files use layer-prefixed names
+## D019 - Shared M01/M02 context files use layer-prefixed names
 
 Date: 2026-05-14
 Status: Accepted
 
 ### Context
 
-The shared static files under `main/shared/` now carry model-layer semantics directly. The old filenames were correct historically, but they did not make the Layer 1 / Layer 2 boundary visible at the path level.
+The shared static files under `main/shared/` now carry model-layer semantics directly. The old filenames were correct historically, but they did not make the M01 / M02 boundary visible at the path level.
 
 ### Decision
 
 Rename shared market-context files with explicit layer prefixes:
 
-- `layer_01_02_market_context_etf_universe.csv` for the mixed Layer 1/Layer 2 ETF universe whose `model_layer` column remains authoritative.
-- `layer_01_02_market_context_relative_strength_combinations.csv` for mixed Layer 1/Layer 2 relative-strength combinations whose `model_layer` column remains authoritative.
-- `layer_02_target_context_mapping.csv` for target-to-Layer-2 context and auxiliary proxy mappings used by Layer 3+ target studies.
+- `model_01_background_context_etf_universe.csv` for the mixed M01/M02 ETF universe whose `model_layer` column remains authoritative.
+- `model_01_background_context_relative_strength_combinations.csv` for mixed M01/M02 relative-strength combinations whose `model_layer` column remains authoritative.
+- `model_02_target_context_mapping.csv` for target-to-M02 context and auxiliary proxy mappings used by M02+ target studies.
 
-The rename is path clarity only. It does not split the mixed Layer 1/2 files, change row semantics, add proxy symbols back into context universes, authorize provider calls, or change model behavior.
+The rename is path clarity only. It does not split the mixed M01/M02 files, change row semantics, add proxy symbols back into context universes, authorize provider calls, or change model behavior.
 
 ### Consequences
 
@@ -503,18 +503,18 @@ The rename is path clarity only. It does not split the mixed Layer 1/2 files, ch
 - Old filenames should appear only in immutable registry migration history or other historical artifacts.
 - Future shared files with model-layer semantics should follow the same path-level layer-prefix convention.
 
-## D020 - Target context mappings may have multiple broad Layer 2 rows per target
+## D020 - Target context mappings may have multiple broad M02 rows per target
 
 Date: 2026-05-14
 Status: Accepted; focused ETF examples superseded by D029
 
 ### Context
 
-Crypto proxy mappings proved the target-to-Layer-2 context contract, but ordinary equity targets can also need more than one reviewed broad context row. D029 narrowed current Layer 2 to the 11 broad Select Sector SPDR anchors plus the `BKCH` crypto context-anchor exception, so focused industry-chain and theme ETF examples are no longer accepted Layer 2 mappings.
+Crypto proxy mappings proved the target-to-M02 context contract, but ordinary equity targets can also need more than one reviewed broad context row. D029 narrowed current M02 to the 11 broad Select Sector SPDR anchors plus the `BKCH` crypto context-anchor exception, so focused industry-chain and theme ETF examples are no longer accepted M02 mappings.
 
 ### Decision
 
-Allow `layer_02_target_context_mapping.csv` to contain multiple rows for one `target_symbol` when each row represents a distinct reviewed current Layer 2 context relationship. Current equity rows may map only to accepted broad Layer 2 anchors. The accepted `AAOI` example maps to:
+Allow `model_02_target_context_mapping.csv` to contain multiple rows for one `target_symbol` when each row represents a distinct reviewed current M02 context relationship. Current equity rows may map only to accepted broad M02 anchors. The accepted `AAOI` example maps to:
 
 - `XLK` as primary broad technology sector context;
 - `XLC` as weak downstream demand-side communication/platform infrastructure context.
@@ -524,8 +524,8 @@ For direct equity targets such as AAOI, auxiliary proxy fields may be empty and 
 ### Consequences
 
 - `target_symbol` is not unique in the mapping CSV; consumers must group rows by target and preserve all reviewed context rows.
-- Multi-row business mappings do not add the target itself to Layer 1/2 ETF universes.
-- Mapping rows remain metadata/evidence boundaries and do not authorize provider calls, model activation, broker/account mutation, storage lifecycle mutation, or Layer 1/2 universe edits.
+- Multi-row business mappings do not add the target itself to M01/M02 ETF universes.
+- Mapping rows remain metadata/evidence boundaries and do not authorize provider calls, model activation, broker/account mutation, storage lifecycle mutation, or M01/M02 universe edits.
 - Focused industry-chain and thematic ETFs such as `AIQ`, `SMH`, `CIBR`, `ARK*`, or `XBI` require a separate reviewed proxy/theme layer before they can re-enter target-context routing.
 
 ## D021 - Storage maintenance is the scheduled action service
@@ -539,7 +539,7 @@ Backup and deletion actions should not be scattered across manager, model, data,
 
 ### Decision
 
-Accept `trading-storage-maintenance.service` / `.timer` as the storage-owned scheduled maintenance boundary. The current runner inventories every numbered storage root, executes local retention for storage-owned runtime roots, including timed log archive/delete behavior, and reads manager fold-state files directly for completed ten-layer model-worker folds. Manager writes ordinary fold-progress runtime state only; storage owns backup/archive/delete planning, execution, and receipts.
+Accept `trading-storage-maintenance.service` / `.timer` as the storage-owned scheduled maintenance boundary. The current runner inventories every numbered storage root, executes local retention for storage-owned runtime roots, including timed log archive/delete behavior, and reads manager fold-state files directly for completed retired serial model-worker folds. Manager writes ordinary fold-progress runtime state only; storage owns backup/archive/delete planning, execution, and receipts.
 
 When storage detects a completed fold, it may create a storage-owned SQL backup candidate directly from the fold state. The backup executor phase must perform `pg_dump -Fc`, checksum, and restore-smoke evidence before any cleanup/lifecycle execution.
 
@@ -556,11 +556,11 @@ Status: Accepted
 
 ### Context
 
-`storage/01_source_data` now contains both reusable source foundations and source artifacts produced for bounded target/fold work. Treating all source data as permanent would eventually exhaust local storage, but deleting reusable Layer 1/2 market-regime and sector-context foundations would break later folds and downstream reuse.
+`storage/01_source_data` now contains both reusable source foundations and source artifacts produced for bounded target/fold work. Treating all source data as permanent would eventually exhaust local storage, but deleting reusable M01/M02 market-regime and sector-context foundations would break later folds and downstream reuse.
 
 ### Decision
 
-Keep reusable Layer 1/2 source data out of deletion planning. It may be compressed or archived, but it is not a fold-completion delete target.
+Keep reusable M01/M02 source data out of deletion planning. It may be compressed or archived, but it is not a fold-completion delete target.
 
 Allow target-specific or experiment-specific source data to become cleanup candidates only when it is explicitly placed under:
 
@@ -568,35 +568,35 @@ Allow target-specific or experiment-specific source data to become cleanup candi
 storage/01_source_data/fold_scoped/<fold_id>/
 ```
 
-The cleanup unit is the fold folder. Storage maintenance may emit a `storage_fold_source_cleanup_candidate` only after the corresponding manager fold state proves the full Layer 1-10 fold is complete. File-level artifact metadata may also use `storage_retention_class=fold_complete_delete_allowed` for fold-scoped source artifacts, which maps to quarantine planning after protected-set clearance.
+The cleanup unit is the fold folder. Storage maintenance may emit a `storage_fold_source_cleanup_candidate` only after the corresponding manager fold state proves the full M01-M06 fold is complete. File-level artifact metadata may also use `storage_retention_class=fold_complete_delete_allowed` for fold-scoped source artifacts, which maps to quarantine planning after protected-set clearance.
 
 ### Consequences
 
-- Layer 1/2 reusable source foundations remain protected from deletion even after a model fold finishes.
+- M01/M02 reusable source foundations remain protected from deletion even after a model fold finishes.
 - Fold-scoped target/source folders can be rolled off by completed fold to prevent storage growth.
 - No destructive deletion is authorized by this decision alone. Candidates still require artifact-index coverage, protected-set clearance, quarantine/recheck, and deletion receipts.
 - Producers must not label reusable source foundations as `fold_complete_delete_allowed`.
 
-## D023 - Layer 1/2 intermediate and log files are not foundation data
+## D023 - M01/M02 intermediate and log files are not foundation data
 
 Date: 2026-05-20
 Status: Accepted
 
 ### Context
 
-D022 protects reusable Layer 1/2 source foundations while allowing fold-scoped target/source cleanup. A remaining ambiguity was Layer 1/2 run byproducts: logs, stdout/stderr, scratch, staging, cache, failed-run temp files, and intermediate files. Keeping those indefinitely would waste storage, but deleting reusable Layer 1/2 foundations would break reuse.
+D022 protects reusable M01/M02 source foundations while allowing fold-scoped target/source cleanup. A remaining ambiguity was M01/M02 run byproducts: logs, stdout/stderr, scratch, staging, cache, failed-run temp files, and intermediate files. Keeping those indefinitely would waste storage, but deleting reusable M01/M02 foundations would break reuse.
 
 ### Decision
 
-Classify Layer 1/2 intermediate/runtime/log byproducts as TTL cleanup candidates after the run or fold closes, provided compact summaries, receipts, manifests, lineage references, and reusable Layer 1/2 outputs are retained.
+Classify M01/M02 intermediate/runtime/log byproducts as TTL cleanup candidates after the run or fold closes, provided compact summaries, receipts, manifests, lineage references, and reusable M01/M02 outputs are retained.
 
-Reusable Layer 1/2 source/feature foundations remain `compress_and_retain` or stronger. The cleanup rule applies only to disposable runtime/intermediate/log material.
+Reusable M01/M02 source/feature foundations remain `compress_and_retain` or stronger. The cleanup rule applies only to disposable runtime/intermediate/log material.
 
 ### Consequences
 
-- Artifact-index classification may assign `ttl_delete_allowed` to Layer 1/2 paths containing runtime/log/scratch/staging/cache/intermediate markers.
+- Artifact-index classification may assign `ttl_delete_allowed` to M01/M02 paths containing runtime/log/scratch/staging/cache/intermediate markers.
 - Such files still require lifecycle planning, protected-set clearance, quarantine/recheck, and deletion receipts before destructive deletion.
-- Producers should keep final reusable Layer 1/2 outputs and compact summaries out of disposable runtime/log paths.
+- Producers should keep final reusable M01/M02 outputs and compact summaries out of disposable runtime/log paths.
 
 ## D024 - Replay keeps reusable inputs and summaries, not model-specific downloads
 
@@ -609,7 +609,7 @@ Replay work needs both reusable cross-pipeline inputs and model-pipeline-specifi
 
 ### Decision
 
-Keep replay Layer 1/2 inputs and replay event/news inputs as reusable data. They may be compressed or archived, but they should remain available for future replay/replay use.
+Keep replay M01/M02 inputs and replay event/news inputs as reusable data. They may be compressed or archived, but they should remain available for future replay/replay use.
 
 Keep every model pipeline's compact replay result summary, scorecard/baseline comparison, manifest refs, and receipt evidence permanently.
 
@@ -618,7 +618,7 @@ Allow model-specific replay downloads, such as option snapshots fetched only for
 ### Consequences
 
 - `storage/05_replay_datasets` is not a single retention class.
-- Reusable replay Layer 1/2 and event/news inputs classify as `compress_and_retain`.
+- Reusable replay M01/M02 and event/news inputs classify as `compress_and_retain`.
 - Model-pipeline replay result summaries classify as `keep_forever` with protected reason `replay_result_summary`.
 - Model-specific replay option/download artifacts classify as `ttl_delete_allowed`.
 - Destructive deletion still requires lifecycle planning, protected-set clearance, quarantine/recheck, and deletion receipts.
@@ -647,7 +647,7 @@ use latest-only retention. The default prune plan keeps zero timestamped snapsho
 ### Consequences
 
 - Dashboard read-model storage remains a current summary boundary instead of a history store.
-- Current read-model files, schemas, Layer 1/2 data, SQL data, and canonical evidence are not deletion targets for the dashboard snapshot pruner.
+- Current read-model files, schemas, M01/M02 data, SQL data, and canonical evidence are not deletion targets for the dashboard snapshot pruner.
 - If a dashboard snapshot explicitly declares that it is the only copy of important unresolved evidence, that evidence must be moved to its canonical root before snapshot cleanup.
 - Destructive dashboard snapshot deletion still requires explicit apply plus a reviewed approval reference.
 
@@ -738,33 +738,33 @@ Storage owns the next steps: artifact-index matching, protected-set clearance, l
 - SQL TE rows and dashboard TE read models are rebuildable materializations, not source-of-truth data.
 - New TE source refresh files under the canonical root should be committed after secret/path sanity checks.
 
-## D029 - Layer 2 context uses broad sector anchors plus crypto exception
+## D029 - M02 context uses broad sector anchors plus crypto exception
 
 Date: 2026-06-04
 Status: Accepted
 
 ### Context
 
-The prior Layer 2 ETF universe mixed broad sector anchors such as `XLE` and `XLK` with focused industry-chain and theme ETFs such as `SMH`, `CIBR`, `ARKW`, `AIQ`, and `XBI`. That mixed granularity made Layer 2 semantics unclear and contributed to replay/candidate handoff confusion: context ETF refs were too easy to treat as ordinary tradable candidates or candidate-source evidence.
+The prior M02 ETF universe mixed broad sector anchors such as `XLE` and `XLK` with focused industry-chain and theme ETFs such as `SMH`, `CIBR`, `ARKW`, `AIQ`, and `XBI`. That mixed granularity made M02 semantics unclear and contributed to replay/candidate handoff confusion: context ETF refs were too easy to treat as ordinary tradable candidates or candidate-source evidence.
 
 Crypto requires one explicit exception because crypto targets are not covered by the GICS sector anchors.
 
 ### Decision
 
-Restrict Layer 2 context to the 11 broad Select Sector SPDR anchor ETFs plus the `BKCH` crypto context-anchor exception:
+Restrict M02 context to the 11 broad Select Sector SPDR anchor ETFs plus the `BKCH` crypto context-anchor exception:
 
 ```text
 XLB XLC XLE XLF XLI XLK XLP XLRE XLU XLV XLY BKCH
 ```
 
-Focused industry-chain and thematic-growth ETFs are not current Layer 2 sector anchors. They may be reconsidered only through a separately reviewed proxy/theme layer with explicit target-specific semantics.
+Focused industry-chain and thematic-growth ETFs are not current M02 sector anchors. They may be reconsidered only through a separately reviewed proxy/theme layer with explicit target-specific semantics.
 
-ETF holdings do not define the ordinary equity candidate universe. Ordinary equity candidates come from the reviewed total-symbol pool and target metadata; Layer 2 supplies broad sector-anchor state attached to those candidates.
+ETF holdings do not define the ordinary equity candidate universe. Ordinary equity candidates come from the reviewed total-symbol pool and target metadata; M02 supplies broad sector-anchor state attached to those candidates.
 
 ### Consequences
 
-- `main/shared/layer_01_02_market_context_etf_universe.csv` keeps only the 11 broad sector ETFs plus `BKCH` under `layer_02_sector_context`.
-- `main/shared/layer_01_02_market_context_relative_strength_combinations.csv` keeps Layer 2 combinations among broad sector anchors, `BKCH`, and broad market/crypto references, and removes focused industry/theme comparisons.
-- `main/shared/layer_02_target_context_mapping.csv` may reference only accepted broad Layer 2 anchors plus `BKCH` in `layer2_context_symbol`; focused industry/theme symbols are not valid current Layer 2 context symbols.
+- `main/shared/model_01_background_context_etf_universe.csv` keeps only the 11 broad sector ETFs plus `BKCH` under `model_01_sector_context`.
+- `main/shared/model_01_background_context_relative_strength_combinations.csv` keeps M02 combinations among broad sector anchors, `BKCH`, and broad market/crypto references, and removes focused industry/theme comparisons.
+- `main/shared/model_02_target_context_mapping.csv` may reference only accepted broad M02 anchors plus `BKCH` in `layer2_context_symbol`; focused industry/theme symbols are not valid current M02 context symbols.
 - Historical replay should not borrow current ETF holdings to manufacture point-in-time candidate evidence.
-- Future use of `SMH`, `CIBR`, `ARK*`, `XBI`, or similar focused ETFs requires a new accepted proxy/theme contract instead of reintroducing mixed-granularity Layer 2.
+- Future use of `SMH`, `CIBR`, `ARK*`, `XBI`, or similar focused ETFs requires a new accepted proxy/theme contract instead of reintroducing mixed-granularity M02.

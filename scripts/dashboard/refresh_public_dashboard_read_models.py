@@ -12,9 +12,9 @@ from trading_storage.artifact_store import now_utc
 from trading_storage.dashboard_snapshot_lifecycle import build_dashboard_snapshot_lifecycle_plan
 from trading_storage.dashboard_execution_runtime import DEFAULT_EXECUTION_STATUS_PATH, EXECUTION_RUNTIME_STATUS_CONTRACT, refresh_execution_runtime_status_read_model
 from trading_storage.dashboard_models import (
-    MODEL_LAYER_READINESS_CONTRACT,
+    MODEL_READINESS_CONTRACT,
     MODEL_PROMOTION_POSTURE_CONTRACT,
-    refresh_model_layer_readiness_summary_read_model,
+    refresh_model_readiness_summary_read_model,
     refresh_model_promotion_posture_summary_read_model,
 )
 from trading_storage.dashboard_refresh import DEFAULT_TRADING_MANAGER_ROOT, HISTORICAL_TASK_PROGRESS_CONTRACT, refresh_historical_task_progress_read_model
@@ -92,8 +92,8 @@ def main(argv: list[str] | None = None) -> int:
             ),
         ),
         _run_one(
-            MODEL_LAYER_READINESS_CONTRACT,
-            lambda: refresh_model_layer_readiness_summary_read_model(storage_root=args.storage_root),
+            MODEL_READINESS_CONTRACT,
+            lambda: refresh_model_readiness_summary_read_model(storage_root=args.storage_root),
         ),
         _run_one(
             MODEL_PROMOTION_POSTURE_CONTRACT,

@@ -9,7 +9,7 @@ Executable storage maintenance and artifact helpers live here. Scripts may impor
 - `dashboard/refresh_temporal_explorer_summary_read_model.py` builds the primary Temporal Explorer summary from calendar substrate tables and chart cache.
 - `dashboard/refresh_realtime_signal_summary_read_model.py` builds the execution-owned realtime signal summary from monitor receipts and materializes the validated payload into the accepted storage layout.
 - `dashboard/refresh_execution_runtime_status_read_model.py` builds the execution realtime runtime status read model from the execution-owned readiness artifact for WebSocket clients.
-- `dashboard/refresh_public_dashboard_read_models.py` refreshes the public dashboard read-model set, currently including current system status, historical task progress, Temporal Explorer, realtime signal summary, execution runtime status, model layer readiness, and model promotion posture.
+- `dashboard/refresh_public_dashboard_read_models.py` refreshes the public dashboard read-model set, currently including current system status, historical task progress, Temporal Explorer, realtime signal summary, execution runtime status, model readiness, and model promotion posture.
 
 Examples:
 

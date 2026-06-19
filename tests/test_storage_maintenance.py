@@ -129,7 +129,7 @@ class StorageMaintenanceTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as raw_tmp:
             root = Path(raw_tmp) / "trading-storage"
             fold_folder = root / "storage" / "01_source_data" / "fold_scoped" / "fold_2016-01_2016-06"
-            source_file = fold_folder / "targets" / "AAPL" / "layer_03_source.json"
+            source_file = fold_folder / "targets" / "AAPL" / "model_02_source.json"
             source_file.parent.mkdir(parents=True)
             source_file.write_text("payload", encoding="utf-8")
 

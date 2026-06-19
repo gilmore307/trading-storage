@@ -16,9 +16,9 @@ from typing import Any, Mapping
 from .artifact_store import now_utc
 from .dashboard_read_models import materialize_dashboard_read_model
 
-MODEL_LAYER_READINESS_CONTRACT = "model_layer_readiness_summary"
+MODEL_READINESS_CONTRACT = "model_readiness_summary"
 MODEL_PROMOTION_POSTURE_CONTRACT = "model_promotion_posture_summary"
-MODEL_LAYER_READINESS_SCHEMA_REF = f"storage/06_dashboard_cache/schemas/{MODEL_LAYER_READINESS_CONTRACT}.schema.json"
+MODEL_READINESS_SCHEMA_REF = f"storage/06_dashboard_cache/schemas/{MODEL_READINESS_CONTRACT}.schema.json"
 MODEL_PROMOTION_POSTURE_SCHEMA_REF = f"storage/06_dashboard_cache/schemas/{MODEL_PROMOTION_POSTURE_CONTRACT}.schema.json"
 
 HISTORICAL_TASK_PROGRESS_CONTRACT = "historical_task_progress_summary"
@@ -27,16 +27,12 @@ DEFAULT_STORAGE_ROOT = Path("storage")
 DEFAULT_STALE_AFTER_SECONDS = 900
 
 MODEL_LAYERS = (
-    (1, "model_01_market_regime", "Market Regime"),
-    (2, "model_02_sector_context", "Sector Context"),
-    (3, "model_03_target_state_vector", "Target State Vector"),
-    (4, "model_04_event_failure_risk", "Event Failure Risk"),
-    (5, "model_05_alpha_confidence", "Alpha Confidence"),
-    (6, "model_06_dynamic_risk_policy", "Dynamic Risk Policy"),
-    (7, "model_07_position_projection", "Position Projection"),
-    (8, "model_08_underlying_action", "Underlying Action"),
-    (9, "model_05_option_expression", "Option Expression"),
-    (10, "model_06_residual_event_governance", "Event Risk Governor"),
+    (1, "model_01_background_context", "Background Context"),
+    (2, "model_02_target_state", "Target State"),
+    (3, "model_03_event_state", "Event State"),
+    (4, "model_04_unified_decision", "Unified Decision"),
+    (5, "model_05_option_expression", "Option Expression"),
+    (6, "model_06_residual_event_governance", "Residual Event Governance"),
 )
 
 def _read_latest(storage_root: Path, contract_type: str) -> dict[str, Any] | None:
@@ -63,8 +59,6 @@ def _task_row_key(task: Mapping[str, Any]) -> str:
 
 
 def _layer_tasks(tasks: list[dict[str, Any]], layer: int) -> list[dict[str, Any]]:
-    if layer == 10:
-        return [task for task in tasks if task.get("task_id") == "model_group.model_06_residual_event_governance" or task.get("layer") == 10]
     return [task for task in tasks if task.get("layer") == layer]
 
 
@@ -198,7 +192,7 @@ def _ref_matches_layer(ref: str | None, layer: int, model_id: str) -> bool:
     if not ref:
         return False
     normalized = ref.lower()
-    return model_id in normalized or f"layer_{layer:02d}" in normalized or f"model_{layer:02d}" in normalized
+    return model_id in normalized or f"m{layer:02d}" in normalized or f"model_{layer:02d}" in normalized
 
 
 def _global_task(tasks: list[dict[str, Any]], task_id: str) -> dict[str, Any] | None:
@@ -318,7 +312,7 @@ def _model_group_version_replay_contract_mismatch(decision: Mapping[str, Any], s
         return "replay receipt used deterministic crypto placeholder policy"
     candidate_handoff_status = str(replay_receipt.get("candidate_handoff_status") or "").strip().lower()
     if candidate_handoff_status not in {"available", "override"}:
-        return "replay receipt lacks Layer 2 target-candidate handoff evidence"
+        return "replay receipt lacks M02 target-candidate handoff evidence"
     return None
 
 
@@ -690,7 +684,7 @@ def _target_symbol_from_candidate_ref(candidate_model_ref: str) -> str | None:
     return raw_target.replace("_", ".")
 
 
-def build_model_layer_readiness_summary(
+def build_model_readiness_summary(
     *,
     storage_root: Path = DEFAULT_STORAGE_ROOT,
     generated_at_utc: str | None = None,
@@ -722,7 +716,7 @@ def build_model_layer_readiness_summary(
         layers.append(
             {
                 "layer": layer,
-                "layer_id": f"layer_{layer:02d}",
+                "layer_id": f"M{layer:02d}",
                 "model_id": model_id,
                 "name": name,
                 "status": _layer_status(layer_tasks),
@@ -747,7 +741,7 @@ def build_model_layer_readiness_summary(
         )
     status = "ready" if layers else "not_started"
     return {
-        "contract_type": MODEL_LAYER_READINESS_CONTRACT,
+        "contract_type": MODEL_READINESS_CONTRACT,
         "schema_version": 1,
         "generated_at_utc": generated_at_utc,
         "source_system": "trading-storage",
@@ -764,12 +758,12 @@ def build_model_layer_readiness_summary(
             "group_versions": group_versions,
             "excluded_group_versions": excluded_group_versions,
         },
-        "profile_refs": [{"registry_ref": "MODEL_LAYER_READINESS_SUMMARY", "field": "contract_type"}],
+        "profile_refs": [{"registry_ref": "MODEL_READINESS_SUMMARY", "field": "contract_type"}],
         "issue_refs": _exclusion_issue_refs(excluded_group_versions),
         "diagnostic_refs": [],
         "lineage_refs": _source_refs(historical, runtime),
         "freshness": _freshness([historical, runtime]),
-        "schema_ref": MODEL_LAYER_READINESS_SCHEMA_REF,
+        "schema_ref": MODEL_READINESS_SCHEMA_REF,
     }
 
 
@@ -809,7 +803,7 @@ def build_model_promotion_posture_summary(
             rows.append(
                 {
                     "layer": layer,
-                    "layer_id": f"layer_{layer:02d}",
+                    "layer_id": f"M{layer:02d}",
                     "model_id": model_id,
                     "model_ref": version["version_id"] if version else model_id,
                     "version_id": version["version_id"] if version else None,
@@ -860,10 +854,10 @@ def build_model_promotion_posture_summary(
     }
 
 
-def refresh_model_layer_readiness_summary_read_model(*, storage_root: Path = DEFAULT_STORAGE_ROOT) -> dict[str, Any]:
-    payload = build_model_layer_readiness_summary(storage_root=storage_root)
-    materialized = materialize_dashboard_read_model(payload, storage_root=storage_root, expected_contract_type=MODEL_LAYER_READINESS_CONTRACT)
-    return _refresh_receipt(MODEL_LAYER_READINESS_CONTRACT, materialized.index_row)
+def refresh_model_readiness_summary_read_model(*, storage_root: Path = DEFAULT_STORAGE_ROOT) -> dict[str, Any]:
+    payload = build_model_readiness_summary(storage_root=storage_root)
+    materialized = materialize_dashboard_read_model(payload, storage_root=storage_root, expected_contract_type=MODEL_READINESS_CONTRACT)
+    return _refresh_receipt(MODEL_READINESS_CONTRACT, materialized.index_row)
 
 
 def refresh_model_promotion_posture_summary_read_model(*, storage_root: Path = DEFAULT_STORAGE_ROOT) -> dict[str, Any]:
@@ -889,10 +883,10 @@ def _refresh_receipt(contract_type: str, materialized: Mapping[str, Any]) -> dic
 
 
 __all__ = [
-    "MODEL_LAYER_READINESS_CONTRACT",
+    "MODEL_READINESS_CONTRACT",
     "MODEL_PROMOTION_POSTURE_CONTRACT",
-    "build_model_layer_readiness_summary",
+    "build_model_readiness_summary",
     "build_model_promotion_posture_summary",
-    "refresh_model_layer_readiness_summary_read_model",
+    "refresh_model_readiness_summary_read_model",
     "refresh_model_promotion_posture_summary_read_model",
 ]

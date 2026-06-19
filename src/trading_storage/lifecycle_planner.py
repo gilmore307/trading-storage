@@ -148,7 +148,7 @@ DEFAULT_POLICY_RULES: tuple[LifecyclePolicyRule, ...] = (
         require_protected_set_clear=True,
         reason=(
             "Fold-scoped target/source artifacts may become deletion candidates only after the full "
-            "Layer 1-10 fold closes and protected-set clearance remains clear."
+            "M01-M06 fold closes and protected-set clearance remains clear."
         ),
     ),
 )

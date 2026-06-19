@@ -45,7 +45,7 @@ The following dashboard summary families are accepted as storage-bound design ta
 - `alert_exception_summary`;
 - `historical_task_progress_summary`;
 - `realtime_task_progress_summary`;
-- `model_layer_readiness_summary`;
+- `model_readiness_summary`;
 - `model_promotion_posture_summary`;
 - `registry_dictionary_profile`.
 
@@ -54,7 +54,7 @@ Implemented realtime summary families:
 - `temporal_explorer_summary`;
 - `execution_realtime_trading_runtime_status`;
 - `realtime_signal_summary`;
-- `model_layer_readiness_summary`;
+- `model_readiness_summary`;
 - `model_promotion_posture_summary`;
 
 Future/parked summary families:
@@ -90,7 +90,7 @@ A summary row or document should generally include:
 
 ## Storage Lifecycle Treatment
 
-Dashboard summaries are owner-facing metadata caches. They are not canonical Layer 1/2 data and should not consume unbounded storage.
+Dashboard summaries are owner-facing metadata caches. They are not canonical M01/M02 data and should not consume unbounded storage.
 
 Default lifecycle posture:
 
@@ -100,7 +100,7 @@ Default lifecycle posture:
 - use compact metric time series for historical chart needs instead of repeating full read-model JSON;
 - never delete snapshots that explicitly declare they are required as the only remaining evidence for an unresolved alert;
 - preserve summary contract/version metadata for restore compatibility;
-- never use dashboard snapshot pruning to delete Layer 1/2 data, SQL data, schemas, or current read-model files.
+- never use dashboard snapshot pruning to delete M01/M02 data, SQL data, schemas, or current read-model files.
 
 The current snapshot-prune helper defaults to keeping zero timestamped snapshots per contract and marking dashboard snapshots as delete candidates. The optional `--max-age-hours` flag can add a temporary age grace window for debugging, but the default is latest-only. It is dry-run by default and requires `--apply` plus a reviewed approval reference for deletion.
 
@@ -124,12 +124,12 @@ This document defines the storage-home boundary. `docs/41_dashboard_summary_layo
 Implemented storage-side support:
 
 - `src/trading_storage/dashboard_read_models.py` validates and materializes producer-supplied read-model JSON payloads under `storage/06_dashboard_cache/`. It writes `read_models/<contract_type>.json` and schema on every accepted refresh and does not write timestamped full snapshots.
-- `src/trading_storage/dashboard_snapshot_lifecycle.py` and `scripts/dashboard/prune_dashboard_snapshots.py` plan or apply deletion for old dashboard snapshot metadata while preserving current read-model files, schemas, Layer 1/2 data, and SQL.
+- `src/trading_storage/dashboard_snapshot_lifecycle.py` and `scripts/dashboard/prune_dashboard_snapshots.py` plan or apply deletion for old dashboard snapshot metadata while preserving current read-model files, schemas, M01/M02 data, and SQL.
 - `scripts/dashboard/materialize_read_model.py` exposes the helper as a CLI for one payload at a time.
 - `src/trading_storage/dashboard_refresh.py` and `scripts/dashboard/refresh_historical_task_progress_read_model.py` run the manager-owned `historical_task_progress_summary` producer and materialize the validated result; when no explicit coverage path is supplied, the refresh wrapper attaches the newest manager stage-coverage artifact so the Historical Task Progress page can show coverage instead of a blank placeholder.
 - `src/trading_storage/dashboard_temporal_explorer.py` and `scripts/dashboard/refresh_temporal_explorer_summary_read_model.py` build and materialize `temporal_explorer_summary` for the dashboard Temporal Explorer page from `calendar_day`, `calendar_market_session`, `calendar_scheduled_event`, `calendar_event_result`, `calendar_news_event_index`, and `chart_ohlcv_cache`. This is the primary calendar/dashboard route.
 - `src/trading_storage/dashboard_execution_runtime.py` and `scripts/dashboard/refresh_execution_runtime_status_read_model.py` build and materialize `execution_realtime_trading_runtime_status` from the execution-owned readiness artifact. Dashboard clients consume it through `/ws/read-models/execution_realtime_trading_runtime_status/latest`.
-- `src/trading_storage/dashboard_models.py` builds and materializes `model_layer_readiness_summary` and `model_promotion_posture_summary` from already-materialized task-progress, execution-runtime, and promotion-review artifacts. It reports model-group promotion-version history with active/shadow/retired identity, AUROC/return/drawdown/PCA metric fields, and component version refs for the Models page. Per-layer evaluation dossiers are not part of the current public dashboard route.
+- `src/trading_storage/dashboard_models.py` builds and materializes `model_readiness_summary` and `model_promotion_posture_summary` from already-materialized task-progress, execution-runtime, and promotion-review artifacts. It reports model-group promotion-version history with active/shadow/retired identity, AUROC/return/drawdown/PCA metric fields, and component version refs for the Models page. Per-layer evaluation dossiers are not part of the current public dashboard route.
 - `src/trading_storage/dashboard_realtime_signals.py` and `scripts/dashboard/refresh_realtime_signal_summary_read_model.py` build and materialize `realtime_signal_summary` from execution-owned realtime monitor receipts. When no realtime monitor receipt exists, the producer emits an explicit safe `not_started` state rather than fabricating signal metrics.
 - `deploy/systemd/trading-storage-dashboard-read-model-refresh.service` and `.timer` define the fallback periodic refresh template. Manager workflow-state writes trigger primary progress refreshes, while the timer default is 60 seconds for calibration when an event is missed.
 - Tests cover envelope validation, path safety, future timestamp rejection, secret-like payload rejection, latest/schema writes, the CLI materializer path, and refresh orchestration side-effect flags.
@@ -166,7 +166,7 @@ PYTHONPATH=src python3 scripts/dashboard/refresh_public_dashboard_read_models.py
 
 ### Model lifecycle producers
 
-`trading_storage.dashboard_models` produces `model_layer_readiness_summary` and `model_promotion_posture_summary` for the dashboard Models page. These summaries are derived from `historical_task_progress_summary`, `execution_realtime_trading_runtime_status`, and local promotion-review artifacts; they do not query raw model tables, activate models, place orders, or mutate lifecycle state. The model-group portion owns promotion-version history, active/shadow/retired identity, AUROC/return/drawdown/PCA metric fields, agent recommendation, and decision status because promotion is decided for the whole pipeline. Model-group replay evidence is publishable only when the replay receipt proves a Layer 2 target-candidate handoff or an explicit reviewed preview override; Layer 1/2 base-context refs are not trade candidates and do not make a replay eligible for display. Layer readiness rows provide model family, layer role, optimization target, and component version refs for group-version context only. Task state and workflow blockers remain Tasks/Diagnostics concerns rather than model-page validity labels.
+`trading_storage.dashboard_models` produces `model_readiness_summary` and `model_promotion_posture_summary` for the dashboard Models page. These summaries are derived from `historical_task_progress_summary`, `execution_realtime_trading_runtime_status`, and local promotion-review artifacts; they do not query raw model tables, activate models, place orders, or mutate lifecycle state. The model-group portion owns promotion-version history, active/shadow/retired identity, AUROC/return/drawdown/PCA metric fields, agent recommendation, and decision status because promotion is decided for the whole pipeline. Model-group replay evidence is publishable only when the replay receipt proves a M02 target-candidate handoff or an explicit reviewed preview override; M01/M02 base-context refs are not trade candidates and do not make a replay eligible for display. Model readiness rows provide model family, model role, optimization target, and component version refs for group-version context only. Task state and workflow blockers remain Tasks/Diagnostics concerns rather than model-page validity labels.
 
 ### Realtime signal producer
 

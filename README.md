@@ -30,8 +30,8 @@ docs/
   04_task.md
   05_decision.md
   06_memory.md
-  10_layer_01_market_regime.md
-  11_layer_02_sector_context.md
+  10_model_01_market_context.md
+  11_model_01_sector_context.md
   20_storage_lifecycle_policy.md
   21_lifecycle_receipts.md
   22_storage_maintenance_playbook.md

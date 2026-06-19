@@ -1,10 +1,10 @@
-# Layer 01 - Market Regime Storage
+# M01 Background Context Storage
 
-This file records the `trading-storage` view of Layer 1 persistence. Semantic construction belongs to `trading-data` and `trading-model`; global naming authority belongs to `trading-manager`.
+This file records the `trading-storage` view of M01 persistence. Semantic construction belongs to `trading-data` and `trading-model`; global naming authority belongs to `trading-manager`.
 
 ## Durable artifact names
 
-Accepted Layer 1 physical destinations should preserve these canonical names:
+Accepted M01 physical destinations should preserve these canonical names:
 
 ```text
 trading_data.m01_market_regime_data_acquisition
@@ -20,13 +20,13 @@ Storage contracts preserve point-in-time availability, row keys, restore/rehydra
 
 ## Column naming
 
-Generic identity, lineage, timestamp, and receipt columns may remain generic. Layer-owned model columns use canonical compact `1_*` names. SQL DDL should quote numeric-leading identifiers where required instead of inventing `layer01_*` semantic aliases.
+Generic identity, lineage, timestamp, and receipt columns may remain generic. Model-owned model columns use canonical compact `1_*` names. SQL DDL should quote numeric-leading identifiers where required instead of inventing `layer01_*` semantic aliases.
 
 ## Stage flow
 
 ```mermaid
 flowchart LR
-    contracts["accepted Layer 1 contracts<br/>source, feature, model, explainability, diagnostics"]
+    contracts["accepted M01 contracts<br/>source, feature, model, explainability, diagnostics"]
     layout["storage layout / SQL destination<br/>point-in-time durable persistence"]
     policy["retention, restore, rehydrate<br/>backup and reference rules"]
     consumers["data/model/manager/dashboard consumers<br/>dereference accepted artifacts"]
@@ -34,11 +34,11 @@ flowchart LR
     contracts --> layout --> policy --> consumers
 ```
 
-## Layer acceptance
+## Acceptance
 
-Layer 1 storage changes are acceptable when they:
+M01 storage changes are acceptable when they:
 
-- preserve canonical Layer 1 artifact names and point-in-time availability;
+- preserve canonical M01 artifact names and point-in-time availability;
 - define durable layout, reference, retention, restore, and rehydrate expectations before producers depend on them;
 - avoid deciding data/model semantics or promoting explainability/diagnostics fields into downstream dependencies;
 - avoid committing generated outputs, logs, credentials, or secrets;

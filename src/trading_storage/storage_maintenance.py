@@ -136,14 +136,14 @@ LIFECYCLE_GAP_SELECTORS: tuple[dict[str, Any], ...] = (
         "required_followup": "write latest stage-run summary plus aggregate before rolling detailed snapshots",
     },
     {
-        "artifact_ref": "storage/02_control_plane/runtime/layer_03_target_state_vector/input_materialization",
+        "artifact_ref": "storage/02_control_plane/runtime/model_02_target_state/input_materialization",
         "artifact_class": "debug_side_product",
         "issue": "unclear_lineage_rebuildability",
         "action": "retention_update",
         "final_handling_method": None,
         "handling_status": "insufficient_evidence",
         "trigger_required": "fold_or_run_closed",
-        "consumer_or_use": "Layer 3 input diagnosis",
+        "consumer_or_use": "M02 input diagnosis",
         "required_followup": "prove SQL/source lineage and model references before choosing delete or compress",
     },
     {
@@ -163,7 +163,7 @@ ORDERED_STORAGE_ROOTS: tuple[tuple[str, str, str, str], ...] = (
         "01_source_data",
         "storage/01_source_data",
         "durable_source",
-        "Reusable Layer 1/2 source foundations plus explicitly fold-scoped target/source artifacts.",
+        "Reusable M01/M02 source foundations plus explicitly fold-scoped target/source artifacts.",
     ),
     ("02_control_plane", "storage/02_control_plane", "durable_control", "Manager task state, workflow state, receipts, and control-plane artifacts."),
     ("03_model_artifacts", "storage/03_model_artifacts", "durable_model", "Model training, diagnostics, research, and promotion-adjacent artifacts."),
@@ -1471,7 +1471,7 @@ def _fold_source_cleanup_candidate(*, fold_id: str, source_folder: Path, root: P
         "requires_protected_set_clear": True,
         "requires_quarantine_recheck": True,
         "requires_deletion_receipt": True,
-        "preserve_reusable_layer_01_02_source_data": True,
+        "preserve_reusable_m01_m02_source_data": True,
         "deletion_performed": False,
     }
 

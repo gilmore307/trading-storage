@@ -20,15 +20,15 @@ The first implementation slice is conservative and filesystem-only:
 - indexed payloads are never mutated;
 - ambiguous artifacts default to `reproducibility_class=unknown`, `retention_class=manual_review_required`, and `protected_reason_codes=[unknown_metadata]`;
 - payload metadata may explicitly set `storage_retention_class`/`retention_class` and `storage_reproducibility_class`/`reproducibility_class` when a producer has a reviewed lifecycle classification;
-- explicit Layer 1/2 data hints classify as `retention_class=compress_and_retain` with no deletion-protection reason so compression planning can proceed while deletion remains out of policy;
-- Layer 1/2 runtime, log, scratch, staging, cache, and intermediate path hints classify as `ttl_delete_allowed`; this exception covers disposable run material only, not reusable source/feature foundations;
+- explicit M01/M02 data hints classify as `retention_class=compress_and_retain` with no deletion-protection reason so compression planning can proceed while deletion remains out of policy;
+- M01/M02 runtime, log, scratch, staging, cache, and intermediate path hints classify as `ttl_delete_allowed`; this exception covers disposable run material only, not reusable source/feature foundations;
 - replay model-pipeline result summaries classify as `keep_forever` and are protected by `replay_result_summary`;
 - non-replay artifacts explicitly classified as `keep_forever` are protected by `keep_forever_retention`;
-- replay reusable Layer 1/2 and event/news inputs classify as `compress_and_retain`;
+- replay reusable M01/M02 and event/news inputs classify as `compress_and_retain`;
 - replay model-specific option snapshot/download hints classify as `ttl_delete_allowed` after replay close when summaries, manifests, and receipts are retained;
-- `fold_complete_delete_allowed` is reserved for explicitly fold-scoped target/source artifacts that may become quarantine candidates only after full-fold completion; reusable Layer 1/2 source foundations must not use this class;
+- `fold_complete_delete_allowed` is reserved for explicitly fold-scoped target/source artifacts that may become quarantine candidates only after full-fold completion; reusable M01/M02 source foundations must not use this class;
 - current dashboard read models classify as `dashboard_latest_retained` and protected;
-- explicitly indexed dashboard snapshots classify as `ttl_delete_allowed` because they are metadata caches, not canonical Layer 1/2 data; the dashboard snapshot pruner uses latest-only retention and keeps zero timestamped snapshots per contract by default.
+- explicitly indexed dashboard snapshots classify as `ttl_delete_allowed` because they are metadata caches, not canonical M01/M02 data; the dashboard snapshot pruner uses latest-only retention and keeps zero timestamped snapshots per contract by default.
 
 This is enough for dry-run inventory and protected-set preparation. It is not a production deletion authorization surface. Do not point a routine scan at an unbounded snapshot-heavy read-model tree unless the caller deliberately wants that full inventory cost; use the bounded dashboard snapshot lifecycle helper for snapshot metadata pruning.
 
@@ -82,10 +82,10 @@ Deletion policy must depend strongly on `reproducibility_class`. `unknown`, `non
 Initial retention classes:
 
 - `keep_forever`: promoted model bodies, decisions, activation records, critical lineage, and model-pipeline replay result summaries;
-- `compress_and_retain`: valuable source data or row-level history that should move to cold compressed storage while remaining retained, including Layer 1/2 data foundations;
+- `compress_and_retain`: valuable source data or row-level history that should move to cold compressed storage while remaining retained, including M01/M02 data foundations;
 - `archive_retain`: online detail that can be detached/exported but must remain restorable;
-- `ttl_delete_allowed`: regenerable scratch, cache, timestamped dashboard snapshots, Layer 1/2 runtime/log/intermediate files, and later-layer model-run metadata that may be deleted after TTL/quarantine/run-cycle closure;
-- `fold_complete_delete_allowed`: target-symbol or experiment-specific source artifacts scoped to one completed model-worker fold and managed as a fold folder, not reusable Layer 1/2 foundations;
+- `ttl_delete_allowed`: regenerable scratch, cache, timestamped dashboard snapshots, M01/M02 runtime/log/intermediate files, and later-layer model-run metadata that may be deleted after TTL/quarantine/run-cycle closure;
+- `fold_complete_delete_allowed`: target-symbol or experiment-specific source artifacts scoped to one completed model-worker fold and managed as a fold folder, not reusable M01/M02 foundations;
 - `dashboard_latest_retained`: current dashboard read-model summaries that should remain hot and protected;
 - `metadata_only_after_archive`: detail can leave online storage after summary/manifest/archive is verified;
 - `manual_review_required`: default for ambiguous or high-risk artifacts.

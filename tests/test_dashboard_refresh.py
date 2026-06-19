@@ -27,7 +27,7 @@ def historical_payload() -> dict:
         "summary": "Historical scheduler can continue at the next selected stage.",
         "chart_payload": {
             "current_month": "2016-01",
-            "active_stage": "layer_01_market_regime.data_acquisition",
+            "active_stage": "model_01_market_context.data_acquisition",
             "progress_percent": 0.0,
             "stage_counts": {"pending": 1},
         },

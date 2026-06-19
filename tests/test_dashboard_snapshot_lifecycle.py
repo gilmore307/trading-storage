@@ -110,7 +110,7 @@ class DashboardSnapshotLifecycleTests(unittest.TestCase):
             self.assertTrue(latest.exists())
             self.assertEqual(plan.summary["action_counts"], {"deleted": 1, "retain_within_ttl": 1})
             self.assertTrue(plan.summary["mutation_performed"])
-            self.assertFalse(plan.summary["layer_01_02_data_deleted"])
+            self.assertFalse(plan.summary["m01_m02_data_deleted"])
             self.assertFalse(plan.summary["sql_mutation_performed"])
 
     def test_unresolved_issue_snapshots_are_retained(self):

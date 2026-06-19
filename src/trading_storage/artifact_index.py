@@ -341,8 +341,8 @@ def _is_dashboard_latest(relative_path: Path) -> bool:
     return len(relative_path.parts) == 4 and relative_path.parts[:3] == ("storage", "06_dashboard_cache", "read_models") and relative_path.suffix == ".json"
 
 
-def _has_layer_01_02_marker(text: str) -> bool:
-    return any(token in text for token in ("layer_01", "layer_02", "model_01", "model_02", "feature_01", "feature_02"))
+def _has_m01_m02_marker(text: str) -> bool:
+    return any(token in text for token in ("model_01", "model_02", "feature_01", "feature_02", "m01", "m02"))
 
 
 def _has_disposable_runtime_marker(text: str) -> bool:
@@ -388,8 +388,6 @@ def _has_reusable_replay_input_marker(text: str) -> bool:
         for token in (
             "event_news",
             "event_source_news",
-            "layer_01",
-            "layer_02",
             "market_regime",
             "news",
             "sector_context",
@@ -439,25 +437,17 @@ def _retention_class(
         return "ttl_delete_allowed"
     if _is_replay_path(relative_path) and _has_reusable_replay_input_marker(text):
         return "compress_and_retain"
-    if _has_layer_01_02_marker(text) and _has_disposable_runtime_marker(text):
+    if _has_m01_m02_marker(text) and _has_disposable_runtime_marker(text):
         return "ttl_delete_allowed"
-    if _has_layer_01_02_marker(text):
+    if _has_m01_m02_marker(text):
         return "compress_and_retain"
     if any(
         token in text
         for token in (
-            "layer_03",
-            "layer_04",
-            "layer_05",
-            "layer_06",
-            "layer_07",
-            "layer_08",
             "model_03",
             "model_04",
             "model_05",
             "model_06",
-            "model_07",
-            "model_08",
             "m05_option_expression_feature_generation",
             "m05_option_expression_data_acquisition_contract_path",
             "m06_residual_event_governance_feature_generation",

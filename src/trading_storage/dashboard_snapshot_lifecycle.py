@@ -1,10 +1,10 @@
 """Lifecycle planner/executor for dashboard read-model snapshots.
 
-Dashboard snapshots are owner-facing metadata caches, not canonical Layer 1/2
+Dashboard snapshots are owner-facing metadata caches, not canonical M01/M02
 source data.  The current default is latest-only: keep no timestamped full
 snapshots per read-model contract unless a debugging grace window is explicitly
 approved.  This helper removes only timestamped snapshot files after review. It
-never deletes current read-model files, schemas, legacy index rows, Layer 1/2
+never deletes current read-model files, schemas, legacy index rows, M01/M02
 source artifacts, SQL data, or non-dashboard paths.
 """
 
@@ -92,7 +92,7 @@ class DashboardSnapshotLifecyclePlan:
             "latest_json_deleted": False,
             "schema_deleted": False,
             "index_deleted": False,
-            "layer_01_02_data_deleted": False,
+            "m01_m02_data_deleted": False,
             "sql_mutation_performed": False,
         }
 
