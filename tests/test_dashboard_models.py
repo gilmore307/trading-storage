@@ -161,8 +161,10 @@ def _write_group_promotion_version(storage_root: Path) -> None:
         json.dumps(
             {
                 "contract_type": "evaluation_replay_execution_run",
+                "replay_execution_run_id": "aapl_replay_fixture",
                 "candidate_model_ref": "storage://trading-manager/model_group/aapl/2016-01_2016-06",
                 "candidate_fold_id": "fold_2016-01_2016-06",
+                "candidate_training_target": "AAPL",
                 "target_symbol": "AAPL",
                 "target_refs": ["AAPL_CANDIDATE_01", "AAPL_CANDIDATE_02"],
                 "candidate_handoff_status": "available",
@@ -228,6 +230,11 @@ def _write_group_promotion_version(storage_root: Path) -> None:
         json.dumps(
             {
                 "contract_type": "fold_settlement_run",
+                "fold_id": "fold_2016-01_2016-06",
+                "candidate_fold_id": "fold_2016-01_2016-06",
+                "candidate_model_ref": "storage://trading-manager/model_group/aapl/2016-01_2016-06",
+                "candidate_training_target": "AAPL",
+                "replay_execution_run_id": "aapl_replay_fixture",
                 "target_symbol": "AAPL",
                 "replay_result_ref": str(replay_receipt_path),
                 "metrics": {
@@ -359,6 +366,10 @@ def _write_group_promotion_version(storage_root: Path) -> None:
             {
                 "contract_type": "promotion_evaluation_review",
                 "target_symbol": "AAPL",
+                "candidate_model_ref": "storage://trading-manager/model_group/aapl/2016-01_2016-06",
+                "candidate_fold_id": "fold_2016-01_2016-06",
+                "candidate_training_target": "AAPL",
+                "replay_execution_run_id": "aapl_replay_fixture",
                 "recommendation": "insufficient_evidence",
                 "rationale": "AUROC below gate and comparison evidence missing.",
                 "blocking_issues": ["auroc_below_minimum", "missing anonymous comparison"],
@@ -374,6 +385,9 @@ def _write_group_promotion_version(storage_root: Path) -> None:
             {
                 "contract_type": "promotion_eligibility_decision",
                 "fold_id": "fold_2016-01_2016-06",
+                "candidate_fold_id": "fold_2016-01_2016-06",
+                "candidate_training_target": "AAPL",
+                "replay_execution_run_id": "aapl_replay_fixture",
                 "target_symbol": "AAPL",
                 "candidate_model_ref": "storage://trading-manager/model_group/aapl/2016-01_2016-06",
                 "decision_status": "deferred",
@@ -381,6 +395,24 @@ def _write_group_promotion_version(storage_root: Path) -> None:
                 "decision_reason": "AUROC below gate and comparison evidence missing.",
                 "settlement_run_ref": str(settlement_path),
                 "created_at_utc": "2026-05-29T00:04:00Z",
+            }
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+    (review_root / "model_group_evaluation_receipt.json").write_text(
+        json.dumps(
+            {
+                "contract_type": "model_group_evaluation_receipt",
+                "status": "succeeded",
+                "fold_id": "fold_2016-01_2016-06",
+                "candidate_fold_id": "fold_2016-01_2016-06",
+                "candidate_model_ref": "storage://trading-manager/model_group/aapl/2016-01_2016-06",
+                "candidate_training_target": "AAPL",
+                "replay_execution_run_id": "aapl_replay_fixture",
+                "target_symbol": "AAPL",
+                "fold_settlement_run_ref": str(settlement_path),
+                "replay_execution_receipt_ref": str(replay_receipt_path),
             }
         )
         + "\n",
@@ -402,7 +434,11 @@ def _write_mismatched_group_promotion_version(storage_root: Path) -> None:
         json.dumps(
             {
                 "contract_type": "evaluation_replay_execution_run",
+                "replay_execution_run_id": "crypto_replay_fixture",
                 "candidate_model_ref": "storage://trading-manager/model_group/2016-01_2016-06",
+                "candidate_fold_id": "fold_2016-01_2016-06",
+                "candidate_training_target": "AAPL",
+                "target_symbol": "AAPL",
                 "target_refs": ["BTC", "ETH", "SOL"],
                 "decision_rows_ref": str(replay_root / "decision_rows.jsonl"),
             }
@@ -431,6 +467,11 @@ def _write_mismatched_group_promotion_version(storage_root: Path) -> None:
         json.dumps(
             {
                 "contract_type": "fold_settlement_run",
+                "fold_id": "fold_2016-01_2016-06",
+                "candidate_fold_id": "fold_2016-01_2016-06",
+                "candidate_model_ref": "storage://trading-manager/model_group/aapl/2016-01_2016-06",
+                "candidate_training_target": "AAPL",
+                "replay_execution_run_id": "crypto_replay_fixture",
                 "target_symbol": "AAPL",
                 "replay_result_ref": str(replay_receipt_path),
                 "metrics": {"decision_row_count": 5382, "auroc": 0.52},
@@ -444,6 +485,10 @@ def _write_mismatched_group_promotion_version(storage_root: Path) -> None:
             {
                 "contract_type": "promotion_evaluation_review",
                 "target_symbol": "AAPL",
+                "candidate_model_ref": "storage://trading-manager/model_group/aapl/2016-01_2016-06",
+                "candidate_fold_id": "fold_2016-01_2016-06",
+                "candidate_training_target": "AAPL",
+                "replay_execution_run_id": "crypto_replay_fixture",
                 "recommendation": "insufficient_evidence",
                 "settlement_run_ref": str(settlement_path),
                 "created_at_utc": "2026-05-29T00:05:00Z",
@@ -457,6 +502,9 @@ def _write_mismatched_group_promotion_version(storage_root: Path) -> None:
             {
                 "contract_type": "promotion_eligibility_decision",
                 "fold_id": "fold_2016-01_2016-06",
+                "candidate_fold_id": "fold_2016-01_2016-06",
+                "candidate_training_target": "AAPL",
+                "replay_execution_run_id": "crypto_replay_fixture",
                 "target_symbol": "AAPL",
                 "candidate_model_ref": "storage://trading-manager/model_group/aapl/2016-01_2016-06",
                 "decision_status": "deferred",
@@ -627,6 +675,9 @@ class DashboardModelsTests(unittest.TestCase):
             self.assertEqual(payload["chart_payload"]["status_counts"], {"deferred": 1})
             self.assertEqual(payload["chart_payload"]["identity_counts"], {"retired": 1})
             self.assertEqual(payload["chart_payload"]["group_versions"][0]["version_label"], "AAPL 2016 fold1")
+            self.assertEqual(payload["chart_payload"]["group_versions"][0]["candidate_fold_id"], "fold_2016-01_2016-06")
+            self.assertEqual(payload["chart_payload"]["group_versions"][0]["candidate_training_target"], "AAPL")
+            self.assertEqual(payload["chart_payload"]["group_versions"][0]["replay_execution_run_id"], "aapl_replay_fixture")
             self.assertEqual(payload["chart_payload"]["group_versions"][0]["metrics"]["net_return_total"], 2.1)
             self.assertEqual(payload["chart_payload"]["group_versions"][0]["metrics"]["auroc"], 0.5246)
             self.assertEqual(payload["chart_payload"]["group_versions"][0]["metrics"]["pr_auc"], 0.61)
@@ -780,6 +831,8 @@ class DashboardModelsTests(unittest.TestCase):
             exclusions = payload["chart_payload"]["excluded_group_versions"]
             self.assertEqual(len(exclusions), 1)
             self.assertIn("missing_target_symbol", exclusions[0]["reason_codes"])
+            self.assertIn("missing_candidate_training_target", exclusions[0]["reason_codes"])
+            self.assertIn("missing_replay_execution_run_id", exclusions[0]["reason_codes"])
             self.assertIn("unscoped_candidate_model_ref", exclusions[0]["reason_codes"])
             self.assertEqual(payload["summary"], "No valid scoped model-group promotion evidence is published.")
             self.assertEqual(payload["issue_refs"][0]["issue_id"], "model_group_promotion_evidence_excluded")

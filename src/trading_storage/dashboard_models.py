@@ -270,6 +270,14 @@ def _load_json_object(path: Path) -> dict[str, Any] | None:
     return payload if isinstance(payload, dict) else None
 
 
+def _first_nonempty_string(*values: Any) -> str:
+    for value in values:
+        text = str(value or "").strip()
+        if text:
+            return text
+    return ""
+
+
 def _explicit_model_training_targets(storage_root: Path) -> set[str]:
     queue_path = storage_root / "02_control_plane" / "runtime" / "model_training_target_queue.json"
     payload = _load_json_object(queue_path)
@@ -361,6 +369,9 @@ def _model_group_version_exclusion_reasons(
     target_symbol: str,
     candidate_model_ref: str,
     fold_id: str,
+    candidate_fold_id: str,
+    candidate_training_target: str,
+    replay_execution_run_id: str,
     explicit_training_targets: set[str],
 ) -> list[dict[str, str]]:
     reasons: list[dict[str, str]] = []
@@ -372,6 +383,27 @@ def _model_group_version_exclusion_reasons(
             {
                 "reason_code": "target_not_in_training_queue",
                 "reason": f"promotion target {normalized_target} is not in the explicit model-worker training queue",
+            }
+        )
+    if not candidate_fold_id.strip():
+        reasons.append(
+            {
+                "reason_code": "missing_candidate_fold_id",
+                "reason": "promotion artifact does not declare the candidate fold that owns this evaluation",
+            }
+        )
+    if not candidate_training_target.strip():
+        reasons.append(
+            {
+                "reason_code": "missing_candidate_training_target",
+                "reason": "promotion artifact does not declare the explicit model-worker training target",
+            }
+        )
+    if not replay_execution_run_id.strip():
+        reasons.append(
+            {
+                "reason_code": "missing_replay_execution_run_id",
+                "reason": "promotion artifact does not declare the replay execution run used for this evaluation",
             }
         )
     candidate_target = _target_symbol_from_candidate_ref(candidate_model_ref)
@@ -630,28 +662,77 @@ def _model_group_promotion_evidence(storage_root: Path, *, active_ref: str | Non
         if decision is None:
             continue
         review = _load_json_object(decision_path.parent / "promotion_evaluation_review.json") or {}
-        settlement_ref = str(decision.get("settlement_run_ref") or review.get("settlement_run_ref") or "")
+        receipt = _load_json_object(decision_path.parent / "model_group_evaluation_receipt.json") or {}
+        settlement_ref = _first_nonempty_string(
+            decision.get("settlement_run_ref"),
+            review.get("settlement_run_ref"),
+            receipt.get("fold_settlement_run_ref"),
+        )
         settlement_path = Path(settlement_ref) if settlement_ref else decision_path.parent / "fold_settlement_run.json"
-        settlement = _load_json_object(settlement_path) if settlement_ref else None
+        settlement = _load_json_object(settlement_path)
         raw_metrics = settlement.get("metrics") if isinstance(settlement, Mapping) and isinstance(settlement.get("metrics"), Mapping) else {}
         metrics = _metrics_with_replay_return_path_ohlc(raw_metrics, settlement=settlement, settlement_path=settlement_path)
         decision_status = str(decision.get("decision_status") or "not_reported")
         recommendation = str(decision.get("agent_review_recommendation") or review.get("recommendation") or "")
-        candidate_model_ref = str(decision.get("candidate_model_ref") or review.get("candidate_model_ref") or "")
-        fold_id = str(decision.get("fold_id") or review.get("fold_id") or "")
-        target_symbol = str(
+        candidate_model_ref = _first_nonempty_string(
+            decision.get("candidate_model_ref"),
+            review.get("candidate_model_ref"),
+            receipt.get("candidate_model_ref"),
+            receipt.get("model_group_ref"),
+            settlement.get("candidate_model_ref") if isinstance(settlement, Mapping) else "",
+            settlement.get("model_group_ref") if isinstance(settlement, Mapping) else "",
+        )
+        fold_id = _first_nonempty_string(
+            decision.get("fold_id"),
+            review.get("fold_id"),
+            receipt.get("fold_id"),
+            settlement.get("fold_id") if isinstance(settlement, Mapping) else "",
+            receipt.get("candidate_fold_id"),
+            settlement.get("candidate_fold_id") if isinstance(settlement, Mapping) else "",
+        )
+        candidate_fold_id = _first_nonempty_string(
+            decision.get("candidate_fold_id"),
+            review.get("candidate_fold_id"),
+            receipt.get("candidate_fold_id"),
+            settlement.get("candidate_fold_id") if isinstance(settlement, Mapping) else "",
+            fold_id,
+        )
+        candidate_training_target = _first_nonempty_string(
+            decision.get("candidate_training_target"),
+            review.get("candidate_training_target"),
+            receipt.get("candidate_training_target"),
+            settlement.get("candidate_training_target") if isinstance(settlement, Mapping) else "",
+        ).upper()
+        replay_execution_run_id = _first_nonempty_string(
+            decision.get("replay_execution_run_id"),
+            review.get("replay_execution_run_id"),
+            receipt.get("replay_execution_run_id"),
+            settlement.get("replay_execution_run_id") if isinstance(settlement, Mapping) else "",
+        )
+        replay_result_ref = _first_nonempty_string(
+            settlement.get("replay_result_ref") if isinstance(settlement, Mapping) else "",
+            receipt.get("replay_execution_receipt_ref"),
+            decision.get("replay_validation_ref"),
+            decision.get("replay_result_ref"),
+        )
+        target_symbol = _first_nonempty_string(
             decision.get("target_symbol")
-            or review.get("target_symbol")
-            or (settlement.get("target_symbol") if isinstance(settlement, Mapping) else "")
-            or _target_symbol_from_candidate_ref(candidate_model_ref)
-            or ""
-        ).strip().upper()
+            or "",
+            review.get("target_symbol") or "",
+            receipt.get("target_symbol") or "",
+            settlement.get("target_symbol") if isinstance(settlement, Mapping) else "",
+            candidate_training_target,
+            _target_symbol_from_candidate_ref(candidate_model_ref) or "",
+        ).upper()
         exclusion_reasons = _model_group_version_exclusion_reasons(
             decision=decision,
             settlement=settlement,
             target_symbol=target_symbol,
             candidate_model_ref=candidate_model_ref,
             fold_id=fold_id,
+            candidate_fold_id=candidate_fold_id,
+            candidate_training_target=candidate_training_target,
+            replay_execution_run_id=replay_execution_run_id,
             explicit_training_targets=explicit_training_targets,
         )
         if exclusion_reasons:
@@ -661,6 +742,9 @@ def _model_group_promotion_evidence(storage_root: Path, *, active_ref: str | Non
                     "decision_ref": str(decision_path),
                     "settlement_ref": settlement_ref or None,
                     "fold_id": fold_id or None,
+                    "candidate_fold_id": candidate_fold_id or None,
+                    "candidate_training_target": candidate_training_target or None,
+                    "replay_execution_run_id": replay_execution_run_id or None,
                     "target_symbol": target_symbol or None,
                     "candidate_model_ref": candidate_model_ref or None,
                     "reason_codes": [item["reason_code"] for item in exclusion_reasons],
@@ -688,6 +772,10 @@ def _model_group_promotion_evidence(storage_root: Path, *, active_ref: str | Non
             "version_label": version_label,
             "promotion_run_id": decision_path.parent.name,
             "fold_id": fold_id,
+            "candidate_fold_id": candidate_fold_id,
+            "candidate_training_target": candidate_training_target,
+            "replay_execution_run_id": replay_execution_run_id or None,
+            "replay_result_ref": replay_result_ref or None,
             "target_symbol": target_symbol or None,
             "candidate_model_ref": candidate_model_ref,
             "identity": identity,
@@ -752,7 +840,9 @@ def _model_group_promotion_evidence(storage_root: Path, *, active_ref: str | Non
             "refs": {
                 "decision_ref": str(decision_path),
                 "review_ref": str(decision_path.parent / "promotion_evaluation_review.json"),
+                "receipt_ref": str(decision_path.parent / "model_group_evaluation_receipt.json"),
                 "settlement_ref": settlement_ref,
+                "replay_result_ref": replay_result_ref,
             },
         }
         existing = rows_by_version_key.get(version_key)
