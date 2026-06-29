@@ -49,6 +49,7 @@ DEFAULT_PROVIDER_STAGE_NEXT_LIMIT = 12
 DEFAULT_PROVIDER_STAGE_MAX_WORKERS = 4
 DEFAULT_MONTH_INGEST_WORKERS = 3
 DEFAULT_MODEL_WORKERS = 1
+DEFAULT_MODEL_FOLD_MONTHS = 12
 DEFAULT_THROUGHPUT_WINDOW_MINUTES = 15
 DEFAULT_PROVIDER_STAGE_LOAD_TARGET_PER_CPU = 0.70
 DEFAULT_PROVIDER_STAGE_WORKER_MEMORY_MB = 512
@@ -426,6 +427,7 @@ def _historical_scheduler_runtime_throughput(
     month_workers = _env_int(values, "TRADING_MANAGER_MONTH_INGEST_WORKERS", DEFAULT_MONTH_INGEST_WORKERS)
     model_workers = DEFAULT_MODEL_WORKERS
     total_workers = max(1, month_workers) + model_workers
+    month_ingest_rounds_per_fold = (DEFAULT_MODEL_FOLD_MONTHS + max(1, month_workers) - 1) // max(1, month_workers)
     rows = _tail_jsonl(manager_storage_root / "runtime/historical_scheduler_decisions.jsonl")
     timed_rows: list[tuple[datetime, dict[str, Any]]] = []
     for row in rows:
@@ -439,8 +441,8 @@ def _historical_scheduler_runtime_throughput(
             "month_ingest_worker_count": month_workers,
             "model_worker_count": model_workers,
             "total_worker_count": total_workers,
-            "fold_month_count": 6,
-            "month_ingest_rounds_per_fold": 2 if month_workers == 3 else None,
+            "fold_month_count": DEFAULT_MODEL_FOLD_MONTHS,
+            "month_ingest_rounds_per_fold": month_ingest_rounds_per_fold,
             "window_minutes": window_minutes,
             "executed_decision_count": 0,
             "decision_count": 0,
@@ -471,8 +473,8 @@ def _historical_scheduler_runtime_throughput(
         "month_ingest_worker_count": month_workers,
         "model_worker_count": model_workers,
         "total_worker_count": total_workers,
-        "fold_month_count": 6,
-        "month_ingest_rounds_per_fold": 2 if month_workers == 3 else None,
+        "fold_month_count": DEFAULT_MODEL_FOLD_MONTHS,
+        "month_ingest_rounds_per_fold": month_ingest_rounds_per_fold,
         "window_minutes": window_minutes,
         "window_start_utc": window_start.replace(microsecond=0).isoformat().replace("+00:00", "Z"),
         "latest_decision_at_utc": latest_at.replace(microsecond=0).isoformat().replace("+00:00", "Z"),
