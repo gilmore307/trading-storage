@@ -270,6 +270,27 @@ def _load_json_object(path: Path) -> dict[str, Any] | None:
     return payload if isinstance(payload, dict) else None
 
 
+def _explicit_model_training_targets(storage_root: Path) -> set[str]:
+    queue_path = storage_root / "02_control_plane" / "runtime" / "model_training_target_queue.json"
+    payload = _load_json_object(queue_path)
+    if payload is None:
+        return set()
+    targets = payload.get("targets")
+    if not isinstance(targets, list):
+        return set()
+    explicit: set[str] = set()
+    for row in targets:
+        if not isinstance(row, Mapping):
+            continue
+        if row.get("enabled") is False:
+            continue
+        source = str(row.get("training_target_source") or "")
+        symbol = str(row.get("symbol") or "").strip().upper()
+        if source == "explicit_bootstrap_target" and symbol:
+            explicit.add(symbol)
+    return explicit
+
+
 def _model_group_version_label(*, fold_id: str, candidate_model_ref: str, target_symbol: str, fallback: str) -> str:
     source = " ".join(item for item in [fold_id, candidate_model_ref, fallback] if item)
     target = target_symbol.strip().upper()
@@ -295,7 +316,14 @@ def _model_group_version_label(*, fold_id: str, candidate_model_ref: str, target
     return fallback
 
 
-def _model_group_version_replay_contract_mismatch(decision: Mapping[str, Any], settlement: Mapping[str, Any] | None) -> str | None:
+def _model_group_version_replay_contract_mismatch(
+    decision: Mapping[str, Any],
+    settlement: Mapping[str, Any] | None,
+    *,
+    candidate_model_ref: str,
+    fold_id: str,
+    target_symbol: str,
+) -> str | None:
     replay_ref = str(
         decision.get("replay_validation_ref")
         or decision.get("replay_result_ref")
@@ -313,6 +341,16 @@ def _model_group_version_replay_contract_mismatch(decision: Mapping[str, Any], s
     candidate_handoff_status = str(replay_receipt.get("candidate_handoff_status") or "").strip().lower()
     if candidate_handoff_status not in {"available", "override"}:
         return "replay receipt lacks M02 target-candidate handoff evidence"
+    if candidate_model_ref and candidate_ref != candidate_model_ref:
+        return "replay receipt candidate_model_ref does not match promotion candidate_model_ref"
+    replay_fold_id = str(replay_receipt.get("candidate_fold_id") or replay_receipt.get("fold_id") or "")
+    if fold_id and replay_fold_id and replay_fold_id != fold_id:
+        return "replay receipt fold_id does not match promotion fold_id"
+    replay_target_symbol = str(replay_receipt.get("target_symbol") or "").strip().upper()
+    if target_symbol and replay_target_symbol and replay_target_symbol != target_symbol:
+        return "replay receipt target_symbol does not match promotion target_symbol"
+    if target_symbol and not replay_target_symbol:
+        return "replay receipt does not declare target_symbol"
     return None
 
 
@@ -322,11 +360,20 @@ def _model_group_version_exclusion_reasons(
     settlement: Mapping[str, Any] | None,
     target_symbol: str,
     candidate_model_ref: str,
+    fold_id: str,
+    explicit_training_targets: set[str],
 ) -> list[dict[str, str]]:
     reasons: list[dict[str, str]] = []
     normalized_target = target_symbol.strip().upper()
     if not normalized_target:
         reasons.append({"reason_code": "missing_target_symbol", "reason": "promotion artifact does not declare a target_symbol"})
+    elif explicit_training_targets and normalized_target not in explicit_training_targets:
+        reasons.append(
+            {
+                "reason_code": "target_not_in_training_queue",
+                "reason": f"promotion target {normalized_target} is not in the explicit model-worker training queue",
+            }
+        )
     candidate_target = _target_symbol_from_candidate_ref(candidate_model_ref)
     if not candidate_target:
         reasons.append({"reason_code": "unscoped_candidate_model_ref", "reason": "candidate_model_ref is fold-scoped instead of target-scoped"})
@@ -337,7 +384,13 @@ def _model_group_version_exclusion_reasons(
                 "reason": f"candidate_model_ref target {candidate_target} does not match artifact target {normalized_target}",
             }
         )
-    replay_contract_mismatch = _model_group_version_replay_contract_mismatch(decision, settlement)
+    replay_contract_mismatch = _model_group_version_replay_contract_mismatch(
+        decision,
+        settlement,
+        candidate_model_ref=candidate_model_ref,
+        fold_id=fold_id,
+        target_symbol=normalized_target,
+    )
     if replay_contract_mismatch:
         reasons.append({"reason_code": "replay_candidate_handoff_missing", "reason": replay_contract_mismatch})
     return reasons
@@ -521,6 +574,7 @@ def _model_group_promotion_evidence(storage_root: Path, *, active_ref: str | Non
         return [], []
     rows_by_version_key: dict[str, dict[str, Any]] = {}
     exclusions: list[dict[str, Any]] = []
+    explicit_training_targets = _explicit_model_training_targets(storage_root)
     for decision_path in sorted(review_root.glob("*/promotion_eligibility_decision.json")):
         decision = _load_json_object(decision_path)
         if decision is None:
@@ -547,6 +601,8 @@ def _model_group_promotion_evidence(storage_root: Path, *, active_ref: str | Non
             settlement=settlement,
             target_symbol=target_symbol,
             candidate_model_ref=candidate_model_ref,
+            fold_id=fold_id,
+            explicit_training_targets=explicit_training_targets,
         )
         if exclusion_reasons:
             exclusions.append(

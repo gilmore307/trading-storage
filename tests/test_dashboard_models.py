@@ -103,6 +103,28 @@ def _runtime_payload() -> dict:
     }
 
 
+def _write_target_queue(storage_root: Path, symbols: list[str]) -> None:
+    queue_path = storage_root / "02_control_plane" / "runtime" / "model_training_target_queue.json"
+    queue_path.parent.mkdir(parents=True, exist_ok=True)
+    queue_path.write_text(
+        json.dumps(
+            {
+                "contract_type": "manager_model_training_target_queue",
+                "targets": [
+                    {
+                        "enabled": True,
+                        "symbol": symbol,
+                        "training_target_source": "explicit_bootstrap_target",
+                    }
+                    for symbol in symbols
+                ],
+            }
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+
+
 def _write_group_promotion_version(storage_root: Path) -> None:
     replay_root = (
         storage_root
@@ -118,6 +140,8 @@ def _write_group_promotion_version(storage_root: Path) -> None:
             {
                 "contract_type": "evaluation_replay_execution_run",
                 "candidate_model_ref": "storage://trading-manager/model_group/aapl/2016-01_2016-06",
+                "candidate_fold_id": "fold_2016-01_2016-06",
+                "target_symbol": "AAPL",
                 "target_refs": ["AAPL_CANDIDATE_01", "AAPL_CANDIDATE_02"],
                 "candidate_handoff_status": "available",
                 "candidate_handoff_source": "fixed_current_snapshot_historical_candidate_universe",
@@ -660,6 +684,24 @@ class DashboardModelsTests(unittest.TestCase):
             self.assertEqual(payload["chart_payload"]["group_versions"], [])
             self.assertEqual(payload["chart_payload"]["status_counts"], {})
             self.assertIn("replay_candidate_handoff_missing", payload["chart_payload"]["excluded_group_versions"][0]["reason_codes"])
+
+    def test_model_group_versions_skip_targets_outside_explicit_training_queue(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            storage_root = Path(tmp)
+            _write_latest(storage_root, "historical_task_progress_summary", _historical_payload())
+            _write_latest(storage_root, "execution_realtime_trading_runtime_status", _runtime_payload())
+            _write_target_queue(storage_root, ["MSFT"])
+            _write_group_promotion_version(storage_root)
+
+            payload = build_model_promotion_posture_summary(
+                storage_root=storage_root,
+                generated_at_utc="2026-05-29T00:07:00Z",
+            )
+
+            self.assertEqual(payload["chart_payload"]["group_versions"], [])
+            exclusions = payload["chart_payload"]["excluded_group_versions"]
+            self.assertEqual(len(exclusions), 1)
+            self.assertIn("target_not_in_training_queue", exclusions[0]["reason_codes"])
 
     def test_model_group_versions_skip_unscoped_artifacts_and_report_exclusion(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
