@@ -258,6 +258,12 @@ def _write_group_promotion_version(storage_root: Path) -> None:
                     "cost_sensitivity_2x": 1.2,
                     "worst_month_return": -0.18,
                     "month_slice_count": 6,
+                    "benchmark_symbol": "SPY",
+                    "benchmark_return_total": 0.11,
+                    "benchmark_month_count": 6,
+                    "benchmark_beta": 1.23,
+                    "market_beta": 1.23,
+                    "beta": 1.23,
                     "data_integrity_status": "passed",
                     "leakage_check_status": "passed",
                     "decision_variable_schema_status": "passed",
@@ -292,9 +298,24 @@ def _write_group_promotion_version(storage_root: Path) -> None:
                     "data_integrity_diagnostics": {"status": "passed", "leakage_check_status": "passed"},
                     "temporal_stability_diagnostics": {
                         "month_slice_count": 6,
-                        "slices": [{"month": "2021-02", "net_return_total": -0.05}],
+                        "slices": [
+                            {
+                                "month": "2021-02",
+                                "net_return_total": -0.05,
+                                "benchmark_symbol": "SPY",
+                                "benchmark_return_total": 0.02,
+                                "spy_return_total": 0.02,
+                            }
+                        ],
                         "worst_month_return": -0.18,
+                        "benchmark_symbol": "SPY",
+                        "benchmark_return_total": 0.11,
+                        "benchmark_month_count": 6,
+                        "benchmark_beta": 1.23,
+                        "market_beta": 1.23,
+                        "beta": 1.23,
                     },
+                    "benchmark_diagnostics": {"status": "available", "benchmark_symbol": "SPY"},
                     "baseline_comparison_diagnostics": {"candidate_minus_no_trade": 1.98},
                     "uncertainty_diagnostics": {"available": False, "reason": "single fold"},
                     "scorecards": {
@@ -681,6 +702,9 @@ class DashboardModelsTests(unittest.TestCase):
             self.assertEqual(payload["chart_payload"]["group_versions"][0]["metrics"]["net_return_total"], 2.1)
             self.assertEqual(payload["chart_payload"]["group_versions"][0]["metrics"]["auroc"], 0.5246)
             self.assertEqual(payload["chart_payload"]["group_versions"][0]["metrics"]["pr_auc"], 0.61)
+            self.assertEqual(payload["chart_payload"]["group_versions"][0]["metrics"]["beta"], 1.23)
+            self.assertEqual(payload["chart_payload"]["group_versions"][0]["metrics"]["benchmark_symbol"], "SPY")
+            self.assertEqual(payload["chart_payload"]["group_versions"][0]["metrics"]["benchmark_return_total"], 0.11)
             self.assertEqual(payload["chart_payload"]["group_versions"][0]["metrics"]["data_integrity_status"], "passed")
             self.assertEqual(payload["chart_payload"]["group_versions"][0]["metrics"]["pca_variance_top2"], 0.81)
             self.assertEqual(payload["chart_payload"]["group_versions"][0]["metrics"]["silhouette_outcome_label"], 0.18)
@@ -693,6 +717,8 @@ class DashboardModelsTests(unittest.TestCase):
             self.assertEqual(scorecards["selection_quality"]["taken_good_count"], 2100)
             self.assertFalse(payload["chart_payload"]["group_versions"][0]["metrics"]["evaluation_disagreement_report"]["promotion_gate_basis"]["auroc_is_hard_gate"])
             temporal = payload["chart_payload"]["group_versions"][0]["metrics"]["temporal_stability_diagnostics"]
+            self.assertEqual(temporal["beta"], 1.23)
+            self.assertEqual(temporal["slices"][0]["spy_return_total"], 0.02)
             self.assertEqual(
                 temporal["slices"][0]["net_return_path_ohlc"],
                 {"open": 1.0, "high": 1.1, "low": 0.9, "close": 0.95},
