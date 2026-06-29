@@ -126,6 +126,28 @@ def _write_target_queue(storage_root: Path, symbols: list[str]) -> None:
 
 
 def _write_group_promotion_version(storage_root: Path) -> None:
+    alpha_artifact_path = (
+        storage_root
+        / "03_model_artifacts"
+        / "runtime"
+        / "model_05_alpha_confidence"
+        / "after_cost_alpha_model_2016-01_2016-06.json"
+    )
+    alpha_artifact_path.parent.mkdir(parents=True, exist_ok=True)
+    alpha_artifact_path.write_text(
+        json.dumps(
+            {
+                "contract_type": "current_replay_entry_utility_model_bundle",
+                "training_summary": {
+                    "training_mode": "supervised_fit",
+                    "sample_count": 128,
+                },
+            },
+            sort_keys=True,
+        )
+        + "\n",
+        encoding="utf-8",
+    )
     replay_root = (
         storage_root
         / "05_replay_datasets"
@@ -149,6 +171,7 @@ def _write_group_promotion_version(storage_root: Path) -> None:
                 "candidate_handoff_symbol_count": 2,
                 "candidate_handoff_table_ref": "historical_candidate_universe.csv",
                 "decision_rows_ref": str(replay_root / "decision_rows.jsonl"),
+                "after_cost_alpha_model_ref": str(alpha_artifact_path),
             }
         )
         + "\n",
@@ -702,6 +725,44 @@ class DashboardModelsTests(unittest.TestCase):
             exclusions = payload["chart_payload"]["excluded_group_versions"]
             self.assertEqual(len(exclusions), 1)
             self.assertIn("target_not_in_training_queue", exclusions[0]["reason_codes"])
+
+    def test_model_group_versions_skip_no_supervised_fit_alpha_artifact(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            storage_root = Path(tmp)
+            _write_latest(storage_root, "historical_task_progress_summary", _historical_payload())
+            _write_latest(storage_root, "execution_realtime_trading_runtime_status", _runtime_payload())
+            _write_group_promotion_version(storage_root)
+            alpha_artifact_path = (
+                storage_root
+                / "03_model_artifacts"
+                / "runtime"
+                / "model_05_alpha_confidence"
+                / "after_cost_alpha_model_2016-01_2016-06.json"
+            )
+            alpha_artifact_path.write_text(
+                json.dumps(
+                    {
+                        "contract_type": "current_replay_entry_utility_model_bundle",
+                        "training_summary": {
+                            "training_mode": "policy_bundle_no_supervised_fit",
+                            "sample_count": None,
+                        },
+                    },
+                    sort_keys=True,
+                )
+                + "\n",
+                encoding="utf-8",
+            )
+
+            payload = build_model_promotion_posture_summary(
+                storage_root=storage_root,
+                generated_at_utc="2026-05-29T00:07:30Z",
+            )
+
+            self.assertEqual(payload["chart_payload"]["group_versions"], [])
+            exclusions = payload["chart_payload"]["excluded_group_versions"]
+            self.assertEqual(len(exclusions), 1)
+            self.assertIn("after_cost_alpha_model_not_trained", exclusions[0]["reason_codes"])
 
     def test_model_group_versions_skip_unscoped_artifacts_and_report_exclusion(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:

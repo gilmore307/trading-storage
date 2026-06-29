@@ -393,7 +393,57 @@ def _model_group_version_exclusion_reasons(
     )
     if replay_contract_mismatch:
         reasons.append({"reason_code": "replay_candidate_handoff_missing", "reason": replay_contract_mismatch})
+    alpha_artifact_reason = _model_group_version_alpha_artifact_reason(decision, settlement)
+    if alpha_artifact_reason:
+        reasons.append(alpha_artifact_reason)
     return reasons
+
+
+def _model_group_version_alpha_artifact_reason(
+    decision: Mapping[str, Any],
+    settlement: Mapping[str, Any] | None,
+) -> dict[str, str] | None:
+    replay_ref = str(
+        decision.get("replay_validation_ref")
+        or decision.get("replay_result_ref")
+        or (settlement.get("replay_result_ref") if isinstance(settlement, Mapping) else "")
+        or ""
+    )
+    if not replay_ref:
+        return None
+    replay_receipt = _load_json_object(Path(replay_ref))
+    if replay_receipt is None:
+        return None
+    artifact_ref = str(replay_receipt.get("after_cost_alpha_model_ref") or "").strip()
+    if not artifact_ref:
+        return {
+            "reason_code": "after_cost_alpha_model_missing",
+            "reason": "replay receipt does not declare after_cost_alpha_model_ref",
+        }
+    artifact = _load_json_object(Path(artifact_ref))
+    if artifact is None:
+        return {
+            "reason_code": "after_cost_alpha_model_missing",
+            "reason": "after-cost alpha model artifact is missing or unreadable",
+        }
+    training_summary = artifact.get("training_summary")
+    if not isinstance(training_summary, Mapping):
+        training_summary = {}
+    training_mode = str(training_summary.get("training_mode") or "").strip()
+    sample_count = _int_value(training_summary.get("sample_count"))
+    if training_mode == "policy_bundle_no_supervised_fit" or sample_count <= 0:
+        return {
+            "reason_code": "after_cost_alpha_model_not_trained",
+            "reason": "after-cost alpha artifact is a no-supervised-fit policy bundle, not a trained fold-specific model",
+        }
+    return None
+
+
+def _int_value(value: Any) -> int:
+    try:
+        return int(value)
+    except (TypeError, ValueError):
+        return 0
 
 
 def _diagnostic_availability(metrics: Mapping[str, Any]) -> dict[str, dict[str, str]]:
