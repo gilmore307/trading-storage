@@ -312,13 +312,14 @@ def _model_group_version_label(*, fold_id: str, candidate_model_ref: str, target
         return f"{target} {label}" if target else f"Unscoped {label}"
 
     range_match = re.search(
-        r"(?P<year>20\d{2})-(?P<start_month>\d{2})_(?P=year)-(?P<end_month>\d{2})",
+        r"(?P<start_year>20\d{2})-(?P<start_month>\d{2})_(?P<end_year>20\d{2})-(?P<end_month>\d{2})",
         source,
     )
     if range_match:
-        start_month = int(range_match.group("start_month"))
-        fold_number = ((start_month - 1) // 6) + 1
-        label = f"{range_match.group('year')} fold{fold_number}"
+        label = (
+            f"{range_match.group('start_year')}-{range_match.group('start_month')}"
+            f"..{range_match.group('end_year')}-{range_match.group('end_month')}"
+        )
         return f"{target} {label}" if target else f"Unscoped {label}"
 
     return fallback

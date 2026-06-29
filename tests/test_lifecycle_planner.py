@@ -106,7 +106,7 @@ class LifecyclePlannerTests(unittest.TestCase):
     def test_fold_complete_source_artifact_becomes_quarantine_candidate(self):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
-            artifact = root / "storage" / "01_source_data" / "fold_scoped" / "fold_2016-01_2016-06" / "targets" / "AAPL" / "source.json"
+            artifact = root / "storage" / "01_source_data" / "fold_scoped" / "fold_2016-01_2017-06" / "targets" / "AAPL" / "source.json"
             artifact.parent.mkdir(parents=True, exist_ok=True)
             artifact.write_text(
                 json.dumps(

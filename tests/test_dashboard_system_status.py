@@ -126,8 +126,9 @@ class DashboardSystemStatusTests(unittest.TestCase):
 
         self.assertEqual(throughput["month_ingest_worker_count"], 3)
         self.assertEqual(throughput["total_worker_count"], 4)
-        self.assertEqual(throughput["fold_month_count"], 12)
-        self.assertEqual(throughput["month_ingest_rounds_per_fold"], 4)
+        self.assertEqual(throughput["fold_month_count"], 18)
+        self.assertEqual(throughput["fold_step_month_count"], 12)
+        self.assertEqual(throughput["month_ingest_rounds_per_fold"], 6)
         self.assertEqual(throughput["executed_decision_count"], 2)
         self.assertEqual(throughput["max_completions_per_second"], 2)
         self.assertEqual(throughput["multi_completion_second_count"], 1)

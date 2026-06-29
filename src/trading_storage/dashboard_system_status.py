@@ -49,7 +49,8 @@ DEFAULT_PROVIDER_STAGE_NEXT_LIMIT = 12
 DEFAULT_PROVIDER_STAGE_MAX_WORKERS = 4
 DEFAULT_MONTH_INGEST_WORKERS = 3
 DEFAULT_MODEL_WORKERS = 1
-DEFAULT_MODEL_FOLD_MONTHS = 12
+DEFAULT_MODEL_FOLD_MONTHS = 18
+DEFAULT_MODEL_FOLD_STEP_MONTHS = 12
 DEFAULT_THROUGHPUT_WINDOW_MINUTES = 15
 DEFAULT_PROVIDER_STAGE_LOAD_TARGET_PER_CPU = 0.70
 DEFAULT_PROVIDER_STAGE_WORKER_MEMORY_MB = 512
@@ -442,6 +443,7 @@ def _historical_scheduler_runtime_throughput(
             "model_worker_count": model_workers,
             "total_worker_count": total_workers,
             "fold_month_count": DEFAULT_MODEL_FOLD_MONTHS,
+            "fold_step_month_count": DEFAULT_MODEL_FOLD_STEP_MONTHS,
             "month_ingest_rounds_per_fold": month_ingest_rounds_per_fold,
             "window_minutes": window_minutes,
             "executed_decision_count": 0,
@@ -474,6 +476,7 @@ def _historical_scheduler_runtime_throughput(
         "model_worker_count": model_workers,
         "total_worker_count": total_workers,
         "fold_month_count": DEFAULT_MODEL_FOLD_MONTHS,
+        "fold_step_month_count": DEFAULT_MODEL_FOLD_STEP_MONTHS,
         "month_ingest_rounds_per_fold": month_ingest_rounds_per_fold,
         "window_minutes": window_minutes,
         "window_start_utc": window_start.replace(microsecond=0).isoformat().replace("+00:00", "Z"),

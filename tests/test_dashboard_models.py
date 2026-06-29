@@ -37,12 +37,12 @@ def _historical_payload() -> dict:
         "severity": "info",
         "summary": "Historical modeling is running.",
         "chart_payload": {
-            "current_month": "2016-fold1",
+            "current_month": "2016-01..2017-06",
             "active_task": {"layer": 5},
             "task_timeline": [
                 {
                     "task_uid": "m05-train",
-                    "month": "2016-fold1",
+                    "month": "2016-01..2017-06",
                     "task_id": "model_05_option_expression.model_generation.train",
                     "task_label": "M05 Option Expression Model",
                     "task_state": "completed",
@@ -57,7 +57,7 @@ def _historical_payload() -> dict:
                 },
                 {
                     "task_uid": "eval",
-                    "month": "2016-fold1",
+                    "month": "2016-01..2017-06",
                     "task_id": "model_group.evaluation",
                     "task_label": "Model Evaluation",
                     "task_state": "current",
@@ -67,7 +67,7 @@ def _historical_payload() -> dict:
                 },
                 {
                     "task_uid": "promo",
-                    "month": "2016-fold1",
+                    "month": "2016-01..2017-06",
                     "task_id": "model_group.promotion",
                     "task_label": "Model Promotion",
                     "task_state": "future",
@@ -136,7 +136,7 @@ def _write_group_promotion_version(storage_root: Path) -> None:
         / "03_model_artifacts"
         / "runtime"
         / "model_05_alpha_confidence"
-        / "after_cost_alpha_model_2016-01_2016-06.json"
+        / "after_cost_alpha_model_2016-01_2017-06.json"
     )
     alpha_artifact_path.parent.mkdir(parents=True, exist_ok=True)
     alpha_artifact_path.write_text(
@@ -167,8 +167,8 @@ def _write_group_promotion_version(storage_root: Path) -> None:
             {
                 "contract_type": "evaluation_replay_execution_run",
                 "replay_execution_run_id": "aapl_replay_fixture",
-                "candidate_model_ref": "storage://trading-manager/model_group/aapl/2016-01_2016-06",
-                "candidate_fold_id": "fold_2016-01_2016-06",
+                "candidate_model_ref": "storage://trading-manager/model_group/aapl/2016-01_2017-06",
+                "candidate_fold_id": "fold_2016-01_2017-06",
                 "candidate_training_target": "AAPL",
                 "target_symbol": "AAPL",
                 "target_refs": ["AAPL_CANDIDATE_01", "AAPL_CANDIDATE_02"],
@@ -235,9 +235,9 @@ def _write_group_promotion_version(storage_root: Path) -> None:
         json.dumps(
             {
                 "contract_type": "fold_settlement_run",
-                "fold_id": "fold_2016-01_2016-06",
-                "candidate_fold_id": "fold_2016-01_2016-06",
-                "candidate_model_ref": "storage://trading-manager/model_group/aapl/2016-01_2016-06",
+                "fold_id": "fold_2016-01_2017-06",
+                "candidate_fold_id": "fold_2016-01_2017-06",
+                "candidate_model_ref": "storage://trading-manager/model_group/aapl/2016-01_2017-06",
                 "candidate_training_target": "AAPL",
                 "replay_execution_run_id": "aapl_replay_fixture",
                 "target_symbol": "AAPL",
@@ -392,8 +392,8 @@ def _write_group_promotion_version(storage_root: Path) -> None:
             {
                 "contract_type": "promotion_evaluation_review",
                 "target_symbol": "AAPL",
-                "candidate_model_ref": "storage://trading-manager/model_group/aapl/2016-01_2016-06",
-                "candidate_fold_id": "fold_2016-01_2016-06",
+                "candidate_model_ref": "storage://trading-manager/model_group/aapl/2016-01_2017-06",
+                "candidate_fold_id": "fold_2016-01_2017-06",
                 "candidate_training_target": "AAPL",
                 "replay_execution_run_id": "aapl_replay_fixture",
                 "recommendation": "insufficient_evidence",
@@ -410,12 +410,12 @@ def _write_group_promotion_version(storage_root: Path) -> None:
         json.dumps(
             {
                 "contract_type": "promotion_eligibility_decision",
-                "fold_id": "fold_2016-01_2016-06",
-                "candidate_fold_id": "fold_2016-01_2016-06",
+                "fold_id": "fold_2016-01_2017-06",
+                "candidate_fold_id": "fold_2016-01_2017-06",
                 "candidate_training_target": "AAPL",
                 "replay_execution_run_id": "aapl_replay_fixture",
                 "target_symbol": "AAPL",
-                "candidate_model_ref": "storage://trading-manager/model_group/aapl/2016-01_2016-06",
+                "candidate_model_ref": "storage://trading-manager/model_group/aapl/2016-01_2017-06",
                 "decision_status": "deferred",
                 "agent_review_recommendation": "insufficient_evidence",
                 "decision_reason": "AUROC below gate and comparison evidence missing.",
@@ -431,9 +431,9 @@ def _write_group_promotion_version(storage_root: Path) -> None:
             {
                 "contract_type": "model_group_evaluation_receipt",
                 "status": "succeeded",
-                "fold_id": "fold_2016-01_2016-06",
-                "candidate_fold_id": "fold_2016-01_2016-06",
-                "candidate_model_ref": "storage://trading-manager/model_group/aapl/2016-01_2016-06",
+                "fold_id": "fold_2016-01_2017-06",
+                "candidate_fold_id": "fold_2016-01_2017-06",
+                "candidate_model_ref": "storage://trading-manager/model_group/aapl/2016-01_2017-06",
                 "candidate_training_target": "AAPL",
                 "replay_execution_run_id": "aapl_replay_fixture",
                 "target_symbol": "AAPL",
@@ -461,8 +461,8 @@ def _write_mismatched_group_promotion_version(storage_root: Path) -> None:
             {
                 "contract_type": "evaluation_replay_execution_run",
                 "replay_execution_run_id": "crypto_replay_fixture",
-                "candidate_model_ref": "storage://trading-manager/model_group/2016-01_2016-06",
-                "candidate_fold_id": "fold_2016-01_2016-06",
+                "candidate_model_ref": "storage://trading-manager/model_group/2016-01_2017-06",
+                "candidate_fold_id": "fold_2016-01_2017-06",
                 "candidate_training_target": "AAPL",
                 "target_symbol": "AAPL",
                 "target_refs": ["BTC", "ETH", "SOL"],
@@ -493,9 +493,9 @@ def _write_mismatched_group_promotion_version(storage_root: Path) -> None:
         json.dumps(
             {
                 "contract_type": "fold_settlement_run",
-                "fold_id": "fold_2016-01_2016-06",
-                "candidate_fold_id": "fold_2016-01_2016-06",
-                "candidate_model_ref": "storage://trading-manager/model_group/aapl/2016-01_2016-06",
+                "fold_id": "fold_2016-01_2017-06",
+                "candidate_fold_id": "fold_2016-01_2017-06",
+                "candidate_model_ref": "storage://trading-manager/model_group/aapl/2016-01_2017-06",
                 "candidate_training_target": "AAPL",
                 "replay_execution_run_id": "crypto_replay_fixture",
                 "target_symbol": "AAPL",
@@ -511,8 +511,8 @@ def _write_mismatched_group_promotion_version(storage_root: Path) -> None:
             {
                 "contract_type": "promotion_evaluation_review",
                 "target_symbol": "AAPL",
-                "candidate_model_ref": "storage://trading-manager/model_group/aapl/2016-01_2016-06",
-                "candidate_fold_id": "fold_2016-01_2016-06",
+                "candidate_model_ref": "storage://trading-manager/model_group/aapl/2016-01_2017-06",
+                "candidate_fold_id": "fold_2016-01_2017-06",
                 "candidate_training_target": "AAPL",
                 "replay_execution_run_id": "crypto_replay_fixture",
                 "recommendation": "insufficient_evidence",
@@ -527,12 +527,12 @@ def _write_mismatched_group_promotion_version(storage_root: Path) -> None:
         json.dumps(
             {
                 "contract_type": "promotion_eligibility_decision",
-                "fold_id": "fold_2016-01_2016-06",
-                "candidate_fold_id": "fold_2016-01_2016-06",
+                "fold_id": "fold_2016-01_2017-06",
+                "candidate_fold_id": "fold_2016-01_2017-06",
                 "candidate_training_target": "AAPL",
                 "replay_execution_run_id": "crypto_replay_fixture",
                 "target_symbol": "AAPL",
-                "candidate_model_ref": "storage://trading-manager/model_group/aapl/2016-01_2016-06",
+                "candidate_model_ref": "storage://trading-manager/model_group/aapl/2016-01_2017-06",
                 "decision_status": "deferred",
                 "agent_review_recommendation": "insufficient_evidence",
                 "settlement_run_ref": str(settlement_path),
@@ -734,7 +734,7 @@ def _write_unscoped_group_promotion_version(storage_root: Path) -> None:
         json.dumps(
             {
                 "contract_type": "evaluation_replay_execution_run",
-                "candidate_model_ref": "storage://trading-manager/model_group/2016-01_2016-06",
+                "candidate_model_ref": "storage://trading-manager/model_group/2016-01_2017-06",
                 "target_refs": ["BTC", "ETH", "SOL"],
                 "decision_rows_ref": str(replay_root / "decision_rows.jsonl"),
             }
@@ -793,8 +793,8 @@ def _write_unscoped_group_promotion_version(storage_root: Path) -> None:
         json.dumps(
             {
                 "contract_type": "promotion_eligibility_decision",
-                "fold_id": "fold_2016-01_2016-06",
-                "candidate_model_ref": "storage://trading-manager/model_group/2016-01_2016-06",
+                "fold_id": "fold_2016-01_2017-06",
+                "candidate_model_ref": "storage://trading-manager/model_group/2016-01_2017-06",
                 "decision_status": "rejected",
                 "settlement_run_ref": str(settlement_path),
                 "replay_validation_ref": str(replay_receipt_path),
@@ -821,7 +821,7 @@ class DashboardModelsTests(unittest.TestCase):
             layers = payload["chart_payload"]["layers"]
             self.assertEqual(len(layers), 6)
             layer_five = next(layer for layer in layers if layer["layer"] == 5)
-            self.assertEqual(layer_five["versions"][0]["version_id"], "2016-fold1:model_05_option_expression")
+            self.assertEqual(layer_five["versions"][0]["version_id"], "2016-01..2017-06:model_05_option_expression")
             self.assertEqual(layer_five["promotion"]["status"], "deferred")
             self.assertEqual(len(payload["chart_payload"]["group_versions"]), 1)
 
@@ -832,7 +832,7 @@ class DashboardModelsTests(unittest.TestCase):
             historical["chart_payload"]["task_timeline"].append(
                 {
                     "task_uid": "l5-fold2-partial",
-                    "month": "2016-fold2",
+                    "month": "2017-01..2018-06",
                     "task_id": "model_05_option_expression",
                     "task_label": "M05 Option Expression Model",
                     "task_state": "future",
@@ -856,7 +856,7 @@ class DashboardModelsTests(unittest.TestCase):
             payload = build_model_readiness_summary(storage_root=storage_root, generated_at_utc="2026-05-29T00:10:00Z")
 
             layer_five = next(layer for layer in payload["chart_payload"]["layers"] if layer["layer"] == 5)
-            self.assertEqual(layer_five["versions"][0]["version_id"], "2016-fold1:model_05_option_expression")
+            self.assertEqual(layer_five["versions"][0]["version_id"], "2016-01..2017-06:model_05_option_expression")
 
     def test_builds_model_promotion_posture_rows(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
@@ -871,12 +871,12 @@ class DashboardModelsTests(unittest.TestCase):
             self.assertEqual(validate_dashboard_read_model(payload), MODEL_PROMOTION_POSTURE_CONTRACT)
             self.assertEqual(len(payload["chart_payload"]["models"]), 1)
             layer_five = next(row for row in payload["chart_payload"]["models"] if row["layer"] == 5)
-            self.assertEqual(layer_five["version_id"], "2016-fold1:model_05_option_expression")
+            self.assertEqual(layer_five["version_id"], "2016-01..2017-06:model_05_option_expression")
             self.assertEqual(layer_five["evaluation_status"], "ready")
             self.assertEqual(payload["chart_payload"]["status_counts"], {"deferred": 1})
             self.assertEqual(payload["chart_payload"]["identity_counts"], {"retired": 1})
-            self.assertEqual(payload["chart_payload"]["group_versions"][0]["version_label"], "AAPL 2016 fold1")
-            self.assertEqual(payload["chart_payload"]["group_versions"][0]["candidate_fold_id"], "fold_2016-01_2016-06")
+            self.assertEqual(payload["chart_payload"]["group_versions"][0]["version_label"], "AAPL 2016-01..2017-06")
+            self.assertEqual(payload["chart_payload"]["group_versions"][0]["candidate_fold_id"], "fold_2016-01_2017-06")
             self.assertEqual(payload["chart_payload"]["group_versions"][0]["candidate_training_target"], "AAPL")
             self.assertEqual(payload["chart_payload"]["group_versions"][0]["replay_execution_run_id"], "aapl_replay_fixture")
             self.assertEqual(payload["chart_payload"]["group_versions"][0]["metrics"]["net_return_total"], 2.1)
@@ -947,7 +947,7 @@ class DashboardModelsTests(unittest.TestCase):
             )
 
             self.assertEqual(len(payload["chart_payload"]["group_versions"]), 1)
-            self.assertEqual(payload["chart_payload"]["group_versions"][0]["version_label"], "AAPL 2016 fold1")
+            self.assertEqual(payload["chart_payload"]["group_versions"][0]["version_label"], "AAPL 2016-01..2017-06")
 
     def test_model_group_versions_skip_replay_without_candidate_handoff(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
@@ -994,7 +994,7 @@ class DashboardModelsTests(unittest.TestCase):
                 / "03_model_artifacts"
                 / "runtime"
                 / "model_05_alpha_confidence"
-                / "after_cost_alpha_model_2016-01_2016-06.json"
+                / "after_cost_alpha_model_2016-01_2017-06.json"
             )
             alpha_artifact_path.write_text(
                 json.dumps(

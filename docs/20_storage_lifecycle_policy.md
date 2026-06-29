@@ -125,7 +125,7 @@ Policy: delete after the run or fold closes and after compact summaries, receipt
 
 ### Fold-scoped target source data
 
-Includes target-symbol or experiment-specific source folders created for a bounded six-month model-worker fold, where the folder is not intended to serve as reusable M01/M02 source foundation or durable replay/source history.
+Includes target-symbol or experiment-specific source folders created for a bounded 12+3+3 model-worker fold, where the folder is not intended to serve as reusable M01/M02 source foundation or durable replay/source history.
 
 Policy: delete by fold folder only after the full M01-M06 fold closes. The accepted folder boundary is `storage/01_source_data/fold_scoped/<fold_id>/...`; storage maintenance emits `storage_fold_source_cleanup_candidate` rows only for completed fold ids under that root. These candidates still require artifact-index coverage, protected-set clearance, quarantine/recheck, and deletion receipts before any destructive executor may remove bytes. Individual files inside a fold-scoped folder should not be independently deleted out of order.
 
