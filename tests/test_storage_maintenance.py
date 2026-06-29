@@ -107,7 +107,7 @@ class StorageMaintenanceTests(unittest.TestCase):
                 for stage_type in ("model_generation", "model_evaluation", "promotion_review", "maintenance")
             ]
             (runtime / "model_training_fold_state_2016-01_2017-06.json").write_text(
-                json.dumps({"start_month": "2016-01", "end_month": "2017-06", "stages": stages}),
+                json.dumps({"target_symbol": "AAPL", "start_month": "2016-01", "end_month": "2017-06", "stages": stages}),
                 encoding="utf-8",
             )
 
@@ -119,16 +119,16 @@ class StorageMaintenanceTests(unittest.TestCase):
             )
 
         self.assertEqual(len(candidates), 1)
-        self.assertEqual(candidates[0]["fold_id"], "fold_2016-01_2017-06")
+        self.assertEqual(candidates[0]["fold_id"], "fold_aapl_2016")
         self.assertEqual(candidates[0]["backup_mode"], "logical_pg_dump_custom")
         self.assertIn("pg_dump", candidates[0]["backup_command_template"])
         self.assertEqual(summary.fold_sql_backup_phase_status, "ready_for_storage_backup")
-        self.assertEqual(summary.completed_fold_ids, ("fold_2016-01_2017-06",))
+        self.assertEqual(summary.completed_fold_ids, ("fold_aapl_2016",))
 
     def test_detects_fold_scoped_source_cleanup_candidate_after_completed_fold(self) -> None:
         with tempfile.TemporaryDirectory() as raw_tmp:
             root = Path(raw_tmp) / "trading-storage"
-            fold_folder = root / "storage" / "01_source_data" / "fold_scoped" / "fold_2016-01_2017-06"
+            fold_folder = root / "storage" / "01_source_data" / "fold_scoped" / "fold_aapl_2016"
             source_file = fold_folder / "targets" / "AAPL" / "model_02_source.json"
             source_file.parent.mkdir(parents=True)
             source_file.write_text("payload", encoding="utf-8")
@@ -147,13 +147,13 @@ class StorageMaintenanceTests(unittest.TestCase):
                 for stage_type in ("model_generation", "model_evaluation", "promotion_review", "maintenance")
             ]
             (runtime / "model_training_fold_state_2016-01_2017-06.json").write_text(
-                json.dumps({"start_month": "2016-01", "end_month": "2017-06", "stages": stages}),
+                json.dumps({"target_symbol": "AAPL", "start_month": "2016-01", "end_month": "2017-06", "stages": stages}),
                 encoding="utf-8",
             )
 
             candidates = detect_fold_scoped_source_cleanup_candidates(
                 root=root,
-                completed_fold_ids=("fold_2016-01_2017-06",),
+                completed_fold_ids=("fold_aapl_2016",),
             )
             summary = run_storage_maintenance(
                 root=root,
@@ -163,7 +163,7 @@ class StorageMaintenanceTests(unittest.TestCase):
 
         self.assertEqual(len(candidates), 1)
         self.assertEqual(candidates[0]["contract_type"], "storage_fold_source_cleanup_candidate")
-        self.assertEqual(candidates[0]["source_folder_path"], "storage/01_source_data/fold_scoped/fold_2016-01_2017-06")
+        self.assertEqual(candidates[0]["source_folder_path"], "storage/01_source_data/fold_scoped/fold_aapl_2016")
         self.assertEqual(candidates[0]["file_count"], 1)
         self.assertFalse(candidates[0]["deletion_performed"])
         self.assertEqual(summary.fold_source_cleanup_candidate_count, 1)

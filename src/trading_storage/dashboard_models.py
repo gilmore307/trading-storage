@@ -302,6 +302,11 @@ def _explicit_model_training_targets(storage_root: Path) -> set[str]:
 def _model_group_version_label(*, fold_id: str, candidate_model_ref: str, target_symbol: str, fallback: str) -> str:
     source = " ".join(item for item in [fold_id, candidate_model_ref, fallback] if item)
     target = target_symbol.strip().upper()
+    target_year_match = re.search(r"fold[_-](?P<target>[a-z0-9]+)[_-](?P<year>20\d{2})", source, flags=re.IGNORECASE)
+    if target_year_match:
+        label_target = target or target_year_match.group("target").upper()
+        return f"{label_target} {target_year_match.group('year')}"
+
     compact_match = re.search(
         r"(?P<year>20\d{2})[-_ ]?fold[-_ ]?(?P<fold>\d+)",
         source,

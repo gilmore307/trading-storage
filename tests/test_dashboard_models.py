@@ -168,7 +168,7 @@ def _write_group_promotion_version(storage_root: Path) -> None:
                 "contract_type": "evaluation_replay_execution_run",
                 "replay_execution_run_id": "aapl_replay_fixture",
                 "candidate_model_ref": "storage://trading-manager/model_group/aapl/2016-01_2017-06",
-                "candidate_fold_id": "fold_2016-01_2017-06",
+                "candidate_fold_id": "fold_aapl_2016",
                 "candidate_training_target": "AAPL",
                 "target_symbol": "AAPL",
                 "target_refs": ["AAPL_CANDIDATE_01", "AAPL_CANDIDATE_02"],
@@ -235,8 +235,8 @@ def _write_group_promotion_version(storage_root: Path) -> None:
         json.dumps(
             {
                 "contract_type": "fold_settlement_run",
-                "fold_id": "fold_2016-01_2017-06",
-                "candidate_fold_id": "fold_2016-01_2017-06",
+                "fold_id": "fold_aapl_2016",
+                "candidate_fold_id": "fold_aapl_2016",
                 "candidate_model_ref": "storage://trading-manager/model_group/aapl/2016-01_2017-06",
                 "candidate_training_target": "AAPL",
                 "replay_execution_run_id": "aapl_replay_fixture",
@@ -393,7 +393,7 @@ def _write_group_promotion_version(storage_root: Path) -> None:
                 "contract_type": "promotion_evaluation_review",
                 "target_symbol": "AAPL",
                 "candidate_model_ref": "storage://trading-manager/model_group/aapl/2016-01_2017-06",
-                "candidate_fold_id": "fold_2016-01_2017-06",
+                "candidate_fold_id": "fold_aapl_2016",
                 "candidate_training_target": "AAPL",
                 "replay_execution_run_id": "aapl_replay_fixture",
                 "recommendation": "insufficient_evidence",
@@ -410,8 +410,8 @@ def _write_group_promotion_version(storage_root: Path) -> None:
         json.dumps(
             {
                 "contract_type": "promotion_eligibility_decision",
-                "fold_id": "fold_2016-01_2017-06",
-                "candidate_fold_id": "fold_2016-01_2017-06",
+                "fold_id": "fold_aapl_2016",
+                "candidate_fold_id": "fold_aapl_2016",
                 "candidate_training_target": "AAPL",
                 "replay_execution_run_id": "aapl_replay_fixture",
                 "target_symbol": "AAPL",
@@ -431,8 +431,8 @@ def _write_group_promotion_version(storage_root: Path) -> None:
             {
                 "contract_type": "model_group_evaluation_receipt",
                 "status": "succeeded",
-                "fold_id": "fold_2016-01_2017-06",
-                "candidate_fold_id": "fold_2016-01_2017-06",
+                "fold_id": "fold_aapl_2016",
+                "candidate_fold_id": "fold_aapl_2016",
                 "candidate_model_ref": "storage://trading-manager/model_group/aapl/2016-01_2017-06",
                 "candidate_training_target": "AAPL",
                 "replay_execution_run_id": "aapl_replay_fixture",
@@ -462,7 +462,7 @@ def _write_mismatched_group_promotion_version(storage_root: Path) -> None:
                 "contract_type": "evaluation_replay_execution_run",
                 "replay_execution_run_id": "crypto_replay_fixture",
                 "candidate_model_ref": "storage://trading-manager/model_group/2016-01_2017-06",
-                "candidate_fold_id": "fold_2016-01_2017-06",
+                "candidate_fold_id": "fold_aapl_2016",
                 "candidate_training_target": "AAPL",
                 "target_symbol": "AAPL",
                 "target_refs": ["BTC", "ETH", "SOL"],
@@ -493,8 +493,8 @@ def _write_mismatched_group_promotion_version(storage_root: Path) -> None:
         json.dumps(
             {
                 "contract_type": "fold_settlement_run",
-                "fold_id": "fold_2016-01_2017-06",
-                "candidate_fold_id": "fold_2016-01_2017-06",
+                "fold_id": "fold_aapl_2016",
+                "candidate_fold_id": "fold_aapl_2016",
                 "candidate_model_ref": "storage://trading-manager/model_group/aapl/2016-01_2017-06",
                 "candidate_training_target": "AAPL",
                 "replay_execution_run_id": "crypto_replay_fixture",
@@ -512,7 +512,7 @@ def _write_mismatched_group_promotion_version(storage_root: Path) -> None:
                 "contract_type": "promotion_evaluation_review",
                 "target_symbol": "AAPL",
                 "candidate_model_ref": "storage://trading-manager/model_group/aapl/2016-01_2017-06",
-                "candidate_fold_id": "fold_2016-01_2017-06",
+                "candidate_fold_id": "fold_aapl_2016",
                 "candidate_training_target": "AAPL",
                 "replay_execution_run_id": "crypto_replay_fixture",
                 "recommendation": "insufficient_evidence",
@@ -527,8 +527,8 @@ def _write_mismatched_group_promotion_version(storage_root: Path) -> None:
         json.dumps(
             {
                 "contract_type": "promotion_eligibility_decision",
-                "fold_id": "fold_2016-01_2017-06",
-                "candidate_fold_id": "fold_2016-01_2017-06",
+                "fold_id": "fold_aapl_2016",
+                "candidate_fold_id": "fold_aapl_2016",
                 "candidate_training_target": "AAPL",
                 "replay_execution_run_id": "crypto_replay_fixture",
                 "target_symbol": "AAPL",
@@ -793,7 +793,7 @@ def _write_unscoped_group_promotion_version(storage_root: Path) -> None:
         json.dumps(
             {
                 "contract_type": "promotion_eligibility_decision",
-                "fold_id": "fold_2016-01_2017-06",
+                "fold_id": "fold_aapl_2016",
                 "candidate_model_ref": "storage://trading-manager/model_group/2016-01_2017-06",
                 "decision_status": "rejected",
                 "settlement_run_ref": str(settlement_path),
@@ -875,8 +875,8 @@ class DashboardModelsTests(unittest.TestCase):
             self.assertEqual(layer_five["evaluation_status"], "ready")
             self.assertEqual(payload["chart_payload"]["status_counts"], {"deferred": 1})
             self.assertEqual(payload["chart_payload"]["identity_counts"], {"retired": 1})
-            self.assertEqual(payload["chart_payload"]["group_versions"][0]["version_label"], "AAPL 2016-01..2017-06")
-            self.assertEqual(payload["chart_payload"]["group_versions"][0]["candidate_fold_id"], "fold_2016-01_2017-06")
+            self.assertEqual(payload["chart_payload"]["group_versions"][0]["version_label"], "AAPL 2016")
+            self.assertEqual(payload["chart_payload"]["group_versions"][0]["candidate_fold_id"], "fold_aapl_2016")
             self.assertEqual(payload["chart_payload"]["group_versions"][0]["candidate_training_target"], "AAPL")
             self.assertEqual(payload["chart_payload"]["group_versions"][0]["replay_execution_run_id"], "aapl_replay_fixture")
             self.assertEqual(payload["chart_payload"]["group_versions"][0]["metrics"]["net_return_total"], 2.1)
@@ -947,7 +947,7 @@ class DashboardModelsTests(unittest.TestCase):
             )
 
             self.assertEqual(len(payload["chart_payload"]["group_versions"]), 1)
-            self.assertEqual(payload["chart_payload"]["group_versions"][0]["version_label"], "AAPL 2016-01..2017-06")
+            self.assertEqual(payload["chart_payload"]["group_versions"][0]["version_label"], "AAPL 2016")
 
     def test_model_group_versions_skip_replay_without_candidate_handoff(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:

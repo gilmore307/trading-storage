@@ -1382,8 +1382,23 @@ def _state_months(path: Path) -> tuple[str, str] | None:
     return parts[0], parts[1]
 
 
-def _fold_id(start_month: str, end_month: str) -> str:
-    return f"fold_{start_month}_{end_month}"
+def _safe_target_token(value: Any) -> str:
+    token = "".join(ch.lower() for ch in str(value or "").strip() if ch.isalnum())
+    return token or "unknown"
+
+
+def _fold_id(target_symbol: str, start_month: str) -> str:
+    return f"fold_{_safe_target_token(target_symbol)}_{start_month[:4]}"
+
+
+def _payload_target_symbol(payload: Mapping[str, Any]) -> str:
+    target_symbol = payload.get("target_symbol") or payload.get("selected_target_symbol")
+    if target_symbol:
+        return str(target_symbol)
+    target_refs = payload.get("target_refs") or payload.get("pre_replay_target_refs")
+    if isinstance(target_refs, Sequence) and not isinstance(target_refs, (str, bytes)) and target_refs:
+        return str(target_refs[0])
+    return "AAPL"
 
 
 def _stage_rows(payload: Mapping[str, Any]) -> list[dict[str, Any]]:
@@ -1493,9 +1508,10 @@ def detect_completed_model_worker_folds(*, manager_root: Path) -> tuple[dict[str
             continue
         start_month = str(payload.get("start_month") or months[0])
         end_month = str(payload.get("end_month") or months[1])
+        target_symbol = _payload_target_symbol(payload)
         candidates.append(
             _backup_candidate(
-                fold_id=_fold_id(start_month, end_month),
+                fold_id=_fold_id(target_symbol, start_month),
                 start_month=start_month,
                 end_month=end_month,
                 state_path=path,
