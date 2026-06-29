@@ -607,11 +607,11 @@ def _write_replay_review_run(storage_root: Path) -> None:
         json.dumps(
             {
                 "contract_type": "post_replay_review_receipt",
-                "candidate_model_ref": "storage://trading-manager/model_group/aapl/2021-01_2021-06",
-                "candidate_fold_id": "fold_2021-01_2021-06",
+                "candidate_model_ref": "storage://trading-manager/model_group/aapl/2016-01_2017-06",
+                "candidate_fold_id": "fold_aapl_2016",
                 "candidate_training_target": "AAPL",
                 "target_symbol": "AAPL",
-                "replay_execution_run_id": "replay_run_1",
+                "replay_execution_run_id": "model_group_replay_fold_aapl_2016_20260629T120000Z",
                 "created_at_utc": "2026-06-29T12:00:00Z",
                 "completed_at_utc": "2026-06-29T12:01:00Z",
                 "processed_review_count": 2,
@@ -679,6 +679,23 @@ def _write_residual_event_run(storage_root: Path) -> None:
         / "post_replay_residual_event_governance_20260629T120500Z"
     )
     run_root.mkdir(parents=True, exist_ok=True)
+    (run_root / "post_replay_attribution_receipt.json").write_text(
+        json.dumps(
+            {
+                "contract_type": "post_replay_residual_event_governance_receipt",
+                "status": "succeeded",
+                "run_id": run_root.name,
+                "candidate_model_ref": "storage://trading-manager/model_group/aapl/2016-01_2017-06",
+                "candidate_fold_id": "fold_aapl_2016",
+                "candidate_training_target": "AAPL",
+                "target_symbol": "AAPL",
+                "replay_execution_run_id": "model_group_replay_fold_aapl_2016_20260629T120000Z",
+            },
+            sort_keys=True,
+        )
+        + "\n",
+        encoding="utf-8",
+    )
     (run_root / "event_focus_proposals.jsonl").write_text(
         json.dumps(
             {
@@ -949,6 +966,33 @@ class DashboardModelsTests(unittest.TestCase):
             self.assertEqual(len(payload["chart_payload"]["group_versions"]), 1)
             self.assertEqual(payload["chart_payload"]["group_versions"][0]["version_label"], "AAPL 2016")
 
+    def test_model_group_versions_skip_stale_date_range_fold_artifacts(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            storage_root = Path(tmp)
+            _write_latest(storage_root, "historical_task_progress_summary", _historical_payload())
+            _write_latest(storage_root, "execution_realtime_trading_runtime_status", _runtime_payload())
+            _write_group_promotion_version(storage_root)
+            decision_path = (
+                storage_root
+                / "05_replay_datasets"
+                / "promotion_replay_candidate_policy"
+                / "promotion_review_runs"
+                / "model_group_evaluation_fixture"
+                / "promotion_eligibility_decision.json"
+            )
+            decision = json.loads(decision_path.read_text(encoding="utf-8"))
+            decision["candidate_fold_id"] = "fold_2016-01_2016-06"
+            decision["fold_id"] = "fold_2016-01_2016-06"
+            decision_path.write_text(json.dumps(decision, sort_keys=True) + "\n", encoding="utf-8")
+
+            payload = build_model_promotion_posture_summary(
+                storage_root=storage_root,
+                generated_at_utc="2026-05-29T00:04:00Z",
+            )
+
+            self.assertEqual(payload["chart_payload"]["group_versions"], [])
+            self.assertIn("stale_replay_fold_id", payload["chart_payload"]["excluded_group_versions"][0]["reason_codes"])
+
     def test_model_group_versions_skip_replay_without_candidate_handoff(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             storage_root = Path(tmp)
@@ -1082,6 +1126,43 @@ class DashboardModelsTests(unittest.TestCase):
             event_run = chart["event_runs"][0]
             self.assertEqual(event_run["proposal_count"], 1)
             self.assertEqual(event_run["attribution_status_counts"]["attributed"], 1)
+
+    def test_replay_review_summary_skips_stale_date_range_replay_artifacts(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            storage_root = Path(tmp)
+            _write_replay_review_run(storage_root)
+            _write_residual_event_run(storage_root)
+            review_receipt = (
+                storage_root
+                / "05_replay_datasets"
+                / "promotion_replay_candidate_policy"
+                / "post_replay_review_runs"
+                / "post_replay_review_20260629T120000Z"
+                / "post_replay_review_receipt.json"
+            )
+            review_payload = json.loads(review_receipt.read_text(encoding="utf-8"))
+            review_payload["candidate_fold_id"] = "fold_2016-01_2016-06"
+            review_receipt.write_text(json.dumps(review_payload, sort_keys=True) + "\n", encoding="utf-8")
+            event_receipt = (
+                storage_root
+                / "05_replay_datasets"
+                / "promotion_replay_candidate_policy"
+                / "post_replay_attribution_runs"
+                / "post_replay_residual_event_governance_20260629T120500Z"
+                / "post_replay_attribution_receipt.json"
+            )
+            event_payload = json.loads(event_receipt.read_text(encoding="utf-8"))
+            event_payload["candidate_fold_id"] = "fold_2016-01_2016-06"
+            event_receipt.write_text(json.dumps(event_payload, sort_keys=True) + "\n", encoding="utf-8")
+
+            payload = build_model_group_replay_review_summary(
+                storage_root=storage_root,
+                generated_at_utc="2026-06-29T12:10:00Z",
+            )
+
+            self.assertEqual(payload["status"], "not_reported")
+            self.assertEqual(payload["chart_payload"]["review_runs"], [])
+            self.assertEqual(payload["chart_payload"]["event_runs"], [])
 
     def test_refresh_materializes_replay_review_summary(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:

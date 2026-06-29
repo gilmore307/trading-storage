@@ -25,6 +25,7 @@ HISTORICAL_TASK_PROGRESS_CONTRACT = "historical_task_progress_summary"
 EXECUTION_RUNTIME_STATUS_CONTRACT = "execution_realtime_trading_runtime_status"
 DEFAULT_STORAGE_ROOT = Path("storage")
 DEFAULT_STALE_AFTER_SECONDS = 900
+CURRENT_MODEL_WORKER_FOLD_RE = re.compile(r"^fold_[a-z0-9]+_20\d{2}$")
 
 MODEL_LAYERS = (
     (1, "model_01_background_context", "Background Context"),
@@ -34,6 +35,12 @@ MODEL_LAYERS = (
     (5, "model_05_option_expression", "Option Expression"),
     (6, "model_06_residual_event_governance", "Residual Event Governance"),
 )
+
+
+def _current_model_worker_fold_id(value: object) -> str:
+    fold_id = str(value or "").strip().lower()
+    return fold_id if CURRENT_MODEL_WORKER_FOLD_RE.fullmatch(fold_id) else ""
+
 
 def _read_latest(storage_root: Path, contract_type: str) -> dict[str, Any] | None:
     path = storage_root / "06_dashboard_cache" / "read_models" / f"{contract_type}.json"
@@ -396,6 +403,13 @@ def _model_group_version_exclusion_reasons(
             {
                 "reason_code": "missing_candidate_fold_id",
                 "reason": "promotion artifact does not declare the candidate fold that owns this evaluation",
+            }
+        )
+    elif not _current_model_worker_fold_id(candidate_fold_id):
+        reasons.append(
+            {
+                "reason_code": "stale_replay_fold_id",
+                "reason": "promotion artifact does not use current fold_<target>_<year> naming",
             }
         )
     if not candidate_training_target.strip():

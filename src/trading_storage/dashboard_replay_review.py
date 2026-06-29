@@ -9,6 +9,7 @@ mutate account state.
 from __future__ import annotations
 
 import json
+import re
 from pathlib import Path
 from typing import Any, Iterable, Mapping
 
@@ -25,6 +26,7 @@ DEFAULT_STALE_AFTER_SECONDS = 900
 MAX_REVIEW_RUNS = 50
 MAX_EVENT_RUNS = 20
 MAX_SAMPLE_ROWS = 5
+CURRENT_MODEL_WORKER_FOLD_RE = re.compile(r"^fold_[a-z0-9]+_20\d{2}$")
 
 
 def _read_json_object(path: Path) -> dict[str, Any] | None:
@@ -73,6 +75,34 @@ def _latest_dirs(root: Path, pattern: str, limit: int) -> list[Path]:
     except OSError:
         return []
     return sorted(dirs, key=lambda path: path.name)[-limit:]
+
+
+def _current_model_worker_fold_id(value: object) -> str:
+    fold_id = str(value or "").strip().lower()
+    return fold_id if CURRENT_MODEL_WORKER_FOLD_RE.fullmatch(fold_id) else ""
+
+
+def _current_replay_scope(receipt: Mapping[str, Any] | None) -> dict[str, Any]:
+    if not isinstance(receipt, Mapping):
+        return {
+            "include": False,
+            "reason_code": "missing_receipt",
+            "reason": "replay artifact does not publish a receipt",
+        }
+    candidate_fold_id = _current_model_worker_fold_id(receipt.get("candidate_fold_id") or receipt.get("fold_id"))
+    if not candidate_fold_id:
+        return {
+            "include": False,
+            "reason_code": "stale_replay_fold_id",
+            "reason": "replay artifact does not use current fold_<target>_<year> naming",
+        }
+    if not str(receipt.get("candidate_training_target") or receipt.get("target_symbol") or "").strip():
+        return {
+            "include": False,
+            "reason_code": "missing_target_scope",
+            "reason": "replay artifact does not declare its target scope",
+        }
+    return {"include": True, "candidate_fold_id": candidate_fold_id}
 
 
 def _compact_decision_scope(summary: Mapping[str, Any]) -> dict[str, Any]:
@@ -177,6 +207,9 @@ def _review_run_summary(run_dir: Path) -> dict[str, Any] | None:
     receipt = _read_json_object(run_dir / "post_replay_review_receipt.json")
     if not receipt:
         return None
+    scope = _current_replay_scope(receipt)
+    if not scope["include"]:
+        return None
     performance_summary = _read_json_object(run_dir / "replay_review_performance_summary.json")
     parameter_report = _read_json_object(run_dir / "layer_attribution" / "parameter_replay_review_report.json")
     rows_path = run_dir / "replay_review_rows.jsonl"
@@ -229,13 +262,22 @@ def _event_sample(row: Mapping[str, Any]) -> dict[str, Any]:
     return {field: row.get(field) for field in fields if field in row}
 
 
-def _event_run_summary(run_dir: Path) -> dict[str, Any]:
+def _event_run_summary(run_dir: Path) -> dict[str, Any] | None:
+    receipt = _read_json_object(run_dir / "post_replay_attribution_receipt.json")
+    scope = _current_replay_scope(receipt)
+    if not scope["include"]:
+        return None
     proposal_path = run_dir / "event_focus_proposals.jsonl"
     attribution_path = run_dir / "residual_event_governance_rows.jsonl"
     proposals = list(_iter_jsonl(proposal_path))
     attribution_rows = list(_iter_jsonl(attribution_path))
     return {
         "event_run_id": run_dir.name,
+        "candidate_model_ref": receipt.get("candidate_model_ref") if receipt else None,
+        "candidate_fold_id": receipt.get("candidate_fold_id") if receipt else None,
+        "candidate_training_target": receipt.get("candidate_training_target") if receipt else None,
+        "target_symbol": (receipt.get("target_symbol") or receipt.get("candidate_training_target")) if receipt else None,
+        "replay_execution_run_id": receipt.get("replay_execution_run_id") if receipt else None,
         "proposal_count": len(proposals),
         "attribution_row_count": len(attribution_rows),
         "proposal_status_counts": _count_by(proposals, "proposal_status"),
@@ -247,6 +289,9 @@ def _event_run_summary(run_dir: Path) -> dict[str, Any]:
         "sample_proposals": [_event_sample(row) for row in proposals[:MAX_SAMPLE_ROWS]],
         "sample_attributions": [_event_sample(row) for row in attribution_rows[:MAX_SAMPLE_ROWS]],
         "source_refs": {
+            "receipt_ref": str(run_dir / "post_replay_attribution_receipt.json")
+            if (run_dir / "post_replay_attribution_receipt.json").exists()
+            else None,
             "event_focus_proposals_ref": str(proposal_path) if proposal_path.exists() else None,
             "residual_event_governance_rows_ref": str(attribution_path) if attribution_path.exists() else None,
         },
@@ -306,8 +351,9 @@ def build_model_group_replay_review_summary(
         if (summary := _review_run_summary(run_dir)) is not None
     ]
     event_runs = [
-        _event_run_summary(run_dir)
+        summary
         for run_dir in _latest_dirs(event_root, "post_replay_residual_event_governance_*", MAX_EVENT_RUNS)
+        if (summary := _event_run_summary(run_dir)) is not None
     ]
     total_review_rows = sum(int(run.get("decision_review", {}).get("row_count") or 0) for run in review_runs)
     total_event_proposals = sum(int(run.get("proposal_count") or 0) for run in event_runs)
