@@ -1101,7 +1101,7 @@ class DashboardModelsTests(unittest.TestCase):
             self.assertTrue((storage_root / "06_dashboard_cache/read_models/model_readiness_summary.json").exists())
             self.assertTrue((storage_root / "06_dashboard_cache/read_models/model_promotion_posture_summary.json").exists())
 
-    def test_replay_review_summary_projects_review_and_event_artifacts(self) -> None:
+    def test_replay_review_summary_projects_review_artifacts(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             storage_root = Path(tmp)
             _write_replay_review_run(storage_root)
@@ -1116,16 +1116,14 @@ class DashboardModelsTests(unittest.TestCase):
             validate_dashboard_read_model(payload, expected_contract_type=MODEL_GROUP_REPLAY_REVIEW_CONTRACT)
             chart = payload["chart_payload"]
             self.assertEqual(len(chart["review_runs"]), 1)
-            self.assertEqual(len(chart["event_runs"]), 1)
+            self.assertNotIn("event_runs", chart)
+            self.assertNotIn("page_contracts", chart)
             review = chart["review_runs"][0]
             self.assertEqual(review["decision_review"]["row_count"], 2)
             self.assertEqual(review["decision_review"]["cause_family_counts"]["model_mechanism_defect"], 1)
             self.assertEqual(review["parameter_review"]["classification_counts"]["directionally_useful"], 1)
             self.assertEqual(review["performance"]["decision_scope"]["decision_row_count"], 2)
             self.assertNotIn("selected_timestamp_counts", review["performance"]["decision_scope"])
-            event_run = chart["event_runs"][0]
-            self.assertEqual(event_run["proposal_count"], 1)
-            self.assertEqual(event_run["attribution_status_counts"]["attributed"], 1)
 
     def test_replay_review_summary_skips_stale_date_range_replay_artifacts(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
@@ -1162,7 +1160,7 @@ class DashboardModelsTests(unittest.TestCase):
 
             self.assertEqual(payload["status"], "not_reported")
             self.assertEqual(payload["chart_payload"]["review_runs"], [])
-            self.assertEqual(payload["chart_payload"]["event_runs"], [])
+            self.assertNotIn("event_runs", payload["chart_payload"])
 
     def test_refresh_materializes_replay_review_summary(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:

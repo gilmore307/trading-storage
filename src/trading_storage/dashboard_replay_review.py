@@ -24,7 +24,6 @@ DEFAULT_STORAGE_ROOT = Path("storage")
 DEFAULT_REPLAY_ROOT = Path("05_replay_datasets") / "promotion_replay_candidate_policy"
 DEFAULT_STALE_AFTER_SECONDS = 900
 MAX_REVIEW_RUNS = 50
-MAX_EVENT_RUNS = 20
 MAX_SAMPLE_ROWS = 5
 CURRENT_MODEL_WORKER_FOLD_RE = re.compile(r"^fold_[a-z0-9]+_20\d{2}$")
 
@@ -242,98 +241,6 @@ def _review_run_summary(run_dir: Path) -> dict[str, Any] | None:
     }
 
 
-def _event_sample(row: Mapping[str, Any]) -> dict[str, Any]:
-    fields = (
-        "event_focus_proposal_id",
-        "event_ref",
-        "event_summary",
-        "target_symbol",
-        "failure_type",
-        "proposal_status",
-        "review_gate",
-        "supporting_failure_count",
-        "average_attribution_confidence_score",
-        "average_impact_magnitude_abs_return",
-        "impact_scope_type",
-        "attribution_status",
-        "dominant_event_candidate",
-        "source_replay_review_id",
-    )
-    return {field: row.get(field) for field in fields if field in row}
-
-
-def _event_run_summary(run_dir: Path) -> dict[str, Any] | None:
-    receipt = _read_json_object(run_dir / "post_replay_attribution_receipt.json")
-    scope = _current_replay_scope(receipt)
-    if not scope["include"]:
-        return None
-    proposal_path = run_dir / "event_focus_proposals.jsonl"
-    attribution_path = run_dir / "residual_event_governance_rows.jsonl"
-    proposals = list(_iter_jsonl(proposal_path))
-    attribution_rows = list(_iter_jsonl(attribution_path))
-    return {
-        "event_run_id": run_dir.name,
-        "candidate_model_ref": receipt.get("candidate_model_ref") if receipt else None,
-        "candidate_fold_id": receipt.get("candidate_fold_id") if receipt else None,
-        "candidate_training_target": receipt.get("candidate_training_target") if receipt else None,
-        "target_symbol": (receipt.get("target_symbol") or receipt.get("candidate_training_target")) if receipt else None,
-        "replay_execution_run_id": receipt.get("replay_execution_run_id") if receipt else None,
-        "proposal_count": len(proposals),
-        "attribution_row_count": len(attribution_rows),
-        "proposal_status_counts": _count_by(proposals, "proposal_status"),
-        "review_gate_counts": _count_by(proposals, "review_gate"),
-        "target_symbol_counts": _count_by(proposals + attribution_rows, "target_symbol"),
-        "failure_type_counts": _count_by(proposals + attribution_rows, "failure_type"),
-        "impact_scope_type_counts": _count_by(attribution_rows, "impact_scope_type"),
-        "attribution_status_counts": _count_by(attribution_rows, "attribution_status"),
-        "sample_proposals": [_event_sample(row) for row in proposals[:MAX_SAMPLE_ROWS]],
-        "sample_attributions": [_event_sample(row) for row in attribution_rows[:MAX_SAMPLE_ROWS]],
-        "source_refs": {
-            "receipt_ref": str(run_dir / "post_replay_attribution_receipt.json")
-            if (run_dir / "post_replay_attribution_receipt.json").exists()
-            else None,
-            "event_focus_proposals_ref": str(proposal_path) if proposal_path.exists() else None,
-            "residual_event_governance_rows_ref": str(attribution_path) if attribution_path.exists() else None,
-        },
-    }
-
-
-def _build_page_contracts() -> list[dict[str, Any]]:
-    return [
-        {
-            "page_id": "models",
-            "question": "Is this model group statistically and structurally credible as a machine-learning model?",
-            "primary_source": "model_readiness_summary; model_promotion_posture_summary",
-            "primary_grain": "model group version and model layer",
-        },
-        {
-            "page_id": "replay_performance",
-            "question": "How did the model group perform as a trading system in replay?",
-            "primary_source": "model_group_replay_review_summary.review_runs[].performance",
-            "primary_grain": "model group replay review run",
-        },
-        {
-            "page_id": "replay_decisions",
-            "question": "Did each model layer choose reasonably with point-in-time evidence and the available candidate set?",
-            "primary_source": "model_group_replay_review_summary.review_runs[].decision_review and parameter_review",
-            "primary_grain": "model group, model layer, replay review row",
-            "caution": "best_available_action is post-replay outcome labeling unless the source row explicitly proves point-in-time knowability.",
-        },
-        {
-            "page_id": "replay_operations",
-            "question": "Did the replay machinery expose, route, compute, and execute the decision correctly?",
-            "primary_source": "model_group_replay_review_summary.review_runs[].performance.option_expression/replacement_review and first_gap_component_counts",
-            "primary_grain": "component surface and replay operation gap",
-        },
-        {
-            "page_id": "events",
-            "question": "Did event context explain residual replay behavior by event scope?",
-            "primary_source": "model_group_replay_review_summary.event_runs",
-            "primary_grain": "event focus proposal and residual-event attribution row",
-        },
-    ]
-
-
 def build_model_group_replay_review_summary(
     *,
     storage_root: Path = DEFAULT_STORAGE_ROOT,
@@ -344,20 +251,13 @@ def build_model_group_replay_review_summary(
     generated_at_utc = generated_at_utc or now_utc()
     replay_root = storage_root / DEFAULT_REPLAY_ROOT
     review_root = replay_root / "post_replay_review_runs"
-    event_root = replay_root / "post_replay_attribution_runs"
     review_runs = [
         summary
         for run_dir in _latest_dirs(review_root, "post_replay_review_*", MAX_REVIEW_RUNS)
         if (summary := _review_run_summary(run_dir)) is not None
     ]
-    event_runs = [
-        summary
-        for run_dir in _latest_dirs(event_root, "post_replay_residual_event_governance_*", MAX_EVENT_RUNS)
-        if (summary := _event_run_summary(run_dir)) is not None
-    ]
     total_review_rows = sum(int(run.get("decision_review", {}).get("row_count") or 0) for run in review_runs)
-    total_event_proposals = sum(int(run.get("proposal_count") or 0) for run in event_runs)
-    status = "ready" if review_runs or event_runs else "not_reported"
+    status = "ready" if review_runs else "not_reported"
     return {
         "contract_type": MODEL_GROUP_REPLAY_REVIEW_CONTRACT,
         "schema_version": 1,
@@ -366,15 +266,12 @@ def build_model_group_replay_review_summary(
         "status": status,
         "severity": "info" if status == "ready" else "low",
         "summary": (
-            f"Replay review summary has {len(review_runs)} review runs, {total_review_rows} review rows, "
-            f"and {total_event_proposals} event focus proposals."
+            f"Replay review summary has {len(review_runs)} review runs and {total_review_rows} review rows."
         )
         if status == "ready"
         else "No post-replay review artifacts are published yet.",
         "chart_payload": {
-            "page_contracts": _build_page_contracts(),
             "review_runs": review_runs,
-            "event_runs": event_runs,
             "contract_matrix": {
                 "comparison_dimension": "model_group_between_run_compare",
                 "individual_dimension": "single_model_group_review_run",
@@ -387,7 +284,6 @@ def build_model_group_replay_review_summary(
         "diagnostic_refs": [],
         "lineage_refs": [
             {"artifact_root": str(review_root), "included_run_count": len(review_runs)},
-            {"artifact_root": str(event_root), "included_run_count": len(event_runs)},
         ],
         "freshness": {
             "class": "derived_replay_review_summary",
