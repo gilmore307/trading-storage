@@ -47,6 +47,7 @@ The following dashboard summary families are accepted as storage-bound design ta
 - `realtime_task_progress_summary`;
 - `model_readiness_summary`;
 - `model_promotion_posture_summary`;
+- `model_group_replay_review_summary`;
 - `registry_dictionary_profile`.
 
 Implemented realtime summary families:
@@ -56,6 +57,7 @@ Implemented realtime summary families:
 - `realtime_signal_summary`;
 - `model_readiness_summary`;
 - `model_promotion_posture_summary`;
+- `model_group_replay_review_summary`;
 
 Future/parked summary families:
 
@@ -130,6 +132,7 @@ Implemented storage-side support:
 - `src/trading_storage/dashboard_temporal_explorer.py` and `scripts/dashboard/refresh_temporal_explorer_summary_read_model.py` build and materialize `temporal_explorer_summary` for the dashboard Temporal Explorer page from `calendar_day`, `calendar_market_session`, `calendar_scheduled_event`, `calendar_event_result`, `calendar_news_event_index`, and `chart_ohlcv_cache`. This is the primary calendar/dashboard route.
 - `src/trading_storage/dashboard_execution_runtime.py` and `scripts/dashboard/refresh_execution_runtime_status_read_model.py` build and materialize `execution_realtime_trading_runtime_status` from the execution-owned readiness artifact. Dashboard clients consume it through `/ws/read-models/execution_realtime_trading_runtime_status/latest`.
 - `src/trading_storage/dashboard_models.py` builds and materializes `model_readiness_summary` and `model_promotion_posture_summary` from already-materialized task-progress, execution-runtime, and promotion-review artifacts. It reports model-group promotion-version history with active/shadow/retired identity, AUROC/return/drawdown/PCA metric fields, and component version refs for the Models page. Per-layer evaluation dossiers are not part of the current public dashboard route.
+- `src/trading_storage/dashboard_replay_review.py` builds and materializes `model_group_replay_review_summary` from already-materialized post-replay review, layer-attribution, and residual-event governance artifacts. It projects replay performance, model-layer decision attribution, component operation gaps, and event focus summaries for the replay analysis pages without exposing raw artifact directories as primary UI content.
 - `src/trading_storage/dashboard_realtime_signals.py` and `scripts/dashboard/refresh_realtime_signal_summary_read_model.py` build and materialize `realtime_signal_summary` from execution-owned realtime monitor receipts. When no realtime monitor receipt exists, the producer emits an explicit safe `not_started` state rather than fabricating signal metrics.
 - `deploy/systemd/trading-storage-dashboard-read-model-refresh.service` and `.timer` define the fallback periodic refresh template. Manager workflow-state writes trigger primary progress refreshes, while the timer default is 60 seconds for calibration when an event is missed.
 - Tests cover envelope validation, path safety, future timestamp rejection, secret-like payload rejection, latest/schema writes, the CLI materializer path, and refresh orchestration side-effect flags.
@@ -167,6 +170,12 @@ PYTHONPATH=src python3 scripts/dashboard/refresh_public_dashboard_read_models.py
 ### Model lifecycle producers
 
 `trading_storage.dashboard_models` produces `model_readiness_summary` and `model_promotion_posture_summary` for the dashboard Models page. These summaries are derived from `historical_task_progress_summary`, `execution_realtime_trading_runtime_status`, and local promotion-review artifacts; they do not query raw model tables, activate models, place orders, or mutate lifecycle state. The model-group portion owns promotion-version history, active/shadow/retired identity, AUROC/return/drawdown/PCA metric fields, agent recommendation, and decision status because promotion is decided for the whole pipeline. Model-group replay evidence is publishable only when the replay receipt proves a M02 target-candidate handoff or an explicit reviewed preview override; M01/M02 base-context refs are not trade candidates and do not make a replay eligible for display. Model readiness rows provide model family, model role, optimization target, and component version refs for group-version context only. Task state and workflow blockers remain Tasks/Diagnostics concerns rather than model-page validity labels.
+
+### Replay review producer
+
+`trading_storage.dashboard_replay_review` produces `model_group_replay_review_summary` for Replay Performance, Replay Decisions, Replay Operations, and Events. It reads completed post-replay review artifacts under `storage/05_replay_datasets/promotion_replay_candidate_policy/post_replay_review_runs` plus residual-event governance artifacts under `post_replay_attribution_runs`. The payload is a compact projection: review run identity, performance summary, replay review row aggregates, parameter replay review classes, operation gap counts, event proposal/status counts, focus samples, and source refs. It performs no replay, provider calls, model activation, broker execution, account mutation, or source artifact mutation.
+
+Interpretation rule: best-available and future-return fields are post-replay labels unless the source evidence explicitly proves the alternative was point-in-time knowable. Dashboard pages must use them for review, not as if the model had access to future information.
 
 ### Realtime signal producer
 

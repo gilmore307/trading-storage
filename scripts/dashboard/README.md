@@ -9,6 +9,6 @@ Executable helpers for storage-hosted dashboard summary/read-model payloads.
 - `refresh_temporal_explorer_summary_read_model.py` refreshes `temporal_explorer_summary`, the primary Timewheel/Temporal Explorer page model.
 - `refresh_realtime_signal_summary_read_model.py` refreshes `realtime_signal_summary` from execution-owned realtime monitor receipts.
 - `refresh_execution_runtime_status_read_model.py` refreshes `execution_realtime_trading_runtime_status` from the execution-owned readiness artifact for WebSocket clients.
-- `refresh_public_dashboard_read_models.py` refreshes the current public dashboard read-model set served through `/api/read-models/<contract_type>/latest` and `/ws/read-models/<contract_type>/latest`, including the model lifecycle and promotion posture summaries consumed by the Models page.
+- `refresh_public_dashboard_read_models.py` refreshes the current public dashboard read-model set served through `/api/read-models/<contract_type>/latest` and `/ws/read-models/<contract_type>/latest`, including model lifecycle, promotion posture, and replay review summaries consumed by the Models and Replay pages.
 
 These helpers do not create dashboard UI, provider calls, model activation, broker execution, or account mutation. Refresh helpers may write storage-owned dashboard read-model files only.

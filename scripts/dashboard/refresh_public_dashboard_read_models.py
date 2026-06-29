@@ -17,6 +17,10 @@ from trading_storage.dashboard_models import (
     refresh_model_readiness_summary_read_model,
     refresh_model_promotion_posture_summary_read_model,
 )
+from trading_storage.dashboard_replay_review import (
+    MODEL_GROUP_REPLAY_REVIEW_CONTRACT,
+    refresh_model_group_replay_review_summary_read_model,
+)
 from trading_storage.dashboard_refresh import DEFAULT_TRADING_MANAGER_ROOT, HISTORICAL_TASK_PROGRESS_CONTRACT, refresh_historical_task_progress_read_model
 from trading_storage.dashboard_realtime_signals import DEFAULT_TRADING_EXECUTION_ROOT, REALTIME_SIGNAL_SUMMARY_CONTRACT, refresh_realtime_signal_summary_read_model
 from trading_storage.dashboard_system_status import CURRENT_SYSTEM_STATUS_CONTRACT, refresh_current_system_status_read_model
@@ -98,6 +102,10 @@ def main(argv: list[str] | None = None) -> int:
         _run_one(
             MODEL_PROMOTION_POSTURE_CONTRACT,
             lambda: refresh_model_promotion_posture_summary_read_model(storage_root=args.storage_root),
+        ),
+        _run_one(
+            MODEL_GROUP_REPLAY_REVIEW_CONTRACT,
+            lambda: refresh_model_group_replay_review_summary_read_model(storage_root=args.storage_root),
         ),
     ]
     maintenance: dict[str, Any] = {}

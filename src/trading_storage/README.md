@@ -9,6 +9,7 @@ Importable storage helper implementation lives here.
 - `dashboard_read_models.py` owns storage-side validation and materialization of dashboard current read-model files plus schemas.
 - `dashboard_temporal_explorer.py` owns the storage-side read model for the dashboard Timewheel/Temporal Explorer page.
 - `dashboard_models.py` owns storage-side model lifecycle and promotion posture read models for the dashboard Models page.
+- `dashboard_replay_review.py` owns the storage-side post-replay review projection for Replay Performance, Replay Decisions, Replay Operations, and Events.
 - `dashboard_refresh.py` owns storage-side refresh orchestration that runs accepted semantic producers and materializes validated dashboard read models.
 - `dashboard_snapshot_lifecycle.py` owns pruning of old dashboard read-model snapshot metadata; it preserves latest summaries, schemas, M01/M02 data, and SQL.
 - `file_lifecycle_acceptance.py` owns the one-pass safe file-lifecycle acceptance over current index/protected-set/plan/quarantine/scaffold/compression/dashboard-prune helpers.

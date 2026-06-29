@@ -13,6 +13,11 @@ from trading_storage.dashboard_models import (
     refresh_model_readiness_summary_read_model,
     refresh_model_promotion_posture_summary_read_model,
 )
+from trading_storage.dashboard_replay_review import (
+    MODEL_GROUP_REPLAY_REVIEW_CONTRACT,
+    build_model_group_replay_review_summary,
+    refresh_model_group_replay_review_summary_read_model,
+)
 from trading_storage.dashboard_read_models import validate_dashboard_read_model
 
 
@@ -540,6 +545,181 @@ def _write_mismatched_group_promotion_version(storage_root: Path) -> None:
     )
 
 
+def _write_replay_review_run(storage_root: Path) -> None:
+    run_root = (
+        storage_root
+        / "05_replay_datasets"
+        / "promotion_replay_candidate_policy"
+        / "post_replay_review_runs"
+        / "post_replay_review_20260629T120000Z"
+    )
+    layer_root = run_root / "layer_attribution"
+    layer_root.mkdir(parents=True, exist_ok=True)
+    rows_path = run_root / "replay_review_rows.jsonl"
+    rows_path.write_text(
+        "\n".join(
+            json.dumps(row, sort_keys=True)
+            for row in [
+                {
+                    "contract_type": "post_replay_review_row",
+                    "review_id": "rr1",
+                    "decision_time": "2021-01-19T16:00:00-05:00",
+                    "target_symbol": "AAPL",
+                    "replay_month": "2021-01",
+                    "chosen_action": "open_long",
+                    "available_action": "open_long",
+                    "best_available_action_by_future_outcome": "no_trade",
+                    "chosen_action_return": -0.12,
+                    "best_available_action_return": 0.0,
+                    "regret_to_best_available": 0.12,
+                    "cause_family": "model_mechanism_defect",
+                    "failure_type": "bad_entry",
+                    "first_gap_component": "model_04_unified_decision",
+                    "first_gap_mechanism": "overconfident_entry",
+                    "miss_attribution_layer": "M04",
+                    "impact_normalized_severity_score": 0.42,
+                    "review_status": "reviewed",
+                },
+                {
+                    "contract_type": "post_replay_review_row",
+                    "review_id": "rr2",
+                    "decision_time": "2021-02-01T16:00:00-05:00",
+                    "target_symbol": "MSFT",
+                    "replay_month": "2021-02",
+                    "chosen_action": "open_long",
+                    "best_available_action_by_future_outcome": "open_long",
+                    "chosen_action_return": 0.08,
+                    "best_available_action_return": 0.08,
+                    "regret_to_best_available": 0.0,
+                    "cause_family": "not_failed",
+                    "failure_type": "none",
+                    "first_gap_component": "none",
+                    "miss_attribution_layer": "none",
+                    "impact_normalized_severity_score": 0.0,
+                    "review_status": "reviewed",
+                },
+            ]
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+    (run_root / "post_replay_review_receipt.json").write_text(
+        json.dumps(
+            {
+                "contract_type": "post_replay_review_receipt",
+                "candidate_model_ref": "storage://trading-manager/model_group/aapl/2021-01_2021-06",
+                "candidate_fold_id": "fold_2021-01_2021-06",
+                "candidate_training_target": "AAPL",
+                "target_symbol": "AAPL",
+                "replay_execution_run_id": "replay_run_1",
+                "created_at_utc": "2026-06-29T12:00:00Z",
+                "completed_at_utc": "2026-06-29T12:01:00Z",
+                "processed_review_count": 2,
+                "expected_review_count": 2,
+                "event_candidate_count": 1,
+                "review_rows_ref": str(rows_path),
+            },
+            sort_keys=True,
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+    (run_root / "replay_review_performance_summary.json").write_text(
+        json.dumps(
+            {
+                "contract_type": "model_group_replay_review_performance_summary",
+                "decision_scope": {
+                    "decision_row_count": 2,
+                    "filled_count": 2,
+                    "selected_target_count": 2,
+                    "selected_timestamp_count": 2,
+                    "decision_status_counts": {"accepted": 2},
+                    "fill_status_counts": {"simulated_filled": 2},
+                    "selected_timestamp_counts": {"2021-01-19T16:00:00-05:00": 1},
+                },
+                "target_performance": {"gross_pnl_total": -10.0, "positive_return_count": 1, "negative_return_count": 1},
+                "stock_selection": {"selected_top_10_count": 2, "selected_outside_top_25_count": 0},
+                "direction_expression": {"aligned_option_expression_count": 2, "mismatched_option_expression_count": 0},
+                "option_expression": {"path_status_counts": {"available": 2}},
+                "replacement_review": {"replacement_triggered_count": 1, "blocked_replacements_sample": [{"target_ref": "AAPL"}]},
+                "layer_differentiation": {"model_04_unified_decision": {"row_count": 2, "varying_scalar_keys": ["dominant_horizon"]}},
+            },
+            sort_keys=True,
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+    (layer_root / "parameter_replay_review_report.json").write_text(
+        json.dumps(
+            {
+                "contract_type": "model_group_parameter_replay_review_report",
+                "summary": {
+                    "parameter_count": 3,
+                    "classification_counts": {"directionally_useful": 1, "suspect_requires_redesign": 1},
+                    "directionally_useful_parameters": ["feature_momentum_7d"],
+                    "suspect_requires_redesign_parameters": ["feature_volume_rank_30d"],
+                    "interpretation_limits": ["Replay diagnostics are not causal feature attribution."],
+                    "fixed_input_only": True,
+                    "threshold_selection_performed": False,
+                },
+            },
+            sort_keys=True,
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+
+
+def _write_residual_event_run(storage_root: Path) -> None:
+    run_root = (
+        storage_root
+        / "05_replay_datasets"
+        / "promotion_replay_candidate_policy"
+        / "post_replay_attribution_runs"
+        / "post_replay_residual_event_governance_20260629T120500Z"
+    )
+    run_root.mkdir(parents=True, exist_ok=True)
+    (run_root / "event_focus_proposals.jsonl").write_text(
+        json.dumps(
+            {
+                "contract_type": "model_06_residual_event_governance_event_focus_proposal",
+                "event_focus_proposal_id": "event_focus_1",
+                "event_ref": "event_1",
+                "event_summary": "Market holiday affected the replay decision window.",
+                "target_symbol": "AAPL",
+                "failure_type": "bad_entry",
+                "proposal_status": "pending_review",
+                "review_gate": "requires_event_strategy_promotion_review",
+                "supporting_failure_count": 1,
+                "average_attribution_confidence_score": 0.65,
+                "average_impact_magnitude_abs_return": 0.12,
+                "source_replay_review_ids": ["rr1"],
+            },
+            sort_keys=True,
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+    (run_root / "residual_event_governance_rows.jsonl").write_text(
+        json.dumps(
+            {
+                "contract_type": "model_06_residual_event_governance_event_attribution_row",
+                "attribution_id": "attr_1",
+                "attribution_status": "attributed",
+                "target_symbol": "AAPL",
+                "failure_type": "bad_entry",
+                "impact_scope_type": "target_window",
+                "dominant_event_candidate": "event_1",
+                "source_replay_review_id": "rr1",
+                "attribution_confidence_score": 0.65,
+            },
+            sort_keys=True,
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+
+
 def _write_unscoped_group_promotion_version(storage_root: Path) -> None:
     replay_root = (
         storage_root
@@ -876,6 +1056,42 @@ class DashboardModelsTests(unittest.TestCase):
             self.assertEqual(promotion_receipt["refreshed_contract_type"], MODEL_PROMOTION_POSTURE_CONTRACT)
             self.assertTrue((storage_root / "06_dashboard_cache/read_models/model_readiness_summary.json").exists())
             self.assertTrue((storage_root / "06_dashboard_cache/read_models/model_promotion_posture_summary.json").exists())
+
+    def test_replay_review_summary_projects_review_and_event_artifacts(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            storage_root = Path(tmp)
+            _write_replay_review_run(storage_root)
+            _write_residual_event_run(storage_root)
+
+            payload = build_model_group_replay_review_summary(
+                storage_root=storage_root,
+                generated_at_utc="2026-06-29T12:10:00Z",
+            )
+
+            self.assertEqual(payload["contract_type"], MODEL_GROUP_REPLAY_REVIEW_CONTRACT)
+            validate_dashboard_read_model(payload, expected_contract_type=MODEL_GROUP_REPLAY_REVIEW_CONTRACT)
+            chart = payload["chart_payload"]
+            self.assertEqual(len(chart["review_runs"]), 1)
+            self.assertEqual(len(chart["event_runs"]), 1)
+            review = chart["review_runs"][0]
+            self.assertEqual(review["decision_review"]["row_count"], 2)
+            self.assertEqual(review["decision_review"]["cause_family_counts"]["model_mechanism_defect"], 1)
+            self.assertEqual(review["parameter_review"]["classification_counts"]["directionally_useful"], 1)
+            self.assertEqual(review["performance"]["decision_scope"]["decision_row_count"], 2)
+            self.assertNotIn("selected_timestamp_counts", review["performance"]["decision_scope"])
+            event_run = chart["event_runs"][0]
+            self.assertEqual(event_run["proposal_count"], 1)
+            self.assertEqual(event_run["attribution_status_counts"]["attributed"], 1)
+
+    def test_refresh_materializes_replay_review_summary(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            storage_root = Path(tmp)
+            _write_replay_review_run(storage_root)
+
+            receipt = refresh_model_group_replay_review_summary_read_model(storage_root=storage_root)
+
+            self.assertEqual(receipt["refreshed_contract_type"], MODEL_GROUP_REPLAY_REVIEW_CONTRACT)
+            self.assertTrue((storage_root / "06_dashboard_cache/read_models/model_group_replay_review_summary.json").exists())
 
 
 if __name__ == "__main__":
