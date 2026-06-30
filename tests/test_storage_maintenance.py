@@ -241,6 +241,33 @@ class StorageMaintenanceTests(unittest.TestCase):
                 )
                 (run / "decision_rows.jsonl").write_text("row\n", encoding="utf-8")
 
+            review_old = (
+                root
+                / "storage"
+                / "05_replay_datasets"
+                / "promotion_replay_candidate_policy"
+                / "post_replay_review_runs"
+                / "post_replay_review_20260610T000000Z"
+            )
+            review_new = review_old.parent / "post_replay_review_20260613T000000Z"
+            for run, completed_at in (
+                (review_old, "2026-06-10T00:00:00Z"),
+                (review_new, "2026-06-13T00:00:00Z"),
+            ):
+                run.mkdir(parents=True)
+                (run / "post_replay_review_receipt.json").write_text(
+                    json.dumps(
+                        {
+                            "candidate_fold_id": "fold_aapl_2019",
+                            "candidate_model_ref": "storage://model_group/aapl/2019",
+                            "replay_execution_run_id": run.name.replace("post_replay_review", "model_group_replay"),
+                            "completed_at_utc": completed_at,
+                        }
+                    ),
+                    encoding="utf-8",
+                )
+                (run / "replay_review_rows.jsonl").write_text('{"review_id":"rr"}\n', encoding="utf-8")
+
             triage = (
                 root
                 / "storage"
@@ -309,6 +336,8 @@ class StorageMaintenanceTests(unittest.TestCase):
             self.assertTrue(summary.lifecycle_gap_action_summary["mutation_performed"])
             self.assertFalse((replay_old / "decision_rows.jsonl").exists())
             self.assertTrue((replay_new / "decision_rows.jsonl").exists())
+            self.assertFalse(review_old.exists())
+            self.assertTrue(review_new.exists())
             compressed = triage / "failure_triage_rows.jsonl.gz"
             self.assertTrue(compressed.exists())
             self.assertFalse((triage / "failure_triage_rows.jsonl").exists())
@@ -325,7 +354,63 @@ class StorageMaintenanceTests(unittest.TestCase):
             self.assertTrue(realtime_new.exists())
             compact_root = root / "storage" / "90_lifecycle" / "maintenance" / "compact_contracts"
             self.assertTrue((compact_root / "replay_execution_runs_compact_manifest.json").exists())
+            self.assertTrue((compact_root / "post_replay_review_latest_per_fold_manifest.json").exists())
             self.assertTrue((compact_root / "te_monthly_source_provenance_manifest.json").exists())
+
+    def test_lifecycle_gap_action_refs_limit_apply_scope(self) -> None:
+        with tempfile.TemporaryDirectory() as raw_tmp:
+            root = Path(raw_tmp)
+            replay_old = (
+                root
+                / "storage"
+                / "05_replay_datasets"
+                / "promotion_replay_candidate_policy"
+                / "replay_execution_runs"
+                / "replay_20260610T000000Z"
+            )
+            replay_new = replay_old.parent / "replay_20260613T000000Z"
+            for run in (replay_old, replay_new):
+                run.mkdir(parents=True)
+                (run / "replay_execution_receipt.json").write_text(
+                    json.dumps({"validation_status": "passed", "replay_execution_run_id": run.name}),
+                    encoding="utf-8",
+                )
+                (run / "decision_rows.jsonl").write_text("row\n", encoding="utf-8")
+            review_old = (
+                root
+                / "storage"
+                / "05_replay_datasets"
+                / "promotion_replay_candidate_policy"
+                / "post_replay_review_runs"
+                / "post_replay_review_20260610T000000Z"
+            )
+            review_new = review_old.parent / "post_replay_review_20260613T000000Z"
+            for run, completed_at in (
+                (review_old, "2026-06-10T00:00:00Z"),
+                (review_new, "2026-06-13T00:00:00Z"),
+            ):
+                run.mkdir(parents=True)
+                (run / "post_replay_review_receipt.json").write_text(
+                    json.dumps({"candidate_fold_id": "fold_aapl_2019", "completed_at_utc": completed_at}),
+                    encoding="utf-8",
+                )
+                (run / "replay_review_rows.jsonl").write_text('{"review_id":"rr"}\n', encoding="utf-8")
+
+            summary = run_storage_maintenance(
+                root=root,
+                include_local_retention=False,
+                apply_lifecycle_gap_actions=True,
+                lifecycle_gap_action_refs=(
+                    "storage/05_replay_datasets/promotion_replay_candidate_policy/post_replay_review_runs",
+                ),
+                generated_at_utc="2026-06-13T12:00:00Z",
+            )
+
+            self.assertEqual(len(summary.lifecycle_gap_action_receipts), 1)
+            self.assertFalse(review_old.exists())
+            self.assertTrue(review_new.exists())
+            self.assertTrue((replay_old / "decision_rows.jsonl").exists())
+            self.assertTrue((replay_new / "decision_rows.jsonl").exists())
 
 
 if __name__ == "__main__":

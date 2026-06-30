@@ -6,6 +6,7 @@ import argparse
 import gzip
 import hashlib
 import json
+import re
 import shutil
 from dataclasses import dataclass
 from datetime import UTC, datetime
@@ -24,6 +25,7 @@ TE_MONTHLY_SOURCE_ROOT = Path("storage/01_source_data/monthly_backfill/trading_e
 TE_RUN_SIDE_PRODUCT_FILE_NAMES = {"completion_receipt.json", "request_manifest.json"}
 REPLAY_VERBOSE_FILE_NAMES = {"decision_rows.jsonl", "option_feature_requirements.jsonl", "replay_progress.jsonl"}
 ATTRIBUTION_VERBOSE_FILE_NAMES = {"event_interpretations.jsonl", "event_family_occurrence_scan.jsonl"}
+CURRENT_MODEL_WORKER_FOLD_RE = re.compile(r"^fold_[a-z0-9]+_20\d{2}$")
 LIFECYCLE_GAP_SELECTORS: tuple[dict[str, Any], ...] = (
     {
         "artifact_ref": "storage/05_replay_datasets/promotion_replay_candidate_policy/replay_execution_runs",
@@ -34,6 +36,16 @@ LIFECYCLE_GAP_SELECTORS: tuple[dict[str, Any], ...] = (
         "trigger_required": "replay_run_completed",
         "consumer_or_use": "model promotion replay audit and dashboard model posture",
         "required_followup": "write compact replay run manifest and preserve promotion-linked exceptions before removing verbose decision rows",
+    },
+    {
+        "artifact_ref": "storage/05_replay_datasets/promotion_replay_candidate_policy/post_replay_review_runs",
+        "artifact_class": "decision_evidence",
+        "issue": "superseded_replay_review_runs",
+        "action": "compact",
+        "final_handling_method": "delete",
+        "trigger_required": "newer_review_run_completed_for_same_fold",
+        "consumer_or_use": "model-group replay review dashboard and promotion audit",
+        "required_followup": "write latest-per-fold review manifest and delete only older completed review runs for the same current candidate_fold_id",
     },
     {
         "artifact_ref": "storage/05_replay_datasets/promotion_replay_candidate_policy/post_replay_attribution_runs",
@@ -495,6 +507,60 @@ def _replay_execution_gap_inventory(path: Path, *, retain_recent_count: int) -> 
     }
 
 
+def _current_candidate_fold_id(receipt: Mapping[str, Any]) -> str:
+    fold_id = str(receipt.get("candidate_fold_id") or receipt.get("fold_id") or "").strip().lower()
+    return fold_id if CURRENT_MODEL_WORKER_FOLD_RE.fullmatch(fold_id) else ""
+
+
+def _post_replay_review_sort_value(run: Path, receipt: Mapping[str, Any]) -> str:
+    return str(receipt.get("completed_at_utc") or receipt.get("created_at_utc") or run.name)
+
+
+def _superseded_post_replay_review_runs(path: Path) -> tuple[tuple[Path, dict[str, Any]], ...]:
+    latest_by_fold: dict[str, tuple[Path, dict[str, Any]]] = {}
+    superseded: list[tuple[Path, dict[str, Any]]] = []
+    for run in _run_dirs(path):
+        receipt = _read_json_object(run / "post_replay_review_receipt.json") or {}
+        fold_id = _current_candidate_fold_id(receipt)
+        if not fold_id:
+            continue
+        current = latest_by_fold.get(fold_id)
+        if current is None:
+            latest_by_fold[fold_id] = (run, receipt)
+            continue
+        if _post_replay_review_sort_value(run, receipt) >= _post_replay_review_sort_value(current[0], current[1]):
+            superseded.append(current)
+            latest_by_fold[fold_id] = (run, receipt)
+        else:
+            superseded.append((run, receipt))
+    return tuple(superseded)
+
+
+def _post_replay_review_duplicate_inventory(path: Path) -> dict[str, Any]:
+    if not path.exists():
+        return _path_inventory(path)
+    file_count = 0
+    byte_count = 0
+    largest_file_path: str | None = None
+    largest_file_bytes = 0
+    superseded = _superseded_post_replay_review_runs(path)
+    for run, _receipt in superseded:
+        inventory = _path_inventory(run)
+        file_count += int(inventory["file_count"])
+        byte_count += int(inventory["byte_count"])
+        if int(inventory["largest_file_bytes"]) > largest_file_bytes:
+            largest_file_bytes = int(inventory["largest_file_bytes"])
+            largest_file_path = inventory["largest_file_path"]
+    return {
+        "exists": True,
+        "file_count": file_count,
+        "directory_count": len(superseded),
+        "byte_count": byte_count,
+        "largest_file_path": largest_file_path,
+        "largest_file_bytes": largest_file_bytes,
+    }
+
+
 def _realtime_monitor_gap_inventory(path: Path, *, retain_recent_count: int) -> dict[str, Any]:
     if not path.exists():
         return _path_inventory(path)
@@ -586,6 +652,8 @@ def _lifecycle_gap_inventory(root: Path, artifact_ref: str) -> dict[str, Any]:
     path = root / artifact_ref
     if artifact_ref.endswith("replay_execution_runs"):
         return _replay_execution_gap_inventory(path, retain_recent_count=3)
+    if artifact_ref.endswith("post_replay_review_runs"):
+        return _post_replay_review_duplicate_inventory(path)
     if artifact_ref.endswith("post_replay_attribution_runs"):
         return _named_file_rolling_inventory(path, ATTRIBUTION_VERBOSE_FILE_NAMES, retain_recent_count=3)
     if artifact_ref.endswith("post_replay_failure_triage_runs"):
@@ -794,6 +862,61 @@ def _compact_replay_execution_runs(
         "mutated_count": len(deleted_rows),
         "mutated_byte_count": compact["deleted_verbose_byte_count"],
         "skipped_count": skipped_count,
+        "mutation_performed": bool(deleted_rows),
+    }
+
+
+def _compact_post_replay_review_runs(
+    *,
+    root: Path,
+    output_root: Path,
+    generated_at_utc: str,
+    apply: bool,
+) -> dict[str, Any]:
+    artifact_root = root / "storage/05_replay_datasets/promotion_replay_candidate_policy/post_replay_review_runs"
+    superseded = _superseded_post_replay_review_runs(artifact_root)
+    run_rows: list[dict[str, Any]] = []
+    deleted_rows: list[dict[str, Any]] = []
+    for run, receipt in superseded:
+        row = _directory_inventory(run, root=root)
+        row.update(
+            {
+                "run_id": run.name,
+                "candidate_fold_id": _current_candidate_fold_id(receipt),
+                "candidate_model_ref": receipt.get("candidate_model_ref"),
+                "replay_execution_run_id": receipt.get("replay_execution_run_id"),
+                "created_at_utc": receipt.get("created_at_utc"),
+                "completed_at_utc": receipt.get("completed_at_utc"),
+                "superseded_by_scope": "latest_completed_post_replay_review_run_for_same_candidate_fold_id",
+            }
+        )
+        run_rows.append(row)
+        if apply:
+            deleted_rows.append(_delete_tree(run, root=root))
+    compact = {
+        "contract_type": "storage_post_replay_review_compact_manifest",
+        "generated_at_utc": generated_at_utc,
+        "artifact_ref": _relative_path(root, artifact_root),
+        "retention_rule": "keep_latest_completed_run_per_current_candidate_fold_id",
+        "superseded_run_count": len(run_rows),
+        "superseded_runs": run_rows,
+        "deleted_run_count": len(deleted_rows),
+        "deleted_byte_count": sum(int(row.get("byte_count") or 0) for row in deleted_rows),
+        "mutation_performed": bool(deleted_rows),
+    }
+    output_path = output_root / "post_replay_review_latest_per_fold_manifest.json"
+    if apply:
+        _write_json_object(output_path, compact)
+    return {
+        "contract_type": "storage_lifecycle_gap_action_receipt",
+        "artifact_ref": _relative_path(root, artifact_root),
+        "action": "compact_then_delete_superseded_review_runs",
+        "final_handling_method": "delete",
+        "compact_ref": _relative_path(root, output_path),
+        "candidate_count": len(run_rows),
+        "mutated_count": len(deleted_rows),
+        "mutated_byte_count": compact["deleted_byte_count"],
+        "skipped_count": 0 if apply else len(run_rows),
         "mutation_performed": bool(deleted_rows),
     }
 
@@ -1254,6 +1377,7 @@ def execute_lifecycle_gap_actions(
     output_root: Path = DEFAULT_COMPACT_OUTPUT_ROOT,
     apply: bool = False,
     generated_at_utc: str | None = None,
+    action_refs: Sequence[str] | None = None,
     retain_recent_replay_runs: int = 3,
     retain_recent_attribution_runs: int = 3,
     retain_recent_te_refresh_runs: int = 24,
@@ -1263,7 +1387,14 @@ def execute_lifecycle_gap_actions(
 ) -> tuple[dict[str, Any], ...]:
     generated = generated_at_utc or _now_utc()
     resolved_output_root = _resolve(root.resolve(), output_root)
-    receipts = [
+    enabled_refs = set(action_refs or ())
+
+    def enabled(artifact_ref: str) -> bool:
+        return not enabled_refs or artifact_ref in enabled_refs
+
+    receipts: list[dict[str, Any]] = []
+    if enabled("storage/05_replay_datasets/promotion_replay_candidate_policy/replay_execution_runs"):
+        receipts.append(
         _compact_replay_execution_runs(
             root=root,
             output_root=resolved_output_root,
@@ -1271,7 +1402,9 @@ def execute_lifecycle_gap_actions(
             apply=apply,
             retain_recent_count=retain_recent_replay_runs,
             include_hashes=include_hashes,
-        ),
+        ))
+    if enabled("storage/05_replay_datasets/promotion_replay_candidate_policy/post_replay_attribution_runs"):
+        receipts.append(
         _compact_post_replay_attribution_runs(
             root=root,
             output_root=resolved_output_root,
@@ -1279,21 +1412,35 @@ def execute_lifecycle_gap_actions(
             apply=apply,
             retain_recent_count=retain_recent_attribution_runs,
             include_hashes=include_hashes,
-        ),
+        ))
+    if enabled("storage/05_replay_datasets/promotion_replay_candidate_policy/post_replay_review_runs"):
+        receipts.append(
+        _compact_post_replay_review_runs(
+            root=root,
+            output_root=resolved_output_root,
+            generated_at_utc=generated,
+            apply=apply,
+        ))
+    if enabled("storage/05_replay_datasets/promotion_replay_candidate_policy/post_replay_failure_triage_runs"):
+        receipts.append(
         _compact_failure_triage_runs(
             root=root,
             output_root=resolved_output_root,
             generated_at_utc=generated,
             apply=apply,
             include_hashes=include_hashes,
-        ),
+        ))
+    if enabled("storage/01_source_data/monthly_backfill/trading_economics_calendar_web/_manifests/recent_refresh_runs"):
+        receipts.append(
         _compact_recent_refresh_runs(
             root=root,
             output_root=resolved_output_root,
             generated_at_utc=generated,
             apply=apply,
             retain_recent_count=retain_recent_te_refresh_runs,
-        ),
+        ))
+    if enabled(TE_MONTHLY_SOURCE_ROOT.as_posix()):
+        receipts.append(
         _compact_te_monthly_run_side_products(
             root=root,
             output_root=resolved_output_root,
@@ -1301,28 +1448,36 @@ def execute_lifecycle_gap_actions(
             apply=apply,
             retain_recent_count=retain_recent_te_monthly_runs,
             include_hashes=include_hashes,
-        ),
+        ))
+    if enabled("storage/04_execution_artifacts/runtime/realtime_monitor"):
+        receipts.append(
         _compact_realtime_monitor(
             root=root,
             output_root=resolved_output_root,
             generated_at_utc=generated,
             apply=apply,
             retain_recent_count=retain_recent_realtime_loops,
-        ),
+        ))
+    if enabled("storage/02_control_plane/runtime/model_05_option_expression"):
+        receipts.append(
         _compact_task_keys(
             root=root,
             output_root=resolved_output_root,
             generated_at_utc=generated,
             artifact_ref="storage/02_control_plane/runtime/model_05_option_expression",
             apply=apply,
-        ),
+        ))
+    if enabled("storage/02_control_plane/runtime/provider_task_keys"):
+        receipts.append(
         _compact_task_keys(
             root=root,
             output_root=resolved_output_root,
             generated_at_utc=generated,
             artifact_ref="storage/02_control_plane/runtime/provider_task_keys",
             apply=apply,
-        ),
+        ))
+    if enabled("storage/02_control_plane/runtime/historical_scheduler_decisions.jsonl"):
+        receipts.append(
         _compact_jsonl_rollup(
             root=root,
             output_root=resolved_output_root,
@@ -1331,7 +1486,9 @@ def execute_lifecycle_gap_actions(
             contract_type="storage_scheduler_decision_rollup_summary",
             output_name="historical_scheduler_decisions_rollup_summary.json",
             apply=apply,
-        ),
+        ))
+    if enabled("storage/02_control_plane/runtime/stage_coverage"):
+        receipts.append(
         _compact_snapshot_dir(
             root=root,
             output_root=resolved_output_root,
@@ -1340,7 +1497,9 @@ def execute_lifecycle_gap_actions(
             contract_type="storage_stage_coverage_rollup_summary",
             output_name="stage_coverage_rollup_summary.json",
             apply=apply,
-        ),
+        ))
+    if enabled("storage/02_control_plane/runtime/stage_run_dashboard"):
+        receipts.append(
         _compact_snapshot_dir(
             root=root,
             output_root=resolved_output_root,
@@ -1349,8 +1508,7 @@ def execute_lifecycle_gap_actions(
             contract_type="storage_stage_run_dashboard_rollup_summary",
             output_name="stage_run_dashboard_rollup_summary.json",
             apply=apply,
-        ),
-    ]
+        ))
     return tuple(receipts)
 
 
@@ -1555,6 +1713,7 @@ def run_storage_maintenance(
     retain_recent_te_refresh_runs: int = 24,
     retain_recent_te_monthly_runs: int = 24,
     retain_recent_realtime_loops: int = 100,
+    lifecycle_gap_action_refs: Sequence[str] | None = None,
     generated_at_utc: str | None = None,
 ) -> StorageMaintenanceSummary:
     root = root.resolve()
@@ -1583,6 +1742,7 @@ def run_storage_maintenance(
         output_root=compact_output_root,
         apply=apply_lifecycle_gap_actions,
         generated_at_utc=generated,
+        action_refs=lifecycle_gap_action_refs,
         retain_recent_replay_runs=retain_recent_replay_runs,
         retain_recent_attribution_runs=retain_recent_attribution_runs,
         retain_recent_te_refresh_runs=retain_recent_te_refresh_runs,
@@ -1647,6 +1807,12 @@ def main(argv: Sequence[str] | None = None) -> int:
         action="store_true",
         help="Write compact contracts and apply explicit state-triggered lifecycle gap actions.",
     )
+    parser.add_argument(
+        "--lifecycle-gap-action-ref",
+        action="append",
+        default=[],
+        help="Limit lifecycle gap action execution to an exact artifact_ref. Repeat for multiple refs.",
+    )
     parser.add_argument("--include-hashes", action="store_true", help="Hash mutated source artifacts in action receipts.")
     parser.add_argument("--retain-recent-replay-runs", type=int, default=3)
     parser.add_argument("--retain-recent-attribution-runs", type=int, default=3)
@@ -1672,6 +1838,7 @@ def main(argv: Sequence[str] | None = None) -> int:
         retain_recent_te_refresh_runs=args.retain_recent_te_refresh_runs,
         retain_recent_te_monthly_runs=args.retain_recent_te_monthly_runs,
         retain_recent_realtime_loops=args.retain_recent_realtime_loops,
+        lifecycle_gap_action_refs=args.lifecycle_gap_action_ref or None,
     )
     write_storage_maintenance_summary(summary, output_path=args.output_path, root=args.root)
     if args.json:

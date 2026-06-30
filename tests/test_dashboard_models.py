@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import shutil
 import tempfile
 import unittest
 from pathlib import Path
@@ -1124,6 +1125,45 @@ class DashboardModelsTests(unittest.TestCase):
             self.assertEqual(review["parameter_review"]["classification_counts"]["directionally_useful"], 1)
             self.assertEqual(review["performance"]["decision_scope"]["decision_row_count"], 2)
             self.assertNotIn("selected_timestamp_counts", review["performance"]["decision_scope"])
+
+    def test_replay_review_summary_keeps_latest_review_run_per_current_fold(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            storage_root = Path(tmp)
+            _write_replay_review_run(storage_root)
+            review_root = (
+                storage_root
+                / "05_replay_datasets"
+                / "promotion_replay_candidate_policy"
+                / "post_replay_review_runs"
+            )
+            older_run = review_root / "post_replay_review_20260629T120000Z"
+            newer_run = review_root / "post_replay_review_20260629T121500Z"
+            shutil.copytree(older_run, newer_run)
+            receipt_path = newer_run / "post_replay_review_receipt.json"
+            receipt = json.loads(receipt_path.read_text(encoding="utf-8"))
+            receipt["replay_execution_run_id"] = "model_group_replay_fold_aapl_2016_20260629T121400Z"
+            receipt["created_at_utc"] = "2026-06-29T12:15:00Z"
+            receipt["completed_at_utc"] = "2026-06-29T12:16:00Z"
+            receipt_path.write_text(json.dumps(receipt, sort_keys=True) + "\n", encoding="utf-8")
+            performance_path = newer_run / "replay_review_performance_summary.json"
+            performance = json.loads(performance_path.read_text(encoding="utf-8"))
+            performance["decision_scope"]["decision_row_count"] = 3
+            performance["decision_scope"]["filled_count"] = 3
+            performance["target_performance"]["gross_pnl_total"] = 25.0
+            performance_path.write_text(json.dumps(performance, sort_keys=True) + "\n", encoding="utf-8")
+
+            payload = build_model_group_replay_review_summary(
+                storage_root=storage_root,
+                generated_at_utc="2026-06-29T12:20:00Z",
+            )
+
+            runs = payload["chart_payload"]["review_runs"]
+            self.assertEqual(len(runs), 1)
+            self.assertEqual(runs[0]["review_run_id"], "post_replay_review_20260629T121500Z")
+            self.assertEqual(runs[0]["replay_execution_run_id"], "model_group_replay_fold_aapl_2016_20260629T121400Z")
+            self.assertEqual(runs[0]["performance"]["decision_scope"]["decision_row_count"], 3)
+            self.assertEqual(payload["lineage_refs"][0]["candidate_run_count"], 2)
+            self.assertEqual(payload["lineage_refs"][0]["superseded_review_run_count"], 1)
 
     def test_replay_review_summary_skips_stale_date_range_replay_artifacts(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:

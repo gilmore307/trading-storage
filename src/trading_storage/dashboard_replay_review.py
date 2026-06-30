@@ -76,6 +76,30 @@ def _latest_dirs(root: Path, pattern: str, limit: int) -> list[Path]:
     return sorted(dirs, key=lambda path: path.name)[-limit:]
 
 
+def _review_run_sort_value(summary: Mapping[str, Any]) -> str:
+    return str(summary.get("completed_at_utc") or summary.get("created_at_utc") or summary.get("review_run_id") or "")
+
+
+def _latest_review_run_per_fold(review_runs: Iterable[dict[str, Any]]) -> tuple[list[dict[str, Any]], int]:
+    latest_by_fold: dict[str, dict[str, Any]] = {}
+    superseded_count = 0
+    for run in review_runs:
+        fold_id = str(run.get("candidate_fold_id") or "").strip()
+        if not fold_id:
+            continue
+        current = latest_by_fold.get(fold_id)
+        if current is None:
+            latest_by_fold[fold_id] = run
+            continue
+        superseded_count += 1
+        if _review_run_sort_value(run) >= _review_run_sort_value(current):
+            latest_by_fold[fold_id] = run
+    return (
+        sorted(latest_by_fold.values(), key=lambda run: (str(run.get("candidate_fold_id") or ""), _review_run_sort_value(run))),
+        superseded_count,
+    )
+
+
 def _current_model_worker_fold_id(value: object) -> str:
     fold_id = str(value or "").strip().lower()
     return fold_id if CURRENT_MODEL_WORKER_FOLD_RE.fullmatch(fold_id) else ""
@@ -251,11 +275,12 @@ def build_model_group_replay_review_summary(
     generated_at_utc = generated_at_utc or now_utc()
     replay_root = storage_root / DEFAULT_REPLAY_ROOT
     review_root = replay_root / "post_replay_review_runs"
-    review_runs = [
+    review_run_candidates = [
         summary
         for run_dir in _latest_dirs(review_root, "post_replay_review_*", MAX_REVIEW_RUNS)
         if (summary := _review_run_summary(run_dir)) is not None
     ]
+    review_runs, superseded_review_run_count = _latest_review_run_per_fold(review_run_candidates)
     total_review_rows = sum(int(run.get("decision_review", {}).get("row_count") or 0) for run in review_runs)
     status = "ready" if review_runs else "not_reported"
     return {
@@ -283,7 +308,12 @@ def build_model_group_replay_review_summary(
         "issue_refs": [],
         "diagnostic_refs": [],
         "lineage_refs": [
-            {"artifact_root": str(review_root), "included_run_count": len(review_runs)},
+            {
+                "artifact_root": str(review_root),
+                "candidate_run_count": len(review_run_candidates),
+                "included_run_count": len(review_runs),
+                "superseded_review_run_count": superseded_review_run_count,
+            },
         ],
         "freshness": {
             "class": "derived_replay_review_summary",
