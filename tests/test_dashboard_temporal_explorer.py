@@ -100,6 +100,57 @@ class DashboardTemporalExplorerTests(unittest.TestCase):
             self.assertEqual(lanes["model_event_markers"]["status"], "empty")
             self.assertEqual(lanes["replay_state"]["status"], "empty")
 
+    def test_uses_replay_window_from_task_progress_summary(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            storage_root = Path(tmp) / "storage"
+            progress_summary = storage_root / "06_dashboard_cache/read_models/historical_task_progress_summary.json"
+            progress_summary.parent.mkdir(parents=True)
+            progress_summary.write_text(
+                json.dumps(
+                    {
+                        "chart_payload": {
+                            "task_timeline": [
+                                {
+                                    "detail": {
+                                        "replay_window": {
+                                            "unit_kind": "model_group_replay_window",
+                                            "start_month": "2021-01",
+                                            "end_month": "2026-01",
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                )
+            )
+            statuses = {
+                "calendar_day": {"status": "populated", "row_count": 2},
+                "calendar_market_session": {"status": "populated", "row_count": 2},
+                "calendar_scheduled_event": {"status": "empty", "row_count": 0},
+                "calendar_event_result": {"status": "empty", "row_count": 0},
+                "calendar_news_event_index": {"status": "empty", "row_count": 0},
+                "chart_ohlcv_cache": {"status": "empty", "row_count": 0},
+            }
+            payload = build_temporal_explorer_summary(
+                storage_root=storage_root,
+                generated_at_utc="2026-06-30T00:00:00Z",
+                substrate_status=statuses,
+                sql_rows={
+                    "sessions": [],
+                    "scheduled_events": [],
+                    "event_results": [],
+                    "news_events": [],
+                    "chart_bars": [],
+                },
+            )
+            viewport = payload["chart_payload"]["viewport"]
+            self.assertEqual(viewport["window_kind"], "model_group_replay_window")
+            self.assertEqual(viewport["replay_start_month"], "2021-01")
+            self.assertEqual(viewport["replay_end_month"], "2026-01")
+            self.assertEqual(viewport["start_utc"], "2021-01-01T05:00:00Z")
+            self.assertEqual(viewport["end_utc"], "2026-02-01T05:00:00Z")
+
     def test_refresh_materializes_temporal_explorer_summary(self):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp) / "storage"

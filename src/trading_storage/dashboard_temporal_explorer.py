@@ -10,6 +10,7 @@ from collections import Counter
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
 from typing import Any, Mapping, Sequence, TextIO
+from zoneinfo import ZoneInfo
 
 from .artifact_store import now_utc
 from .dashboard_read_models import materialize_dashboard_read_model
@@ -21,9 +22,12 @@ DEFAULT_SQL_SCHEMA = "trading_data"
 DEFAULT_FRAME = "1D"
 DEFAULT_CENTER_LOOKBACK_DAYS = 14
 DEFAULT_CENTER_LOOKAHEAD_DAYS = 45
-SUPPORTED_FRAMES = ("30m", "1h", "1D", "1W")
+SUPPORTED_FRAMES = ("1D", "1W")
 DEFAULT_CHART_SYMBOLS = ("SPY", "QQQ", "IWM", "DIA")
 SOURCE_BAR_TABLE = "model_01_market_regime_data_acquisition"
+DEFAULT_REPLAY_START_MONTH = "2021-01"
+DEFAULT_REPLAY_END_MONTH = "2026-01"
+OPERATOR_TIMEZONE = ZoneInfo("America/New_York")
 
 SUBSTRATE_TABLES = (
     "calendar_day",
@@ -100,6 +104,55 @@ def _frame_delta(frame: str) -> timedelta:
 
 def _chart_timeframe(frame: str) -> str:
     return {"30m": "10min", "1h": "30min", "1D": "1D", "1W": "1W"}.get(frame, "1D")
+
+
+def _is_month_key(value: str) -> bool:
+    if len(value) != 7 or value[4] != "-":
+        return False
+    year, month = value.split("-", 1)
+    return year.isdigit() and month.isdigit() and 1 <= int(month) <= 12
+
+
+def _month_start_utc(month: str) -> datetime:
+    if not _is_month_key(month):
+        month = DEFAULT_REPLAY_START_MONTH
+    return datetime(int(month[:4]), int(month[5:]), 1, tzinfo=OPERATOR_TIMEZONE).astimezone(UTC)
+
+
+def _add_months(month: str, count: int) -> str:
+    base = _month_start_utc(month)
+    index = base.year * 12 + base.month - 1 + count
+    year, month_number = divmod(index, 12)
+    return f"{year:04d}-{month_number + 1:02d}"
+
+
+def _window_from_months(start_month: str, end_month: str) -> tuple[datetime, datetime]:
+    start = _month_start_utc(start_month)
+    end = _month_start_utc(_add_months(end_month, 1))
+    if end <= start:
+        return _window_from_months(DEFAULT_REPLAY_START_MONTH, DEFAULT_REPLAY_END_MONTH)
+    return start, end
+
+
+def _replay_window_from_progress_summary(storage_root: Path) -> tuple[str, str] | None:
+    summary = _read_json(storage_root / "06_dashboard_cache/read_models/historical_task_progress_summary.json")
+    task_timeline = ((summary or {}).get("chart_payload") or {}).get("task_timeline")
+    if not isinstance(task_timeline, Sequence) or isinstance(task_timeline, (str, bytes)):
+        return None
+    for task in task_timeline:
+        if not isinstance(task, Mapping):
+            continue
+        detail = task.get("detail")
+        replay_window = detail.get("replay_window") if isinstance(detail, Mapping) else None
+        if not isinstance(replay_window, Mapping):
+            continue
+        if replay_window.get("unit_kind") != "model_group_replay_window":
+            continue
+        start_month = str(replay_window.get("start_month") or "")
+        end_month = str(replay_window.get("end_month") or "")
+        if _is_month_key(start_month) and _is_month_key(end_month):
+            return start_month, end_month
+    return None
 
 
 def _source_bar_bucket_seconds(timeframe: str) -> int | None:
@@ -240,10 +293,11 @@ def _fetch_source_chart_bars(
           jsonb_build_object('source_table', %s::text, 'source_timeframe', '1Min', 'derived_for_display', true) AS quality_flags_json,
           'source_bar_sql' AS chart_source
         FROM grouped
+        WHERE bucket_start >= %s AND bucket_start < %s
         ORDER BY symbol ASC, bucket_start ASC
-        LIMIT 2000
+        LIMIT 10000
         """,
-        (list(symbols), start, end, timeframe, SOURCE_BAR_TABLE),
+        (list(symbols), start, end, timeframe, SOURCE_BAR_TABLE, start, end),
     )
     return [dict(row) for row in cursor.fetchall()]
 
@@ -284,7 +338,8 @@ def _table_statuses(*, schema: str = DEFAULT_SQL_SCHEMA) -> dict[str, dict[str, 
 
 def _fetch_sql_rows(
     *,
-    center_time: datetime,
+    start_time: datetime,
+    end_time: datetime,
     frame: str,
     schema: str = DEFAULT_SQL_SCHEMA,
 ) -> dict[str, list[dict[str, Any]]]:
@@ -293,8 +348,6 @@ def _fetch_sql_rows(
         from psycopg.rows import dict_row  # type: ignore[import-not-found]
     except ImportError:
         return {"sessions": [], "scheduled_events": [], "event_results": [], "news_events": [], "chart_bars": []}
-    start = center_time - timedelta(days=DEFAULT_CENTER_LOOKBACK_DAYS)
-    end = center_time + timedelta(days=DEFAULT_CENTER_LOOKAHEAD_DAYS)
     rows: dict[str, list[dict[str, Any]]] = {}
     try:
         with psycopg.connect(_postgres_dsn(), row_factory=dict_row) as connection:
@@ -309,7 +362,7 @@ def _fetch_sql_rows(
                     WHERE calendar_date >= %s::date AND calendar_date < %s::date
                     ORDER BY calendar_date ASC, venue ASC
                     """,
-                    (start.date(), end.date()),
+                    (start_time.date(), end_time.date()),
                 )
                 rows["scheduled_events"] = _fetch_optional(
                     cursor,
@@ -322,7 +375,7 @@ def _fetch_sql_rows(
                     ORDER BY event_date ASC, event_time ASC NULLS LAST, event_id ASC
                     LIMIT 500
                     """,
-                    (start.date(), end.date()),
+                    (start_time.date(), end_time.date()),
                 )
                 rows["event_results"] = _fetch_optional(
                     cursor,
@@ -335,7 +388,7 @@ def _fetch_sql_rows(
                     ORDER BY available_time ASC, event_id ASC
                     LIMIT 500
                     """,
-                    (start, end),
+                    (start_time, end_time),
                 )
                 rows["news_events"] = _fetch_optional(
                     cursor,
@@ -348,30 +401,35 @@ def _fetch_sql_rows(
                     ORDER BY first_seen_at ASC, news_event_id ASC
                     LIMIT 500
                     """,
-                    (start, end),
+                    (start_time, end_time),
                 )
-                rows["chart_bars"] = _fetch_optional(
-                    cursor,
-                    schema,
-                    "chart_ohlcv_cache",
-                    """
-                    SELECT symbol, timeframe, bucket_start, bucket_end, open, high, low, close, volume, vwap, bar_count, quality_flags_json
-                    FROM {table}
-                    WHERE symbol = %s AND timeframe = %s AND bucket_start >= %s AND bucket_start < %s
-                    ORDER BY bucket_start ASC
-                    LIMIT 400
-                    """,
-                    ("SPY", _chart_timeframe(frame), start, end),
-                )
-                if not rows["chart_bars"]:
-                    rows["chart_bars"] = _fetch_source_chart_bars(
+                chart_bars: list[dict[str, Any]] = []
+                for chart_timeframe in dict.fromkeys(_chart_timeframe(value) for value in SUPPORTED_FRAMES):
+                    cached_bars = _fetch_optional(
                         cursor,
                         schema,
-                        symbols=DEFAULT_CHART_SYMBOLS,
-                        timeframe=_chart_timeframe(frame),
-                        start=start,
-                        end=end,
+                        "chart_ohlcv_cache",
+                        """
+                        SELECT symbol, timeframe, bucket_start, bucket_end, open, high, low, close, volume, vwap, bar_count, quality_flags_json
+                        FROM {table}
+                        WHERE symbol = ANY(%s) AND timeframe = %s AND bucket_start >= %s AND bucket_start < %s
+                        ORDER BY symbol ASC, bucket_start ASC
+                        LIMIT 10000
+                        """,
+                        (list(DEFAULT_CHART_SYMBOLS), chart_timeframe, start_time, end_time),
                     )
+                    cached_symbols = {str(row.get("symbol") or "").upper() for row in cached_bars}
+                    if not cached_bars or set(DEFAULT_CHART_SYMBOLS) - cached_symbols:
+                        cached_bars = _fetch_source_chart_bars(
+                            cursor,
+                            schema,
+                            symbols=DEFAULT_CHART_SYMBOLS,
+                            timeframe=chart_timeframe,
+                            start=start_time,
+                            end=end_time,
+                        )
+                    chart_bars.extend(cached_bars)
+                rows["chart_bars"] = chart_bars
     except Exception:
         return {"sessions": [], "scheduled_events": [], "event_results": [], "news_events": [], "chart_bars": []}
     return rows
@@ -534,26 +592,35 @@ def _event_payloads(rows: Mapping[str, Sequence[Mapping[str, Any]]]) -> list[dic
     return events[:500]
 
 
-def _tick_payloads(*, center_time: datetime, frame: str, rows: Mapping[str, Sequence[Mapping[str, Any]]], events: Sequence[Mapping[str, Any]]) -> list[dict[str, Any]]:
-    delta = _frame_delta(frame)
-    start = center_time - (delta * 10)
+def _tick_payloads(
+    *,
+    start_time: datetime,
+    end_time: datetime,
+    rows: Mapping[str, Sequence[Mapping[str, Any]]],
+    events: Sequence[Mapping[str, Any]],
+    tick_count: int = 21,
+) -> list[dict[str, Any]]:
     sessions_by_date = {
         (str(row.get("venue")), str(row.get("calendar_date"))): row for row in rows.get("sessions", [])
     }
     event_times = [_parse_utc(str(event.get("event_time") or "")) for event in events]
     event_times = [value for value in event_times if value is not None]
     ticks: list[dict[str, Any]] = []
-    for index in range(21):
-        tick_start = start + (delta * index)
-        tick_end = tick_start + delta
+    if end_time <= start_time:
+        end_time = start_time + timedelta(days=1)
+    tick_span = (end_time - start_time) / max(1, tick_count)
+    center_index = tick_count // 2
+    for index in range(tick_count):
+        tick_start = start_time + (tick_span * index)
+        tick_end = end_time if index == tick_count - 1 else start_time + (tick_span * (index + 1))
         session = sessions_by_date.get(("NYSE", tick_start.date().isoformat()))
         event_count = sum(1 for value in event_times if tick_start <= value < tick_end)
         ticks.append(
             {
                 "tick_start_utc": _iso_utc(tick_start),
                 "tick_end_utc": _iso_utc(tick_end),
-                "label": tick_start.strftime("%Y-%m-%d" if frame in {"1D", "1W"} else "%m-%d %H:%M"),
-                "is_center": index == 10,
+                "label": tick_start.strftime("%Y-%m"),
+                "is_center": index == center_index,
                 "market_session_status": str(session.get("session_type") if session else "unknown"),
                 "event_count": event_count,
                 "chart_bar_count": 0,
@@ -647,15 +714,24 @@ def build_temporal_explorer_summary(
     substrate_status: Mapping[str, Mapping[str, Any]] | None = None,
 ) -> dict[str, Any]:
     generated_at_utc = generated_at_utc or now_utc()
-    center_time = _parse_utc(center_time_utc)
-    if center_time is None and sql_rows is None:
-        center_time = _latest_source_bar_center(symbol="SPY")
-    center_time = center_time or _parse_utc(generated_at_utc) or datetime.now(UTC)
     frame = frame if frame in SUPPORTED_FRAMES else DEFAULT_FRAME
+    replay_start_month, replay_end_month = _replay_window_from_progress_summary(Path(storage_root)) or (
+        DEFAULT_REPLAY_START_MONTH,
+        DEFAULT_REPLAY_END_MONTH,
+    )
+    if center_time_utc:
+        center_time = _parse_utc(center_time_utc) or _parse_utc(generated_at_utc) or datetime.now(UTC)
+        window_start = center_time - timedelta(days=DEFAULT_CENTER_LOOKBACK_DAYS)
+        window_end = center_time + timedelta(days=DEFAULT_CENTER_LOOKAHEAD_DAYS)
+        window_label = "custom_center_window"
+    else:
+        window_start, window_end = _window_from_months(replay_start_month, replay_end_month)
+        center_time = window_start + ((window_end - window_start) / 2)
+        window_label = "model_group_replay_window"
     statuses = dict(substrate_status or _table_statuses())
-    rows = dict(sql_rows or _fetch_sql_rows(center_time=center_time, frame=frame))
+    rows = dict(sql_rows or _fetch_sql_rows(start_time=window_start, end_time=window_end, frame=frame))
     events = _event_payloads(rows)
-    ticks = _tick_payloads(center_time=center_time, frame=frame, rows=rows, events=events)
+    ticks = _tick_payloads(start_time=window_start, end_time=window_end, rows=rows, events=events)
     left_lanes, right_lanes = _lane_payloads(statuses=statuses, rows=rows, storage_root=Path(storage_root))
     chart_bars = _chart_bars(rows.get("chart_bars", []))
     chart_from_source_bars = any(str(row.get("chart_source") or "") == "source_bar_sql" for row in rows.get("chart_bars", []))
@@ -671,14 +747,17 @@ def build_temporal_explorer_summary(
         "source_system": "trading-storage",
         "status": status,
         "severity": "info" if status == "ready" else "medium",
-        "summary": f"Events attention pool has {len(events)} certified event-family markers, {len(chart_bars)} chart bars, and {populated_tables} populated context tables.",
+        "summary": f"Events attention pool has {len(events)} certified event-family markers, {len(chart_bars)} ETF chart bars across the replay window, and {populated_tables} populated context tables.",
         "chart_payload": {
             "viewport": {
                 "center_time_utc": _iso_utc(center_time),
                 "frame": frame,
                 "available_frames": list(SUPPORTED_FRAMES),
-                "start_utc": _iso_utc(center_time - timedelta(days=DEFAULT_CENTER_LOOKBACK_DAYS)),
-                "end_utc": _iso_utc(center_time + timedelta(days=DEFAULT_CENTER_LOOKAHEAD_DAYS)),
+                "start_utc": _iso_utc(window_start),
+                "end_utc": _iso_utc(window_end),
+                "window_kind": window_label,
+                "replay_start_month": replay_start_month,
+                "replay_end_month": replay_end_month,
             },
             "timewheel_ticks": ticks,
             "left_lanes": left_lanes,
