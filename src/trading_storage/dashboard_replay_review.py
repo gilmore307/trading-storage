@@ -25,7 +25,45 @@ DEFAULT_REPLAY_ROOT = Path("05_replay_datasets") / "promotion_replay_candidate_p
 DEFAULT_STALE_AFTER_SECONDS = 900
 MAX_REVIEW_RUNS = 50
 MAX_SAMPLE_ROWS = 5
+MAX_LAYER_DECISION_ROWS = 250
 CURRENT_MODEL_WORKER_FOLD_RE = re.compile(r"^fold_[a-z0-9]+_20\d{2}$")
+REPLAY_DECISION_LAYER_IDS = (
+    "model_01_background_context",
+    "model_02_target_state",
+    "model_03_event_state",
+    "model_04_unified_decision",
+    "model_05_option_expression",
+)
+EXCLUDED_REPLAY_DECISION_LAYER_IDS = ("model_06_residual_event_governance",)
+REPLAY_DECISION_LAYER_LABELS = {
+    "model_01_background_context": "M01 Background Context",
+    "model_02_target_state": "M02 Target State",
+    "model_03_event_state": "M03 Event State",
+    "model_04_unified_decision": "M04 Unified Decision",
+    "model_05_option_expression": "M05 Option Expression",
+    "model_06_residual_event_governance": "M06 Residual Event Governance",
+}
+REPLAY_DECISION_LAYER_ALIASES = {
+    "m01": "model_01_background_context",
+    "model_01": "model_01_background_context",
+    "model_01_background_context": "model_01_background_context",
+    "m02": "model_02_target_state",
+    "model_02": "model_02_target_state",
+    "model_02_target_state": "model_02_target_state",
+    "m03": "model_03_event_state",
+    "model_03": "model_03_event_state",
+    "model_03_event_state": "model_03_event_state",
+    "m04": "model_04_unified_decision",
+    "model_04": "model_04_unified_decision",
+    "model_04_unified_decision": "model_04_unified_decision",
+    "m05": "model_05_option_expression",
+    "model_05": "model_05_option_expression",
+    "model_05_option_expression": "model_05_option_expression",
+    "m06": "model_06_residual_event_governance",
+    "model_06": "model_06_residual_event_governance",
+    "model_06_residual_event_governance": "model_06_residual_event_governance",
+}
+PASSIVE_BASELINE_ACTIONS = {"baseline_action", "no_trade", "avoid_trade", "hold_cash"}
 
 
 def _read_json_object(path: Path) -> dict[str, Any] | None:
@@ -66,6 +104,90 @@ def _numeric_mean(rows: list[Mapping[str, Any]], field: str) -> float | None:
     if not numeric:
         return None
     return round(sum(numeric) / len(numeric), 10)
+
+
+def _safe_number(value: object) -> float | None:
+    if isinstance(value, (int, float)):
+        return float(value)
+    return None
+
+
+def _rate(numerator: int, denominator: int) -> float | None:
+    if denominator <= 0:
+        return None
+    return round(numerator / denominator, 10)
+
+
+def _normalized_layer_id(value: object) -> str | None:
+    normalized = str(value or "").strip().lower()
+    if not normalized or normalized in {"none", "not_reported", "not_applicable"}:
+        return None
+    return REPLAY_DECISION_LAYER_ALIASES.get(normalized)
+
+
+def _row_layer_id(row: Mapping[str, Any]) -> str | None:
+    layer_attribution = row.get("layer_attribution")
+    candidates = [
+        row.get("effective_layer_id"),
+        row.get("layer_id"),
+        row.get("model_layer"),
+        row.get("miss_attribution_layer"),
+    ]
+    if isinstance(layer_attribution, Mapping):
+        candidates.extend(
+            [
+                layer_attribution.get("effective_layer_id"),
+                layer_attribution.get("layer_id"),
+                layer_attribution.get("model_layer"),
+                layer_attribution.get("miss_attribution_layer"),
+            ]
+        )
+    for candidate in candidates:
+        layer_id = _normalized_layer_id(candidate)
+        if layer_id:
+            return layer_id
+    return None
+
+
+def _correctness_class(row: Mapping[str, Any]) -> str:
+    explicit = str(row.get("correctness_class") or "").strip().lower()
+    if explicit in {"correct", "incorrect", "indeterminate", "not_applicable"}:
+        return explicit
+    chosen = str(row.get("chosen_action") or "").strip()
+    best = str(row.get("best_available_action_by_future_outcome") or "").strip()
+    regret = _safe_number(row.get("regret_to_best_available"))
+    if regret is not None:
+        return "correct" if regret == 0 else "incorrect"
+    if chosen and best:
+        return "correct" if chosen == best else "incorrect"
+    return "indeterminate"
+
+
+def _acceptability_class(correctness_class: str) -> str:
+    if correctness_class == "correct":
+        return "acceptable"
+    if correctness_class == "incorrect":
+        return "unacceptable"
+    return "indeterminate"
+
+
+def _best_available_action(row: Mapping[str, Any]) -> str:
+    return str(row.get("best_available_action_by_future_outcome") or "").strip()
+
+
+def _is_harmful_error(row: Mapping[str, Any], correctness_class: str) -> bool:
+    if correctness_class != "incorrect":
+        return False
+    best = _best_available_action(row).lower()
+    if best in PASSIVE_BASELINE_ACTIONS:
+        return True
+    failure_type = str(row.get("failure_type") or "").strip().lower()
+    return failure_type not in {"", "none", "not_failed"}
+
+
+def _is_missed_good(row: Mapping[str, Any], correctness_class: str) -> bool:
+    best = _best_available_action(row).lower()
+    return correctness_class == "incorrect" and bool(best) and best not in PASSIVE_BASELINE_ACTIONS
 
 
 def _latest_dirs(root: Path, pattern: str, limit: int) -> list[Path]:
@@ -211,6 +333,178 @@ def _review_rows_summary(rows_path: Path | None) -> dict[str, Any]:
     }
 
 
+def _layer_decision_row(row: Mapping[str, Any], layer_id: str) -> dict[str, Any]:
+    correctness = _correctness_class(row)
+    return {
+        "review_id": row.get("review_id"),
+        "decision_time": row.get("decision_time"),
+        "target_symbol": row.get("target_symbol"),
+        "replay_month": row.get("replay_month"),
+        "source_decision_id": row.get("source_decision_id"),
+        "source_decision_index": row.get("source_decision_index"),
+        "layer_id": layer_id,
+        "layer_label": REPLAY_DECISION_LAYER_LABELS[layer_id],
+        "candidate_set_scope": row.get("candidate_set_scope"),
+        "path_scope": row.get("path_scope"),
+        "effective_decision": row.get("chosen_action"),
+        "chosen_action": row.get("chosen_action"),
+        "available_action": row.get("available_action"),
+        "best_available_action_by_future_outcome": row.get("best_available_action_by_future_outcome"),
+        "chosen_action_return": row.get("chosen_action_return"),
+        "best_available_action_return": row.get("best_available_action_return"),
+        "correctness_class": correctness,
+        "acceptability_class": _acceptability_class(correctness),
+        "regret_to_best_available": row.get("regret_to_best_available"),
+        "impact_normalized_severity_score": row.get("impact_normalized_severity_score"),
+        "cause_family": row.get("cause_family"),
+        "failure_type": row.get("failure_type"),
+        "first_gap_component": row.get("first_gap_component"),
+        "first_gap_mechanism": row.get("first_gap_mechanism"),
+        "outcome_label": row.get("outcome_label"),
+        "classification_basis": "derived_from_post_replay_best_available_action_label",
+        "hindsight_caution": "Future returns are labels for review; they are not decision-time inputs.",
+    }
+
+
+def _layer_quality_summary(
+    *,
+    layer_id: str,
+    attributed_rows: list[dict[str, Any]],
+    performance_summary: Mapping[str, Any] | None,
+) -> dict[str, Any]:
+    layer_differentiation = (
+        performance_summary.get("layer_differentiation")
+        if isinstance(performance_summary, Mapping)
+        else None
+    )
+    coverage = (
+        layer_differentiation.get(layer_id)
+        if isinstance(layer_differentiation, Mapping) and isinstance(layer_differentiation.get(layer_id), Mapping)
+        else {}
+    )
+    coverage_row_count = coverage.get("row_count") if isinstance(coverage, Mapping) else None
+    correct_count = sum(1 for row in attributed_rows if _correctness_class(row) == "correct")
+    incorrect_count = sum(1 for row in attributed_rows if _correctness_class(row) == "incorrect")
+    indeterminate_count = sum(1 for row in attributed_rows if _correctness_class(row) == "indeterminate")
+    acceptable_count = correct_count
+    unacceptable_count = incorrect_count
+    harmful_error_count = sum(1 for row in attributed_rows if _is_harmful_error(row, _correctness_class(row)))
+    missed_good_count = sum(1 for row in attributed_rows if _is_missed_good(row, _correctness_class(row)))
+    effective_decision_count = len(attributed_rows)
+    source_gap_codes: list[str] = []
+    if not effective_decision_count:
+        source_gap_codes.append("missing_effective_layer_decision_rows")
+    if coverage_row_count is None:
+        source_gap_codes.append("missing_layer_coverage_rows")
+    evidence_status = (
+        "published"
+        if effective_decision_count
+        else "coverage_only_missing_decision_quality"
+        if coverage_row_count
+        else "not_published"
+    )
+    return {
+        "layer_id": layer_id,
+        "layer_label": REPLAY_DECISION_LAYER_LABELS[layer_id],
+        "coverage_row_count": coverage_row_count,
+        "effective_decision_count": effective_decision_count,
+        "correct_count": correct_count,
+        "acceptable_count": acceptable_count,
+        "incorrect_count": incorrect_count,
+        "unacceptable_count": unacceptable_count,
+        "indeterminate_count": indeterminate_count,
+        "harmful_error_count": harmful_error_count,
+        "missed_good_count": missed_good_count,
+        "correct_rate": _rate(correct_count, effective_decision_count),
+        "acceptable_rate": _rate(acceptable_count, effective_decision_count),
+        "incorrect_rate": _rate(incorrect_count, effective_decision_count),
+        "harmful_error_rate": _rate(harmful_error_count, effective_decision_count),
+        "missed_good_rate": _rate(missed_good_count, effective_decision_count),
+        "mean_regret_to_best_available": _numeric_mean(attributed_rows, "regret_to_best_available"),
+        "mean_impact_normalized_severity_score": _numeric_mean(attributed_rows, "impact_normalized_severity_score"),
+        "quality_score": _rate(acceptable_count, effective_decision_count),
+        "evidence_status": evidence_status,
+        "source_gap_codes": source_gap_codes,
+    }
+
+
+def _replay_decisions_m01_m05_summary(
+    *,
+    rows_path: Path | None,
+    performance_summary: Mapping[str, Any] | None,
+) -> dict[str, Any]:
+    rows = list(_iter_jsonl(rows_path)) if rows_path else []
+    included_rows: list[dict[str, Any]] = []
+    excluded_row_count = 0
+    unattributed_row_count = 0
+    for row in rows:
+        layer_id = _row_layer_id(row)
+        if layer_id in EXCLUDED_REPLAY_DECISION_LAYER_IDS:
+            excluded_row_count += 1
+            continue
+        if layer_id is None:
+            unattributed_row_count += 1
+            continue
+        if layer_id in REPLAY_DECISION_LAYER_IDS:
+            included_rows.append({**row, "layer_id": layer_id})
+
+    rows_by_layer = {
+        layer_id: [row for row in included_rows if row["layer_id"] == layer_id]
+        for layer_id in REPLAY_DECISION_LAYER_IDS
+    }
+    layer_quality_summary = {
+        layer_id: _layer_quality_summary(
+            layer_id=layer_id,
+            attributed_rows=rows_by_layer[layer_id],
+            performance_summary=performance_summary,
+        )
+        for layer_id in REPLAY_DECISION_LAYER_IDS
+    }
+    source_gap_codes = sorted(
+        {
+            gap
+            for summary in layer_quality_summary.values()
+            for gap in summary.get("source_gap_codes", [])
+        }
+    )
+    if unattributed_row_count:
+        source_gap_codes.append("unattributed_review_rows")
+    sampled_rows = [
+        _layer_decision_row(row, str(row["layer_id"]))
+        for row in included_rows[:MAX_LAYER_DECISION_ROWS]
+    ]
+    return {
+        "contract_version": 1,
+        "status": "ready" if included_rows else "insufficient_source_evidence",
+        "included_layers": [
+            {"layer_id": layer_id, "layer_label": REPLAY_DECISION_LAYER_LABELS[layer_id]}
+            for layer_id in REPLAY_DECISION_LAYER_IDS
+        ],
+        "excluded_layers": [
+            {
+                "layer_id": layer_id,
+                "layer_label": REPLAY_DECISION_LAYER_LABELS[layer_id],
+                "reason": "post_replay_residual_event_governance_not_in_decision_scope",
+            }
+            for layer_id in EXCLUDED_REPLAY_DECISION_LAYER_IDS
+        ],
+        "layer_quality_summary": layer_quality_summary,
+        "macro_comparison": list(layer_quality_summary.values()),
+        "layer_decision_rows": sampled_rows,
+        "detail_row_count": len(included_rows),
+        "detail_rows_returned": len(sampled_rows),
+        "detail_rows_sampled": len(included_rows) > len(sampled_rows),
+        "excluded_row_count": excluded_row_count,
+        "unattributed_row_count": unattributed_row_count,
+        "source_gap_codes": source_gap_codes,
+        "classification_policy": {
+            "correctness_class": "Derived in the read model from chosen action, best available post-replay action label, and regret.",
+            "acceptability_class": "Correct rows are acceptable; incorrect rows are unacceptable until a narrower acceptance threshold is published.",
+            "hindsight_caution": "Future returns are labels for review; they must not be displayed as decision-time inputs.",
+        },
+    }
+
+
 def _parameter_summary(report: Mapping[str, Any] | None) -> dict[str, Any]:
     summary = report.get("summary") if isinstance(report, Mapping) else None
     if not isinstance(summary, Mapping):
@@ -253,6 +547,10 @@ def _review_run_summary(run_dir: Path) -> dict[str, Any] | None:
         "event_candidate_count": receipt.get("event_candidate_count"),
         "performance": _compact_performance_summary(performance_summary),
         "decision_review": _review_rows_summary(rows_path if rows_path.exists() else None),
+        "replay_decisions_m01_m05": _replay_decisions_m01_m05_summary(
+            rows_path=rows_path if rows_path.exists() else None,
+            performance_summary=performance_summary,
+        ),
         "parameter_review": _parameter_summary(parameter_report),
         "source_refs": {
             "receipt_ref": str(run_dir / "post_replay_review_receipt.json"),

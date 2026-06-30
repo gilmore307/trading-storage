@@ -567,6 +567,10 @@ def _write_replay_review_run(storage_root: Path) -> None:
                     "decision_time": "2021-01-19T16:00:00-05:00",
                     "target_symbol": "AAPL",
                     "replay_month": "2021-01",
+                    "source_decision_id": "decision-1",
+                    "source_decision_index": 1,
+                    "candidate_set_scope": "selected_target_selected_option_contract_path",
+                    "path_scope": "selected_target:AAPL",
                     "chosen_action": "open_long",
                     "available_action": "open_long",
                     "best_available_action_by_future_outcome": "no_trade",
@@ -587,6 +591,10 @@ def _write_replay_review_run(storage_root: Path) -> None:
                     "decision_time": "2021-02-01T16:00:00-05:00",
                     "target_symbol": "MSFT",
                     "replay_month": "2021-02",
+                    "source_decision_id": "decision-2",
+                    "source_decision_index": 2,
+                    "candidate_set_scope": "selected_target_selected_option_contract_path",
+                    "path_scope": "selected_target:MSFT",
                     "chosen_action": "open_long",
                     "best_available_action_by_future_outcome": "open_long",
                     "chosen_action_return": 0.08,
@@ -643,7 +651,14 @@ def _write_replay_review_run(storage_root: Path) -> None:
                 "direction_expression": {"aligned_option_expression_count": 2, "mismatched_option_expression_count": 0},
                 "option_expression": {"path_status_counts": {"available": 2}},
                 "replacement_review": {"replacement_triggered_count": 1, "blocked_replacements_sample": [{"target_ref": "AAPL"}]},
-                "layer_differentiation": {"model_04_unified_decision": {"row_count": 2, "varying_scalar_keys": ["dominant_horizon"]}},
+                "layer_differentiation": {
+                    "model_01_background_context": {"row_count": 2, "varying_scalar_keys": ["model_ref"]},
+                    "model_02_target_state": {"row_count": 2, "varying_scalar_keys": ["target_ref"]},
+                    "model_03_event_state": {"row_count": 2, "varying_scalar_keys": ["model_ref"]},
+                    "model_04_unified_decision": {"row_count": 2, "varying_scalar_keys": ["dominant_horizon"]},
+                    "model_05_option_expression": {"row_count": 2, "varying_scalar_keys": ["selected_contract_ref"]},
+                    "model_06_residual_event_governance": {"row_count": 2, "varying_scalar_keys": ["event_risk_intervention_ref"]},
+                },
             },
             sort_keys=True,
         )
@@ -1125,6 +1140,21 @@ class DashboardModelsTests(unittest.TestCase):
             self.assertEqual(review["parameter_review"]["classification_counts"]["directionally_useful"], 1)
             self.assertEqual(review["performance"]["decision_scope"]["decision_row_count"], 2)
             self.assertNotIn("selected_timestamp_counts", review["performance"]["decision_scope"])
+            replay_decisions = review["replay_decisions_m01_m05"]
+            self.assertEqual([layer["layer_id"] for layer in replay_decisions["included_layers"]], [
+                "model_01_background_context",
+                "model_02_target_state",
+                "model_03_event_state",
+                "model_04_unified_decision",
+                "model_05_option_expression",
+            ])
+            self.assertEqual(replay_decisions["excluded_layers"][0]["layer_id"], "model_06_residual_event_governance")
+            self.assertEqual(replay_decisions["layer_quality_summary"]["model_04_unified_decision"]["effective_decision_count"], 1)
+            self.assertEqual(replay_decisions["layer_quality_summary"]["model_04_unified_decision"]["incorrect_count"], 1)
+            self.assertEqual(replay_decisions["layer_quality_summary"]["model_01_background_context"]["evidence_status"], "coverage_only_missing_decision_quality")
+            self.assertEqual(replay_decisions["layer_decision_rows"][0]["layer_id"], "model_04_unified_decision")
+            self.assertEqual(replay_decisions["layer_decision_rows"][0]["correctness_class"], "incorrect")
+            self.assertNotIn("model_06_residual_event_governance", replay_decisions["layer_quality_summary"])
 
     def test_replay_review_summary_keeps_latest_review_run_per_current_fold(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
