@@ -107,6 +107,13 @@ def _numeric_mean(rows: list[Mapping[str, Any]], field: str) -> float | None:
     return round(sum(numeric) / len(numeric), 10)
 
 
+def _numeric_mean_by(rows: Iterable[Mapping[str, Any]], getter: Any) -> float | None:
+    numeric = [value for row in rows if isinstance((value := getter(row)), (int, float))]
+    if not numeric:
+        return None
+    return round(sum(float(value) for value in numeric) / len(numeric), 10)
+
+
 def _safe_number(value: object) -> float | None:
     if isinstance(value, (int, float)):
         return float(value)
@@ -170,6 +177,30 @@ def _acceptability_class(correctness_class: str) -> str:
     if correctness_class == "incorrect":
         return "unacceptable"
     return "indeterminate"
+
+
+def _review_regret_value(row: Mapping[str, Any]) -> float | None:
+    regret = _safe_number(row.get("regret_to_best_available"))
+    if regret is not None:
+        return regret
+    impact = _safe_number(row.get("impact_normalized_severity_score"))
+    if impact is not None:
+        return impact
+    if _correctness_class(row) == "correct":
+        return 0.0
+    return None
+
+
+def _review_impact_value(row: Mapping[str, Any]) -> float | None:
+    impact = _safe_number(row.get("impact_normalized_severity_score"))
+    if impact is not None:
+        return impact
+    regret = _safe_number(row.get("regret_to_best_available"))
+    if regret is not None:
+        return regret
+    if _correctness_class(row) == "correct":
+        return 0.0
+    return None
 
 
 def _source_decision_id(row: Mapping[str, Any], *, fallback_index: int | None = None) -> str:
@@ -433,7 +464,10 @@ def _sample_review_row(row: Mapping[str, Any]) -> dict[str, Any]:
         "impact_normalized_severity_score",
         "review_status",
     )
-    return {field: row.get(field) for field in fields if field in row}
+    sampled = {field: row.get(field) for field in fields if field in row}
+    sampled["regret_to_best_available"] = _review_regret_value(row)
+    sampled["impact_normalized_severity_score"] = _review_impact_value(row)
+    return sampled
 
 
 def _review_rows_summary(rows_path: Path | None) -> dict[str, Any]:
@@ -445,8 +479,12 @@ def _review_rows_summary(rows_path: Path | None) -> dict[str, Any]:
         "first_gap_component_counts": _count_by(rows, "first_gap_component"),
         "miss_attribution_layer_counts": _count_by(rows, "miss_attribution_layer"),
         "review_status_counts": _count_by(rows, "review_status"),
-        "mean_regret_to_best_available": _numeric_mean(rows, "regret_to_best_available"),
-        "mean_impact_normalized_severity_score": _numeric_mean(rows, "impact_normalized_severity_score"),
+        "mean_regret_to_best_available": _numeric_mean_by(rows, _review_regret_value),
+        "mean_impact_normalized_severity_score": _numeric_mean_by(rows, _review_impact_value),
+        "regret_value_count": sum(1 for row in rows if _review_regret_value(row) is not None),
+        "impact_value_count": sum(1 for row in rows if _review_impact_value(row) is not None),
+        "missing_regret_value_count": sum(1 for row in rows if _review_regret_value(row) is None),
+        "missing_impact_value_count": sum(1 for row in rows if _review_impact_value(row) is None),
         "sample_rows": [_sample_review_row(row) for row in rows[:MAX_SAMPLE_ROWS]],
     }
 
@@ -472,8 +510,8 @@ def _review_layer_decision_row(row: Mapping[str, Any], layer_id: str) -> dict[st
         "best_available_action_return": row.get("best_available_action_return"),
         "correctness_class": correctness,
         "acceptability_class": _acceptability_class(correctness),
-        "regret_to_best_available": row.get("regret_to_best_available"),
-        "impact_normalized_severity_score": row.get("impact_normalized_severity_score"),
+        "regret_to_best_available": _review_regret_value(row),
+        "impact_normalized_severity_score": _review_impact_value(row),
         "cause_family": row.get("cause_family"),
         "failure_type": row.get("failure_type"),
         "first_gap_component": row.get("first_gap_component"),
@@ -533,6 +571,8 @@ def _published_layer_decision_row(row: Mapping[str, Any]) -> dict[str, Any]:
     projected.setdefault("layer_label", REPLAY_DECISION_LAYER_LABELS.get(layer_id, layer_id))
     projected["correctness_class"] = correctness
     projected["acceptability_class"] = str(row.get("acceptability_class") or _acceptability_class(correctness))
+    projected["regret_to_best_available"] = _review_regret_value(projected)
+    projected["impact_normalized_severity_score"] = _review_impact_value(projected)
     projected.setdefault("source", "post_replay_layer_decision_review_row")
     return projected
 
@@ -580,8 +620,8 @@ def _effective_layer_trace_row(
         "best_available_action_return": scored_overlay.get("best_available_action_return"),
         "correctness_class": correctness,
         "acceptability_class": _acceptability_class(correctness),
-        "regret_to_best_available": scored_overlay.get("regret_to_best_available"),
-        "impact_normalized_severity_score": None,
+        "regret_to_best_available": _review_regret_value(scored_overlay),
+        "impact_normalized_severity_score": _review_impact_value(scored_overlay),
         "cause_family": "not_attributed" if scored_overlay else "not_scored",
         "failure_type": "none" if correctness == "correct" else "not_scored",
         "first_gap_component": "no_gap" if correctness == "correct" else None,
@@ -623,11 +663,19 @@ def _layer_quality_summary(
     harmful_error_count = sum(1 for row in attributed_rows if _is_harmful_error(row, _correctness_class(row)))
     missed_good_count = sum(1 for row in attributed_rows if _is_missed_good(row, _correctness_class(row)))
     effective_decision_count = len(attributed_rows)
+    regret_value_count = sum(1 for row in attributed_rows if _review_regret_value(row) is not None)
+    impact_value_count = sum(1 for row in attributed_rows if _review_impact_value(row) is not None)
+    missing_regret_value_count = max(0, effective_decision_count - regret_value_count)
+    missing_impact_value_count = max(0, effective_decision_count - impact_value_count)
     source_gap_codes: list[str] = []
     if not effective_decision_count:
         source_gap_codes.append("missing_effective_layer_decision_rows")
     elif unscored_decision_count:
         source_gap_codes.append("unscored_effective_layer_decision_rows")
+    if missing_regret_value_count:
+        source_gap_codes.append("missing_layer_regret_values")
+    if missing_impact_value_count:
+        source_gap_codes.append("missing_layer_impact_values")
     if coverage_row_count is None:
         source_gap_codes.append("missing_layer_coverage_rows")
     evidence_status = (
@@ -653,13 +701,17 @@ def _layer_quality_summary(
         "indeterminate_count": indeterminate_count,
         "harmful_error_count": harmful_error_count,
         "missed_good_count": missed_good_count,
+        "regret_value_count": regret_value_count,
+        "impact_value_count": impact_value_count,
+        "missing_regret_value_count": missing_regret_value_count,
+        "missing_impact_value_count": missing_impact_value_count,
         "correct_rate": _rate(correct_count, scored_decision_count),
         "acceptable_rate": _rate(acceptable_count, scored_decision_count),
         "incorrect_rate": _rate(incorrect_count, scored_decision_count),
         "harmful_error_rate": _rate(harmful_error_count, scored_decision_count),
         "missed_good_rate": _rate(missed_good_count, scored_decision_count),
-        "mean_regret_to_best_available": _numeric_mean(attributed_rows, "regret_to_best_available"),
-        "mean_impact_normalized_severity_score": _numeric_mean(attributed_rows, "impact_normalized_severity_score"),
+        "mean_regret_to_best_available": _numeric_mean_by(attributed_rows, _review_regret_value),
+        "mean_impact_normalized_severity_score": _numeric_mean_by(attributed_rows, _review_impact_value),
         "quality_score": _rate(acceptable_count, scored_decision_count),
         "evidence_status": evidence_status,
         "source_gap_codes": source_gap_codes,
