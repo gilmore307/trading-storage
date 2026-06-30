@@ -525,17 +525,26 @@ def _event_detail_summary(row: Mapping[str, Any], fallback: str) -> str:
 
 def _event_payloads(rows: Mapping[str, Sequence[Mapping[str, Any]]]) -> list[dict[str, Any]]:
     events: list[dict[str, Any]] = []
+    market_state_by_date = {
+        str(row.get("calendar_date") or ""): str(row.get("session_type") or "unknown")
+        for row in rows.get("sessions", [])
+        if str(row.get("venue") or "") == "NYSE"
+    }
     for row in rows.get("scheduled_events", []):
         if not _is_m06_residual_event_governance_accepted_event(row):
             continue
         at = _event_time(row)
+        event_date = str(row.get("event_date") or (at.date().isoformat() if at else ""))
         title = _metadata_text(row, "title") or str(row.get("event_type") or "Accepted event")
         events.append(
             {
                 "event_id": str(row.get("event_id")),
                 "event_time": _iso_utc(at or datetime.now(UTC)),
+                "market_state": market_state_by_date.get(event_date, "unknown"),
                 "title": title,
                 "lane": "m06_residual_event_governance_accepted_event",
+                "family_id": _event_family_id(str(row.get("event_type") or "scheduled")),
+                "family_label": str(row.get("event_type") or "scheduled"),
                 "event_type": str(row.get("event_type") or "scheduled"),
                 "scope": str(row.get("event_scope") or ""),
                 "symbol": row.get("symbol"),
@@ -551,12 +560,16 @@ def _event_payloads(rows: Mapping[str, Sequence[Mapping[str, Any]]]) -> list[dic
         if not _is_m06_residual_event_governance_accepted_event(row):
             continue
         at = _event_time(row)
+        event_date = at.date().isoformat() if at else ""
         events.append(
             {
                 "event_id": str(row.get("event_id")),
                 "event_time": _iso_utc(at or datetime.now(UTC)),
+                "market_state": market_state_by_date.get(event_date, "unknown"),
                 "title": "Released event result",
                 "lane": "m06_residual_event_governance_accepted_event",
+                "family_id": _event_family_id("result"),
+                "family_label": "result",
                 "event_type": "result",
                 "scope": "event",
                 "status": _row_text(row, "m06_residual_event_governance_status") or "accepted",
@@ -571,12 +584,16 @@ def _event_payloads(rows: Mapping[str, Sequence[Mapping[str, Any]]]) -> list[dic
         if not _is_m06_residual_event_governance_accepted_event(row):
             continue
         at = _event_time(row)
+        event_date = str(row.get("event_date") or (at.date().isoformat() if at else ""))
         events.append(
             {
                 "event_id": str(row.get("news_event_id")),
                 "event_time": _iso_utc(at or datetime.now(UTC)),
+                "market_state": market_state_by_date.get(event_date, "unknown"),
                 "title": str(row.get("headline") or "News event"),
                 "lane": "m06_residual_event_governance_accepted_event",
+                "family_id": _event_family_id(str(row.get("event_family_candidate") or "news")),
+                "family_label": str(row.get("event_family_candidate") or "news"),
                 "event_type": str(row.get("event_family_candidate") or "news"),
                 "scope": "news",
                 "symbol": row.get("symbol"),
@@ -704,6 +721,142 @@ def _available_chart_symbols(chart_bars: Sequence[Mapping[str, Any]]) -> list[st
     return sorted(symbols.union(DEFAULT_CHART_SYMBOLS))
 
 
+def _event_family_id(value: str) -> str:
+    text = str(value or "unknown").strip().lower()
+    output = []
+    previous_was_separator = False
+    for character in text:
+        if character.isalnum():
+            output.append(character)
+            previous_was_separator = False
+        elif not previous_was_separator:
+            output.append("_")
+            previous_was_separator = True
+    normalized = "".join(output).strip("_")
+    return normalized or "unknown"
+
+
+def _event_market_state(event: Mapping[str, Any], ticks: Sequence[Mapping[str, Any]]) -> str:
+    explicit = str(event.get("market_state") or "").strip()
+    if explicit:
+        return explicit
+    event_time = _parse_utc(str(event.get("event_time") or ""))
+    if event_time is None:
+        return "unknown"
+    for tick in ticks:
+        tick_start = _parse_utc(str(tick.get("tick_start_utc") or ""))
+        tick_end = _parse_utc(str(tick.get("tick_end_utc") or ""))
+        if tick_start is not None and tick_end is not None and tick_start <= event_time < tick_end:
+            return str(tick.get("market_session_status") or "unknown")
+    return "unknown"
+
+
+def _event_bar_return(event: Mapping[str, Any], bars: Sequence[Mapping[str, Any]]) -> dict[str, dict[str, float]]:
+    event_time = _parse_utc(str(event.get("event_time") or ""))
+    if event_time is None:
+        return {}
+    returns: dict[str, dict[str, float]] = {}
+    for bar in bars:
+        if str(bar.get("timeframe") or "") != "1D":
+            continue
+        start = _parse_utc(str(bar.get("bucket_start") or ""))
+        end = _parse_utc(str(bar.get("bucket_end") or ""))
+        if start is None or end is None or not (start <= event_time < end):
+            continue
+        open_price = float(bar.get("open") or 0)
+        close_price = float(bar.get("close") or 0)
+        if open_price <= 0:
+            continue
+        symbol = str(bar.get("symbol") or "").strip().upper()
+        if not symbol:
+            continue
+        returns[symbol] = {
+            "same_bar_return_pct": ((close_price - open_price) / open_price) * 100,
+            "volume": float(bar.get("volume") or 0),
+        }
+    return returns
+
+
+def _mean(values: Sequence[float]) -> float | None:
+    clean = [value for value in values if isinstance(value, (int, float))]
+    if not clean:
+        return None
+    return sum(clean) / len(clean)
+
+
+def _event_family_payloads(
+    *,
+    events: Sequence[Mapping[str, Any]],
+    ticks: Sequence[Mapping[str, Any]],
+    chart_bars: Sequence[Mapping[str, Any]],
+) -> list[dict[str, Any]]:
+    families: dict[str, dict[str, Any]] = {}
+    for event in events:
+        family_id = str(event.get("family_id") or _event_family_id(str(event.get("event_type") or event.get("title") or "unknown")))
+        family = families.setdefault(
+            family_id,
+            {
+                "family_id": family_id,
+                "family_label": str(event.get("family_label") or event.get("event_type") or family_id),
+                "event_type": str(event.get("event_type") or family_id),
+                "occurrence_count": 0,
+                "market_state_counts": Counter(),
+                "scope_counts": Counter(),
+                "symbol_counts": Counter(),
+                "source_counts": Counter(),
+                "first_seen_utc": None,
+                "last_seen_utc": None,
+                "_returns": {},
+            },
+        )
+        event_time = str(event.get("event_time") or "")
+        family["occurrence_count"] += 1
+        family["market_state_counts"][_event_market_state(event, ticks)] += 1
+        family["scope_counts"][str(event.get("scope") or "unknown")] += 1
+        family["symbol_counts"][str(event.get("symbol") or "market")] += 1
+        family["source_counts"][str(event.get("source_name") or "unknown")] += 1
+        if event_time and (family["first_seen_utc"] is None or event_time < family["first_seen_utc"]):
+            family["first_seen_utc"] = event_time
+        if event_time and (family["last_seen_utc"] is None or event_time > family["last_seen_utc"]):
+            family["last_seen_utc"] = event_time
+        for symbol, values in _event_bar_return(event, chart_bars).items():
+            symbol_returns = family["_returns"].setdefault(symbol, {"returns": [], "volumes": []})
+            symbol_returns["returns"].append(values["same_bar_return_pct"])
+            symbol_returns["volumes"].append(values["volume"])
+
+    payloads: list[dict[str, Any]] = []
+    for family in families.values():
+        return_statistics = []
+        for symbol in sorted(family["_returns"]):
+            returns = family["_returns"][symbol]["returns"]
+            volumes = family["_returns"][symbol]["volumes"]
+            return_statistics.append(
+                {
+                    "symbol": symbol,
+                    "sample_count": len(returns),
+                    "average_same_bar_return_pct": _mean(returns),
+                    "positive_rate": (sum(1 for value in returns if value > 0) / len(returns)) if returns else None,
+                    "average_volume": _mean(volumes),
+                }
+            )
+        payloads.append(
+            {
+                "family_id": family["family_id"],
+                "family_label": family["family_label"],
+                "event_type": family["event_type"],
+                "occurrence_count": family["occurrence_count"],
+                "first_seen_utc": family["first_seen_utc"],
+                "last_seen_utc": family["last_seen_utc"],
+                "market_state_counts": dict(sorted(family["market_state_counts"].items())),
+                "scope_counts": dict(sorted(family["scope_counts"].items())),
+                "symbol_counts": dict(sorted(family["symbol_counts"].items())),
+                "source_counts": dict(sorted(family["source_counts"].items())),
+                "return_statistics": return_statistics,
+            }
+        )
+    return sorted(payloads, key=lambda item: (-int(item["occurrence_count"]), str(item["family_label"])))
+
+
 def build_temporal_explorer_summary(
     *,
     storage_root: Path = DEFAULT_STORAGE_ROOT,
@@ -734,6 +887,7 @@ def build_temporal_explorer_summary(
     ticks = _tick_payloads(start_time=window_start, end_time=window_end, rows=rows, events=events)
     left_lanes, right_lanes = _lane_payloads(statuses=statuses, rows=rows, storage_root=Path(storage_root))
     chart_bars = _chart_bars(rows.get("chart_bars", []))
+    event_families = _event_family_payloads(events=events, ticks=ticks, chart_bars=chart_bars)
     chart_from_source_bars = any(str(row.get("chart_source") or "") == "source_bar_sql" for row in rows.get("chart_bars", []))
     populated_tables = sum(1 for status in statuses.values() if status.get("status") == "populated")
     event_counts = Counter(event["lane"] for event in events)
@@ -763,6 +917,7 @@ def build_temporal_explorer_summary(
             "left_lanes": left_lanes,
             "right_lanes": right_lanes,
             "events": events,
+            "event_families": event_families,
             "counts": {"by_lane": dict(sorted(event_counts.items())), "total_events": len(events)},
             "chart": {
                 "symbol": "SPY",
