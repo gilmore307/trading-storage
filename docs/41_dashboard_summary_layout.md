@@ -148,7 +148,7 @@ Still not implemented: compact metric time-series publishers for dashboard histo
 
 - `current_system_status_summary` for Status infrastructure/server/API/service/read-model freshness posture;
 - `historical_task_progress_summary` for Tasks / Historical Modeling progress;
-- `temporal_explorer_summary` for the Temporal Explorer page;
+- `temporal_explorer_summary` for the Events attention-pool page;
 - `realtime_signal_summary` for realtime monitor/signal readiness;
 - `execution_realtime_trading_runtime_status` for execution runtime readiness;
 - `model_readiness_summary` and `model_promotion_posture_summary` for the Models page.

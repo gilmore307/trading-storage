@@ -23,6 +23,7 @@ DEFAULT_CENTER_LOOKBACK_DAYS = 14
 DEFAULT_CENTER_LOOKAHEAD_DAYS = 45
 SUPPORTED_FRAMES = ("30m", "1h", "1D", "1W")
 DEFAULT_CHART_SYMBOLS = ("SPY", "QQQ", "IWM", "DIA")
+SOURCE_BAR_TABLE = "model_01_market_regime_data_acquisition"
 
 SUBSTRATE_TABLES = (
     "calendar_day",
@@ -99,6 +100,152 @@ def _frame_delta(frame: str) -> timedelta:
 
 def _chart_timeframe(frame: str) -> str:
     return {"30m": "10min", "1h": "30min", "1D": "1D", "1W": "1W"}.get(frame, "1D")
+
+
+def _source_bar_bucket_seconds(timeframe: str) -> int | None:
+    if timeframe == "10min":
+        return 10 * 60
+    if timeframe == "30min":
+        return 30 * 60
+    return None
+
+
+def _source_bar_bucket_expression(timeframe: str) -> str:
+    if timeframe == "1D":
+        return "date_trunc('day', timestamp)"
+    if timeframe == "1W":
+        return "date_trunc('week', timestamp)"
+    seconds = _source_bar_bucket_seconds(timeframe) or 60 * 60
+    return f"to_timestamp(floor(extract(epoch from timestamp) / {seconds}) * {seconds})"
+
+
+def _source_bar_bucket_end_expression(timeframe: str) -> str:
+    if timeframe == "1D":
+        return "bucket_start + interval '1 day'"
+    if timeframe == "1W":
+        return "bucket_start + interval '7 days'"
+    seconds = _source_bar_bucket_seconds(timeframe) or 60 * 60
+    return f"bucket_start + interval '{seconds} seconds'"
+
+
+def _latest_source_bar_center(*, symbol: str = "SPY", schema: str = DEFAULT_SQL_SCHEMA) -> datetime | None:
+    try:
+        import psycopg  # type: ignore[import-not-found]
+        from psycopg.rows import dict_row  # type: ignore[import-not-found]
+    except ImportError:
+        return None
+    try:
+        with psycopg.connect(_postgres_dsn(), row_factory=dict_row) as connection:
+            with connection.cursor() as cursor:
+                cursor.execute(
+                    """
+                    SELECT EXISTS (
+                      SELECT 1 FROM information_schema.tables
+                      WHERE table_schema = %s AND table_name = %s
+                    ) AS exists
+                    """,
+                    (schema, SOURCE_BAR_TABLE),
+                )
+                if not bool(cursor.fetchone()["exists"]):
+                    return None
+                cursor.execute(
+                    f"""
+                    SELECT max(timestamp) AS center_time
+                    FROM "{schema}"."{SOURCE_BAR_TABLE}"
+                    WHERE symbol = %s AND timeframe = '1Min'
+                    """,
+                    (symbol,),
+                )
+                value = cursor.fetchone()["center_time"]
+    except Exception:
+        return None
+    if isinstance(value, datetime):
+        return value.astimezone(UTC)
+    return _parse_utc(str(value or ""))
+
+
+def _fetch_source_chart_bars(
+    cursor: Any,
+    schema: str,
+    *,
+    symbols: Sequence[str],
+    timeframe: str,
+    start: datetime,
+    end: datetime,
+) -> list[dict[str, Any]]:
+    cursor.execute(
+        """
+        SELECT EXISTS (
+          SELECT 1 FROM information_schema.tables
+          WHERE table_schema = %s AND table_name = %s
+        ) AS exists
+        """,
+        (schema, SOURCE_BAR_TABLE),
+    )
+    if not bool(cursor.fetchone()["exists"]):
+        return []
+    bucket_expression = _source_bar_bucket_expression(timeframe)
+    bucket_end_expression = _source_bar_bucket_end_expression(timeframe)
+    cursor.execute(
+        f"""
+        WITH source AS (
+          SELECT
+            symbol,
+            {bucket_expression} AS bucket_start,
+            timestamp,
+            bar_open,
+            bar_high,
+            bar_low,
+            bar_close,
+            bar_volume,
+            bar_vwap
+          FROM "{schema}"."{SOURCE_BAR_TABLE}"
+          WHERE symbol = ANY(%s)
+            AND timeframe = '1Min'
+            AND timestamp >= %s
+            AND timestamp < %s
+        ),
+        grouped AS (
+          SELECT
+            symbol,
+            %s AS timeframe,
+            bucket_start,
+            {bucket_end_expression} AS bucket_end,
+            (array_agg(bar_open ORDER BY timestamp ASC))[1] AS open,
+            max(bar_high) AS high,
+            min(bar_low) AS low,
+            (array_agg(bar_close ORDER BY timestamp DESC))[1] AS close,
+            sum(coalesce(bar_volume, 0)) AS volume,
+            CASE
+              WHEN sum(coalesce(bar_volume, 0)) > 0
+              THEN sum(coalesce(bar_vwap, bar_close) * coalesce(bar_volume, 0)) / sum(coalesce(bar_volume, 0))
+              ELSE avg(coalesce(bar_vwap, bar_close))
+            END AS vwap,
+            count(*) AS bar_count
+          FROM source
+          GROUP BY symbol, bucket_start
+        )
+        SELECT
+          symbol,
+          timeframe,
+          bucket_start,
+          bucket_end,
+          open,
+          high,
+          low,
+          close,
+          volume,
+          vwap,
+          bar_count,
+          jsonb_build_object('source_table', %s::text, 'source_timeframe', '1Min', 'derived_for_display', true) AS quality_flags_json,
+          'source_bar_sql' AS chart_source
+        FROM grouped
+        ORDER BY symbol ASC, bucket_start ASC
+        LIMIT 2000
+        """,
+        (list(symbols), start, end, timeframe, SOURCE_BAR_TABLE),
+    )
+    return [dict(row) for row in cursor.fetchall()]
 
 
 def _table_statuses(*, schema: str = DEFAULT_SQL_SCHEMA) -> dict[str, dict[str, Any]]:
@@ -216,6 +363,15 @@ def _fetch_sql_rows(
                     """,
                     ("SPY", _chart_timeframe(frame), start, end),
                 )
+                if not rows["chart_bars"]:
+                    rows["chart_bars"] = _fetch_source_chart_bars(
+                        cursor,
+                        schema,
+                        symbols=DEFAULT_CHART_SYMBOLS,
+                        timeframe=_chart_timeframe(frame),
+                        start=start,
+                        end=end,
+                    )
     except Exception:
         return {"sessions": [], "scheduled_events": [], "event_results": [], "news_events": [], "chart_bars": []}
     return rows
@@ -469,6 +625,7 @@ def _chart_bars(rows: Sequence[Mapping[str, Any]]) -> list[dict[str, Any]]:
                 "close": float(row.get("close") or 0),
                 "volume": float(row.get("volume") or 0),
                 "bar_count": int(row.get("bar_count") or 0),
+                "source": str(row.get("chart_source") or ""),
             }
         )
     return bars
@@ -490,7 +647,10 @@ def build_temporal_explorer_summary(
     substrate_status: Mapping[str, Mapping[str, Any]] | None = None,
 ) -> dict[str, Any]:
     generated_at_utc = generated_at_utc or now_utc()
-    center_time = _parse_utc(center_time_utc) or _parse_utc(generated_at_utc) or datetime.now(UTC)
+    center_time = _parse_utc(center_time_utc)
+    if center_time is None and sql_rows is None:
+        center_time = _latest_source_bar_center(symbol="SPY")
+    center_time = center_time or _parse_utc(generated_at_utc) or datetime.now(UTC)
     frame = frame if frame in SUPPORTED_FRAMES else DEFAULT_FRAME
     statuses = dict(substrate_status or _table_statuses())
     rows = dict(sql_rows or _fetch_sql_rows(center_time=center_time, frame=frame))
@@ -498,6 +658,7 @@ def build_temporal_explorer_summary(
     ticks = _tick_payloads(center_time=center_time, frame=frame, rows=rows, events=events)
     left_lanes, right_lanes = _lane_payloads(statuses=statuses, rows=rows, storage_root=Path(storage_root))
     chart_bars = _chart_bars(rows.get("chart_bars", []))
+    chart_from_source_bars = any(str(row.get("chart_source") or "") == "source_bar_sql" for row in rows.get("chart_bars", []))
     populated_tables = sum(1 for status in statuses.values() if status.get("status") == "populated")
     event_counts = Counter(event["lane"] for event in events)
     status = "ready" if populated_tables else "empty"
@@ -510,7 +671,7 @@ def build_temporal_explorer_summary(
         "source_system": "trading-storage",
         "status": status,
         "severity": "info" if status == "ready" else "medium",
-        "summary": f"Temporal Explorer has {len(events)} visible event markers, {len(chart_bars)} chart bars, and {populated_tables} populated substrate tables.",
+        "summary": f"Events attention pool has {len(events)} certified event-family markers, {len(chart_bars)} chart bars, and {populated_tables} populated context tables.",
         "chart_payload": {
             "viewport": {
                 "center_time_utc": _iso_utc(center_time),
@@ -531,7 +692,7 @@ def build_temporal_explorer_summary(
                 "available_timeframes": [_chart_timeframe(value) for value in SUPPORTED_FRAMES],
                 "status": "populated" if chart_bars else "not_populated",
                 "bars": chart_bars,
-                "role": "visualization_cache_not_training_truth",
+                "role": "source_bar_visualization_not_training_truth" if chart_from_source_bars else "visualization_cache_not_training_truth",
             },
             "substrate_status": statuses,
         },

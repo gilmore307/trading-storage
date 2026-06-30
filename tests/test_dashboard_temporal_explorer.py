@@ -77,6 +77,7 @@ class DashboardTemporalExplorerTests(unittest.TestCase):
                             "close": 101,
                             "volume": 1000,
                             "bar_count": 1,
+                            "chart_source": "source_bar_sql",
                         }
                     ],
                 },
@@ -90,6 +91,8 @@ class DashboardTemporalExplorerTests(unittest.TestCase):
             self.assertEqual(chart["events"][0]["title"], "US CPI release")
             self.assertEqual(chart["events"][0]["summary"], "Accepted CPI event family.")
             self.assertEqual(chart["chart"]["status"], "populated")
+            self.assertEqual(chart["chart"]["role"], "source_bar_visualization_not_training_truth")
+            self.assertEqual(chart["chart"]["bars"][0]["source"], "source_bar_sql")
             self.assertIn("SPY", chart["chart"]["available_symbols"])
             self.assertEqual(chart["left_lanes"], [])
             lanes = {lane["lane_id"]: lane for lane in chart["right_lanes"]}
