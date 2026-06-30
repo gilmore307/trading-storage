@@ -612,6 +612,74 @@ def _write_replay_review_run(storage_root: Path) -> None:
         + "\n",
         encoding="utf-8",
     )
+    decision_rows_path = run_root / "decision_rows.jsonl"
+    decision_rows_path.write_text(
+        "\n".join(
+            json.dumps(row, sort_keys=True)
+            for row in [
+                {
+                    "contract_type": "evaluation_replay_decision_row",
+                    "decision_id": "decision-1",
+                    "timestamp": "2021-01-19T16:00:00-05:00",
+                    "target_ref": "AAPL",
+                    "replay_month": "2021-01",
+                    "path_scope": "selected_target:AAPL",
+                    "decision_action": "open_long",
+                    "fill_status": "simulated_filled",
+                    "decision_status": "accepted",
+                    "baseline_return": 0.0,
+                    "realized_return": -0.12,
+                    "directional_underlying_return": -0.08,
+                    "outcome_label": 0,
+                    "model_layer_refs": {
+                        "model_01_background_context": "m01-ref-1",
+                        "model_02_target_state": "m02-ref-1",
+                        "model_03_event_state": "m03-ref-1",
+                        "model_04_unified_decision": "m04-ref-1",
+                        "model_05_option_expression": "m05-ref-1",
+                    },
+                    "model_layer_diagnostics": {
+                        "model_01_background_context": {"state_quality_score": 0.7, "market_risk_stress_score": 0.4},
+                        "model_02_target_state": {"target_ref": "AAPL", "target_direction_score_1D": 0.8, "tradability_score_1D": 0.9},
+                        "model_03_event_state": {"event_uncertainty_score_1D": 0.0, "event_entry_block_pressure_score_1D": 0.0},
+                        "model_04_unified_decision": {"resolved_underlying_action_type": "open_long"},
+                        "model_05_option_expression": {"selected_expression_type": "long_call", "selected_contract_ref": "AAPL_2021-01-22_C_130"},
+                    },
+                },
+                {
+                    "contract_type": "evaluation_replay_decision_row",
+                    "decision_id": "decision-2",
+                    "timestamp": "2021-02-01T16:00:00-05:00",
+                    "target_ref": "MSFT",
+                    "replay_month": "2021-02",
+                    "path_scope": "selected_target:MSFT",
+                    "decision_action": "open_long",
+                    "fill_status": "simulated_filled",
+                    "decision_status": "accepted",
+                    "baseline_return": 0.0,
+                    "realized_return": 0.08,
+                    "directional_underlying_return": 0.04,
+                    "outcome_label": 1,
+                    "model_layer_refs": {
+                        "model_01_background_context": "m01-ref-2",
+                        "model_02_target_state": "m02-ref-2",
+                        "model_03_event_state": "m03-ref-2",
+                        "model_04_unified_decision": "m04-ref-2",
+                        "model_05_option_expression": "m05-ref-2",
+                    },
+                    "model_layer_diagnostics": {
+                        "model_01_background_context": {"state_quality_score": 0.8, "market_risk_stress_score": 0.3},
+                        "model_02_target_state": {"target_ref": "MSFT", "target_direction_score_1D": 0.7, "tradability_score_1D": 0.8},
+                        "model_03_event_state": {"event_uncertainty_score_1D": 0.1, "event_entry_block_pressure_score_1D": 0.0},
+                        "model_04_unified_decision": {"resolved_underlying_action_type": "open_long"},
+                        "model_05_option_expression": {"selected_expression_type": "long_call", "selected_contract_ref": "MSFT_2021-02-05_C_240"},
+                    },
+                },
+            ]
+        )
+        + "\n",
+        encoding="utf-8",
+    )
     (run_root / "post_replay_review_receipt.json").write_text(
         json.dumps(
             {
@@ -627,6 +695,7 @@ def _write_replay_review_run(storage_root: Path) -> None:
                 "expected_review_count": 2,
                 "event_candidate_count": 1,
                 "review_rows_ref": str(rows_path),
+                "decision_rows_ref": str(decision_rows_path),
             },
             sort_keys=True,
         )
@@ -1149,11 +1218,20 @@ class DashboardModelsTests(unittest.TestCase):
                 "model_05_option_expression",
             ])
             self.assertEqual(replay_decisions["excluded_layers"][0]["layer_id"], "model_06_residual_event_governance")
-            self.assertEqual(replay_decisions["layer_quality_summary"]["model_04_unified_decision"]["effective_decision_count"], 1)
+            self.assertEqual(replay_decisions["detail_row_count"], 10)
+            self.assertEqual(replay_decisions["layer_quality_summary"]["model_01_background_context"]["effective_decision_count"], 2)
+            self.assertEqual(
+                replay_decisions["layer_quality_summary"]["model_01_background_context"]["evidence_status"],
+                "effective_trace_unscored",
+            )
+            self.assertEqual(replay_decisions["layer_quality_summary"]["model_04_unified_decision"]["effective_decision_count"], 2)
             self.assertEqual(replay_decisions["layer_quality_summary"]["model_04_unified_decision"]["incorrect_count"], 1)
-            self.assertEqual(replay_decisions["layer_quality_summary"]["model_01_background_context"]["evidence_status"], "coverage_only_missing_decision_quality")
-            self.assertEqual(replay_decisions["layer_decision_rows"][0]["layer_id"], "model_04_unified_decision")
-            self.assertEqual(replay_decisions["layer_decision_rows"][0]["correctness_class"], "incorrect")
+            self.assertEqual(replay_decisions["layer_quality_summary"]["model_05_option_expression"]["effective_decision_count"], 2)
+            self.assertEqual(replay_decisions["layer_decision_rows"][0]["layer_id"], "model_01_background_context")
+            self.assertEqual(replay_decisions["layer_decision_rows"][0]["scoring_status"], "effective_trace_unscored")
+            m04_rows = [row for row in replay_decisions["layer_decision_rows"] if row["layer_id"] == "model_04_unified_decision"]
+            self.assertEqual(m04_rows[0]["correctness_class"], "incorrect")
+            self.assertEqual(m04_rows[1]["correctness_class"], "correct")
             self.assertNotIn("model_06_residual_event_governance", replay_decisions["layer_quality_summary"])
 
     def test_replay_review_summary_keeps_latest_review_run_per_current_fold(self) -> None:

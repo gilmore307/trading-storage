@@ -64,6 +64,7 @@ REPLAY_DECISION_LAYER_ALIASES = {
     "model_06_residual_event_governance": "model_06_residual_event_governance",
 }
 PASSIVE_BASELINE_ACTIONS = {"baseline_action", "no_trade", "avoid_trade", "hold_cash"}
+UNSCORED_LAYER_TRACE_STATUS = "effective_trace_unscored"
 
 
 def _read_json_object(path: Path) -> dict[str, Any] | None:
@@ -169,6 +170,123 @@ def _acceptability_class(correctness_class: str) -> str:
     if correctness_class == "incorrect":
         return "unacceptable"
     return "indeterminate"
+
+
+def _source_decision_id(row: Mapping[str, Any], *, fallback_index: int | None = None) -> str:
+    value = str(row.get("source_decision_id") or row.get("decision_id") or row.get("replay_decision_id") or "").strip()
+    if value:
+        return value
+    return f"decision_row_{fallback_index}" if fallback_index is not None else ""
+
+
+def _decision_time(row: Mapping[str, Any]) -> Any:
+    return row.get("decision_time") or row.get("timestamp") or row.get("replay_time_pointer")
+
+
+def _target_symbol(row: Mapping[str, Any]) -> Any:
+    return row.get("target_symbol") or row.get("target_ref")
+
+
+def _layer_diagnostics(row: Mapping[str, Any], layer_id: str) -> Mapping[str, Any]:
+    diagnostics = row.get("model_layer_diagnostics")
+    if not isinstance(diagnostics, Mapping):
+        return {}
+    value = diagnostics.get(layer_id)
+    return value if isinstance(value, Mapping) else {}
+
+
+def _layer_ref(row: Mapping[str, Any], layer_id: str) -> Any:
+    refs = row.get("model_layer_refs")
+    if isinstance(refs, Mapping):
+        return refs.get(layer_id)
+    return None
+
+
+def _effective_layer_decision(row: Mapping[str, Any], layer_id: str, diagnostics: Mapping[str, Any]) -> str:
+    if layer_id == "model_01_background_context":
+        state_quality = diagnostics.get("state_quality_score")
+        risk = diagnostics.get("market_risk_stress_score")
+        return f"background_context_state quality={state_quality} risk={risk}"
+    if layer_id == "model_02_target_state":
+        target = diagnostics.get("target_ref") or _target_symbol(row)
+        direction = diagnostics.get("target_direction_score_1D")
+        tradability = diagnostics.get("tradability_score_1D")
+        return f"selected_target {target} direction_1d={direction} tradability_1d={tradability}"
+    if layer_id == "model_03_event_state":
+        uncertainty = diagnostics.get("event_uncertainty_score_1D")
+        block = diagnostics.get("event_entry_block_pressure_score_1D")
+        return f"event_state uncertainty_1d={uncertainty} block_pressure_1d={block}"
+    if layer_id == "model_04_unified_decision":
+        return str(
+            diagnostics.get("resolved_underlying_action_type")
+            or diagnostics.get("resolved_action_side")
+            or row.get("decision_action")
+            or row.get("action")
+            or "not_reported"
+        )
+    if layer_id == "model_05_option_expression":
+        expression = diagnostics.get("selected_expression_type") or row.get("selected_option_expression_type")
+        contract = diagnostics.get("selected_contract_ref") or row.get("selected_option_contract_ref") or row.get("instrument_ref")
+        return f"{expression or 'not_reported'} {contract or ''}".strip()
+    return "not_reported"
+
+
+def _scored_layer_overlay(row: Mapping[str, Any], layer_id: str) -> dict[str, Any]:
+    if layer_id == "model_04_unified_decision":
+        chosen = _effective_layer_decision(row, layer_id, _layer_diagnostics(row, layer_id))
+        realized_value = row.get("directional_underlying_return")
+        if realized_value is None:
+            realized_value = row.get("underlying_return")
+        realized_return = _safe_number(realized_value)
+        if realized_return is None:
+            return {}
+        baseline_return = _safe_number(row.get("baseline_return")) or 0.0
+        best = chosen if realized_return >= baseline_return else "baseline_action"
+        regret = round(max(0.0, baseline_return - realized_return), 10)
+        return {
+            "available_action": [chosen, "baseline_action"],
+            "chosen_action": chosen,
+            "best_available_action_by_future_outcome": best,
+            "chosen_action_return": realized_return,
+            "best_available_action_return": realized_return if best == chosen else baseline_return,
+            "regret_to_best_available": regret,
+            "correctness_class": "correct" if regret == 0 else "incorrect",
+            "classification_basis": "derived_from_underlying_directional_return_label",
+        }
+    if layer_id == "model_05_option_expression":
+        fill_status = str(row.get("fill_status") or "")
+        decision_status = str(row.get("decision_status") or "")
+        filled = fill_status == "simulated_filled" or decision_status in {"filled", "approved", "executed"}
+        if not filled:
+            return {}
+        chosen = str(row.get("chosen_action") or row.get("decision_action") or row.get("action") or "take_trade")
+        realized_return = _safe_number(row.get("realized_return"))
+        if realized_return is None:
+            return {}
+        baseline_return = _safe_number(row.get("baseline_return")) or 0.0
+        best = chosen if realized_return >= baseline_return else "baseline_action"
+        regret = round(max(0.0, baseline_return - realized_return), 10)
+        return {
+            "available_action": [chosen, "baseline_action"],
+            "chosen_action": chosen,
+            "best_available_action_by_future_outcome": best,
+            "chosen_action_return": realized_return,
+            "best_available_action_return": realized_return if best == chosen else baseline_return,
+            "regret_to_best_available": regret,
+            "correctness_class": "correct" if regret == 0 else "incorrect",
+            "classification_basis": "derived_from_selected_option_realized_return_label",
+        }
+    return {}
+
+
+def _review_rows_by_source_and_layer(review_rows: list[dict[str, Any]]) -> dict[tuple[str, str], dict[str, Any]]:
+    indexed: dict[tuple[str, str], dict[str, Any]] = {}
+    for row in review_rows:
+        source_id = _source_decision_id(row)
+        layer_id = _row_layer_id(row)
+        if source_id and layer_id in REPLAY_DECISION_LAYER_IDS:
+            indexed[(source_id, layer_id)] = row
+    return indexed
 
 
 def _best_available_action(row: Mapping[str, Any]) -> str:
@@ -333,7 +451,7 @@ def _review_rows_summary(rows_path: Path | None) -> dict[str, Any]:
     }
 
 
-def _layer_decision_row(row: Mapping[str, Any], layer_id: str) -> dict[str, Any]:
+def _review_layer_decision_row(row: Mapping[str, Any], layer_id: str) -> dict[str, Any]:
     correctness = _correctness_class(row)
     return {
         "review_id": row.get("review_id"),
@@ -366,6 +484,65 @@ def _layer_decision_row(row: Mapping[str, Any], layer_id: str) -> dict[str, Any]
     }
 
 
+def _effective_layer_trace_row(
+    row: Mapping[str, Any],
+    *,
+    source_decision_index: int,
+    layer_id: str,
+    review_overlay: Mapping[str, Any] | None,
+) -> dict[str, Any]:
+    diagnostics = _layer_diagnostics(row, layer_id)
+    source_id = _source_decision_id(row, fallback_index=source_decision_index)
+    if review_overlay is not None:
+        overlay = _review_layer_decision_row(review_overlay, layer_id)
+        overlay["source"] = "post_replay_review_row"
+        overlay["source_decision_index"] = overlay.get("source_decision_index") or source_decision_index
+        return overlay
+
+    scored_overlay = _scored_layer_overlay(row, layer_id)
+    correctness = str(scored_overlay.get("correctness_class") or "indeterminate")
+    candidate_scope_by_layer = {
+        "model_01_background_context": "background_context_state",
+        "model_02_target_state": "selected_target_candidate_handoff",
+        "model_03_event_state": "selected_path_event_state",
+        "model_04_unified_decision": "selected_target_underlying_decision",
+        "model_05_option_expression": row.get("candidate_set_scope") or "selected_target_selected_option_contract_path",
+    }
+    return {
+        "review_id": f"{source_id}:{layer_id}",
+        "decision_time": _decision_time(row),
+        "target_symbol": _target_symbol(row),
+        "replay_month": row.get("replay_month"),
+        "source_decision_id": source_id,
+        "source_decision_index": source_decision_index,
+        "layer_id": layer_id,
+        "layer_label": REPLAY_DECISION_LAYER_LABELS[layer_id],
+        "candidate_set_scope": candidate_scope_by_layer[layer_id],
+        "path_scope": row.get("path_scope"),
+        "effective_decision": _effective_layer_decision(row, layer_id, diagnostics),
+        "chosen_action": scored_overlay.get("chosen_action"),
+        "available_action": scored_overlay.get("available_action"),
+        "best_available_action_by_future_outcome": scored_overlay.get("best_available_action_by_future_outcome"),
+        "chosen_action_return": scored_overlay.get("chosen_action_return"),
+        "best_available_action_return": scored_overlay.get("best_available_action_return"),
+        "correctness_class": correctness,
+        "acceptability_class": _acceptability_class(correctness),
+        "regret_to_best_available": scored_overlay.get("regret_to_best_available"),
+        "impact_normalized_severity_score": None,
+        "cause_family": "not_attributed" if scored_overlay else "not_scored",
+        "failure_type": "none" if correctness == "correct" else "not_scored",
+        "first_gap_component": "no_gap" if correctness == "correct" else None,
+        "first_gap_mechanism": "no_gap" if correctness == "correct" else None,
+        "outcome_label": row.get("outcome_label"),
+        "model_ref": _layer_ref(row, layer_id) or diagnostics.get("model_ref"),
+        "layer_diagnostics": dict(diagnostics),
+        "source": "replay_decision_row",
+        "scoring_status": "scored" if scored_overlay else UNSCORED_LAYER_TRACE_STATUS,
+        "classification_basis": scored_overlay.get("classification_basis", "effective trace only; layer-specific correctness label is not published"),
+        "hindsight_caution": "Future returns are labels for review; they are not decision-time inputs.",
+    }
+
+
 def _layer_quality_summary(
     *,
     layer_id: str,
@@ -386,6 +563,8 @@ def _layer_quality_summary(
     correct_count = sum(1 for row in attributed_rows if _correctness_class(row) == "correct")
     incorrect_count = sum(1 for row in attributed_rows if _correctness_class(row) == "incorrect")
     indeterminate_count = sum(1 for row in attributed_rows if _correctness_class(row) == "indeterminate")
+    scored_decision_count = correct_count + incorrect_count
+    unscored_decision_count = max(0, len(attributed_rows) - scored_decision_count)
     acceptable_count = correct_count
     unacceptable_count = incorrect_count
     harmful_error_count = sum(1 for row in attributed_rows if _is_harmful_error(row, _correctness_class(row)))
@@ -394,10 +573,14 @@ def _layer_quality_summary(
     source_gap_codes: list[str] = []
     if not effective_decision_count:
         source_gap_codes.append("missing_effective_layer_decision_rows")
+    elif unscored_decision_count:
+        source_gap_codes.append("unscored_effective_layer_decision_rows")
     if coverage_row_count is None:
         source_gap_codes.append("missing_layer_coverage_rows")
     evidence_status = (
         "published"
+        if scored_decision_count
+        else UNSCORED_LAYER_TRACE_STATUS
         if effective_decision_count
         else "coverage_only_missing_decision_quality"
         if coverage_row_count
@@ -408,6 +591,8 @@ def _layer_quality_summary(
         "layer_label": REPLAY_DECISION_LAYER_LABELS[layer_id],
         "coverage_row_count": coverage_row_count,
         "effective_decision_count": effective_decision_count,
+        "scored_decision_count": scored_decision_count,
+        "unscored_decision_count": unscored_decision_count,
         "correct_count": correct_count,
         "acceptable_count": acceptable_count,
         "incorrect_count": incorrect_count,
@@ -415,14 +600,14 @@ def _layer_quality_summary(
         "indeterminate_count": indeterminate_count,
         "harmful_error_count": harmful_error_count,
         "missed_good_count": missed_good_count,
-        "correct_rate": _rate(correct_count, effective_decision_count),
-        "acceptable_rate": _rate(acceptable_count, effective_decision_count),
-        "incorrect_rate": _rate(incorrect_count, effective_decision_count),
-        "harmful_error_rate": _rate(harmful_error_count, effective_decision_count),
-        "missed_good_rate": _rate(missed_good_count, effective_decision_count),
+        "correct_rate": _rate(correct_count, scored_decision_count),
+        "acceptable_rate": _rate(acceptable_count, scored_decision_count),
+        "incorrect_rate": _rate(incorrect_count, scored_decision_count),
+        "harmful_error_rate": _rate(harmful_error_count, scored_decision_count),
+        "missed_good_rate": _rate(missed_good_count, scored_decision_count),
         "mean_regret_to_best_available": _numeric_mean(attributed_rows, "regret_to_best_available"),
         "mean_impact_normalized_severity_score": _numeric_mean(attributed_rows, "impact_normalized_severity_score"),
-        "quality_score": _rate(acceptable_count, effective_decision_count),
+        "quality_score": _rate(acceptable_count, scored_decision_count),
         "evidence_status": evidence_status,
         "source_gap_codes": source_gap_codes,
     }
@@ -431,13 +616,15 @@ def _layer_quality_summary(
 def _replay_decisions_m01_m05_summary(
     *,
     rows_path: Path | None,
+    decision_rows_path: Path | None,
     performance_summary: Mapping[str, Any] | None,
 ) -> dict[str, Any]:
-    rows = list(_iter_jsonl(rows_path)) if rows_path else []
+    review_rows = list(_iter_jsonl(rows_path)) if rows_path else []
+    decision_rows = list(_iter_jsonl(decision_rows_path)) if decision_rows_path else []
     included_rows: list[dict[str, Any]] = []
     excluded_row_count = 0
     unattributed_row_count = 0
-    for row in rows:
+    for row in review_rows:
         layer_id = _row_layer_id(row)
         if layer_id in EXCLUDED_REPLAY_DECISION_LAYER_IDS:
             excluded_row_count += 1
@@ -447,9 +634,26 @@ def _replay_decisions_m01_m05_summary(
             continue
         if layer_id in REPLAY_DECISION_LAYER_IDS:
             included_rows.append({**row, "layer_id": layer_id})
+    if decision_rows:
+        overlays = _review_rows_by_source_and_layer(included_rows)
+        effective_rows = [
+            _effective_layer_trace_row(
+                row,
+                source_decision_index=index,
+                layer_id=layer_id,
+                review_overlay=overlays.get((_source_decision_id(row, fallback_index=index), layer_id)),
+            )
+            for index, row in enumerate(decision_rows, start=1)
+            for layer_id in REPLAY_DECISION_LAYER_IDS
+        ]
+    else:
+        effective_rows = [
+            _review_layer_decision_row(row, str(row["layer_id"]))
+            for row in included_rows
+        ]
 
     rows_by_layer = {
-        layer_id: [row for row in included_rows if row["layer_id"] == layer_id]
+        layer_id: [row for row in effective_rows if row["layer_id"] == layer_id]
         for layer_id in REPLAY_DECISION_LAYER_IDS
     }
     layer_quality_summary = {
@@ -469,13 +673,10 @@ def _replay_decisions_m01_m05_summary(
     )
     if unattributed_row_count:
         source_gap_codes.append("unattributed_review_rows")
-    sampled_rows = [
-        _layer_decision_row(row, str(row["layer_id"]))
-        for row in included_rows[:MAX_LAYER_DECISION_ROWS]
-    ]
+    sampled_rows = effective_rows[:MAX_LAYER_DECISION_ROWS]
     return {
         "contract_version": 1,
-        "status": "ready" if included_rows else "insufficient_source_evidence",
+        "status": "ready" if effective_rows else "insufficient_source_evidence",
         "included_layers": [
             {"layer_id": layer_id, "layer_label": REPLAY_DECISION_LAYER_LABELS[layer_id]}
             for layer_id in REPLAY_DECISION_LAYER_IDS
@@ -491,15 +692,16 @@ def _replay_decisions_m01_m05_summary(
         "layer_quality_summary": layer_quality_summary,
         "macro_comparison": list(layer_quality_summary.values()),
         "layer_decision_rows": sampled_rows,
-        "detail_row_count": len(included_rows),
+        "detail_row_count": len(effective_rows),
         "detail_rows_returned": len(sampled_rows),
-        "detail_rows_sampled": len(included_rows) > len(sampled_rows),
+        "detail_rows_sampled": len(effective_rows) > len(sampled_rows),
         "excluded_row_count": excluded_row_count,
         "unattributed_row_count": unattributed_row_count,
         "source_gap_codes": source_gap_codes,
         "classification_policy": {
-            "correctness_class": "Derived in the read model from chosen action, best available post-replay action label, and regret.",
+            "correctness_class": "Derived from post-replay review labels when published; M04 may use underlying directional outcome labels and M05 may use selected expression realized-return labels.",
             "acceptability_class": "Correct rows are acceptable; incorrect rows are unacceptable until a narrower acceptance threshold is published.",
+            "unscored_effective_trace": "M01-M03 currently publish effective trace rows without layer-specific candidate-outcome labels.",
             "hindsight_caution": "Future returns are labels for review; they must not be displayed as decision-time inputs.",
         },
     }
@@ -533,6 +735,7 @@ def _review_run_summary(run_dir: Path) -> dict[str, Any] | None:
     if not rows_path.exists():
         rows_ref = receipt.get("review_rows_ref") or receipt.get("replay_review_rows_ref")
         rows_path = Path(str(rows_ref)) if rows_ref else rows_path
+    decision_rows_path = Path(str(receipt.get("decision_rows_ref") or ""))
     return {
         "review_run_id": run_dir.name,
         "candidate_model_ref": receipt.get("candidate_model_ref"),
@@ -549,6 +752,7 @@ def _review_run_summary(run_dir: Path) -> dict[str, Any] | None:
         "decision_review": _review_rows_summary(rows_path if rows_path.exists() else None),
         "replay_decisions_m01_m05": _replay_decisions_m01_m05_summary(
             rows_path=rows_path if rows_path.exists() else None,
+            decision_rows_path=decision_rows_path if decision_rows_path.exists() else None,
             performance_summary=performance_summary,
         ),
         "parameter_review": _parameter_summary(parameter_report),
@@ -556,6 +760,7 @@ def _review_run_summary(run_dir: Path) -> dict[str, Any] | None:
             "receipt_ref": str(run_dir / "post_replay_review_receipt.json"),
             "performance_summary_ref": str(run_dir / "replay_review_performance_summary.json"),
             "review_rows_ref": str(rows_path) if rows_path.exists() else None,
+            "decision_rows_ref": str(decision_rows_path) if decision_rows_path.exists() else None,
             "parameter_report_ref": str(run_dir / "layer_attribution" / "parameter_replay_review_report.json")
             if (run_dir / "layer_attribution" / "parameter_replay_review_report.json").exists()
             else None,
