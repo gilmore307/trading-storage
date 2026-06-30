@@ -812,6 +812,42 @@ def _write_replay_review_run(storage_root: Path) -> None:
         + "\n",
         encoding="utf-8",
     )
+    (layer_root / "operation_component_flow.csv").write_text(
+        "\n".join(
+            [
+                "component_index,operation_component_id,runtime_component_ref,operation_component_label,operation_role,applicability_status,input_count,output_count,dropped_or_blocked_count,censored_count,settled_metric_eligible_count,settled_metric_excluded_count,first_limiting_projection_count,first_limiting_projections,review_projection_refs,outcome_metric_available,mean_prediction_score,score_label_spearman,score_return_spearman,mean_realized_return,hit_rate,tail_loss_count,stage_verdict,verdict_basis,threshold_selection_performed,retraining_performed,fixed_input_only",
+                "1,C01_intake_operation,component_01_intake,C01 Intake,prepare inputs,candidate_entry_path,2,2,0,0,2,0,0,,background_context;target_state,True,0.81,0.2,0.3,0.02,0.5,1,neutral_measured,no_prior_observable_bad_rate,False,False,True",
+                "3,C03_lifecycle_operation,component_03_lifecycle,C03 Lifecycle,manage positions,not_applicable_for_candidate_entry_replay,0,0,0,0,0,0,0,,,False,,,,,,0,not_applicable,candidate_entry_replay_does_not_operate_lifecycle_component,False,False,True",
+                "7,C07_failure_review_operation,component_07_failure_review,C07 Failure Review,review settled failures,candidate_entry_path,2,2,0,0,2,0,2,settled_prediction_quality,residual_event_governance;settled_prediction_quality,True,0.81,0.2,0.3,0.02,0.5,1,first_observed_deterioration,settled_survivor_cohort_bad_rate_above_half,False,False,True",
+            ]
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+    (layer_root / "operation_component_review_packet.csv").write_text(
+        "\n".join(
+            [
+                "component_index,operation_component_id,runtime_component_ref,operation_component_label,operation_role,applicability_status,input_count,output_count,dropped_or_blocked_count,settled_metric_eligible_count,survival_verdict,survival_verdict_basis,review_projections,internal_review_refs,missing_review_outputs,metric_effectiveness_status,metric_effectiveness_flags,first_limiting_projection_count,can_assign_operation_fault,interpretation_status,threshold_selection_performed,retraining_performed,fixed_input_only",
+                "1,C01_intake_operation,component_01_intake,C01 Intake,prepare inputs,candidate_entry_path,2,2,0,2,neutral_measured,no_prior_observable_bad_rate,background_context;target_state,operation_component_metrics.csv,,effectiveness_metrics_reviewed,,0,False,reviewable_no_problem_observed,False,False,True",
+                "3,C03_lifecycle_operation,component_03_lifecycle,C03 Lifecycle,manage positions,not_applicable_for_candidate_entry_replay,0,0,0,0,not_applicable,candidate_entry_replay_does_not_operate_lifecycle_component,,operation_component_metrics.csv,,effectiveness_metrics_not_available,,0,False,not_applicable_for_candidate_entry_replay,False,False,True",
+                "7,C07_failure_review_operation,component_07_failure_review,C07 Failure Review,review settled failures,candidate_entry_path,2,2,0,2,first_observed_deterioration,settled_survivor_cohort_bad_rate_above_half,residual_event_governance;settled_prediction_quality,operation_component_metrics.csv,,effectiveness_metrics_reviewed,,2,False,problem_observed_at_failure_review_not_causal_operation_fault,False,False,True",
+            ]
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+    (layer_root / "operation_component_metrics.csv").write_text(
+        "\n".join(
+            [
+                "component_index,operation_component_id,runtime_component_ref,operation_component_label,metric_family,metric_name,metric_scope,availability_status,reason_codes,point_in_time_input_fields,future_outcome_fields,row_count,eligible_row_count,selected_count,universe_count_mean,selected_target_present_count,selected_forward_return_mean,selected_forward_return_rank_mean,selected_forward_return_percentile_mean,top_quartile_hit_rate,opportunity_cost_to_best_mean,opportunity_cost_to_median_mean,value,diagnostic_only,threshold_selection_performed,retraining_performed,fixed_input_only",
+                "1,C01_intake_operation,component_01_intake,C01 Intake,model_candidate_discovery,visible_candidate_model_scoring_coverage,point_in_time_model_candidate_trace,computed,,visible_candidate;model_score_available,,2,2,2,10,2,0.02,1.5,0.7,0.5,0.03,0.01,1.0,True,False,False,True",
+                "3,C03_lifecycle_operation,component_03_lifecycle,C03 Lifecycle,position_lifecycle_quality,existing_position_lifecycle_outcome,candidate_entry_replay,not_applicable,candidate_entry_replay_does_not_operate_lifecycle_component,,,0,0,0,,0,,,,,,,,True,False,False,True",
+                "7,C07_failure_review_operation,component_07_failure_review,C07 Failure Review,settled_failure_review_quality,settled_score_outcome_surface,settled_replay_rows,computed,,prediction_score;model_evidence_chain,outcome_label;realized_return,2,2,2,,0,0.02,,,0.5,,,0.2,True,False,False,True",
+            ]
+        )
+        + "\n",
+        encoding="utf-8",
+    )
 
 
 def _write_residual_event_run(storage_root: Path) -> None:
@@ -1293,6 +1329,33 @@ class DashboardModelsTests(unittest.TestCase):
             self.assertEqual(m04_rows[0]["correctness_class"], "incorrect")
             self.assertEqual(m04_rows[1]["correctness_class"], "correct")
             self.assertNotIn("model_06_residual_event_governance", replay_decisions["layer_quality_summary"])
+            replay_operations = review["replay_operations_c01_c07"]
+            self.assertEqual(replay_operations["status"], "ready")
+            self.assertEqual(
+                [component["component_id"] for component in replay_operations["included_components"]],
+                [
+                    "component_01_intake",
+                    "component_02_entry",
+                    "component_03_lifecycle",
+                    "component_04_option_review",
+                    "component_05_order_intent",
+                    "component_06_execution_gate",
+                    "component_07_failure_review",
+                ],
+            )
+            c01 = replay_operations["component_summary"]["component_01_intake"]
+            self.assertEqual(c01["input_count"], 2)
+            self.assertEqual(c01["dropped_or_blocked_count"], 0)
+            self.assertEqual(c01["computed_metric_count"], 1)
+            c03 = replay_operations["component_summary"]["component_03_lifecycle"]
+            self.assertEqual(c03["applicability_status"], "not_applicable_for_candidate_entry_replay")
+            self.assertEqual(c03["input_count"], 0)
+            self.assertEqual(c03["not_applicable_metric_count"], 1)
+            c07 = replay_operations["component_summary"]["component_07_failure_review"]
+            self.assertEqual(c07["first_limiting_projection_count"], 2)
+            self.assertEqual(c07["stage_verdict"], "first_observed_deterioration")
+            self.assertEqual(replay_operations["detail_row_count"], 3)
+            self.assertEqual(replay_operations["component_metric_rows"][0]["component_id"], "component_01_intake")
 
     def test_replay_review_summary_keeps_latest_review_run_per_current_fold(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:

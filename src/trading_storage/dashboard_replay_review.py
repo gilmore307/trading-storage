@@ -9,6 +9,7 @@ mutate account state.
 from __future__ import annotations
 
 import json
+import csv
 import re
 from pathlib import Path
 from typing import Any, Iterable, Mapping
@@ -35,6 +36,41 @@ REPLAY_DECISION_LAYER_IDS = (
     "model_05_option_expression",
 )
 EXCLUDED_REPLAY_DECISION_LAYER_IDS = ("model_06_residual_event_governance",)
+REPLAY_OPERATION_COMPONENTS = (
+    ("component_01_intake", "C01 Intake"),
+    ("component_02_entry", "C02 Entry"),
+    ("component_03_lifecycle", "C03 Lifecycle"),
+    ("component_04_option_review", "C04 Option Review"),
+    ("component_05_order_intent", "C05 Order Intent"),
+    ("component_06_execution_gate", "C06 Execution Gate"),
+    ("component_07_failure_review", "C07 Failure Review"),
+)
+REPLAY_OPERATION_COMPONENT_ALIASES = {
+    "component_01_intake": "component_01_intake",
+    "component_02_entry": "component_02_entry",
+    "component_03_lifecycle": "component_03_lifecycle",
+    "component_04_option_review": "component_04_option_review",
+    "component_04_expression_review": "component_04_option_review",
+    "component_05_order_intent": "component_05_order_intent",
+    "component_06_execution_gate": "component_06_execution_gate",
+    "component_07_failure_review": "component_07_failure_review",
+    "c01_intake_operation": "component_01_intake",
+    "c02_entry_operation": "component_02_entry",
+    "c03_lifecycle_operation": "component_03_lifecycle",
+    "c04_expression_review_operation": "component_04_option_review",
+    "c04_option_review_operation": "component_04_option_review",
+    "c05_order_intent_operation": "component_05_order_intent",
+    "c06_execution_gate_operation": "component_06_execution_gate",
+    "c07_failure_review_operation": "component_07_failure_review",
+    "component_01_intake_operation": "component_01_intake",
+    "component_02_entry_operation": "component_02_entry",
+    "component_03_lifecycle_operation": "component_03_lifecycle",
+    "component_04_expression_review_operation": "component_04_option_review",
+    "component_05_order_intent_operation": "component_05_order_intent",
+    "component_06_execution_gate_operation": "component_06_execution_gate",
+    "component_07_failure_review_operation": "component_07_failure_review",
+}
+REPLAY_OPERATION_COMPONENT_LABELS = dict(REPLAY_OPERATION_COMPONENTS)
 REPLAY_DECISION_LAYER_LABELS = {
     "model_01_background_context": "M01 Background Context",
     "model_02_target_state": "M02 Target State",
@@ -89,6 +125,41 @@ def _iter_jsonl(path: Path) -> Iterable[dict[str, Any]]:
             continue
         if isinstance(payload, Mapping):
             yield dict(payload)
+
+
+def _coerce_csv_value(value: str | None) -> Any:
+    if value is None:
+        return None
+    stripped = value.strip()
+    if stripped == "":
+        return None
+    lowered = stripped.lower()
+    if lowered == "true":
+        return True
+    if lowered == "false":
+        return False
+    try:
+        if re.fullmatch(r"[-+]?\d+", stripped):
+            return int(stripped)
+        if re.fullmatch(r"[-+]?(?:\d+\.\d*|\d*\.\d+)(?:[eE][-+]?\d+)?", stripped) or re.fullmatch(
+            r"[-+]?\d+[eE][-+]?\d+",
+            stripped,
+        ):
+            return float(stripped)
+    except ValueError:
+        return stripped
+    return stripped
+
+
+def _read_csv_records(path: Path) -> list[dict[str, Any]]:
+    try:
+        with path.open("r", encoding="utf-8", newline="") as handle:
+            return [
+                {str(key): _coerce_csv_value(value) for key, value in row.items()}
+                for row in csv.DictReader(handle)
+            ]
+    except OSError:
+        return []
 
 
 def _count_by(rows: Iterable[Mapping[str, Any]], field: str) -> dict[str, int]:
@@ -489,6 +560,193 @@ def _review_rows_summary(rows_path: Path | None) -> dict[str, Any]:
     }
 
 
+def _normalized_operation_component_id(value: object) -> str | None:
+    text = str(value or "").strip().lower()
+    if not text:
+        return None
+    return REPLAY_OPERATION_COMPONENT_ALIASES.get(text)
+
+
+def _operation_component_id_from_row(row: Mapping[str, Any]) -> str | None:
+    for field in ("runtime_component_ref", "operation_component_id", "component_id"):
+        component_id = _normalized_operation_component_id(row.get(field))
+        if component_id:
+            return component_id
+    return None
+
+
+def _split_csv_list(value: object) -> list[str]:
+    if value is None:
+        return []
+    return [part.strip() for part in str(value).split(";") if part.strip()]
+
+
+def _first_present(*values: object) -> Any:
+    for value in values:
+        if value is not None:
+            return value
+    return None
+
+
+def _operation_numeric_mean(rows: list[Mapping[str, Any]], field: str) -> float | None:
+    return _numeric_mean_by(rows, lambda row: _safe_number(row.get(field)))
+
+
+def _sample_operation_metric_row(row: Mapping[str, Any], component_id: str) -> dict[str, Any]:
+    fields = (
+        "component_index",
+        "operation_component_id",
+        "runtime_component_ref",
+        "operation_component_label",
+        "metric_family",
+        "metric_name",
+        "metric_scope",
+        "availability_status",
+        "reason_codes",
+        "row_count",
+        "eligible_row_count",
+        "selected_count",
+        "selected_target_present_count",
+        "selected_forward_return_mean",
+        "selected_forward_return_rank_mean",
+        "selected_forward_return_percentile_mean",
+        "top_quartile_hit_rate",
+        "opportunity_cost_to_best_mean",
+        "opportunity_cost_to_median_mean",
+        "value",
+        "diagnostic_only",
+    )
+    sampled = {field: row.get(field) for field in fields if field in row}
+    sampled["component_id"] = component_id
+    sampled["component_label"] = REPLAY_OPERATION_COMPONENT_LABELS[component_id]
+    return sampled
+
+
+def _replay_operations_c01_c07_summary(layer_root: Path) -> dict[str, Any]:
+    flow_rows = _read_csv_records(layer_root / "operation_component_flow.csv")
+    packet_rows = _read_csv_records(layer_root / "operation_component_review_packet.csv")
+    metric_rows = _read_csv_records(layer_root / "operation_component_metrics.csv")
+    source_gap_codes: list[str] = []
+    if not flow_rows:
+        source_gap_codes.append("missing_operation_component_flow")
+    if not packet_rows:
+        source_gap_codes.append("missing_operation_component_review_packet")
+    if not metric_rows:
+        source_gap_codes.append("missing_operation_component_metrics")
+
+    flow_by_component = {
+        component_id: row
+        for row in flow_rows
+        if (component_id := _operation_component_id_from_row(row)) is not None
+    }
+    packet_by_component = {
+        component_id: row
+        for row in packet_rows
+        if (component_id := _operation_component_id_from_row(row)) is not None
+    }
+    metrics_by_component: dict[str, list[dict[str, Any]]] = {component_id: [] for component_id, _ in REPLAY_OPERATION_COMPONENTS}
+    for row in metric_rows:
+        component_id = _operation_component_id_from_row(row)
+        if component_id:
+            metrics_by_component.setdefault(component_id, []).append(dict(row))
+
+    component_summary: dict[str, dict[str, Any]] = {}
+    component_metric_rows: list[dict[str, Any]] = []
+    for component_id, component_label in REPLAY_OPERATION_COMPONENTS:
+        flow = flow_by_component.get(component_id, {})
+        packet = packet_by_component.get(component_id, {})
+        metrics = metrics_by_component.get(component_id, [])
+        availability_counts = _count_by(metrics, "availability_status")
+        data_gap_metric_count = int(availability_counts.get("data_gap", 0))
+        computed_metric_count = int(availability_counts.get("computed", 0))
+        not_applicable_metric_count = int(availability_counts.get("not_applicable", 0))
+        metric_rows_returned = [
+            _sample_operation_metric_row(row, component_id)
+            for row in metrics[:MAX_SAMPLE_ROWS]
+        ]
+        component_metric_rows.extend(metric_rows_returned)
+        input_count = _first_present(flow.get("input_count"), packet.get("input_count"))
+        output_count = _first_present(flow.get("output_count"), packet.get("output_count"))
+        eligible_count = _first_present(flow.get("settled_metric_eligible_count"), packet.get("settled_metric_eligible_count"))
+        first_limiting_count = _first_present(flow.get("first_limiting_projection_count"), packet.get("first_limiting_projection_count"))
+        missing_outputs = _split_csv_list(packet.get("missing_review_outputs"))
+        component_gaps: list[str] = []
+        if component_id not in flow_by_component:
+            component_gaps.append("missing_operation_component_flow_row")
+        if component_id not in packet_by_component:
+            component_gaps.append("missing_operation_component_review_packet_row")
+        if not metrics:
+            component_gaps.append("missing_operation_component_metric_rows")
+        if data_gap_metric_count:
+            component_gaps.append("operation_component_metric_data_gap")
+        component_summary[component_id] = {
+            "component_id": component_id,
+            "component_label": component_label,
+            "component_index": _first_present(flow.get("component_index"), packet.get("component_index")),
+            "runtime_component_ref": _first_present(flow.get("runtime_component_ref"), packet.get("runtime_component_ref")),
+            "operation_component_id": _first_present(flow.get("operation_component_id"), packet.get("operation_component_id")),
+            "operation_role": _first_present(flow.get("operation_role"), packet.get("operation_role")),
+            "applicability_status": _first_present(flow.get("applicability_status"), packet.get("applicability_status")),
+            "input_count": input_count,
+            "output_count": output_count,
+            "dropped_or_blocked_count": _first_present(flow.get("dropped_or_blocked_count"), packet.get("dropped_or_blocked_count")),
+            "censored_count": flow.get("censored_count"),
+            "settled_metric_eligible_count": eligible_count,
+            "settled_metric_excluded_count": flow.get("settled_metric_excluded_count"),
+            "first_limiting_projection_count": first_limiting_count,
+            "first_limiting_projections": _split_csv_list(flow.get("first_limiting_projections")),
+            "review_projection_refs": _split_csv_list(flow.get("review_projection_refs") or packet.get("review_projections")),
+            "internal_review_refs": _split_csv_list(packet.get("internal_review_refs")),
+            "missing_review_outputs": missing_outputs,
+            "outcome_metric_available": flow.get("outcome_metric_available"),
+            "mean_prediction_score": flow.get("mean_prediction_score"),
+            "score_label_spearman": flow.get("score_label_spearman"),
+            "score_return_spearman": flow.get("score_return_spearman"),
+            "mean_realized_return": flow.get("mean_realized_return"),
+            "hit_rate": flow.get("hit_rate"),
+            "tail_loss_count": flow.get("tail_loss_count"),
+            "stage_verdict": _first_present(flow.get("stage_verdict"), packet.get("survival_verdict")),
+            "verdict_basis": _first_present(flow.get("verdict_basis"), packet.get("survival_verdict_basis")),
+            "metric_effectiveness_status": packet.get("metric_effectiveness_status"),
+            "metric_effectiveness_flags": _split_csv_list(packet.get("metric_effectiveness_flags")),
+            "can_assign_operation_fault": packet.get("can_assign_operation_fault"),
+            "interpretation_status": packet.get("interpretation_status"),
+            "metric_row_count": len(metrics),
+            "metric_rows_returned": len(metric_rows_returned),
+            "availability_status_counts": availability_counts,
+            "data_gap_metric_count": data_gap_metric_count,
+            "computed_metric_count": computed_metric_count,
+            "not_applicable_metric_count": not_applicable_metric_count,
+            "mean_metric_value": _operation_numeric_mean(metrics, "value"),
+            "mean_opportunity_cost_to_best": _operation_numeric_mean(metrics, "opportunity_cost_to_best_mean"),
+            "mean_selected_forward_return": _operation_numeric_mean(metrics, "selected_forward_return_mean"),
+            "mean_top_quartile_hit_rate": _operation_numeric_mean(metrics, "top_quartile_hit_rate"),
+            "evidence_status": "published" if flow or packet or metrics else "not_published",
+            "source_gap_codes": component_gaps,
+        }
+
+    return {
+        "contract_version": 1,
+        "status": "ready" if flow_rows or packet_rows or metric_rows else "insufficient_source_evidence",
+        "included_components": [
+            {"component_id": component_id, "component_label": component_label}
+            for component_id, component_label in REPLAY_OPERATION_COMPONENTS
+        ],
+        "component_summary": component_summary,
+        "macro_comparison": list(component_summary.values()),
+        "component_metric_rows": component_metric_rows,
+        "detail_row_count": sum(len(rows) for rows in metrics_by_component.values()),
+        "detail_rows_returned": len(component_metric_rows),
+        "detail_rows_sampled": sum(len(rows) for rows in metrics_by_component.values()) > len(component_metric_rows),
+        "source_gap_codes": sorted(set(source_gap_codes)),
+        "classification_policy": {
+            "zero_values": "Published numeric zero means the operation component measured a true zero, not missing evidence.",
+            "not_applicable": "Not-applicable components are shown explicitly when the review artifact marks them out of scope for candidate-entry replay.",
+            "missing_values": "Blank operation metric values remain null only when the upstream artifact does not publish that specific metric.",
+        },
+    }
+
+
 def _review_layer_decision_row(row: Mapping[str, Any], layer_id: str) -> dict[str, Any]:
     correctness = _correctness_class(row)
     return {
@@ -878,6 +1136,7 @@ def _review_run_summary(run_dir: Path) -> dict[str, Any] | None:
             decision_rows_path=decision_rows_path if decision_rows_path.exists() else None,
             performance_summary=performance_summary,
         ),
+        "replay_operations_c01_c07": _replay_operations_c01_c07_summary(run_dir / "layer_attribution"),
         "parameter_review": _parameter_summary(parameter_report),
         "source_refs": {
             "receipt_ref": str(run_dir / "post_replay_review_receipt.json"),
@@ -887,6 +1146,17 @@ def _review_run_summary(run_dir: Path) -> dict[str, Any] | None:
             "decision_rows_ref": str(decision_rows_path) if decision_rows_path.exists() else None,
             "parameter_report_ref": str(run_dir / "layer_attribution" / "parameter_replay_review_report.json")
             if (run_dir / "layer_attribution" / "parameter_replay_review_report.json").exists()
+            else None,
+            "operation_component_flow_ref": str(run_dir / "layer_attribution" / "operation_component_flow.csv")
+            if (run_dir / "layer_attribution" / "operation_component_flow.csv").exists()
+            else None,
+            "operation_component_review_packet_ref": str(
+                run_dir / "layer_attribution" / "operation_component_review_packet.csv"
+            )
+            if (run_dir / "layer_attribution" / "operation_component_review_packet.csv").exists()
+            else None,
+            "operation_component_metrics_ref": str(run_dir / "layer_attribution" / "operation_component_metrics.csv")
+            if (run_dir / "layer_attribution" / "operation_component_metrics.csv").exists()
             else None,
         },
     }
