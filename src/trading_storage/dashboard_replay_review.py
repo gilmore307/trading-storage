@@ -484,6 +484,59 @@ def _review_layer_decision_row(row: Mapping[str, Any], layer_id: str) -> dict[st
     }
 
 
+def _published_layer_decision_row(row: Mapping[str, Any]) -> dict[str, Any]:
+    layer_id = str(row.get("layer_id") or "")
+    correctness = _correctness_class(row)
+    fields = (
+        "review_id",
+        "decision_time",
+        "target_symbol",
+        "target_ref",
+        "replay_month",
+        "source_decision_id",
+        "source_decision_index",
+        "layer_id",
+        "layer_label",
+        "layer_order",
+        "candidate_set_scope",
+        "path_scope",
+        "path_conditioning_policy",
+        "effective_decision",
+        "effective_decision_status",
+        "selected_output_ref",
+        "chosen_action",
+        "available_action",
+        "best_available_action_by_future_outcome",
+        "chosen_action_return",
+        "best_available_action_return",
+        "correctness_class",
+        "acceptability_class",
+        "scoring_status",
+        "classification_basis",
+        "regret_to_best_available",
+        "impact_normalized_severity_score",
+        "cause_family",
+        "failure_type",
+        "first_gap_component",
+        "first_gap_mechanism",
+        "outcome_label",
+        "realized_return",
+        "baseline_return",
+        "directional_underlying_return",
+        "model_ref",
+        "layer_diagnostics",
+        "trace_evidence",
+        "evidence_refs",
+        "hindsight_caution",
+    )
+    projected = {field: row.get(field) for field in fields if field in row}
+    projected.setdefault("layer_label", REPLAY_DECISION_LAYER_LABELS.get(layer_id, layer_id))
+    projected["correctness_class"] = correctness
+    projected["acceptability_class"] = str(row.get("acceptability_class") or _acceptability_class(correctness))
+    projected.setdefault("source", "post_replay_layer_decision_review_row")
+    return projected
+
+
 def _effective_layer_trace_row(
     row: Mapping[str, Any],
     *,
@@ -616,10 +669,12 @@ def _layer_quality_summary(
 def _replay_decisions_m01_m05_summary(
     *,
     rows_path: Path | None,
+    layer_rows_path: Path | None,
     decision_rows_path: Path | None,
     performance_summary: Mapping[str, Any] | None,
 ) -> dict[str, Any]:
     review_rows = list(_iter_jsonl(rows_path)) if rows_path else []
+    published_layer_rows = list(_iter_jsonl(layer_rows_path)) if layer_rows_path else []
     decision_rows = list(_iter_jsonl(decision_rows_path)) if decision_rows_path else []
     included_rows: list[dict[str, Any]] = []
     excluded_row_count = 0
@@ -634,7 +689,18 @@ def _replay_decisions_m01_m05_summary(
             continue
         if layer_id in REPLAY_DECISION_LAYER_IDS:
             included_rows.append({**row, "layer_id": layer_id})
-    if decision_rows:
+    if published_layer_rows:
+        effective_rows = []
+        for row in published_layer_rows:
+            layer_id = _normalized_layer_id(row.get("layer_id"))
+            if layer_id in EXCLUDED_REPLAY_DECISION_LAYER_IDS:
+                excluded_row_count += 1
+                continue
+            if layer_id in REPLAY_DECISION_LAYER_IDS:
+                effective_rows.append(_published_layer_decision_row({**row, "layer_id": layer_id}))
+            else:
+                unattributed_row_count += 1
+    elif decision_rows:
         overlays = _review_rows_by_source_and_layer(included_rows)
         effective_rows = [
             _effective_layer_trace_row(
@@ -699,9 +765,9 @@ def _replay_decisions_m01_m05_summary(
         "unattributed_row_count": unattributed_row_count,
         "source_gap_codes": source_gap_codes,
         "classification_policy": {
-            "correctness_class": "Derived from post-replay review labels when published; M04 may use underlying directional outcome labels and M05 may use selected expression realized-return labels.",
+            "correctness_class": "Derived from published M01-M05 layer review rows when available; legacy fallback uses replay decision traces and scored M04/M05 labels only.",
             "acceptability_class": "Correct rows are acceptable; incorrect rows are unacceptable until a narrower acceptance threshold is published.",
-            "unscored_effective_trace": "M01-M03 currently publish effective trace rows without layer-specific candidate-outcome labels.",
+            "unscored_effective_trace": "Only legacy review runs without layer_review_rows_ref use unscored effective traces.",
             "hindsight_caution": "Future returns are labels for review; they must not be displayed as decision-time inputs.",
         },
     }
@@ -735,6 +801,10 @@ def _review_run_summary(run_dir: Path) -> dict[str, Any] | None:
     if not rows_path.exists():
         rows_ref = receipt.get("review_rows_ref") or receipt.get("replay_review_rows_ref")
         rows_path = Path(str(rows_ref)) if rows_ref else rows_path
+    layer_rows_path = run_dir / "replay_layer_decision_review_rows.jsonl"
+    if not layer_rows_path.exists():
+        layer_rows_ref = receipt.get("layer_review_rows_ref") or receipt.get("replay_layer_decision_review_rows_ref")
+        layer_rows_path = Path(str(layer_rows_ref)) if layer_rows_ref else layer_rows_path
     decision_rows_path = Path(str(receipt.get("decision_rows_ref") or ""))
     return {
         "review_run_id": run_dir.name,
@@ -752,6 +822,7 @@ def _review_run_summary(run_dir: Path) -> dict[str, Any] | None:
         "decision_review": _review_rows_summary(rows_path if rows_path.exists() else None),
         "replay_decisions_m01_m05": _replay_decisions_m01_m05_summary(
             rows_path=rows_path if rows_path.exists() else None,
+            layer_rows_path=layer_rows_path if layer_rows_path.exists() else None,
             decision_rows_path=decision_rows_path if decision_rows_path.exists() else None,
             performance_summary=performance_summary,
         ),
@@ -760,6 +831,7 @@ def _review_run_summary(run_dir: Path) -> dict[str, Any] | None:
             "receipt_ref": str(run_dir / "post_replay_review_receipt.json"),
             "performance_summary_ref": str(run_dir / "replay_review_performance_summary.json"),
             "review_rows_ref": str(rows_path) if rows_path.exists() else None,
+            "layer_review_rows_ref": str(layer_rows_path) if layer_rows_path.exists() else None,
             "decision_rows_ref": str(decision_rows_path) if decision_rows_path.exists() else None,
             "parameter_report_ref": str(run_dir / "layer_attribution" / "parameter_replay_review_report.json")
             if (run_dir / "layer_attribution" / "parameter_replay_review_report.json").exists()

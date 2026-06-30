@@ -680,6 +680,64 @@ def _write_replay_review_run(storage_root: Path) -> None:
         + "\n",
         encoding="utf-8",
     )
+    layer_rows_path = run_root / "replay_layer_decision_review_rows.jsonl"
+    layer_rows: list[dict[str, object]] = []
+    layer_labels = {
+        "model_01_background_context": "M01 Background Context",
+        "model_02_target_state": "M02 Target State",
+        "model_03_event_state": "M03 Event State",
+        "model_04_unified_decision": "M04 Unified Decision",
+        "model_05_option_expression": "M05 Option Expression",
+    }
+    for decision_index, decision_id in enumerate(("decision-1", "decision-2"), start=1):
+        for layer_order, (layer_id, layer_label) in enumerate(layer_labels.items(), start=1):
+            incorrect = decision_id == "decision-1" and layer_id in {
+                "model_04_unified_decision",
+                "model_05_option_expression",
+            }
+            layer_rows.append(
+                {
+                    "contract_type": "post_replay_layer_decision_review_row",
+                    "review_id": f"layer-{decision_index}-{layer_order}",
+                    "decision_time": "2021-01-19T16:00:00-05:00"
+                    if decision_id == "decision-1"
+                    else "2021-02-01T16:00:00-05:00",
+                    "target_symbol": "AAPL" if decision_id == "decision-1" else "MSFT",
+                    "replay_month": "2021-01" if decision_id == "decision-1" else "2021-02",
+                    "source_decision_id": decision_id,
+                    "source_decision_index": decision_index,
+                    "layer_id": layer_id,
+                    "layer_label": layer_label,
+                    "layer_order": layer_order,
+                    "candidate_set_scope": "selected_path_current_decision_set",
+                    "path_scope": f"selected_target:{'AAPL' if decision_id == 'decision-1' else 'MSFT'}",
+                    "effective_decision": f"{layer_id}:{decision_id}",
+                    "effective_decision_status": "measured",
+                    "chosen_action": "open_long",
+                    "available_action": ["open_long", "baseline_action"],
+                    "best_available_action_by_future_outcome": "baseline_action" if incorrect else "open_long",
+                    "chosen_action_return": -0.08 if incorrect else 0.04,
+                    "best_available_action_return": 0.0 if incorrect else 0.04,
+                    "correctness_class": "incorrect" if incorrect else "correct",
+                    "acceptability_class": "unacceptable" if incorrect else "acceptable",
+                    "scoring_status": "scored_post_replay_outcome_label"
+                    if layer_id in {"model_04_unified_decision", "model_05_option_expression"}
+                    else "scored_point_in_time_diagnostic",
+                    "regret_to_best_available": 0.08 if incorrect else 0.0,
+                    "impact_normalized_severity_score": 0.08 if incorrect else 0.0,
+                    "cause_family": "model_mechanism_defect" if incorrect else "not_attributed",
+                    "failure_type": "layer_failure" if incorrect else "none",
+                    "first_gap_component": layer_id if incorrect else "no_gap",
+                    "first_gap_mechanism": "fixture_gap" if incorrect else "no_gap",
+                    "outcome_label": 0 if decision_id == "decision-1" else 1,
+                    "classification_basis": "fixture_published_layer_review",
+                    "hindsight_caution": "Future returns are labels for review; they are not decision-time inputs.",
+                }
+            )
+    layer_rows_path.write_text(
+        "\n".join(json.dumps(row, sort_keys=True) for row in layer_rows) + "\n",
+        encoding="utf-8",
+    )
     (run_root / "post_replay_review_receipt.json").write_text(
         json.dumps(
             {
@@ -695,6 +753,7 @@ def _write_replay_review_run(storage_root: Path) -> None:
                 "expected_review_count": 2,
                 "event_candidate_count": 1,
                 "review_rows_ref": str(rows_path),
+                "layer_review_rows_ref": str(layer_rows_path),
                 "decision_rows_ref": str(decision_rows_path),
             },
             sort_keys=True,
@@ -1222,13 +1281,14 @@ class DashboardModelsTests(unittest.TestCase):
             self.assertEqual(replay_decisions["layer_quality_summary"]["model_01_background_context"]["effective_decision_count"], 2)
             self.assertEqual(
                 replay_decisions["layer_quality_summary"]["model_01_background_context"]["evidence_status"],
-                "effective_trace_unscored",
+                "published",
             )
+            self.assertEqual(replay_decisions["layer_quality_summary"]["model_01_background_context"]["scored_decision_count"], 2)
             self.assertEqual(replay_decisions["layer_quality_summary"]["model_04_unified_decision"]["effective_decision_count"], 2)
             self.assertEqual(replay_decisions["layer_quality_summary"]["model_04_unified_decision"]["incorrect_count"], 1)
             self.assertEqual(replay_decisions["layer_quality_summary"]["model_05_option_expression"]["effective_decision_count"], 2)
             self.assertEqual(replay_decisions["layer_decision_rows"][0]["layer_id"], "model_01_background_context")
-            self.assertEqual(replay_decisions["layer_decision_rows"][0]["scoring_status"], "effective_trace_unscored")
+            self.assertEqual(replay_decisions["layer_decision_rows"][0]["scoring_status"], "scored_point_in_time_diagnostic")
             m04_rows = [row for row in replay_decisions["layer_decision_rows"] if row["layer_id"] == "model_04_unified_decision"]
             self.assertEqual(m04_rows[0]["correctness_class"], "incorrect")
             self.assertEqual(m04_rows[1]["correctness_class"], "correct")
