@@ -27,7 +27,7 @@ DEFAULT_REPLAY_ROOT = Path("05_replay_datasets") / "promotion_replay_candidate_p
 DEFAULT_STALE_AFTER_SECONDS = 900
 MAX_REVIEW_RUNS = 50
 MAX_SAMPLE_ROWS = 5
-MAX_LAYER_DECISION_ROWS = 250
+MAX_LAYER_DECISION_ROWS = 2000
 CURRENT_MODEL_WORKER_FOLD_RE = re.compile(r"^fold_[a-z0-9]+_20\d{2}$")
 REPLAY_DECISION_LAYER_IDS = (
     "model_01_background_context",
