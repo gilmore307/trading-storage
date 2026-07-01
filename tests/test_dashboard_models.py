@@ -692,13 +692,19 @@ def _write_replay_review_run(storage_root: Path) -> None:
     for decision_index, decision_id in enumerate(("decision-1", "decision-2"), start=1):
         for layer_order, (layer_id, layer_label) in enumerate(layer_labels.items(), start=1):
             incorrect = decision_id == "decision-1" and layer_id in {
+                "model_01_background_context",
+                "model_03_event_state",
                 "model_04_unified_decision",
                 "model_05_option_expression",
             }
             point_in_time_diagnostic = layer_id in {
-                "model_01_background_context",
                 "model_02_target_state",
+            }
+            post_replay_outcome_labeled = layer_id in {
+                "model_01_background_context",
                 "model_03_event_state",
+                "model_04_unified_decision",
+                "model_05_option_expression",
             }
             layer_rows.append(
                 {
@@ -738,7 +744,7 @@ def _write_replay_review_run(storage_root: Path) -> None:
                     "correctness_class": "incorrect" if incorrect else "correct",
                     "acceptability_class": "unacceptable" if incorrect else "acceptable",
                     "scoring_status": "scored_post_replay_outcome_label"
-                    if layer_id in {"model_04_unified_decision", "model_05_option_expression"}
+                    if post_replay_outcome_labeled
                     else "scored_point_in_time_diagnostic",
                     "regret_to_best_available": 0.08 if incorrect else 0.0,
                     "impact_normalized_severity_score": 0.08 if incorrect else 0.0,
@@ -1349,16 +1355,18 @@ class DashboardModelsTests(unittest.TestCase):
                 "published",
             )
             self.assertEqual(replay_decisions["layer_quality_summary"]["model_01_background_context"]["scored_decision_count"], 2)
-            self.assertEqual(replay_decisions["layer_quality_summary"]["model_01_background_context"]["correct_count"], 2)
+            self.assertEqual(replay_decisions["layer_quality_summary"]["model_01_background_context"]["correct_count"], 1)
+            self.assertEqual(replay_decisions["layer_quality_summary"]["model_01_background_context"]["incorrect_count"], 1)
             self.assertEqual(replay_decisions["layer_quality_summary"]["model_01_background_context"]["indeterminate_count"], 0)
             self.assertEqual(replay_decisions["layer_quality_summary"]["model_03_event_state"]["scored_decision_count"], 2)
-            self.assertEqual(replay_decisions["layer_quality_summary"]["model_03_event_state"]["correct_count"], 2)
+            self.assertEqual(replay_decisions["layer_quality_summary"]["model_03_event_state"]["correct_count"], 1)
+            self.assertEqual(replay_decisions["layer_quality_summary"]["model_03_event_state"]["incorrect_count"], 1)
             self.assertEqual(replay_decisions["layer_quality_summary"]["model_04_unified_decision"]["effective_decision_count"], 2)
             self.assertEqual(replay_decisions["layer_quality_summary"]["model_04_unified_decision"]["incorrect_count"], 1)
             self.assertEqual(replay_decisions["layer_quality_summary"]["model_05_option_expression"]["effective_decision_count"], 2)
             self.assertEqual(replay_decisions["layer_decision_rows"][0]["layer_id"], "model_01_background_context")
-            self.assertEqual(replay_decisions["layer_decision_rows"][0]["scoring_status"], "scored_point_in_time_diagnostic")
-            self.assertEqual(replay_decisions["layer_decision_rows"][0]["correctness_class"], "correct")
+            self.assertEqual(replay_decisions["layer_decision_rows"][0]["scoring_status"], "scored_post_replay_outcome_label")
+            self.assertEqual(replay_decisions["layer_decision_rows"][0]["correctness_class"], "incorrect")
             self.assertEqual(
                 replay_decisions["layer_decision_rows"][0]["review_boundary_status"],
                 "received_boundary_complete",
