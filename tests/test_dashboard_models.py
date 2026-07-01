@@ -848,6 +848,18 @@ def _write_replay_review_run(storage_root: Path) -> None:
         + "\n",
         encoding="utf-8",
     )
+    (layer_root / "operation_component_action_rows.csv").write_text(
+        "\n".join(
+            [
+                "operation_action_row_id,source_decision_id,source_decision_index,decision_time,replay_month,target_symbol,operation_component_id,runtime_component_ref,operation_component_label,component_index,operation_action,operation_status,input_ref,input_summary,output_ref,output_summary,block_reason,analysis_method,evidence_role,label_role,decision_time_evidence_fields,post_replay_label_fields,realized_return,regret_to_best_available,impact_normalized_severity_score,review_status,fixed_input_only",
+                "decision-1:c01,decision-1,1,2021-01-19T16:00:00-05:00,2021-01,AAPL,C01_intake_operation,component_01_intake,C01 Intake,1,prepare_point_in_time_inputs,inputs_ready,selected_target:AAPL,AAPL at 2021-01-19T16:00:00-05:00,model_evidence_chain,model_01_background_context;model_02_target_state,,point_in_time_source_candidate_and_sector_intake_review,source_candidate_context_readiness,forward_return_labels_only_for_intake_opportunity_review,model_evidence_chain;candidate_set_scope,,0.02,0,0,reviewable_from_replay_row,True",
+                "decision-1:c03,decision-1,1,2021-01-19T16:00:00-05:00,2021-01,AAPL,C03_lifecycle_operation,component_03_lifecycle,C03 Lifecycle,3,check_portfolio_lifecycle_and_replacement,portfolio_lifecycle_state_reviewed,portfolio_selection_summary,continued=1; replacement_evaluated=0; replacement_triggered=0,portfolio_position_state,final_positions=1; allocation_violations=0,,portfolio_lifecycle_state_transition_and_replacement_policy_review,open_position_state_and_replacement_policy_evidence,operational_state_transition_counts_not_future_return_decision_inputs,portfolio_selection_summary;replacement_review,,0.02,0,0,reviewable_from_replay_row,True",
+                "decision-1:c07,decision-1,1,2021-01-19T16:00:00-05:00,2021-01,AAPL,C07_failure_review_operation,component_07_failure_review,C07 Failure Review,7,review_settled_failure_and_residual_gap,reviewed,model_05_option_expression,model_05_option_expression,execution_or_position_management,outcome=0; regret=0.08; gap=execution_or_position_management,,settled_failure_review_and_residual_gap_explanation_review,post_action_failure_review_and_settlement_evidence,settled_outcomes_are_review_labels_not_m06_decision_inputs,decision_status;fill_status;miss_attribution_layer,realized_return;baseline_return;regret_to_best_available;outcome_label,-0.08,0.08,0.08,reviewable_from_replay_row,True",
+            ]
+        )
+        + "\n",
+        encoding="utf-8",
+    )
 
 
 def _write_residual_event_run(storage_root: Path) -> None:
@@ -1356,7 +1368,39 @@ class DashboardModelsTests(unittest.TestCase):
             self.assertEqual(c07["first_limiting_projection_count"], 2)
             self.assertEqual(c07["stage_verdict"], "first_observed_deterioration")
             self.assertEqual(replay_operations["detail_row_count"], 3)
+            self.assertEqual(replay_operations["detail_rows_returned"], 3)
+            self.assertEqual(replay_operations["component_action_rows"][0]["component_id"], "component_01_intake")
+            self.assertEqual(
+                replay_operations["component_action_rows"][0]["operation_action"],
+                "prepare_point_in_time_inputs",
+            )
             self.assertEqual(replay_operations["component_metric_rows"][0]["component_id"], "component_01_intake")
+
+    def test_replay_review_summary_requires_operation_action_rows_for_ready_status(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            storage_root = Path(tmp)
+            _write_replay_review_run(storage_root)
+            action_path = (
+                storage_root
+                / "05_replay_datasets"
+                / "promotion_replay_candidate_policy"
+                / "post_replay_review_runs"
+                / "post_replay_review_20260629T120000Z"
+                / "layer_attribution"
+                / "operation_component_action_rows.csv"
+            )
+            action_path.unlink()
+
+            payload = build_model_group_replay_review_summary(
+                storage_root=storage_root,
+                generated_at_utc="2026-06-29T12:10:00Z",
+            )
+
+            replay_operations = payload["chart_payload"]["review_runs"][0]["replay_operations_c01_c07"]
+            self.assertEqual(replay_operations["status"], "missing_primary_operation_action_rows")
+            self.assertIn("missing_operation_component_action_rows", replay_operations["source_gap_codes"])
+            self.assertEqual(replay_operations["detail_row_count"], 0)
+            self.assertEqual(replay_operations["metric_detail_row_count"], 3)
 
     def test_replay_review_summary_keeps_latest_review_run_per_current_fold(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:

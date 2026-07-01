@@ -626,10 +626,46 @@ def _sample_operation_metric_row(row: Mapping[str, Any], component_id: str) -> d
     return sampled
 
 
+def _sample_operation_action_row(row: Mapping[str, Any], component_id: str) -> dict[str, Any]:
+    fields = (
+        "operation_action_row_id",
+        "source_decision_id",
+        "source_decision_index",
+        "decision_time",
+        "replay_month",
+        "target_symbol",
+        "operation_component_id",
+        "runtime_component_ref",
+        "operation_component_label",
+        "component_index",
+        "operation_action",
+        "operation_status",
+        "input_ref",
+        "input_summary",
+        "output_ref",
+        "output_summary",
+        "block_reason",
+        "analysis_method",
+        "evidence_role",
+        "label_role",
+        "decision_time_evidence_fields",
+        "post_replay_label_fields",
+        "realized_return",
+        "regret_to_best_available",
+        "impact_normalized_severity_score",
+        "review_status",
+    )
+    sampled = {field: row.get(field) for field in fields if field in row}
+    sampled["component_id"] = component_id
+    sampled["component_label"] = REPLAY_OPERATION_COMPONENT_LABELS[component_id]
+    return sampled
+
+
 def _replay_operations_c01_c07_summary(layer_root: Path) -> dict[str, Any]:
     flow_rows = _read_csv_records(layer_root / "operation_component_flow.csv")
     packet_rows = _read_csv_records(layer_root / "operation_component_review_packet.csv")
     metric_rows = _read_csv_records(layer_root / "operation_component_metrics.csv")
+    action_rows = _read_csv_records(layer_root / "operation_component_action_rows.csv")
     source_gap_codes: list[str] = []
     if not flow_rows:
         source_gap_codes.append("missing_operation_component_flow")
@@ -637,6 +673,8 @@ def _replay_operations_c01_c07_summary(layer_root: Path) -> dict[str, Any]:
         source_gap_codes.append("missing_operation_component_review_packet")
     if not metric_rows:
         source_gap_codes.append("missing_operation_component_metrics")
+    if not action_rows:
+        source_gap_codes.append("missing_operation_component_action_rows")
 
     flow_by_component = {
         component_id: row
@@ -653,13 +691,20 @@ def _replay_operations_c01_c07_summary(layer_root: Path) -> dict[str, Any]:
         component_id = _operation_component_id_from_row(row)
         if component_id:
             metrics_by_component.setdefault(component_id, []).append(dict(row))
+    actions_by_component: dict[str, list[dict[str, Any]]] = {component_id: [] for component_id, _ in REPLAY_OPERATION_COMPONENTS}
+    for row in action_rows:
+        component_id = _operation_component_id_from_row(row)
+        if component_id:
+            actions_by_component.setdefault(component_id, []).append(dict(row))
 
     component_summary: dict[str, dict[str, Any]] = {}
     component_metric_rows: list[dict[str, Any]] = []
+    component_action_rows: list[dict[str, Any]] = []
     for component_id, component_label in REPLAY_OPERATION_COMPONENTS:
         flow = flow_by_component.get(component_id, {})
         packet = packet_by_component.get(component_id, {})
         metrics = metrics_by_component.get(component_id, [])
+        actions = actions_by_component.get(component_id, [])
         availability_counts = _count_by(metrics, "availability_status")
         data_gap_metric_count = int(availability_counts.get("data_gap", 0))
         computed_metric_count = int(availability_counts.get("computed", 0))
@@ -672,6 +717,11 @@ def _replay_operations_c01_c07_summary(layer_root: Path) -> dict[str, Any]:
             for row in metrics[:MAX_SAMPLE_ROWS]
         ]
         component_metric_rows.extend(metric_rows_returned)
+        action_rows_returned = [
+            _sample_operation_action_row(row, component_id)
+            for row in actions[:MAX_LAYER_DECISION_ROWS]
+        ]
+        component_action_rows.extend(action_rows_returned)
         input_count = _first_present(flow.get("input_count"), packet.get("input_count"))
         output_count = _first_present(flow.get("output_count"), packet.get("output_count"))
         eligible_count = _first_present(flow.get("settled_metric_eligible_count"), packet.get("settled_metric_eligible_count"))
@@ -684,6 +734,8 @@ def _replay_operations_c01_c07_summary(layer_root: Path) -> dict[str, Any]:
             component_gaps.append("missing_operation_component_review_packet_row")
         if not metrics:
             component_gaps.append("missing_operation_component_metric_rows")
+        if not actions:
+            component_gaps.append("missing_operation_component_action_rows")
         if data_gap_metric_count:
             component_gaps.append("operation_component_metric_data_gap")
         component_summary[component_id] = {
@@ -720,6 +772,8 @@ def _replay_operations_c01_c07_summary(layer_root: Path) -> dict[str, Any]:
             "interpretation_status": packet.get("interpretation_status"),
             "metric_row_count": len(metrics),
             "metric_rows_returned": len(metric_rows_returned),
+            "action_row_count": len(actions),
+            "action_rows_returned": len(action_rows_returned),
             "availability_status_counts": availability_counts,
             "data_gap_metric_count": data_gap_metric_count,
             "computed_metric_count": computed_metric_count,
@@ -735,9 +789,16 @@ def _replay_operations_c01_c07_summary(layer_root: Path) -> dict[str, Any]:
             "source_gap_codes": component_gaps,
         }
 
+    if action_rows and (flow_rows or packet_rows or metric_rows):
+        status = "ready"
+    elif flow_rows or packet_rows or metric_rows:
+        status = "missing_primary_operation_action_rows"
+    else:
+        status = "insufficient_source_evidence"
+
     return {
         "contract_version": 1,
-        "status": "ready" if flow_rows or packet_rows or metric_rows else "insufficient_source_evidence",
+        "status": status,
         "included_components": [
             {"component_id": component_id, "component_label": component_label}
             for component_id, component_label in REPLAY_OPERATION_COMPONENTS
@@ -745,13 +806,16 @@ def _replay_operations_c01_c07_summary(layer_root: Path) -> dict[str, Any]:
         "component_summary": component_summary,
         "macro_comparison": list(component_summary.values()),
         "component_metric_rows": component_metric_rows,
-        "detail_row_count": sum(len(rows) for rows in metrics_by_component.values()),
-        "detail_rows_returned": len(component_metric_rows),
-        "detail_rows_sampled": sum(len(rows) for rows in metrics_by_component.values()) > len(component_metric_rows),
+        "component_action_rows": component_action_rows,
+        "detail_row_count": sum(len(rows) for rows in actions_by_component.values()),
+        "detail_rows_returned": len(component_action_rows),
+        "detail_rows_sampled": sum(len(rows) for rows in actions_by_component.values()) > len(component_action_rows),
+        "metric_detail_row_count": sum(len(rows) for rows in metrics_by_component.values()),
+        "metric_detail_rows_returned": len(component_metric_rows),
         "source_gap_codes": sorted(set(source_gap_codes)),
         "classification_policy": {
             "zero_values": "Published numeric zero means the operation component measured a true zero, not missing evidence.",
-            "shared_envelope": "C01-C07 rows share identity, evidence refs, and status fields; metric_family and analysis_method define component-specific interpretation.",
+            "shared_envelope": "C01-C07 action rows share identity, action, input/output, evidence refs, and status fields; operation_action and analysis_method define component-specific interpretation.",
             "c03_lifecycle": "C03 must publish portfolio lifecycle state evidence or a lifecycle evidence gap; it is not excluded as a separate replay mode.",
             "missing_values": "Blank operation metric values remain null only when the upstream artifact does not publish that specific metric.",
         },
@@ -1177,6 +1241,11 @@ def _review_run_summary(run_dir: Path) -> dict[str, Any] | None:
             else None,
             "operation_component_metrics_ref": str(run_dir / "layer_attribution" / "operation_component_metrics.csv")
             if (run_dir / "layer_attribution" / "operation_component_metrics.csv").exists()
+            else None,
+            "operation_component_action_rows_ref": str(
+                run_dir / "layer_attribution" / "operation_component_action_rows.csv"
+            )
+            if (run_dir / "layer_attribution" / "operation_component_action_rows.csv").exists()
             else None,
         },
     }
