@@ -695,6 +695,7 @@ def _write_replay_review_run(storage_root: Path) -> None:
                 "model_04_unified_decision",
                 "model_05_option_expression",
             }
+            diagnostic_only = layer_id in {"model_01_background_context", "model_03_event_state"}
             layer_rows.append(
                 {
                     "contract_type": "post_replay_layer_decision_review_row",
@@ -718,25 +719,35 @@ def _write_replay_review_run(storage_root: Path) -> None:
                     "upstream_error_isolation_scope": "attribute_upstream_defects_to_earliest_layer_or_boundary",
                     "responsibility_assignment_policy": "layer_local_correctness_given_received_inputs",
                     "effective_decision": f"{layer_id}:{decision_id}",
-                    "effective_decision_status": "measured",
-                    "chosen_action": "open_long",
-                    "available_action": ["open_long", "baseline_action"],
-                    "best_available_action_by_future_outcome": "baseline_action" if incorrect else "open_long",
-                    "chosen_action_return": -0.08 if incorrect else 0.04,
-                    "best_available_action_return": 0.0 if incorrect else 0.04,
-                    "correctness_class": "incorrect" if incorrect else "correct",
-                    "acceptability_class": "unacceptable" if incorrect else "acceptable",
-                    "scoring_status": "scored_post_replay_outcome_label"
+                    "effective_decision_status": "diagnostic_only" if diagnostic_only else "measured",
+                    "chosen_action": f"{layer_id}:diagnostic_state" if diagnostic_only else "open_long",
+                    "available_action": [f"{layer_id}:diagnostic_state"]
+                    if diagnostic_only
+                    else ["open_long", "baseline_action"],
+                    "best_available_action_by_future_outcome": "not_determinable_from_current_review"
+                    if diagnostic_only
+                    else "baseline_action"
+                    if incorrect
+                    else "open_long",
+                    "chosen_action_return": None if diagnostic_only else -0.08 if incorrect else 0.04,
+                    "best_available_action_return": None if diagnostic_only else 0.0 if incorrect else 0.04,
+                    "correctness_class": "indeterminate" if diagnostic_only else "incorrect" if incorrect else "correct",
+                    "acceptability_class": "indeterminate" if diagnostic_only else "unacceptable" if incorrect else "acceptable",
+                    "scoring_status": "diagnostic_published_not_scored"
+                    if diagnostic_only
+                    else "scored_post_replay_outcome_label"
                     if layer_id in {"model_04_unified_decision", "model_05_option_expression"}
                     else "scored_point_in_time_diagnostic",
-                    "regret_to_best_available": 0.08 if incorrect else 0.0,
-                    "impact_normalized_severity_score": 0.08 if incorrect else 0.0,
+                    "regret_to_best_available": None if diagnostic_only else 0.08 if incorrect else 0.0,
+                    "impact_normalized_severity_score": None if diagnostic_only else 0.08 if incorrect else 0.0,
                     "cause_family": "model_mechanism_defect" if incorrect else "not_attributed",
                     "failure_type": "layer_failure" if incorrect else "none",
                     "first_gap_component": layer_id if incorrect else "no_gap",
                     "first_gap_mechanism": "fixture_gap" if incorrect else "no_gap",
                     "outcome_label": 0 if decision_id == "decision-1" else 1,
-                    "classification_basis": "fixture_published_layer_review",
+                    "classification_basis": "fixture_diagnostic_only_layer_review"
+                    if diagnostic_only
+                    else "fixture_published_layer_review",
                     "hindsight_caution": "Future returns are labels for review; they are not decision-time inputs.",
                 }
             )
@@ -1335,14 +1346,16 @@ class DashboardModelsTests(unittest.TestCase):
             self.assertEqual(replay_decisions["layer_quality_summary"]["model_01_background_context"]["effective_decision_count"], 2)
             self.assertEqual(
                 replay_decisions["layer_quality_summary"]["model_01_background_context"]["evidence_status"],
-                "published",
+                "effective_trace_unscored",
             )
-            self.assertEqual(replay_decisions["layer_quality_summary"]["model_01_background_context"]["scored_decision_count"], 2)
+            self.assertEqual(replay_decisions["layer_quality_summary"]["model_01_background_context"]["scored_decision_count"], 0)
+            self.assertEqual(replay_decisions["layer_quality_summary"]["model_01_background_context"]["indeterminate_count"], 2)
+            self.assertEqual(replay_decisions["layer_quality_summary"]["model_03_event_state"]["scored_decision_count"], 0)
             self.assertEqual(replay_decisions["layer_quality_summary"]["model_04_unified_decision"]["effective_decision_count"], 2)
             self.assertEqual(replay_decisions["layer_quality_summary"]["model_04_unified_decision"]["incorrect_count"], 1)
             self.assertEqual(replay_decisions["layer_quality_summary"]["model_05_option_expression"]["effective_decision_count"], 2)
             self.assertEqual(replay_decisions["layer_decision_rows"][0]["layer_id"], "model_01_background_context")
-            self.assertEqual(replay_decisions["layer_decision_rows"][0]["scoring_status"], "scored_point_in_time_diagnostic")
+            self.assertEqual(replay_decisions["layer_decision_rows"][0]["scoring_status"], "diagnostic_published_not_scored")
             self.assertEqual(
                 replay_decisions["layer_decision_rows"][0]["review_boundary_status"],
                 "received_boundary_complete",
