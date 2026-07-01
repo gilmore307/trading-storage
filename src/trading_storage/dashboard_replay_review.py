@@ -1180,7 +1180,13 @@ def _layer_quality_summary(
         if isinstance(layer_differentiation, Mapping) and isinstance(layer_differentiation.get(layer_id), Mapping)
         else {}
     )
-    coverage_row_count = coverage.get("row_count") if isinstance(coverage, Mapping) else None
+    coverage_row_count = None
+    if isinstance(coverage, Mapping):
+        coverage_row_count = (
+            coverage.get("continuous_trigger_count")
+            or coverage.get("trace_timestamp_count")
+            or coverage.get("row_count")
+        )
     correct_count = sum(1 for row in attributed_rows if _correctness_class(row) == "correct")
     incorrect_count = sum(1 for row in attributed_rows if _correctness_class(row) == "incorrect")
     indeterminate_count = sum(1 for row in attributed_rows if _correctness_class(row) == "indeterminate")
@@ -1223,6 +1229,8 @@ def _layer_quality_summary(
         "analysis_method": first_row.get("analysis_method"),
         "label_role": first_row.get("label_role"),
         "coverage_row_count": coverage_row_count,
+        "coverage_basis": coverage.get("coverage_basis") if isinstance(coverage, Mapping) else None,
+        "diagnostic_row_count": coverage.get("row_count") if isinstance(coverage, Mapping) else None,
         "effective_decision_count": effective_decision_count,
         "scored_decision_count": scored_decision_count,
         "unscored_decision_count": unscored_decision_count,

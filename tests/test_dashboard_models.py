@@ -803,9 +803,19 @@ def _write_replay_review_run(storage_root: Path) -> None:
                 "option_expression": {"path_status_counts": {"available": 2}},
                 "replacement_review": {"replacement_triggered_count": 1, "blocked_replacements_sample": [{"target_ref": "AAPL"}]},
                 "layer_differentiation": {
-                    "model_01_background_context": {"row_count": 2, "varying_scalar_keys": ["model_ref"]},
+                    "model_01_background_context": {
+                        "row_count": 2,
+                        "continuous_trigger_count": 9,
+                        "coverage_basis": "unique_replay_time_pointer_from_model_candidate_selection_trace",
+                        "varying_scalar_keys": ["model_ref"],
+                    },
                     "model_02_target_state": {"row_count": 2, "varying_scalar_keys": ["target_ref"]},
-                    "model_03_event_state": {"row_count": 2, "varying_scalar_keys": ["model_ref"]},
+                    "model_03_event_state": {
+                        "row_count": 2,
+                        "continuous_trigger_count": 9,
+                        "coverage_basis": "unique_replay_time_pointer_from_model_candidate_selection_trace",
+                        "varying_scalar_keys": ["model_ref"],
+                    },
                     "model_04_unified_decision": {"row_count": 2, "varying_scalar_keys": ["dominant_horizon"]},
                     "model_05_option_expression": {"row_count": 2, "varying_scalar_keys": ["selected_contract_ref"]},
                     "model_06_residual_event_governance": {"row_count": 2, "varying_scalar_keys": ["event_risk_intervention_ref"]},
@@ -1350,6 +1360,8 @@ class DashboardModelsTests(unittest.TestCase):
             self.assertEqual(replay_decisions["excluded_layers"][0]["layer_id"], "model_06_residual_event_governance")
             self.assertEqual(replay_decisions["detail_row_count"], 10)
             self.assertEqual(replay_decisions["layer_quality_summary"]["model_01_background_context"]["effective_decision_count"], 2)
+            self.assertEqual(replay_decisions["layer_quality_summary"]["model_01_background_context"]["coverage_row_count"], 9)
+            self.assertEqual(replay_decisions["layer_quality_summary"]["model_01_background_context"]["diagnostic_row_count"], 2)
             self.assertEqual(
                 replay_decisions["layer_quality_summary"]["model_01_background_context"]["evidence_status"],
                 "published",
@@ -1359,6 +1371,7 @@ class DashboardModelsTests(unittest.TestCase):
             self.assertEqual(replay_decisions["layer_quality_summary"]["model_01_background_context"]["incorrect_count"], 1)
             self.assertEqual(replay_decisions["layer_quality_summary"]["model_01_background_context"]["indeterminate_count"], 0)
             self.assertEqual(replay_decisions["layer_quality_summary"]["model_03_event_state"]["scored_decision_count"], 2)
+            self.assertEqual(replay_decisions["layer_quality_summary"]["model_03_event_state"]["coverage_row_count"], 9)
             self.assertEqual(replay_decisions["layer_quality_summary"]["model_03_event_state"]["correct_count"], 1)
             self.assertEqual(replay_decisions["layer_quality_summary"]["model_03_event_state"]["incorrect_count"], 1)
             self.assertEqual(replay_decisions["layer_quality_summary"]["model_04_unified_decision"]["effective_decision_count"], 2)
