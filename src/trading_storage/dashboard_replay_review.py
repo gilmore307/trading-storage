@@ -10,6 +10,7 @@ from __future__ import annotations
 
 import json
 import csv
+import hashlib
 import re
 from pathlib import Path
 from typing import Any, Iterable, Mapping
@@ -557,6 +558,161 @@ def _review_rows_summary(rows_path: Path | None) -> dict[str, Any]:
         "missing_regret_value_count": sum(1 for row in rows if _review_regret_value(row) is None),
         "missing_impact_value_count": sum(1 for row in rows if _review_impact_value(row) is None),
         "sample_rows": [_sample_review_row(row) for row in rows[:MAX_SAMPLE_ROWS]],
+    }
+
+
+def _json_digest(value: object) -> str:
+    body = json.dumps(value, sort_keys=True, separators=(",", ":"), default=str)
+    return hashlib.sha256(body.encode("utf-8")).hexdigest()[:16]
+
+
+def _read_report_summary(path: Path) -> dict[str, Any]:
+    report = _read_json_object(path)
+    summary = report.get("summary") if isinstance(report, Mapping) else None
+    return dict(summary) if isinstance(summary, Mapping) else {}
+
+
+def _top_csv_rows(rows: list[dict[str, Any]], *, sort_field: str | None = None, limit: int = MAX_SAMPLE_ROWS) -> list[dict[str, Any]]:
+    if sort_field is None:
+        return rows[:limit]
+    return sorted(
+        rows,
+        key=lambda row: _safe_number(row.get(sort_field)) if _safe_number(row.get(sort_field)) is not None else float("-inf"),
+        reverse=True,
+    )[:limit]
+
+
+def _candidate_funnel_from_summary(summary: Mapping[str, Any]) -> dict[str, Any]:
+    scored = int(_safe_number(summary.get("scored_candidate_row_count")) or 0)
+    selected = int(_safe_number(summary.get("selected_candidate_row_count")) or 0)
+    top10 = int(_safe_number(summary.get("selected_candidate_top_10_same_timestamp_count")) or 0)
+    top25 = int(_safe_number(summary.get("selected_candidate_top_25_same_timestamp_count")) or 0)
+    unexecutable = sum(
+        int(_safe_number(value) or 0)
+        for value in dict(summary.get("option_expression_unexecutable_reason_counts") or {}).values()
+    )
+    return {
+        "scored_candidate_row_count": scored,
+        "selected_candidate_row_count": selected,
+        "option_expression_unexecutable_count": unexecutable,
+        "selected_candidate_rank_mean_same_timestamp": summary.get("selected_candidate_rank_mean_same_timestamp"),
+        "selected_candidate_top_10_same_timestamp_count": top10,
+        "selected_candidate_top_25_same_timestamp_count": top25,
+        "selected_candidate_outside_top_25_same_timestamp_count": summary.get(
+            "selected_candidate_outside_top_25_same_timestamp_count"
+        ),
+        "selected_rate": _rate(selected, scored),
+        "top_10_share_of_selected": _rate(top10, selected),
+        "top_25_share_of_selected": _rate(top25, selected),
+        "status_counts": summary.get("status_counts") or {},
+        "option_expression_unexecutable_reason_counts": summary.get("option_expression_unexecutable_reason_counts") or {},
+        "option_hard_filter_reason_counts": summary.get("option_hard_filter_reason_counts") or {},
+        "future_outcome_label_included": bool(summary.get("future_outcome_label_included")),
+        "summary_role": summary.get("summary_role"),
+    }
+
+
+def _option_expression_breakdown_summary(
+    *,
+    mechanics_rows: list[dict[str, Any]],
+    dte_rows: list[dict[str, Any]],
+    hard_filter_rows: list[dict[str, Any]],
+    mechanism_summary: Mapping[str, Any],
+) -> dict[str, Any]:
+    filled_rows = [row for row in mechanics_rows if int(_safe_number(row.get("filled_count")) or 0) > 0]
+    blocked_rows = [row for row in mechanics_rows if int(_safe_number(row.get("row_count")) or 0) > 0 and not int(_safe_number(row.get("filled_count")) or 0)]
+    return {
+        "m05_selection_state_count": len(mechanics_rows),
+        "filled_selection_state_count": len(filled_rows),
+        "blocked_selection_state_count": len(blocked_rows),
+        "filled_count": sum(int(_safe_number(row.get("filled_count")) or 0) for row in mechanics_rows),
+        "filled_good_count": sum(int(_safe_number(row.get("filled_good_count")) or 0) for row in mechanics_rows),
+        "filled_bad_count": sum(int(_safe_number(row.get("filled_bad_count")) or 0) for row in mechanics_rows),
+        "net_return_total": round(
+            sum(float(_safe_number(row.get("net_return_total")) or 0.0) for row in mechanics_rows),
+            10,
+        ),
+        "primary_filter_reason_counts": _count_by(
+            [row for row in mechanics_rows if row.get("primary_filter_reason") is not None],
+            "primary_filter_reason",
+        ),
+        "dte_policy_status_counts": _count_by(dte_rows, "diagnostic_status"),
+        "hard_filter_overlap_group_count": len(hard_filter_rows),
+        "mechanism_flags": mechanism_summary.get("flags") or [],
+        "mechanism_fault_surface": mechanism_summary.get("fault_surface"),
+        "top_mechanics_rows": _top_csv_rows(mechanics_rows, sort_field="row_count", limit=5),
+        "top_dte_sensitivity_rows": _top_csv_rows(dte_rows, sort_field="row_count", limit=5),
+        "top_hard_filter_overlap_rows": _top_csv_rows(hard_filter_rows, sort_field="row_count", limit=5),
+    }
+
+
+def _mechanism_contract_summary(rows: list[dict[str, Any]], report_summary: Mapping[str, Any]) -> dict[str, Any]:
+    breached = [row for row in rows if str(row.get("breach_status") or "") == "breached"]
+    critical = [row for row in breached if str(row.get("severity") or "") == "critical"]
+    return {
+        "mechanism_contract_count": report_summary.get("mechanism_contract_count") or len(rows),
+        "breach_status_counts": report_summary.get("breach_status_counts") or _count_by(rows, "breach_status"),
+        "component_counts": report_summary.get("component_counts") or _count_by(rows, "operation_component_id"),
+        "breached_count": len(breached),
+        "critical_breached_count": len(critical),
+        "top_breaches": [
+            {
+                "mechanism_contract_id": row.get("mechanism_contract_id"),
+                "operation_component_id": row.get("operation_component_id"),
+                "runtime_component_ref": row.get("runtime_component_ref"),
+                "severity": row.get("severity"),
+                "breach_statement": row.get("breach_statement"),
+                "acceptance_gate": row.get("acceptance_gate"),
+            }
+            for row in breached[:5]
+        ],
+        "fixed_input_only": bool(report_summary.get("fixed_input_only", True)),
+    }
+
+
+def _standard_review_diagnostics(layer_root: Path) -> dict[str, Any]:
+    candidate_summary = _read_report_summary(layer_root / "model_candidate_selection_summary_report.json")
+    pre_option_summary = _read_report_summary(layer_root / "pre_option_candidate_quality_report.json")
+    mechanism_report_summary = _read_report_summary(layer_root / "operation_mechanism_contract_packet.json")
+    mechanism_rows = _read_csv_records(layer_root / "operation_mechanism_contract_packet.csv")
+    mechanics_rows = _read_csv_records(layer_root / "m05_selection_mechanics.csv")
+    dte_rows = _read_csv_records(layer_root / "m05_dte_policy_sensitivity.csv")
+    hard_filter_rows = _read_csv_records(layer_root / "m05_hard_filter_overlap.csv")
+    m04_m05_summary = _read_report_summary(layer_root / "m04_m05_mechanism_review_report.json")
+    source_gap_codes: list[str] = []
+    if not candidate_summary:
+        source_gap_codes.append("missing_model_candidate_selection_summary")
+    if not mechanism_rows:
+        source_gap_codes.append("missing_operation_mechanism_contract_rows")
+    if not mechanics_rows:
+        source_gap_codes.append("missing_m05_selection_mechanics_rows")
+    return {
+        "contract_version": 1,
+        "status": "ready" if not source_gap_codes else "partial",
+        "source_gap_codes": source_gap_codes,
+        "candidate_entry_funnel": _candidate_funnel_from_summary(candidate_summary),
+        "pre_option_candidate_quality": {
+            "cohort_count": pre_option_summary.get("cohort_count"),
+            "entry_intent_global_percentile_mean": pre_option_summary.get("entry_intent_global_percentile_mean"),
+            "no_entry_global_percentile_mean": pre_option_summary.get("no_entry_global_percentile_mean"),
+            "top25_global_percentile_mean": pre_option_summary.get("top25_global_percentile_mean"),
+            "flags": pre_option_summary.get("flags") or [],
+            "fixed_input_only": bool(pre_option_summary.get("fixed_input_only", True)),
+        },
+        "operation_mechanism_contracts": _mechanism_contract_summary(mechanism_rows, mechanism_report_summary),
+        "option_expression_breakdown": _option_expression_breakdown_summary(
+            mechanics_rows=mechanics_rows,
+            dte_rows=dte_rows,
+            hard_filter_rows=hard_filter_rows,
+            mechanism_summary=m04_m05_summary,
+        ),
+        "classification_policy": {
+            "model_groups_role": "model integrity and duplicate-output risk only; trading impact belongs to replay pages",
+            "performance_role": "aggregate economic impact of funnel, duplicate, and option-expression mechanisms",
+            "decisions_role": "M01-M05 layer decision correctness and duplicate decision traces",
+            "operations_role": "C01-C07 machinery flow, block reasons, option materialization, and execution mechanics",
+            "hindsight_caution": "Future returns, best-available choices, realized returns, and regret are post-replay labels, not decision-time inputs.",
+        },
     }
 
 
@@ -1214,6 +1370,7 @@ def _review_run_summary(run_dir: Path) -> dict[str, Any] | None:
         "event_candidate_count": receipt.get("event_candidate_count"),
         "performance": _compact_performance_summary(performance_summary),
         "decision_review": _review_rows_summary(rows_path if rows_path.exists() else None),
+        "standard_review_diagnostics": _standard_review_diagnostics(run_dir / "layer_attribution"),
         "replay_decisions_m01_m05": _replay_decisions_m01_m05_summary(
             rows_path=rows_path if rows_path.exists() else None,
             layer_rows_path=layer_rows_path if layer_rows_path.exists() else None,
@@ -1251,6 +1408,77 @@ def _review_run_summary(run_dir: Path) -> dict[str, Any] | None:
     }
 
 
+def _run_decision_trace_signature(run: Mapping[str, Any]) -> dict[str, Any]:
+    operations = run.get("replay_operations_c01_c07")
+    action_rows = (
+        operations.get("component_action_rows")
+        if isinstance(operations, Mapping) and isinstance(operations.get("component_action_rows"), list)
+        else []
+    )
+    normalized_rows = []
+    for row in action_rows:
+        if not isinstance(row, Mapping):
+            continue
+        normalized_rows.append(
+            {
+                "component_id": row.get("component_id"),
+                "decision_time": row.get("decision_time"),
+                "target_symbol": row.get("target_symbol"),
+                "operation_action": row.get("operation_action"),
+                "operation_status": row.get("operation_status"),
+                "input_summary": row.get("input_summary"),
+                "output_summary": row.get("output_summary"),
+                "block_reason": row.get("block_reason"),
+                "realized_return": row.get("realized_return"),
+                "regret_to_best_available": row.get("regret_to_best_available"),
+            }
+        )
+    return {
+        "signature": _json_digest(normalized_rows),
+        "row_count": len(normalized_rows),
+        "source": "replay_operations_component_action_rows",
+    }
+
+
+def _cross_model_group_duplicate_trace_diagnostics(review_runs: list[dict[str, Any]]) -> dict[str, Any]:
+    groups: dict[str, list[dict[str, Any]]] = {}
+    for run in review_runs:
+        signature = _run_decision_trace_signature(run)
+        if not signature["row_count"]:
+            continue
+        groups.setdefault(str(signature["signature"]), []).append(
+            {
+                "candidate_fold_id": run.get("candidate_fold_id"),
+                "target_symbol": run.get("target_symbol"),
+                "review_run_id": run.get("review_run_id"),
+                "row_count": signature["row_count"],
+            }
+        )
+    duplicate_groups = [
+        {
+            "duplicate_trace_group_id": f"duplicate_trace_{index:03d}",
+            "decision_trace_signature": signature,
+            "member_count": len(members),
+            "members": members,
+            "risk": "non_independent_replay_decision_evidence",
+        }
+        for index, (signature, members) in enumerate(sorted(groups.items()), start=1)
+        if len(members) > 1
+    ]
+    return {
+        "contract_version": 1,
+        "status": "ready" if groups else "insufficient_source_evidence",
+        "signature_count": len(groups),
+        "duplicate_trace_group_count": len(duplicate_groups),
+        "duplicate_trace_member_count": sum(group["member_count"] for group in duplicate_groups),
+        "duplicate_trace_groups": duplicate_groups,
+        "classification_policy": {
+            "meaning": "Duplicate trace groups flag model groups whose published replay operation action rows are indistinguishable after run identifiers are removed.",
+            "review_use": "Treat duplicate groups as independence risk; do not count them as separate evidence without inspecting the upstream model and selection route.",
+        },
+    }
+
+
 def build_model_group_replay_review_summary(
     *,
     storage_root: Path = DEFAULT_STORAGE_ROOT,
@@ -1267,6 +1495,7 @@ def build_model_group_replay_review_summary(
         if (summary := _review_run_summary(run_dir)) is not None
     ]
     review_runs, superseded_review_run_count = _latest_review_run_per_fold(review_run_candidates)
+    cross_model_group_diagnostics = _cross_model_group_duplicate_trace_diagnostics(review_runs)
     total_review_rows = sum(int(run.get("decision_review", {}).get("row_count") or 0) for run in review_runs)
     status = "ready" if review_runs else "not_reported"
     return {
@@ -1283,6 +1512,7 @@ def build_model_group_replay_review_summary(
         else "No post-replay review artifacts are published yet.",
         "chart_payload": {
             "review_runs": review_runs,
+            "cross_model_group_diagnostics": cross_model_group_diagnostics,
             "contract_matrix": {
                 "comparison_dimension": "model_group_between_run_compare",
                 "individual_dimension": "single_model_group_review_run",
