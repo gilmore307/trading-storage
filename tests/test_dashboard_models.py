@@ -711,6 +711,12 @@ def _write_replay_review_run(storage_root: Path) -> None:
                     "layer_order": layer_order,
                     "candidate_set_scope": "selected_path_current_decision_set",
                     "path_scope": f"selected_target:{'AAPL' if decision_id == 'decision-1' else 'MSFT'}",
+                    "review_boundary_ref": f"{layer_id}:{decision_id}",
+                    "review_boundary_status": "received_boundary_complete",
+                    "upstream_decision_state_policy": "received_upstream_state_is_fixed_review_input",
+                    "downstream_review_input_policy": "judge_layer_only_against_received_decision_time_inputs",
+                    "upstream_error_isolation_scope": "attribute_upstream_defects_to_earliest_layer_or_boundary",
+                    "responsibility_assignment_policy": "layer_local_correctness_given_received_inputs",
                     "effective_decision": f"{layer_id}:{decision_id}",
                     "effective_decision_status": "measured",
                     "chosen_action": "open_long",
@@ -851,10 +857,10 @@ def _write_replay_review_run(storage_root: Path) -> None:
     (layer_root / "operation_component_action_rows.csv").write_text(
         "\n".join(
             [
-                "operation_action_row_id,source_decision_id,source_decision_index,decision_time,replay_month,target_symbol,operation_component_id,runtime_component_ref,operation_component_label,component_index,operation_action,operation_status,input_ref,input_summary,output_ref,output_summary,block_reason,analysis_method,evidence_role,label_role,trigger_state,pit_feasible_action_set_ref,pit_feasible_action_count,pit_feasible_action_set_status,component_objective,chosen_action,best_available_action_by_future_outcome,chosen_action_return,best_available_action_return,chosen_rank_ex_post,component_correctness_class,post_replay_label_basis,decision_time_evidence_fields,post_replay_label_fields,realized_return,regret_to_best_available,impact_normalized_severity_score,review_status,fixed_input_only",
-                "decision-1:c01,decision-1,1,2021-01-19T16:00:00-05:00,2021-01,AAPL,C01_intake_operation,component_01_intake,C01 Intake,1,prepare_point_in_time_inputs,inputs_ready,selected_target:AAPL,AAPL at 2021-01-19T16:00:00-05:00,model_evidence_chain,model_01_background_context;model_02_target_state,,point_in_time_source_candidate_and_sector_intake_review,source_candidate_context_readiness,forward_return_labels_only_for_intake_opportunity_review,clock_triggered,selected_target:AAPL,2,published,publish_pit_inputs,publish_inputs,not_determinable_from_current_review,,,,not_scored,future_labels_audit_opportunity_coverage_only,model_evidence_chain;candidate_set_scope,,0.02,0,0,reviewable_from_replay_row,True",
-                "decision-1:c03,decision-1,1,2021-01-19T16:00:00-05:00,2021-01,AAPL,C03_lifecycle_operation,component_03_lifecycle,C03 Lifecycle,3,check_portfolio_lifecycle_and_replacement,portfolio_lifecycle_state_reviewed,portfolio_selection_summary,continued=1; replacement_evaluated=0; replacement_triggered=0,portfolio_position_state,final_positions=1; allocation_violations=0,,portfolio_lifecycle_state_transition_and_replacement_policy_review,open_position_state_and_replacement_policy_evidence,operational_state_transition_counts_not_future_return_decision_inputs,position_or_intent_state_triggered,decision_time_portfolio_lifecycle_transitions,,not_published,apply_legal_lifecycle_transitions,apply_lifecycle_state,not_determinable_from_current_review,,,,not_scored,lifecycle_correctness_requires_position_state_transition_labels,portfolio_selection_summary;replacement_review,,0.02,0,0,reviewable_from_replay_row,True",
-                "decision-1:c07,decision-1,1,2021-01-19T16:00:00-05:00,2021-01,AAPL,C07_failure_review_operation,component_07_failure_review,C07 Failure Review,7,review_settled_failure_and_residual_gap,reviewed,model_05_option_expression,model_05_option_expression,execution_or_position_management,outcome=0; regret=0.08; gap=execution_or_position_management,,settled_failure_review_and_residual_gap_explanation_review,post_action_failure_review_and_settlement_evidence,settled_outcomes_are_review_labels_not_m06_decision_inputs,clock_triggered,settled_component_incident_labels,2,published,classify_settled_incidents,review_settled_failure,baseline_action,-0.08,0,2,regretful_choice,settled_outcomes_classify_incidents_after_replay,decision_status;fill_status;miss_attribution_layer,realized_return;baseline_return;regret_to_best_available;outcome_label,-0.08,0.08,0.08,reviewable_from_replay_row,True",
+                "operation_action_row_id,source_decision_id,source_decision_index,decision_time,replay_month,target_symbol,operation_component_id,runtime_component_ref,operation_component_label,component_index,operation_action,operation_status,input_ref,input_summary,output_ref,output_summary,block_reason,analysis_method,evidence_role,label_role,trigger_state,pit_feasible_action_set_ref,pit_feasible_action_count,pit_feasible_action_set_status,review_boundary_ref,review_boundary_status,component_objective,chosen_action,best_available_action_by_future_outcome,chosen_action_return,best_available_action_return,chosen_rank_ex_post,component_correctness_class,post_replay_label_basis,upstream_decision_state_policy,downstream_review_input_policy,upstream_error_isolation_scope,responsibility_assignment_policy,decision_time_evidence_fields,post_replay_label_fields,realized_return,regret_to_best_available,impact_normalized_severity_score,review_status,fixed_input_only",
+                "decision-1:c01,decision-1,1,2021-01-19T16:00:00-05:00,2021-01,AAPL,C01_intake_operation,component_01_intake,C01 Intake,1,prepare_point_in_time_inputs,inputs_ready,selected_target:AAPL,AAPL at 2021-01-19T16:00:00-05:00,model_evidence_chain,model_01_background_context;model_02_target_state,,point_in_time_source_candidate_and_sector_intake_review,source_candidate_context_readiness,forward_return_labels_only_for_intake_opportunity_review,clock_triggered,selected_target:AAPL,2,published,selected_target:AAPL,received_boundary_complete,publish_pit_inputs,publish_inputs,not_determinable_from_current_review,,,,not_scored,future_labels_audit_opportunity_coverage_only,received_upstream_state_is_fixed_review_input,judge_component_only_against_received_decision_time_inputs,attribute_upstream_defects_to_earliest_layer_or_boundary,component_local_correctness_given_received_inputs,model_evidence_chain;candidate_set_scope,,0.02,0,0,reviewable_from_replay_row,True",
+                "decision-1:c03,decision-1,1,2021-01-19T16:00:00-05:00,2021-01,AAPL,C03_lifecycle_operation,component_03_lifecycle,C03 Lifecycle,3,check_portfolio_lifecycle_and_replacement,portfolio_lifecycle_state_reviewed,portfolio_selection_summary,continued=1; replacement_evaluated=0; replacement_triggered=0,portfolio_position_state,final_positions=1; allocation_violations=0,,portfolio_lifecycle_state_transition_and_replacement_policy_review,open_position_state_and_replacement_policy_evidence,operational_state_transition_counts_not_future_return_decision_inputs,position_or_intent_state_triggered,decision_time_portfolio_lifecycle_transitions,,not_published,decision_time_portfolio_lifecycle_transitions,received_boundary_missing,apply_legal_lifecycle_transitions,apply_lifecycle_state,not_determinable_from_current_review,,,,not_scored,lifecycle_correctness_requires_position_state_transition_labels,received_upstream_state_is_fixed_review_input,judge_component_only_against_received_decision_time_inputs,attribute_upstream_defects_to_earliest_layer_or_boundary,component_local_correctness_given_received_inputs,portfolio_selection_summary;replacement_review,,0.02,0,0,reviewable_from_replay_row,True",
+                "decision-1:c07,decision-1,1,2021-01-19T16:00:00-05:00,2021-01,AAPL,C07_failure_review_operation,component_07_failure_review,C07 Failure Review,7,review_settled_failure_and_residual_gap,reviewed,model_05_option_expression,model_05_option_expression,execution_or_position_management,outcome=0; regret=0.08; gap=execution_or_position_management,,settled_failure_review_and_residual_gap_explanation_review,post_action_failure_review_and_settlement_evidence,settled_outcomes_are_review_labels_not_m06_decision_inputs,clock_triggered,settled_component_incident_labels,2,published,settled_component_incident_labels,received_boundary_complete,classify_settled_incidents,review_settled_failure,baseline_action,-0.08,0,2,regretful_choice,settled_outcomes_classify_incidents_after_replay,received_upstream_state_is_fixed_review_input,judge_component_only_against_received_decision_time_inputs,attribute_upstream_defects_to_earliest_layer_or_boundary,component_local_correctness_given_received_inputs,decision_status;fill_status;miss_attribution_layer,realized_return;baseline_return;regret_to_best_available;outcome_label,-0.08,0.08,0.08,reviewable_from_replay_row,True",
             ]
         )
         + "\n",
@@ -1337,6 +1343,14 @@ class DashboardModelsTests(unittest.TestCase):
             self.assertEqual(replay_decisions["layer_quality_summary"]["model_05_option_expression"]["effective_decision_count"], 2)
             self.assertEqual(replay_decisions["layer_decision_rows"][0]["layer_id"], "model_01_background_context")
             self.assertEqual(replay_decisions["layer_decision_rows"][0]["scoring_status"], "scored_point_in_time_diagnostic")
+            self.assertEqual(
+                replay_decisions["layer_decision_rows"][0]["review_boundary_status"],
+                "received_boundary_complete",
+            )
+            self.assertEqual(
+                replay_decisions["layer_decision_rows"][0]["downstream_review_input_policy"],
+                "judge_layer_only_against_received_decision_time_inputs",
+            )
             m04_rows = [row for row in replay_decisions["layer_decision_rows"] if row["layer_id"] == "model_04_unified_decision"]
             self.assertEqual(m04_rows[0]["correctness_class"], "incorrect")
             self.assertEqual(m04_rows[1]["correctness_class"], "correct")
@@ -1378,6 +1392,14 @@ class DashboardModelsTests(unittest.TestCase):
             self.assertEqual(
                 replay_operations["component_action_rows"][0]["pit_feasible_action_set_ref"],
                 "selected_target:AAPL",
+            )
+            self.assertEqual(
+                replay_operations["component_action_rows"][0]["review_boundary_status"],
+                "received_boundary_complete",
+            )
+            self.assertEqual(
+                replay_operations["component_action_rows"][0]["downstream_review_input_policy"],
+                "judge_component_only_against_received_decision_time_inputs",
             )
             self.assertEqual(
                 replay_operations["component_action_rows"][0]["component_correctness_class"],
