@@ -601,6 +601,10 @@ def _sample_operation_metric_row(row: Mapping[str, Any], component_id: str) -> d
         "metric_family",
         "metric_name",
         "metric_scope",
+        "analysis_method",
+        "evidence_role",
+        "label_role",
+        "required_evidence_status",
         "availability_status",
         "reason_codes",
         "row_count",
@@ -660,6 +664,9 @@ def _replay_operations_c01_c07_summary(layer_root: Path) -> dict[str, Any]:
         data_gap_metric_count = int(availability_counts.get("data_gap", 0))
         computed_metric_count = int(availability_counts.get("computed", 0))
         not_applicable_metric_count = int(availability_counts.get("not_applicable", 0))
+        metric_family_counts = _count_by(metrics, "metric_family")
+        analysis_method_counts = _count_by(metrics, "analysis_method")
+        required_evidence_status_counts = _count_by(metrics, "required_evidence_status")
         metric_rows_returned = [
             _sample_operation_metric_row(row, component_id)
             for row in metrics[:MAX_SAMPLE_ROWS]
@@ -717,6 +724,9 @@ def _replay_operations_c01_c07_summary(layer_root: Path) -> dict[str, Any]:
             "data_gap_metric_count": data_gap_metric_count,
             "computed_metric_count": computed_metric_count,
             "not_applicable_metric_count": not_applicable_metric_count,
+            "metric_family_counts": metric_family_counts,
+            "analysis_method_counts": analysis_method_counts,
+            "required_evidence_status_counts": required_evidence_status_counts,
             "mean_metric_value": _operation_numeric_mean(metrics, "value"),
             "mean_opportunity_cost_to_best": _operation_numeric_mean(metrics, "opportunity_cost_to_best_mean"),
             "mean_selected_forward_return": _operation_numeric_mean(metrics, "selected_forward_return_mean"),
@@ -741,7 +751,8 @@ def _replay_operations_c01_c07_summary(layer_root: Path) -> dict[str, Any]:
         "source_gap_codes": sorted(set(source_gap_codes)),
         "classification_policy": {
             "zero_values": "Published numeric zero means the operation component measured a true zero, not missing evidence.",
-            "not_applicable": "Not-applicable components are shown explicitly when the review artifact marks them out of scope for candidate-entry replay.",
+            "shared_envelope": "C01-C07 rows share identity, evidence refs, and status fields; metric_family and analysis_method define component-specific interpretation.",
+            "c03_lifecycle": "C03 must publish portfolio lifecycle state evidence or a lifecycle evidence gap; it is not excluded as a separate replay mode.",
             "missing_values": "Blank operation metric values remain null only when the upstream artifact does not publish that specific metric.",
         },
     }
@@ -794,6 +805,11 @@ def _published_layer_decision_row(row: Mapping[str, Any]) -> dict[str, Any]:
         "layer_id",
         "layer_label",
         "layer_order",
+        "metric_family",
+        "analysis_method",
+        "decision_time_input_fields",
+        "post_replay_label_fields",
+        "label_role",
         "candidate_set_scope",
         "path_scope",
         "path_conditioning_policy",
@@ -945,9 +961,13 @@ def _layer_quality_summary(
         if coverage_row_count
         else "not_published"
     )
+    first_row = attributed_rows[0] if attributed_rows else {}
     return {
         "layer_id": layer_id,
         "layer_label": REPLAY_DECISION_LAYER_LABELS[layer_id],
+        "metric_family": first_row.get("metric_family"),
+        "analysis_method": first_row.get("analysis_method"),
+        "label_role": first_row.get("label_role"),
         "coverage_row_count": coverage_row_count,
         "effective_decision_count": effective_decision_count,
         "scored_decision_count": scored_decision_count,
