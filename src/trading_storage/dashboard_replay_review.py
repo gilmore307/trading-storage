@@ -1197,6 +1197,10 @@ def _layer_quality_summary(
     harmful_error_count = sum(1 for row in attributed_rows if _is_harmful_error(row, _correctness_class(row)))
     missed_good_count = sum(1 for row in attributed_rows if _is_missed_good(row, _correctness_class(row)))
     effective_decision_count = len(attributed_rows)
+    if layer_id == "model_02_target_state" and (
+        coverage_row_count is None or int(coverage_row_count) < effective_decision_count
+    ):
+        coverage_row_count = effective_decision_count
     regret_value_count = sum(1 for row in attributed_rows if _review_regret_value(row) is not None)
     impact_value_count = sum(1 for row in attributed_rows if _review_impact_value(row) is not None)
     missing_regret_value_count = max(0, effective_decision_count - regret_value_count)
