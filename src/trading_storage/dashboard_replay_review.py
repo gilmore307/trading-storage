@@ -102,6 +102,7 @@ REPLAY_DECISION_LAYER_ALIASES = {
 }
 PASSIVE_BASELINE_ACTIONS = {"baseline_action", "no_trade", "avoid_trade", "hold_cash"}
 UNSCORED_LAYER_TRACE_STATUS = "effective_trace_unscored"
+UNSCORED_EVENT_POOL_STATUS = "event_pool_unscored"
 
 
 def _read_json_object(path: Path) -> dict[str, Any] | None:
@@ -1219,6 +1220,8 @@ def _layer_quality_summary(
     evidence_status = (
         "published"
         if scored_decision_count
+        else UNSCORED_EVENT_POOL_STATUS
+        if layer_id == "model_03_event_state" and effective_decision_count
         else UNSCORED_LAYER_TRACE_STATUS
         if effective_decision_count
         else "coverage_only_missing_decision_quality"
