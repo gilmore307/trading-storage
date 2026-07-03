@@ -126,6 +126,19 @@ class ProtectedSetTests(unittest.TestCase):
             self.assertEqual(protected_set.records[0].protected_reason_codes, ("replay_result_summary",))
             self.assertFalse(protected_set.records[0].mutation_allowed)
 
+    def test_event_interpretation_evidence_is_protected(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            artifact = root / "storage" / "05_replay_datasets" / "reusable_inputs" / "event_interpretations" / "interpreted_events.jsonl"
+            artifact.parent.mkdir(parents=True, exist_ok=True)
+            artifact.write_text('{"event_family":"labor_market_release"}\n', encoding="utf-8")
+            index = build_artifact_index(root=root)
+
+            protected_set = build_protected_set(index)
+
+            self.assertEqual(protected_set.records[0].protected_reason_codes, ("event_interpretation_evidence",))
+            self.assertFalse(protected_set.records[0].mutation_allowed)
+
     def test_clear_record_allows_candidate_mutation(self):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)

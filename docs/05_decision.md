@@ -598,27 +598,31 @@ Reusable M01/M02 source/feature foundations remain `compress_and_retain` or stro
 - Such files still require lifecycle planning, protected-set clearance, quarantine/recheck, and deletion receipts before destructive deletion.
 - Producers should keep final reusable M01/M02 outputs and compact summaries out of disposable runtime/log paths.
 
-## D024 - Replay keeps reusable inputs and summaries, not model-specific downloads
+## D024 - Replay keeps reusable inputs, event interpretations, and summaries
 
 Date: 2026-05-20
 Status: Accepted
 
 ### Context
 
-Replay work needs both reusable cross-pipeline inputs and model-pipeline-specific downloads. Treating every replay download as permanent would cause storage growth, especially for one-off point-in-time option snapshots. Treating every replay input as disposable would waste provider calls and make replay harder.
+Replay work needs reusable cross-pipeline inputs, formal semantic event evidence, and model-pipeline-specific downloads. Treating every replay download as permanent would cause storage growth, especially for one-off point-in-time option snapshots and raw event/news originals that can be reacquired. Treating reusable M01/M02 inputs or interpreted event evidence as disposable would damage model review and later optimization.
 
 ### Decision
 
-Keep replay M01/M02 inputs and replay event/news inputs as reusable data. They may be compressed or archived, but they should remain available for future replay/replay use.
+Keep replay M01/M02 inputs as reusable data. They may be compressed or archived, but they should remain available for future replay use.
+
+Keep semantically interpreted event artifacts as formal durable evidence. Raw downloaded event/news originals are not the formal event record after interpretation succeeds. They may become TTL cleanup candidates after source refs, retrieval parameters, fetch time, content hash when available, and interpretation lineage are retained in the interpreted event artifact or compact manifest. A raw event payload may be retained only by explicit provider-specific exception when it is not reliably reacquirable.
 
 Keep every model pipeline's compact replay result summary, scorecard/baseline comparison, manifest refs, and receipt evidence permanently.
 
-Allow model-specific replay downloads, such as option snapshots fetched only for one pipeline's replay run, to become TTL cleanup candidates after the replay closes and after summaries, manifests, receipts, and reusable inputs are preserved.
+Allow model-specific replay downloads, such as option snapshots fetched only for one pipeline's replay run, to become TTL cleanup candidates after the replay closes and after summaries, manifests, receipts, reusable inputs, and formal event interpretations are preserved.
 
 ### Consequences
 
 - `storage/05_replay_datasets` is not a single retention class.
-- Reusable replay M01/M02 and event/news inputs classify as `compress_and_retain`.
+- Reusable replay M01/M02 inputs classify as `compress_and_retain`.
+- Semantically interpreted event artifacts classify as `keep_forever` with protected reason `event_interpretation_evidence`.
+- Raw downloaded event/news originals classify as `ttl_delete_allowed` after interpretation lineage and fetch metadata are retained.
 - Model-pipeline replay result summaries classify as `keep_forever` with protected reason `replay_result_summary`.
 - Model-specific replay option/download artifacts classify as `ttl_delete_allowed`.
 - Destructive deletion still requires lifecycle planning, protected-set clearance, quarantine/recheck, and deletion receipts.

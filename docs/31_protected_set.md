@@ -72,6 +72,7 @@ Initial reason codes:
 | `sql_online_dependency` | SQL partition/table is still queried online. |
 | `manual_pin` | Human/operator/reviewer pinned it. |
 | `active_consumer_ref` | Artifact-index metadata lists at least one current or durable consumer ref. |
+| `event_interpretation_evidence` | Artifact is a semantically interpreted event record used as formal replay/model/review evidence. |
 | `unknown_metadata` | Metadata is insufficient; protect until classified. |
 
 ## Lifecycle gate rules

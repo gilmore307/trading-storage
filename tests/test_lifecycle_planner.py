@@ -103,6 +103,19 @@ class LifecyclePlannerTests(unittest.TestCase):
             self.assertEqual(plan.records[0].action, "quarantine_candidate")
             self.assertEqual(plan.records[0].rule_id, "quarantine_ttl_delete_allowed")
 
+    def test_refetchable_event_original_becomes_quarantine_candidate(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            artifact = root / "storage" / "05_replay_datasets" / "reusable_inputs" / "event_news" / "news.jsonl"
+            artifact.parent.mkdir(parents=True, exist_ok=True)
+            artifact.write_text('{"headline":"example"}\n', encoding="utf-8")
+            index = build_artifact_index(root=root)
+
+            plan = plan_storage_lifecycle(index)
+
+            self.assertEqual(plan.records[0].action, "quarantine_candidate")
+            self.assertEqual(plan.records[0].rule_id, "quarantine_ttl_delete_allowed")
+
     def test_fold_complete_source_artifact_becomes_quarantine_candidate(self):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)

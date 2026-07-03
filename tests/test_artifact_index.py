@@ -201,15 +201,18 @@ class ArtifactIndexTests(unittest.TestCase):
             self.assertEqual(index.records[0].retention_class, "keep_forever")
             self.assertEqual(index.records[0].protected_reason_codes, ("keep_forever_retention",))
 
-    def test_reusable_replay_layer_and_news_inputs_are_compress_and_retain(self):
+    def test_replay_layer_inputs_are_retained_but_refetchable_event_originals_are_ttl_delete_allowed(self):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
             layer_input = root / "storage" / "05_replay_datasets" / "reusable_inputs" / "model_01_market_context" / "bars.csv"
             news_input = root / "storage" / "05_replay_datasets" / "reusable_inputs" / "event_news" / "news.jsonl"
+            interpretation = root / "storage" / "05_replay_datasets" / "reusable_inputs" / "event_interpretations" / "interpreted_events.jsonl"
             layer_input.parent.mkdir(parents=True, exist_ok=True)
             news_input.parent.mkdir(parents=True, exist_ok=True)
+            interpretation.parent.mkdir(parents=True, exist_ok=True)
             layer_input.write_text("date,symbol,close\n2016-01-04,SPY,200\n", encoding="utf-8")
             news_input.write_text('{"headline":"example"}\n', encoding="utf-8")
+            interpretation.write_text('{"event_family":"labor_market_release"}\n', encoding="utf-8")
 
             index = build_artifact_index(root=root)
 
@@ -220,7 +223,21 @@ class ArtifactIndexTests(unittest.TestCase):
             )
             self.assertEqual(
                 by_path["storage/05_replay_datasets/reusable_inputs/event_news/news.jsonl"].retention_class,
-                "compress_and_retain",
+                "ttl_delete_allowed",
+            )
+            self.assertEqual(
+                by_path["storage/05_replay_datasets/reusable_inputs/event_news/news.jsonl"].protected_reason_codes,
+                (),
+            )
+            self.assertEqual(
+                by_path["storage/05_replay_datasets/reusable_inputs/event_interpretations/interpreted_events.jsonl"].retention_class,
+                "keep_forever",
+            )
+            self.assertEqual(
+                by_path[
+                    "storage/05_replay_datasets/reusable_inputs/event_interpretations/interpreted_events.jsonl"
+                ].protected_reason_codes,
+                ("event_interpretation_evidence",),
             )
 
     def test_trading_economics_source_data_is_kept_forever(self):

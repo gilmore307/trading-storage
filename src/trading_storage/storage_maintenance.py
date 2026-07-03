@@ -36,7 +36,11 @@ REPLAY_RUNTIME_SIDECAR_FILE_NAMES = {
     "replay_resume_checkpoint.json",
     "replay_runtime_trace.jsonl",
 }
-ATTRIBUTION_VERBOSE_FILE_NAMES = {"event_interpretations.jsonl", "event_family_occurrence_scan.jsonl"}
+ATTRIBUTION_RUNTIME_SIDECAR_FILE_NAMES = {
+    "event_family_occurrence_scan.jsonl",
+    "event_source_downloads.jsonl",
+    "raw_event_downloads.jsonl",
+}
 CURRENT_MODEL_WORKER_FOLD_RE = re.compile(r"^fold_[a-z0-9]+_20\d{2}$")
 LIFECYCLE_GAP_SELECTORS: tuple[dict[str, Any], ...] = (
     {
@@ -62,12 +66,12 @@ LIFECYCLE_GAP_SELECTORS: tuple[dict[str, Any], ...] = (
     {
         "artifact_ref": "storage/05_replay_datasets/promotion_replay_candidate_policy/post_replay_attribution_runs",
         "artifact_class": "decision_evidence",
-        "issue": "duplicate_verbose_evidence",
+        "issue": "closed_attribution_runtime_sidecars",
         "action": "compact",
         "final_handling_method": "rolling_retention",
         "trigger_required": "post_replay_attribution_completed",
         "consumer_or_use": "residual event governance attribution review",
-        "required_followup": "write attribution summary and keep unresolved or promotion-linked runs as exceptions",
+        "required_followup": "write attribution summary, preserve semantic event interpretations, and roll only raw scans/download sidecars",
     },
     {
         "artifact_ref": "storage/05_replay_datasets/promotion_replay_candidate_policy/post_replay_failure_triage_runs",
@@ -667,7 +671,7 @@ def _lifecycle_gap_inventory(root: Path, artifact_ref: str) -> dict[str, Any]:
     if artifact_ref.endswith("post_replay_review_runs"):
         return _post_replay_review_duplicate_inventory(path)
     if artifact_ref.endswith("post_replay_attribution_runs"):
-        return _named_file_rolling_inventory(path, ATTRIBUTION_VERBOSE_FILE_NAMES, retain_recent_count=3)
+        return _named_file_rolling_inventory(path, ATTRIBUTION_RUNTIME_SIDECAR_FILE_NAMES, retain_recent_count=3)
     if artifact_ref.endswith("post_replay_failure_triage_runs"):
         return _named_file_inventory(path, {"failure_triage_rows.jsonl"})
     if artifact_ref.endswith("_manifests/recent_refresh_runs"):
@@ -959,21 +963,24 @@ def _compact_post_replay_attribution_runs(
     candidate_count = 0
     for run in runs:
         receipt = _read_json_object(run / "post_replay_residual_event_governance_receipt.json") or {}
-        verbose_files = [path for path in sorted(run.iterdir()) if path.is_file() and path.name in ATTRIBUTION_VERBOSE_FILE_NAMES]
+        runtime_sidecar_files = [
+            path for path in sorted(run.iterdir()) if path.is_file() and path.name in ATTRIBUTION_RUNTIME_SIDECAR_FILE_NAMES
+        ]
         if run not in retained:
-            candidate_count += len(verbose_files)
+            candidate_count += len(runtime_sidecar_files)
         run_rows.append(
             {
                 "run_id": run.name,
                 "run_ref": _relative_path(root, run),
                 "status": receipt.get("status") or receipt.get("decision_status"),
-                "verbose_file_count": len(verbose_files),
-                "verbose_byte_count": sum(path.stat().st_size for path in verbose_files),
-                "retained_full_verbose": run in retained,
+                "runtime_sidecar_file_count": len(runtime_sidecar_files),
+                "runtime_sidecar_byte_count": sum(path.stat().st_size for path in runtime_sidecar_files),
+                "event_interpretations_preserved": (run / "event_interpretations.jsonl").exists(),
+                "retained_full_runtime_sidecars": run in retained,
             }
         )
         if apply and run not in retained:
-            for path in verbose_files:
+            for path in runtime_sidecar_files:
                 deleted_rows.append(_delete_file(path, root=root, include_hash=include_hashes))
     compact = {
         "contract_type": "storage_post_replay_attribution_compact_manifest",
@@ -982,8 +989,9 @@ def _compact_post_replay_attribution_runs(
         "run_count": len(runs),
         "recent_full_run_retention_count": retain_recent_count,
         "run_summaries": run_rows,
-        "deleted_verbose_file_count": len(deleted_rows),
-        "deleted_verbose_byte_count": sum(int(row.get("byte_count") or 0) for row in deleted_rows),
+        "preserved_event_interpretation_file_name": "event_interpretations.jsonl",
+        "deleted_runtime_sidecar_file_count": len(deleted_rows),
+        "deleted_runtime_sidecar_byte_count": sum(int(row.get("byte_count") or 0) for row in deleted_rows),
         "mutation_performed": bool(deleted_rows),
     }
     output_path = output_root / "post_replay_attribution_compact_manifest.json"
@@ -997,7 +1005,7 @@ def _compact_post_replay_attribution_runs(
         "compact_ref": _relative_path(root, output_path),
         "candidate_count": candidate_count,
         "mutated_count": len(deleted_rows),
-        "mutated_byte_count": compact["deleted_verbose_byte_count"],
+        "mutated_byte_count": compact["deleted_runtime_sidecar_byte_count"],
         "skipped_count": 0,
         "mutation_performed": bool(deleted_rows),
     }

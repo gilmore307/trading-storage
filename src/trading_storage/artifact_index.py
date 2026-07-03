@@ -411,11 +411,37 @@ def _has_reusable_replay_input_marker(text: str) -> bool:
     return "replay" in text and any(
         token in text
         for token in (
-            "event_news",
-            "event_source_news",
             "market_regime",
-            "news",
             "sector_context",
+        )
+    )
+
+
+def _has_event_interpretation_marker(text: str) -> bool:
+    return any(
+        token in text
+        for token in (
+            "event_interpretation",
+            "event_interpretations",
+            "interpreted_event",
+            "semantic_event",
+            "standardized_event",
+        )
+    )
+
+
+def _has_refetchable_event_original_marker(text: str) -> bool:
+    return any(
+        token in text
+        for token in (
+            "downloaded_event",
+            "downloaded_news",
+            "event_news",
+            "event_original",
+            "event_source_news",
+            "raw_event",
+            "raw_news",
+            "source_news",
         )
     )
 
@@ -458,6 +484,10 @@ def _retention_class(
         return "keep_forever"
     if _is_replay_path(relative_path) and _has_replay_result_summary_marker(text):
         return "keep_forever"
+    if _has_event_interpretation_marker(text):
+        return "keep_forever"
+    if _has_refetchable_event_original_marker(text):
+        return "ttl_delete_allowed"
     if _is_replay_path(relative_path) and _has_model_specific_replay_download_marker(text):
         return "ttl_delete_allowed"
     if _is_replay_path(relative_path) and _has_reusable_replay_input_marker(text):
@@ -496,6 +526,8 @@ def _protected_reason_codes(retention_class: str, *, classification_text: str) -
         reasons.append("dashboard_latest_snapshot")
     if retention_class == "keep_forever" and _has_replay_result_summary_marker(classification_text):
         reasons.append("replay_result_summary")
+    elif retention_class == "keep_forever" and _has_event_interpretation_marker(classification_text):
+        reasons.append("event_interpretation_evidence")
     elif retention_class == "keep_forever":
         reasons.append("keep_forever_retention")
     return tuple(dict.fromkeys(reasons))

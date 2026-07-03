@@ -35,6 +35,7 @@ PROTECTED_REASON_CODES = frozenset(
         "unknown_metadata",
         "dashboard_latest_snapshot",
         "replay_result_summary",
+        "event_interpretation_evidence",
         "keep_forever_retention",
         "active_consumer_ref",
     }

@@ -163,13 +163,15 @@ Storage lifecycle decisions classify files by the role they play, not only by pa
 - `derived_read_model`: dashboard/status/task summaries and other rebuildable materialized views. Keep `latest` hot; do not retain full timestamped dashboard snapshots as long-term evidence.
 - `debug_sidecar`: stdout/stderr, dry-run dumps, duplicate JSONL extracts, scratch manifests, and diagnostic context that is not the only evidence. Delete, compress, or roll forward after the owning run closes.
 
-When one logical fact appears in more than one class, the narrower canonical class owns the fact. For example, TE calendar source payloads are `canonical_source`; dashboard rows summarizing TE freshness are `derived_read_model`.
+When one logical fact appears in more than one class, the narrower canonical class owns the fact. For example, TE calendar source payloads are `canonical_source`; semantically interpreted event artifacts are `durable_evidence`; dashboard rows summarizing TE freshness are `derived_read_model`.
 
 ### Replay datasets and replay downloads
 
 Replay storage separates reusable replay inputs, model-specific temporary downloads, and permanent model-pipeline replay results.
 
-Reusable replay inputs include M01 market-regime inputs, M02 sector-context inputs, and event/news inputs collected for replay/replay use. Policy: retain or compress/archive because later model pipelines and replay windows can reuse them.
+Reusable replay inputs include M01 market-regime inputs, M02 sector-context inputs, and semantically interpreted event artifacts collected for replay use. Policy: retain or compress/archive because later model pipelines and replay windows can reuse them.
+
+Raw downloaded event/news originals are not the formal event record after semantic interpretation succeeds. Preserve source URL/provider id, retrieval parameters, fetch time, content hash when available, and interpretation lineage in the interpreted event artifact or compact manifest. The raw downloaded original may be deleted, rolled forward, or treated as a cache after the owning run closes because it can be reacquired. A raw event payload may become retained source only through an explicit provider-specific exception proving it is not reliably reacquirable.
 
 Model-specific replay downloads include one-off files pulled only because a particular model pipeline needed them for a replay run, such as point-in-time option snapshots. Policy: delete after the replay closes once result summaries, manifests, acquisition receipts, and any reusable inputs are preserved.
 
@@ -179,7 +181,7 @@ Model-pipeline replay performance and review evidence is permanent. Each model p
 
 Source data is classified by reproducibility and reuse:
 
-- point-in-time, vintage, revision-sensitive, provider-window-limited, expensive, paid-window, option history, SEC filing snapshots, GDELT historical pulls, and lineage-referenced source data: compress and retain by default;
+- point-in-time, vintage, revision-sensitive, provider-window-limited, expensive, paid-window, option history, SEC filing snapshots, and lineage-referenced source data other than refetchable event/news originals: compress and retain by default;
 - Trading Economics (`trading_economics_calendar_web`, including `te_recent_calendar_refresh_*`) source data is append-only protected provider-window evidence; never delete existing TE source rows/payloads, and add new/latest data incrementally under the canonical root. The canonical active source root is `storage/01_source_data/monthly_backfill/trading_economics_calendar_web/YYYY-MM/runs/<run_id>/{saved,cleaned}/`; old monthly/realtime/replay originals belong under that root's `_manifests/source_consolidation_*` evidence area, not as separate active TE source roots. Daily refresh source payload changes in this tree are normal maintenance inputs and should be committed with the relevant acceptance batch so the source remains Git-recoverable. Run-local `completion_receipt.json` and `request_manifest.json` files are side products, not source payloads; keep recent copies locally for freshness/debug, remove older tracked copies after compact provenance exists, and ignore new copies in Git. TE side products are different from TE data: duplicate per-run receipts/manifests after compact provenance exists, failure diagnostics, no-op run context, provisional web-search fallback evidence after formal TE rows arrive, control-plane filtered artifacts, runtime receipts, SQL rows, and dashboard read-model outputs derived from TE are rebuildable materializations or debug evidence. They may be deleted, compacted, compressed, or rolled forward under reviewed storage lifecycle rules as long as canonical TE source rows/payloads and one concise provenance trail remain.
 - stable re-downloadable provider cache and one-off experiment pulls without lineage references: delete may be allowed after the producer closes and quarantine clears;
 - shared normalized source data: retain or compress while any active/promoted/review lineage may reference it.
@@ -201,7 +203,8 @@ Policy: never compress PostgreSQL live data files directly. Archive through dump
 - promotion/review/activation/deactivation receipts: permanent;
 - dataset snapshot/split manifests: permanent or lineage lifetime;
 - model-pipeline replay result summaries and scorecards: permanent;
-- replay M01/M02 and event/news reusable inputs: retain or compress/archive;
+- replay M01/M02 reusable inputs and semantically interpreted event artifacts: retain or compress/archive;
+- raw downloaded event/news originals after successful semantic interpretation: delete or roll forward as refetchable sidecars after fetch metadata, hash when available, source refs, and interpretation lineage are retained;
 - model-specific replay downloads such as one-off option snapshots: delete after replay close when summaries/manifests/receipts are retained;
 - PIT/vintage/source history: compress and retain by default;
 - Trading Economics calendar/source rows and payloads: keep forever; no delete candidates, no destructive pruning, only append/incremental additions under the canonical month-bucketed TE source root;

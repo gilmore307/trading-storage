@@ -283,6 +283,24 @@ class StorageMaintenanceTests(unittest.TestCase):
             triage.mkdir(parents=True)
             (triage / "failure_triage_rows.jsonl").write_text("triage\n", encoding="utf-8")
 
+            attribution_old = (
+                root
+                / "storage"
+                / "05_replay_datasets"
+                / "promotion_replay_candidate_policy"
+                / "post_replay_attribution_runs"
+                / "attribution_20260610T000000Z"
+            )
+            attribution_new = attribution_old.parent / "attribution_20260613T000000Z"
+            for run in (attribution_old, attribution_new):
+                run.mkdir(parents=True)
+                (run / "post_replay_residual_event_governance_receipt.json").write_text(
+                    json.dumps({"status": "completed"}),
+                    encoding="utf-8",
+                )
+                (run / "event_interpretations.jsonl").write_text('{"event_family":"labor_market_release"}\n', encoding="utf-8")
+                (run / "event_family_occurrence_scan.jsonl").write_text('{"source":"scan"}\n', encoding="utf-8")
+
             refresh_old = (
                 root
                 / "storage"
@@ -331,6 +349,7 @@ class StorageMaintenanceTests(unittest.TestCase):
                 include_local_retention=False,
                 apply_lifecycle_gap_actions=True,
                 retain_recent_replay_runs=1,
+                retain_recent_attribution_runs=1,
                 retain_recent_te_refresh_runs=1,
                 retain_recent_te_monthly_runs=1,
                 retain_recent_realtime_loops=1,
@@ -352,6 +371,10 @@ class StorageMaintenanceTests(unittest.TestCase):
             self.assertFalse((triage / "failure_triage_rows.jsonl").exists())
             with gzip.open(compressed, "rt", encoding="utf-8") as handle:
                 self.assertEqual(handle.read(), "triage\n")
+            self.assertTrue((attribution_old / "event_interpretations.jsonl").exists())
+            self.assertFalse((attribution_old / "event_family_occurrence_scan.jsonl").exists())
+            self.assertTrue((attribution_new / "event_interpretations.jsonl").exists())
+            self.assertTrue((attribution_new / "event_family_occurrence_scan.jsonl").exists())
             self.assertFalse(refresh_old.exists())
             self.assertTrue(refresh_new.exists())
             self.assertTrue((te_month_old / "saved" / "trading_economics_calendar_event.csv").exists())

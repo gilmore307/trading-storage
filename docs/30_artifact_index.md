@@ -24,7 +24,9 @@ The first implementation slice is conservative and filesystem-only:
 - M01/M02 runtime, log, scratch, staging, cache, and intermediate path hints classify as `ttl_delete_allowed`; this exception covers disposable run material only, not reusable source/feature foundations;
 - replay model-pipeline result summaries classify as `keep_forever` and are protected by `replay_result_summary`;
 - non-replay artifacts explicitly classified as `keep_forever` are protected by `keep_forever_retention`;
-- replay reusable M01/M02 and event/news inputs classify as `compress_and_retain`;
+- replay reusable M01/M02 inputs classify as `compress_and_retain`;
+- semantically interpreted event artifacts classify as `keep_forever` and are protected by `event_interpretation_evidence`;
+- raw downloaded event/news originals classify as `ttl_delete_allowed` after interpretation lineage and fetch metadata are retained because they are refetchable sidecars, not the formal event record;
 - replay model-specific option snapshot/download hints classify as `ttl_delete_allowed` after replay close when summaries, manifests, and receipts are retained;
 - `fold_complete_delete_allowed` is reserved for explicitly fold-scoped target/source artifacts that may become quarantine candidates only after full-fold completion; reusable M01/M02 source foundations must not use this class;
 - current dashboard read models classify as `dashboard_latest_retained` and protected;
@@ -85,7 +87,7 @@ Deletion policy must depend strongly on `reproducibility_class`. `unknown`, `non
 
 Initial retention classes:
 
-- `keep_forever`: promoted model bodies, decisions, activation records, critical lineage, and model-pipeline replay result summaries;
+- `keep_forever`: promoted model bodies, decisions, activation records, critical lineage, semantically interpreted event artifacts, and model-pipeline replay result summaries;
 - `compress_and_retain`: valuable source data or row-level history that should move to cold compressed storage while remaining retained, including M01/M02 data foundations;
 - `archive_retain`: online detail that can be detached/exported but must remain restorable;
 - `ttl_delete_allowed`: regenerable scratch, cache, timestamped dashboard snapshots, M01/M02 runtime/log/intermediate files, and later-layer model-run metadata that may be deleted after TTL/quarantine/run-cycle closure;
