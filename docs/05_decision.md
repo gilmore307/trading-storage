@@ -768,3 +768,61 @@ ETF holdings do not define the ordinary equity candidate universe. Ordinary equi
 - `main/shared/model_02_target_context_mapping.csv` may reference only accepted broad M02 anchors plus `BKCH` in `layer2_context_symbol`; focused industry/theme symbols are not valid current M02 context symbols.
 - Historical replay should not borrow current ETF holdings to manufacture point-in-time candidate evidence.
 - Future use of `SMH`, `CIBR`, `ARK*`, `XBI`, or similar focused ETFs requires a new accepted proxy/theme contract instead of reintroducing mixed-granularity M02.
+
+## D030 - Large derived datasets are storage payloads indexed by SQL manifests
+
+Date: 2026-07-03
+Status: Accepted
+
+### Context
+
+The platform needs a clear boundary between formal SQL data and large
+rebuildable derived payloads. If every resampled bar set, fold feature matrix,
+or replay snapshot becomes a SQL body table, database maintenance grows
+unnecessarily heavy. If those payloads are only files, lifecycle tools cannot
+know who consumes them or whether deletion is safe.
+
+### Decision
+
+Use SQL for formal source facts, durable evidence rows, dataset identity,
+lineage, query/index metadata, hashes, retention class, and `consumer_refs`.
+Use storage-managed payload artifacts for large derived datasets such as
+5-minute/30-minute/daily bars derived from canonical source bars, fold feature
+matrices, replay snapshot payloads, and rebuildable intermediate tables.
+
+Each storage-managed derived dataset must have an index/manifest record with:
+
+```text
+derived_dataset_id
+source_dataset_id
+granularity or transform_id
+artifact_path
+artifact_hash
+schema_ref
+consumer_refs
+retention_class
+reproducibility_class
+```
+
+Large bar payloads should use a direct-readable columnar format such as Parquet
+or Arrow with compression. JSON is appropriate for manifests, receipts, compact
+summaries, and control metadata, not high-volume bars.
+
+Temporary side products such as progress files, debug traces, repeated request
+manifests, provider scratch, and duplicate extracts are not durable datasets.
+After the owning run/fold/replay closes and compact receipts, summaries, hashes,
+and consumer refs remain, these side products enter rolling retention or cleanup
+under storage lifecycle policy.
+
+### Consequences
+
+- Storage owns physical placement, checksums, format, lifecycle state, restore
+  evidence, and artifact-index coverage for large derived payloads.
+- SQL consumers discover derived datasets through manifest/index rows instead
+  of scanning storage paths.
+- Lifecycle deletion must remain consumer-aware: a derived dataset cited by any
+  active fold, replay, evaluation, promotion, dashboard/read-model, repair, or
+  accepted source/knowledge contract is retained.
+- Component repositories may generate local staging during execution, but a
+  payload is not durable system data until it has storage placement plus the
+  required manifest/index metadata.

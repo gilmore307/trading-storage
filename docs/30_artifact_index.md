@@ -38,6 +38,9 @@ This is enough for dry-run inventory and protected-set preparation. It is not a 
 | --- | --- |
 | `artifact_id` | Stable artifact id. Content changes require a new artifact id. |
 | `artifact_kind` | Registered or reviewed kind such as `promoted_model_artifact`, `pit_source_data`, `feature_matrix`, `sql_partition_archive`. |
+| `dataset_id` | Logical dataset id when the artifact is a source or derived dataset payload. |
+| `source_dataset_id` | Upstream dataset id for a derived payload such as resampled bars or a feature matrix. |
+| `transform_id` | Reviewed transform or granularity definition used to create a derived dataset. |
 | `producer_repo` | Producing repository. |
 | `producer_component` | Source/model/script/workflow that produced the artifact. |
 | `producer_run_id` | Producing run id or manifest id. |
@@ -53,6 +56,7 @@ This is enough for dry-run inventory and protected-set preparation. It is not a 
 | `read_mode` | `direct_readable`, `restore_required`, or `metadata_only`. |
 | `schema_ref` | Contract/schema reference for interpreting the payload. |
 | `manifest_ref` | Producing `run_manifest` or lifecycle manifest. |
+| `consumer_refs` | Open or durable consumers that still need the artifact, such as folds, replay datasets, evaluation, promotion, dashboard/read-model, repair, or accepted source/knowledge contracts. |
 | `lineage_refs` | Upstream artifact/model/source refs used to create this artifact. |
 | `dependency_refs` | Artifacts that must remain available while this artifact is protected. |
 | `reproducibility_class` | How safely the artifact can be recreated. |
