@@ -45,6 +45,9 @@ class LifecyclePlanRecord:
 
     artifact_id: str
     artifact_kind: str
+    dataset_id: str | None
+    source_dataset_id: str | None
+    transform_id: str | None
     artifact_uri: str
     physical_path: str
     action: LifecyclePlanAction
@@ -59,6 +62,7 @@ class LifecyclePlanRecord:
     content_codec: str | None = None
     content_format: str | None = None
     read_mode: str | None = None
+    consumer_refs: tuple[str, ...] = ()
 
     def to_dict(self) -> dict[str, Any]:
         return asdict(self)
@@ -229,6 +233,9 @@ def plan_storage_lifecycle(
             LifecyclePlanRecord(
                 artifact_id=record.artifact_id,
                 artifact_kind=record.artifact_kind,
+                dataset_id=record.dataset_id,
+                source_dataset_id=record.source_dataset_id,
+                transform_id=record.transform_id,
                 artifact_uri=record.artifact_uri,
                 physical_path=record.physical_path,
                 action=action,
@@ -243,6 +250,7 @@ def plan_storage_lifecycle(
                 content_codec=record.content_codec,
                 content_format=record.content_format,
                 read_mode=record.read_mode,
+                consumer_refs=record.consumer_refs,
             )
         )
 

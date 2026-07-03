@@ -71,6 +71,7 @@ Initial reason codes:
 | `source_data_shared_dependency` | Source data may be reused by another model or feature family. |
 | `sql_online_dependency` | SQL partition/table is still queried online. |
 | `manual_pin` | Human/operator/reviewer pinned it. |
+| `active_consumer_ref` | Artifact-index metadata lists at least one current or durable consumer ref. |
 | `unknown_metadata` | Metadata is insufficient; protect until classified. |
 
 ## Lifecycle gate rules

@@ -138,6 +138,39 @@ class ArtifactIndexTests(unittest.TestCase):
             self.assertEqual(index.records[0].reproducibility_class, "reproducible")
             self.assertEqual(index.records[0].protected_reason_codes, ())
 
+    def test_derived_dataset_manifest_fields_are_indexed_and_consumer_protected(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            artifact = root / "storage" / "05_replay_datasets" / "derived_bars" / "aapl_5min_manifest.json"
+            artifact.parent.mkdir(parents=True, exist_ok=True)
+            artifact.write_text(
+                json.dumps(
+                    {
+                        "contract_type": "derived_dataset_manifest",
+                        "derived_dataset_id": "derived_bars_aapl_5min_2016_01",
+                        "source_dataset_id": "canonical_bars_aapl_1min_2016_01",
+                        "granularity": "5min",
+                        "consumer_refs": ["fold_aapl_2016", "replay_dataset_2021_2026"],
+                        "storage_retention_class": "compress_and_retain",
+                        "storage_reproducibility_class": "reproducible_with_manifest",
+                    },
+                    sort_keys=True,
+                ),
+                encoding="utf-8",
+            )
+
+            index = build_artifact_index(root=root)
+
+            record = index.records[0]
+            self.assertEqual(record.artifact_kind, "derived_dataset_manifest")
+            self.assertEqual(record.dataset_id, "derived_bars_aapl_5min_2016_01")
+            self.assertEqual(record.source_dataset_id, "canonical_bars_aapl_1min_2016_01")
+            self.assertEqual(record.transform_id, "5min")
+            self.assertEqual(record.consumer_refs, ("fold_aapl_2016", "replay_dataset_2021_2026"))
+            self.assertEqual(record.retention_class, "compress_and_retain")
+            self.assertEqual(record.reproducibility_class, "reproducible_with_manifest")
+            self.assertEqual(record.protected_reason_codes, ("active_consumer_ref",))
+
     def test_replay_result_summary_is_kept_forever(self):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)

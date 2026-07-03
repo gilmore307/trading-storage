@@ -36,6 +36,7 @@ PROTECTED_REASON_CODES = frozenset(
         "dashboard_latest_snapshot",
         "replay_result_summary",
         "keep_forever_retention",
+        "active_consumer_ref",
     }
 )
 
@@ -47,6 +48,10 @@ _REFERENCE_KEYS = frozenset(
         "producer_run_id",
         "schema_ref",
         "manifest_ref",
+        "dataset_id",
+        "source_dataset_id",
+        "transform_id",
+        "consumer_refs",
         "lineage_refs",
         "dependency_refs",
     }
@@ -231,7 +236,10 @@ def build_protected_set(
 def _artifact_index_record_from_dict(row: Mapping[str, Any]) -> ArtifactIndexRecord:
     names = {field.name for field in fields(ArtifactIndexRecord)}
     kwargs: dict[str, Any] = {key: row[key] for key in names if key in row}
-    for key in ("lineage_refs", "dependency_refs", "protected_reason_codes"):
+    for key in ("dataset_id", "source_dataset_id", "transform_id"):
+        kwargs.setdefault(key, None)
+    kwargs.setdefault("consumer_refs", ())
+    for key in ("consumer_refs", "lineage_refs", "dependency_refs", "protected_reason_codes"):
         if key in kwargs:
             kwargs[key] = tuple(kwargs[key])
     return ArtifactIndexRecord(**kwargs)

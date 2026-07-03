@@ -77,6 +77,39 @@ class ProtectedSetTests(unittest.TestCase):
             self.assertIn("dataset_snapshot_or_split", protected_set.records[0].protected_reason_codes)
             self.assertEqual(protected_set.records[0].evidence_refs, ("dataset://snapshot/monthly-2016-01",))
 
+    def test_consumer_refs_are_protected_tokens_and_survive_jsonl_round_trip(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            artifact = root / "storage" / "05_replay_datasets" / "derived_bars" / "aapl_5min_manifest.json"
+            artifact.parent.mkdir(parents=True, exist_ok=True)
+            artifact.write_text(
+                json.dumps(
+                    {
+                        "contract_type": "derived_dataset_manifest",
+                        "derived_dataset_id": "derived_bars_aapl_5min_2016_01",
+                        "source_dataset_id": "canonical_bars_aapl_1min_2016_01",
+                        "transform_id": "resample_5min",
+                        "consumer_refs": ["fold_aapl_2016"],
+                        "storage_retention_class": "compress_and_retain",
+                        "storage_reproducibility_class": "reproducible_with_manifest",
+                    }
+                ),
+                encoding="utf-8",
+            )
+            index = build_artifact_index(root=root)
+            write_artifact_index(index, index_path=Path("storage/90_lifecycle/artifact_index/artifact_index.jsonl"))
+            records = load_artifact_index_jsonl(root / "storage" / "90_lifecycle" / "artifact_index" / "artifact_index.jsonl")
+
+            protected_set = build_protected_set(records, candidate_refs=("fold_aapl_2016",))
+
+            self.assertEqual(records[0].dataset_id, "derived_bars_aapl_5min_2016_01")
+            self.assertEqual(records[0].source_dataset_id, "canonical_bars_aapl_1min_2016_01")
+            self.assertEqual(records[0].transform_id, "resample_5min")
+            self.assertEqual(records[0].consumer_refs, ("fold_aapl_2016",))
+            self.assertTrue(protected_set.records[0].candidate_requested)
+            self.assertEqual(protected_set.records[0].protected_reason_codes, ("active_consumer_ref",))
+            self.assertFalse(protected_set.records[0].mutation_allowed)
+
     def test_replay_result_summary_is_protected(self):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)

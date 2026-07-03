@@ -148,6 +148,36 @@ class LifecyclePlannerTests(unittest.TestCase):
             self.assertEqual(plan.records[0].rule_id, "compress_source_data")
             self.assertEqual(plan.summary["action_counts"], {"compress_candidate": 1})
 
+    def test_derived_dataset_with_consumer_refs_is_retained_as_protected(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            artifact = root / "storage" / "05_replay_datasets" / "derived_bars" / "aapl_5min_manifest.json"
+            artifact.parent.mkdir(parents=True, exist_ok=True)
+            artifact.write_text(
+                json.dumps(
+                    {
+                        "contract_type": "derived_dataset_manifest",
+                        "derived_dataset_id": "derived_bars_aapl_5min_2016_01",
+                        "source_dataset_id": "canonical_bars_aapl_1min_2016_01",
+                        "granularity": "5min",
+                        "consumer_refs": ["fold_aapl_2016"],
+                        "storage_retention_class": "compress_and_retain",
+                        "storage_reproducibility_class": "reproducible_with_manifest",
+                    }
+                ),
+                encoding="utf-8",
+            )
+            index = build_artifact_index(root=root)
+
+            plan = plan_storage_lifecycle(index)
+
+            self.assertEqual(plan.records[0].action, "retain_protected")
+            self.assertEqual(plan.records[0].protected_reason_codes, ("active_consumer_ref",))
+            self.assertEqual(plan.records[0].dataset_id, "derived_bars_aapl_5min_2016_01")
+            self.assertEqual(plan.records[0].source_dataset_id, "canonical_bars_aapl_1min_2016_01")
+            self.assertEqual(plan.records[0].transform_id, "5min")
+            self.assertEqual(plan.records[0].consumer_refs, ("fold_aapl_2016",))
+
     def test_receipts_are_retained_even_when_clear(self):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)

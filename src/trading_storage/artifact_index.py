@@ -69,6 +69,9 @@ class ArtifactIndexRecord:
 
     artifact_id: str
     artifact_kind: str
+    dataset_id: str | None
+    source_dataset_id: str | None
+    transform_id: str | None
     producer_repo: str
     producer_component: str
     producer_run_id: str | None
@@ -85,6 +88,7 @@ class ArtifactIndexRecord:
     schema_ref: str | None
     manifest_ref: str | None
     schema_version: str | None = None
+    consumer_refs: tuple[str, ...] = field(default_factory=tuple)
     lineage_refs: tuple[str, ...] = field(default_factory=tuple)
     dependency_refs: tuple[str, ...] = field(default_factory=tuple)
     reproducibility_class: str = "unknown"
@@ -275,12 +279,33 @@ def _manifest_ref(data: Mapping[str, Any] | None) -> str | None:
     return None
 
 
+def _dataset_id(data: Mapping[str, Any] | None) -> str | None:
+    return _metadata_string(data, "dataset_id", "derived_dataset_id")
+
+
+def _source_dataset_id(data: Mapping[str, Any] | None) -> str | None:
+    return _metadata_string(data, "source_dataset_id", "parent_dataset_id")
+
+
+def _transform_id(data: Mapping[str, Any] | None) -> str | None:
+    return _metadata_string(data, "transform_id", "granularity", "timeframe")
+
+
 def _sequence_strings(value: Any) -> tuple[str, ...]:
     if isinstance(value, str):
         return (value,)
     if isinstance(value, Sequence) and not isinstance(value, (bytes, bytearray)):
         return tuple(str(item) for item in value if item is not None)
     return ()
+
+
+def _consumer_refs(data: Mapping[str, Any] | None) -> tuple[str, ...]:
+    if not data:
+        return ()
+    refs: list[str] = []
+    for key in ("consumer_refs", "consumer_ref", "consumers"):
+        refs.extend(_sequence_strings(data.get(key)))
+    return tuple(dict.fromkeys(refs))
 
 
 def _lineage_refs(data: Mapping[str, Any] | None) -> tuple[str, ...]:
@@ -464,15 +489,16 @@ def _reproducibility_class(data: Mapping[str, Any] | None) -> str:
 
 
 def _protected_reason_codes(retention_class: str, *, classification_text: str) -> tuple[str, ...]:
+    reasons: list[str] = []
     if retention_class == "manual_review_required":
-        return ("unknown_metadata",)
+        reasons.append("unknown_metadata")
     if retention_class == "dashboard_latest_retained":
-        return ("dashboard_latest_snapshot",)
+        reasons.append("dashboard_latest_snapshot")
     if retention_class == "keep_forever" and _has_replay_result_summary_marker(classification_text):
-        return ("replay_result_summary",)
-    if retention_class == "keep_forever":
-        return ("keep_forever_retention",)
-    return ()
+        reasons.append("replay_result_summary")
+    elif retention_class == "keep_forever":
+        reasons.append("keep_forever_retention")
+    return tuple(dict.fromkeys(reasons))
 
 
 def build_artifact_index(
@@ -507,10 +533,22 @@ def build_artifact_index(
         producer_component = _producer_component(relative, data)
         retention_class = _retention_class(relative, data=data, artifact_kind=artifact_kind, producer_component=producer_component)
         created_at = _iso_from_timestamp(stat.st_mtime)
+        consumer_refs = _consumer_refs(data)
+        protected_reason_codes = list(
+            _protected_reason_codes(
+                retention_class,
+                classification_text=_classification_text(relative, data=data, artifact_kind=artifact_kind, producer_component=producer_component),
+            )
+        )
+        if consumer_refs and "active_consumer_ref" not in protected_reason_codes:
+            protected_reason_codes.append("active_consumer_ref")
         records.append(
             ArtifactIndexRecord(
                 artifact_id=artifact_id,
                 artifact_kind=artifact_kind,
+                dataset_id=_dataset_id(data),
+                source_dataset_id=_source_dataset_id(data),
+                transform_id=_transform_id(data),
                 producer_repo=_producer_repo(relative, data),
                 producer_component=producer_component,
                 producer_run_id=_producer_run_id(data),
@@ -527,14 +565,12 @@ def build_artifact_index(
                 schema_ref=_schema_ref(data),
                 manifest_ref=_manifest_ref(data),
                 schema_version=_schema_version(data),
+                consumer_refs=consumer_refs,
                 lineage_refs=_lineage_refs(data),
                 dependency_refs=_dependency_refs(data),
                 reproducibility_class=_reproducibility_class(data),
                 retention_class=retention_class,
-                protected_reason_codes=_protected_reason_codes(
-                    retention_class,
-                    classification_text=_classification_text(relative, data=data, artifact_kind=artifact_kind, producer_component=producer_component),
-                ),
+                protected_reason_codes=tuple(protected_reason_codes),
                 last_lifecycle_scan_at=scan_time,
             )
         )
