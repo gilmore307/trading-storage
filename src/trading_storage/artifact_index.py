@@ -389,6 +389,51 @@ def _has_disposable_runtime_marker(text: str) -> bool:
     )
 
 
+def _is_durable_boundary_evidence(relative_path: Path, text: str) -> bool:
+    filename = relative_path.name.lower()
+    if relative_path.parts[:3] == ("storage", "90_lifecycle", "artifact_index"):
+        return True
+    return any(
+        token in text or token in filename
+        for token in (
+            "archive_manifest",
+            "archive_receipt",
+            "compression_manifest",
+            "compression_receipt",
+            "delete_receipt",
+            "deletion_receipt",
+            "executed_lifecycle_plan",
+            "lifecycle_decision",
+            "quarantine_recheck",
+            "restore_receipt",
+            "storage_lifecycle_plan",
+            "tombstone",
+        )
+    )
+
+
+def _is_runtime_byproduct_file(relative_path: Path, text: str) -> bool:
+    if _is_durable_boundary_evidence(relative_path, text):
+        return False
+    filename = relative_path.name.lower()
+    if filename.endswith(".log"):
+        return True
+    if any(token in filename for token in ("progress", "runtime_trace", "checkpoint")):
+        return True
+    if filename not in {"request_manifest.json", "completion_receipt.json"}:
+        return False
+    return any(
+        token in text
+        for token in (
+            "/runs/",
+            "/runtime/",
+            "/recent_refresh_runs/",
+            "/feed/",
+            "te_recent_calendar_refresh",
+        )
+    )
+
+
 def _is_replay_path(relative_path: Path) -> bool:
     return len(relative_path.parts) >= 2 and relative_path.parts[:2] == ("storage", "05_replay_datasets")
 
@@ -479,6 +524,10 @@ def _retention_class(
     if _is_dashboard_latest(relative_path):
         return "dashboard_latest_retained"
     if _is_dashboard_snapshot(relative_path):
+        return "ttl_delete_allowed"
+    if _is_durable_boundary_evidence(relative_path, text):
+        return "keep_forever"
+    if _is_runtime_byproduct_file(relative_path, text):
         return "ttl_delete_allowed"
     if _has_trading_economics_marker(text):
         return "keep_forever"

@@ -830,3 +830,62 @@ under storage lifecycle policy.
 - Component repositories may generate local staging during execution, but a
   payload is not durable system data until it has storage placement plus the
   required manifest/index metadata.
+
+## D031 - Proof files are minimal boundary evidence
+
+Date: 2026-07-03
+Status: Accepted
+
+### Context
+
+Storage accumulated a large number of small proof-like byproducts: per-step
+request manifests, duplicate completion receipts, task progress streams,
+runtime traces, checkpoints, and logs. These files are not merely a disk-space
+problem. They also inflate inode counts, slow scans and backups, obscure the
+real evidence, and make lifecycle policy harder to reason about as the system
+ages.
+
+At the same time, some evidence must remain complete: replay performance and
+review evidence, semantic event interpretations, protected source payloads, and
+accepted lifecycle mutation evidence are formal inputs for future model
+optimization, promotion audit, restore, and deletion safety.
+
+### Decision
+
+Use compact durable boundary evidence instead of broad proof-file emission.
+
+Separate proof-like material into these classes:
+
+- formal evidence: replay/review performance rows, model-candidate selection
+  traces, event interpretation rows, promoted model artifacts, lifecycle
+  decisions/receipts, SQL/archive/restore evidence, and protected source
+  payloads;
+- boundary evidence: one compact manifest/receipt at durable run, fold,
+  evaluation package, promotion review, monthly source, storage/SQL, archive,
+  restore, or delete boundaries;
+- runtime sidecars: task progress, task diagnostics, stdout/stderr logs,
+  runtime traces, checkpoints, repeated request manifests, and run-local
+  completion receipts;
+- refetchable sidecars: raw event/news originals after semantic interpretation
+  preserves provider/source refs, fetch params, fetch time, hash when available,
+  and interpretation lineage.
+
+Default behavior: do not write or permanently retain runtime sidecars. If a
+fact is already in a canonical artifact, SQL/artifact-index row, or compact
+boundary manifest, do not write a second proof file for it. If a sidecar is
+temporarily useful for debugging, it should be TTL or rolling-retention data
+after the owning run closes.
+
+### Consequences
+
+- A file named `receipt`, `manifest`, or `progress` is not automatically
+  durable evidence.
+- Durable receipts remain limited to accepted boundary transitions, lifecycle
+  mutations, formal replay/review decisions, event interpretations, protected
+  source provenance, and restore/delete/archive audit.
+- Run-local `request_manifest.json`, `completion_receipt.json`, progress JSONL,
+  runtime traces, checkpoints, and `.log` files are lifecycle candidates unless
+  a reviewed contract explicitly promotes that file to boundary evidence.
+- Existing cleanup must remain reviewed and protected-set aware; this decision
+  changes classification and future writer behavior, not immediate destructive
+  deletion authority.

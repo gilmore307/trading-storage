@@ -19,7 +19,7 @@ Promoted model bodies are preserved permanently.
 Regenerable intermediate training data may be deleted after the owning run/fold/replay closes and compact evidence proves no active consumer remains.
 Downloaded source data is compressed before deletion and deleted only when safely reproducible, unreferenced, and covered by a reviewed lifecycle policy.
 SQL detail is partition/table archived through export + compression; live database files are never compressed directly.
-Every compression, archive, delete, and restore action writes manifest/receipt evidence.
+Only durable lifecycle boundaries write manifest/receipt evidence. Routine task progress, per-step request manifests, duplicate completion receipts, runtime traces, checkpoints, and logs are sidecars and must roll off after the owning run closes.
 ```
 
 ## Lifecycle action taxonomy
@@ -159,11 +159,19 @@ Storage lifecycle decisions classify files by the role they play, not only by pa
 
 - `canonical_source`: source/provider payloads and point-in-time raw evidence needed to rebuild or audit later outputs. Keep or compress by default.
 - `durable_evidence`: model artifacts, replay/evaluation/promotion evidence, lifecycle receipts, and mutation/audit receipts. Keep for lineage or audit lifetime.
+- `durable_boundary_evidence`: compact run, fold, evaluation package, promotion review, lifecycle mutation, archive/restore/delete, monthly source, or SQL/storage boundary manifests that prove a durable state transition. Keep one concise boundary record; do not emit per-step proof files when the same fact is already in the boundary record, artifact index, SQL row, or canonical artifact.
 - `control_state`: concise current facts, pointers, locks, workflow state, and readiness state used to run the system. Keep current; archive only through reviewed state policy.
 - `derived_read_model`: dashboard/status/task summaries and other rebuildable materialized views. Keep `latest` hot; do not retain full timestamped dashboard snapshots as long-term evidence.
-- `debug_sidecar`: stdout/stderr, dry-run dumps, duplicate JSONL extracts, scratch manifests, and diagnostic context that is not the only evidence. Delete, compress, or roll forward after the owning run closes.
+- `debug_sidecar`: stdout/stderr, dry-run dumps, duplicate JSONL extracts, task progress, runtime traces, checkpoints, per-feed request manifests, duplicate completion receipts, scratch manifests, and diagnostic context that is not the only evidence. Delete, compress, or roll forward after the owning run closes.
 
 When one logical fact appears in more than one class, the narrower canonical class owns the fact. For example, TE calendar source payloads are `canonical_source`; semantically interpreted event artifacts are `durable_evidence`; dashboard rows summarizing TE freshness are `derived_read_model`.
+
+Proof-file default:
+
+- Do not write a separate proof/receipt/manifest file unless a downstream consumer, restore path, audit boundary, lifecycle mutation, or formal replay/review decision needs it.
+- If proof is needed, prefer embedding the necessary fields in the canonical artifact, SQL/artifact-index row, or one compact boundary manifest.
+- If a run fails, keep a compact failure summary with the failing boundary, input refs, error class, and retry/refetch hints. Do not keep the full progress stream as durable evidence.
+- Long-running progress files, stdout/stderr logs, task diagnostics, runtime traces, checkpoints, and repeated request/completion sidecars are operational diagnostics. They may be recent-hot for debugging, but they are not the durable audit ledger.
 
 ### Replay datasets and replay downloads
 
@@ -213,6 +221,7 @@ Policy: never compress PostgreSQL live data files directly. Archive through dump
 - dashboard/read-model state-change snapshots: delete after explicit reviewed approval; current default prune plan keeps zero timestamped snapshots per contract and marks timestamped dashboard snapshots as delete candidates while preserving current read-model files, schemas, SQL, and source data;
 - lifecycle receipts, tombstones, executed protected sets, executed lifecycle plans, and quarantine/recheck evidence: retained as audit evidence;
 - lifecycle `runs`, `outputs`, and `staging`: ordinary runtime context rolls off after about 30 days; formal lifecycle evidence found there is retained until extracted to canonical `storage/90_lifecycle` evidence directories;
+- ordinary task proof sidecars: run-local `request_manifest.json`, `completion_receipt.json`, progress JSONL, runtime traces, checkpoints, and stdout/stderr logs are TTL/rolling-retention artifacts unless they are the only compact boundary record for an accepted durable transition;
 - M02+ model-run metadata/intermediates: delete after run-cycle close when reproducible or no longer lineage-required;
 - failed/blocked run scratch: 7-14 days;
 - ordinary logs: 30 days, then delete or compress if important;

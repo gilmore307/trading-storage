@@ -265,6 +265,50 @@ class ArtifactIndexTests(unittest.TestCase):
                 self.assertEqual(record.retention_class, "keep_forever")
                 self.assertEqual(record.protected_reason_codes, ("keep_forever_retention",))
 
+    def test_run_local_proof_sidecars_are_ttl_delete_allowed(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            run_dir = (
+                root
+                / "storage"
+                / "01_source_data"
+                / "monthly_backfill"
+                / "trading_economics_calendar_web"
+                / "2026-07"
+                / "runs"
+                / "te_recent_calendar_refresh_20260703T120000Z"
+            )
+            run_dir.mkdir(parents=True, exist_ok=True)
+            (run_dir / "request_manifest.json").write_text(
+                json.dumps({"contract_type": "provider_request_manifest", "source_system": "trading_economics_calendar_web"}),
+                encoding="utf-8",
+            )
+            (run_dir / "completion_receipt.json").write_text(
+                json.dumps({"contract_type": "provider_completion_receipt", "status": "succeeded"}),
+                encoding="utf-8",
+            )
+            (run_dir / "progress.jsonl").write_text('{"status":"running"}\n', encoding="utf-8")
+            (run_dir / "stdout.log").write_text("fetch complete\n", encoding="utf-8")
+
+            index = build_artifact_index(root=root)
+
+            self.assertEqual(index.summary["record_count"], 4)
+            for record in index.records:
+                self.assertEqual(record.retention_class, "ttl_delete_allowed", record.physical_path)
+                self.assertEqual(record.protected_reason_codes, (), record.physical_path)
+
+    def test_lifecycle_boundary_receipt_is_kept_forever(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            receipt = root / "storage" / "90_lifecycle" / "runs" / "run_1" / "delete_receipt.json"
+            receipt.parent.mkdir(parents=True, exist_ok=True)
+            receipt.write_text(json.dumps({"contract_type": "storage_delete_receipt"}), encoding="utf-8")
+
+            index = build_artifact_index(root=root, include_roots=("storage/90_lifecycle/runs/run_1/delete_receipt.json",))
+
+            self.assertEqual(index.records[0].retention_class, "keep_forever")
+            self.assertEqual(index.records[0].protected_reason_codes, ("keep_forever_retention",))
+
     def test_model_specific_replay_option_snapshot_is_ttl_delete_allowed(self):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)

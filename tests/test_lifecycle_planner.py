@@ -191,7 +191,7 @@ class LifecyclePlannerTests(unittest.TestCase):
             self.assertEqual(plan.records[0].transform_id, "5min")
             self.assertEqual(plan.records[0].consumer_refs, ("fold_aapl_2016",))
 
-    def test_receipts_are_retained_even_when_clear(self):
+    def test_ttl_receipts_become_quarantine_candidates_before_receipt_retain_rule(self):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
             artifact = root / "storage" / "02_control_plane" / "artifacts" / "component_completion_receipt" / "receipt.json"
@@ -203,6 +203,25 @@ class LifecyclePlannerTests(unittest.TestCase):
                     **index.records[0].to_dict(),
                     "protected_reason_codes": (),
                     "retention_class": "ttl_delete_allowed",
+                }
+            )
+
+            plan = plan_storage_lifecycle((record,))
+
+            self.assertEqual(plan.records[0].action, "quarantine_candidate")
+            self.assertEqual(plan.records[0].rule_id, "quarantine_ttl_delete_allowed")
+
+    def test_clear_durable_boundary_receipts_are_retained(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            artifact = root / "storage" / "90_lifecycle" / "runs" / "run_1" / "delete_receipt.json"
+            artifact.parent.mkdir(parents=True, exist_ok=True)
+            artifact.write_text(json.dumps({"contract_type": "storage_delete_receipt"}), encoding="utf-8")
+            index = build_artifact_index(root=root, include_roots=("storage/90_lifecycle/runs/run_1/delete_receipt.json",))
+            record = index.records[0].__class__(
+                **{
+                    **index.records[0].to_dict(),
+                    "protected_reason_codes": (),
                 }
             )
 

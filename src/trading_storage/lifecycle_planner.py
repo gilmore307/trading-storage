@@ -114,11 +114,19 @@ class StorageLifecyclePlan:
 DEFAULT_POLICY_RULES: tuple[LifecyclePolicyRule, ...] = (
     LifecyclePolicyRule(
         policy_id="storage_lifecycle_default",
+        rule_id="quarantine_ttl_delete_allowed",
+        selector={"retention_class": "ttl_delete_allowed"},
+        action="quarantine_candidate",
+        require_protected_set_clear=True,
+        reason="TTL-delete artifacts require quarantine-before-delete after protected-set clearance.",
+    ),
+    LifecyclePolicyRule(
+        policy_id="storage_lifecycle_default",
         rule_id="retain_receipts_and_evidence",
         selector={"artifact_kind_contains": "receipt"},
         action="retain_evidence",
         require_protected_set_clear=False,
-        reason="Receipt/evidence artifacts are retained by default.",
+        reason="Durable boundary receipt/evidence artifacts are retained by default.",
     ),
     LifecyclePolicyRule(
         policy_id="storage_lifecycle_default",
@@ -135,14 +143,6 @@ DEFAULT_POLICY_RULES: tuple[LifecyclePolicyRule, ...] = (
         action="compress_candidate",
         require_protected_set_clear=True,
         reason="Uncompressed source-like artifacts may be compression candidates once unprotected.",
-    ),
-    LifecyclePolicyRule(
-        policy_id="storage_lifecycle_default",
-        rule_id="quarantine_ttl_delete_allowed",
-        selector={"retention_class": "ttl_delete_allowed"},
-        action="quarantine_candidate",
-        require_protected_set_clear=True,
-        reason="TTL-delete artifacts require quarantine-before-delete after protected-set clearance.",
     ),
     LifecyclePolicyRule(
         policy_id="storage_lifecycle_default",
