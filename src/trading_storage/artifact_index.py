@@ -366,6 +366,29 @@ def _is_dashboard_latest(relative_path: Path) -> bool:
     return len(relative_path.parts) == 4 and relative_path.parts[:3] == ("storage", "06_dashboard_cache", "read_models") and relative_path.suffix == ".json"
 
 
+def _is_dashboard_active_input(relative_path: Path) -> bool:
+    normalized = str(relative_path).replace("\\", "/")
+    if normalized in {
+        "storage/02_control_plane/runtime/historical_scheduler_decisions.jsonl",
+        "storage/02_control_plane/runtime/historical_scheduler_state.json",
+        "storage/04_execution_artifacts/runtime/realtime_trading_runtime/runtime_status.json",
+    }:
+        return True
+    if (
+        len(relative_path.parts) == 4
+        and relative_path.parts[:3] == ("storage", "02_control_plane", "runtime")
+        and relative_path.name.startswith("model_training_workflow_state")
+        and relative_path.suffix == ".json"
+    ):
+        return True
+    return (
+        len(relative_path.parts) >= 5
+        and relative_path.parts[:3] == ("storage", "02_control_plane", "runtime")
+        and relative_path.parts[3] in {"stage_coverage", "stage_run_dashboard"}
+        and relative_path.suffix == ".json"
+    )
+
+
 def _has_m01_m02_marker(text: str) -> bool:
     return any(token in text for token in ("model_01", "model_02", "feature_01", "feature_02", "m01", "m02"))
 
@@ -525,6 +548,8 @@ def _retention_class(
         return "dashboard_latest_retained"
     if _is_dashboard_snapshot(relative_path):
         return "ttl_delete_allowed"
+    if _is_dashboard_active_input(relative_path):
+        return "dashboard_active_input_retained"
     if _is_durable_boundary_evidence(relative_path, text):
         return "keep_forever"
     if _is_runtime_byproduct_file(relative_path, text):
@@ -573,6 +598,8 @@ def _protected_reason_codes(retention_class: str, *, classification_text: str) -
         reasons.append("unknown_metadata")
     if retention_class == "dashboard_latest_retained":
         reasons.append("dashboard_latest_snapshot")
+    if retention_class == "dashboard_active_input_retained":
+        reasons.append("dashboard_active_input")
     if retention_class == "keep_forever" and _has_replay_result_summary_marker(classification_text):
         reasons.append("replay_result_summary")
     elif retention_class == "keep_forever" and _has_event_interpretation_marker(classification_text):

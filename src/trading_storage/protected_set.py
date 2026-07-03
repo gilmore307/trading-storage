@@ -33,6 +33,7 @@ PROTECTED_REASON_CODES = frozenset(
         "sql_online_dependency",
         "manual_pin",
         "unknown_metadata",
+        "dashboard_active_input",
         "dashboard_latest_snapshot",
         "replay_result_summary",
         "event_interpretation_evidence",

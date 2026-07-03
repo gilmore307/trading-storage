@@ -92,6 +92,28 @@ class ArtifactIndexTests(unittest.TestCase):
             self.assertEqual(index.records[0].retention_class, "ttl_delete_allowed")
             self.assertEqual(index.records[0].protected_reason_codes, ())
 
+    def test_dashboard_active_inputs_are_protected(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            files = [
+                root / "storage" / "02_control_plane" / "runtime" / "historical_scheduler_decisions.jsonl",
+                root / "storage" / "02_control_plane" / "runtime" / "historical_scheduler_state.json",
+                root / "storage" / "02_control_plane" / "runtime" / "model_training_workflow_state_2026-07.json",
+                root / "storage" / "02_control_plane" / "runtime" / "stage_coverage" / "20260703T120000Z.json",
+                root / "storage" / "02_control_plane" / "runtime" / "stage_run_dashboard" / "20260703T120000Z.json",
+                root / "storage" / "04_execution_artifacts" / "runtime" / "realtime_trading_runtime" / "runtime_status.json",
+            ]
+            for path in files:
+                path.parent.mkdir(parents=True, exist_ok=True)
+                path.write_text("{}\n", encoding="utf-8")
+
+            index = build_artifact_index(root=root)
+
+            self.assertEqual(index.summary["record_count"], len(files))
+            for record in index.records:
+                self.assertEqual(record.retention_class, "dashboard_active_input_retained", record.physical_path)
+                self.assertEqual(record.protected_reason_codes, ("dashboard_active_input",), record.physical_path)
+
     def test_layer_one_two_artifacts_are_compress_and_retain(self):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)

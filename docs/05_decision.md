@@ -863,6 +863,8 @@ Separate proof-like material into these classes:
 - boundary evidence: one compact manifest/receipt at durable run, fold,
   evaluation package, promotion review, monthly source, storage/SQL, archive,
   restore, or delete boundaries;
+- active consumer inputs: files currently read by dashboard/read-model refresh,
+  scheduler summaries, model readiness, repair, or other runtime consumers;
 - runtime sidecars: task progress, task diagnostics, stdout/stderr logs,
   runtime traces, checkpoints, repeated request manifests, and run-local
   completion receipts;
@@ -876,6 +878,11 @@ boundary manifest, do not write a second proof file for it. If a sidecar is
 temporarily useful for debugging, it should be TTL or rolling-retention data
 after the owning run closes.
 
+An active dashboard/read-model input is not a deletion candidate merely because
+it looks like a diagnostic or proof file. It must remain protected until the
+dashboard has a replacement compact/latest read model or index route and a
+readback test proves the dashboard no longer reads the old path.
+
 ### Consequences
 
 - A file named `receipt`, `manifest`, or `progress` is not automatically
@@ -886,6 +893,8 @@ after the owning run closes.
 - Run-local `request_manifest.json`, `completion_receipt.json`, progress JSONL,
   runtime traces, checkpoints, and `.log` files are lifecycle candidates unless
   a reviewed contract explicitly promotes that file to boundary evidence.
+- Dashboard-active inputs are protected as consumer dependencies until their
+  consumer migrates to a compact/latest read model, bounded tail, or index.
 - Existing cleanup must remain reviewed and protected-set aware; this decision
   changes classification and future writer behavior, not immediate destructive
   deletion authority.

@@ -139,6 +139,19 @@ class ProtectedSetTests(unittest.TestCase):
             self.assertEqual(protected_set.records[0].protected_reason_codes, ("event_interpretation_evidence",))
             self.assertFalse(protected_set.records[0].mutation_allowed)
 
+    def test_dashboard_active_input_is_protected(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            artifact = root / "storage" / "02_control_plane" / "runtime" / "historical_scheduler_decisions.jsonl"
+            artifact.parent.mkdir(parents=True, exist_ok=True)
+            artifact.write_text('{"decision_status":"executed"}\n', encoding="utf-8")
+            index = build_artifact_index(root=root)
+
+            protected_set = build_protected_set(index)
+
+            self.assertEqual(protected_set.records[0].protected_reason_codes, ("dashboard_active_input",))
+            self.assertFalse(protected_set.records[0].mutation_allowed)
+
     def test_clear_record_allows_candidate_mutation(self):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
