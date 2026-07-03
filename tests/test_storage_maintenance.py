@@ -184,6 +184,7 @@ class StorageMaintenanceTests(unittest.TestCase):
                 run = replay_run.parent / f"model_group_replay_2026061{index}T111021Z"
                 run.mkdir(parents=True)
                 (run / "decision_rows.jsonl").write_text("row\n", encoding="utf-8")
+                (run / "replay_runtime_trace.jsonl").write_text("trace\n", encoding="utf-8")
                 (run / "replay_execution_receipt.json").write_text(
                     json.dumps({"validation_status": "passed", "replay_execution_run_id": run.name}),
                     encoding="utf-8",
@@ -213,7 +214,7 @@ class StorageMaintenanceTests(unittest.TestCase):
         replay_ref = "storage/05_replay_datasets/promotion_replay_candidate_policy/replay_execution_runs"
         task_key_ref = "storage/02_control_plane/runtime/model_05_option_expression"
         self.assertEqual(by_ref[replay_ref]["action"], "compact")
-        self.assertEqual(by_ref[replay_ref]["final_handling_method"], "delete")
+        self.assertEqual(by_ref[replay_ref]["final_handling_method"], "delete_runtime_sidecars")
         self.assertEqual(by_ref[replay_ref]["file_count"], 1)
         self.assertFalse(by_ref[replay_ref]["mutation_performed"])
         self.assertEqual(by_ref[task_key_ref]["issue"], "per_request_task_key_sprawl")
@@ -240,6 +241,9 @@ class StorageMaintenanceTests(unittest.TestCase):
                     encoding="utf-8",
                 )
                 (run / "decision_rows.jsonl").write_text("row\n", encoding="utf-8")
+                (run / "model_candidate_selection_trace.jsonl").write_text("trace\n", encoding="utf-8")
+                (run / "replay_runtime_trace.jsonl").write_text("runtime\n", encoding="utf-8")
+                (run / "replay_resume_checkpoint.json").write_text("{}", encoding="utf-8")
 
             review_old = (
                 root
@@ -334,8 +338,13 @@ class StorageMaintenanceTests(unittest.TestCase):
             )
 
             self.assertTrue(summary.lifecycle_gap_action_summary["mutation_performed"])
-            self.assertFalse((replay_old / "decision_rows.jsonl").exists())
+            self.assertTrue((replay_old / "decision_rows.jsonl").exists())
+            self.assertTrue((replay_old / "model_candidate_selection_trace.jsonl").exists())
+            self.assertFalse((replay_old / "replay_runtime_trace.jsonl").exists())
+            self.assertFalse((replay_old / "replay_resume_checkpoint.json").exists())
             self.assertTrue((replay_new / "decision_rows.jsonl").exists())
+            self.assertTrue((replay_new / "model_candidate_selection_trace.jsonl").exists())
+            self.assertTrue((replay_new / "replay_runtime_trace.jsonl").exists())
             self.assertFalse(review_old.exists())
             self.assertTrue(review_new.exists())
             compressed = triage / "failure_triage_rows.jsonl.gz"
@@ -376,6 +385,7 @@ class StorageMaintenanceTests(unittest.TestCase):
                     encoding="utf-8",
                 )
                 (run / "decision_rows.jsonl").write_text("row\n", encoding="utf-8")
+                (run / "replay_runtime_trace.jsonl").write_text("runtime\n", encoding="utf-8")
             review_old = (
                 root
                 / "storage"
@@ -411,6 +421,8 @@ class StorageMaintenanceTests(unittest.TestCase):
             self.assertTrue(review_new.exists())
             self.assertTrue((replay_old / "decision_rows.jsonl").exists())
             self.assertTrue((replay_new / "decision_rows.jsonl").exists())
+            self.assertTrue((replay_old / "replay_runtime_trace.jsonl").exists())
+            self.assertTrue((replay_new / "replay_runtime_trace.jsonl").exists())
 
 
 if __name__ == "__main__":

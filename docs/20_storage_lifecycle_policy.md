@@ -173,7 +173,7 @@ Reusable replay inputs include M01 market-regime inputs, M02 sector-context inpu
 
 Model-specific replay downloads include one-off files pulled only because a particular model pipeline needed them for a replay run, such as point-in-time option snapshots. Policy: delete after the replay closes once result summaries, manifests, acquisition receipts, and any reusable inputs are preserved.
 
-Model-pipeline replay result summaries are permanent. Each model pipeline must retain its compact replay result summary, scorecard/baseline comparison, manifest refs, and receipt evidence so later promotions remain comparable without keeping every non-reusable downloaded file online.
+Model-pipeline replay performance and review evidence is permanent. Each model pipeline must retain complete replay/review evidence needed for later model optimization and promotion audit, including replay decision rows, model-candidate selection traces, review rows, scorecards, baseline comparisons, manifest refs, and receipt evidence. Do not reduce or delete these files to save space. Space recovery for replay runs is limited to task diagnostics, task progress, runtime progress traces, checkpoints, stdout/stderr logs, and other sidecars that are not the model-performance or review evidence itself, after compact run provenance exists.
 
 ### Downloaded source data
 

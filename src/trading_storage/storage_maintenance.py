@@ -23,19 +23,31 @@ FOLD_STATE_GLOB = "model_training_fold_state_*.json"
 FOLD_SCOPED_SOURCE_ROOT = Path("storage/01_source_data/fold_scoped")
 TE_MONTHLY_SOURCE_ROOT = Path("storage/01_source_data/monthly_backfill/trading_economics_calendar_web")
 TE_RUN_SIDE_PRODUCT_FILE_NAMES = {"completion_receipt.json", "request_manifest.json"}
-REPLAY_VERBOSE_FILE_NAMES = {"decision_rows.jsonl", "option_feature_requirements.jsonl", "replay_progress.jsonl"}
+REPLAY_REVIEW_EVIDENCE_FILE_NAMES = {
+    "decision_rows.jsonl",
+    "entry_threshold_calibration.json",
+    "model_candidate_selection_trace.jsonl",
+    "replay_execution_receipt.json",
+}
+REPLAY_RUNTIME_SIDECAR_FILE_NAMES = {
+    "candidate_replay_progress.jsonl",
+    "option_feature_requirements.jsonl",
+    "replay_progress.jsonl",
+    "replay_resume_checkpoint.json",
+    "replay_runtime_trace.jsonl",
+}
 ATTRIBUTION_VERBOSE_FILE_NAMES = {"event_interpretations.jsonl", "event_family_occurrence_scan.jsonl"}
 CURRENT_MODEL_WORKER_FOLD_RE = re.compile(r"^fold_[a-z0-9]+_20\d{2}$")
 LIFECYCLE_GAP_SELECTORS: tuple[dict[str, Any], ...] = (
     {
         "artifact_ref": "storage/05_replay_datasets/promotion_replay_candidate_policy/replay_execution_runs",
         "artifact_class": "runtime_evidence",
-        "issue": "missing_compact_contract",
+        "issue": "closed_run_runtime_sidecars",
         "action": "compact",
-        "final_handling_method": "delete",
+        "final_handling_method": "delete_runtime_sidecars",
         "trigger_required": "replay_run_completed",
         "consumer_or_use": "model promotion replay audit and dashboard model posture",
-        "required_followup": "write compact replay run manifest and preserve promotion-linked exceptions before removing verbose decision rows",
+        "required_followup": "write compact replay run manifest and preserve replay performance/review evidence before removing task progress, runtime trace, checkpoint, or log sidecars",
     },
     {
         "artifact_ref": "storage/05_replay_datasets/promotion_replay_candidate_policy/post_replay_review_runs",
@@ -489,7 +501,7 @@ def _replay_execution_gap_inventory(path: Path, *, retain_recent_count: int) -> 
         validation_status = str(receipt.get("validation_status") or "").lower()
         if validation_status not in {"passed", "succeeded", "success"}:
             continue
-        inventory = _named_file_inventory(run, REPLAY_VERBOSE_FILE_NAMES)
+        inventory = _named_file_inventory(run, REPLAY_RUNTIME_SIDECAR_FILE_NAMES)
         if int(inventory["file_count"]) > 0:
             directory_count += 1
         file_count += int(inventory["file_count"])
@@ -815,9 +827,14 @@ def _compact_replay_execution_runs(
     candidate_count = 0
     for run in runs:
         receipt = _read_json_object(run / "replay_execution_receipt.json") or {}
-        verbose_files = [path for path in sorted(run.iterdir()) if path.is_file() and path.name in REPLAY_VERBOSE_FILE_NAMES]
+        runtime_sidecar_files = [
+            path for path in sorted(run.iterdir()) if path.is_file() and path.name in REPLAY_RUNTIME_SIDECAR_FILE_NAMES
+        ]
+        review_evidence_files = [
+            path for path in sorted(run.iterdir()) if path.is_file() and path.name in REPLAY_REVIEW_EVIDENCE_FILE_NAMES
+        ]
         if run not in retained:
-            candidate_count += len(verbose_files)
+            candidate_count += len(runtime_sidecar_files)
         validation_status = str(receipt.get("validation_status") or "").lower()
         row = {
             "run_id": run.name,
@@ -827,15 +844,18 @@ def _compact_replay_execution_runs(
             "candidate_fold_id": receipt.get("candidate_fold_id"),
             "decision_row_count": receipt.get("decision_row_count"),
             "target_refs": receipt.get("target_refs"),
-            "verbose_file_count": len(verbose_files),
-            "verbose_byte_count": sum(path.stat().st_size for path in verbose_files),
-            "retained_full_verbose": run in retained,
+            "runtime_sidecar_file_count": len(runtime_sidecar_files),
+            "runtime_sidecar_byte_count": sum(path.stat().st_size for path in runtime_sidecar_files),
+            "review_evidence_file_count": len(review_evidence_files),
+            "review_evidence_byte_count": sum(path.stat().st_size for path in review_evidence_files),
+            "review_evidence_preserved": True,
+            "retained_full_runtime_sidecars": run in retained,
         }
         if apply and run not in retained and validation_status in {"passed", "succeeded", "success"}:
-            for path in verbose_files:
+            for path in runtime_sidecar_files:
                 deleted_rows.append(_delete_file(path, root=root, include_hash=include_hashes))
-        elif verbose_files and run not in retained:
-            skipped_count += len(verbose_files)
+        elif runtime_sidecar_files and run not in retained:
+            skipped_count += len(runtime_sidecar_files)
         run_rows.append(row)
     compact = {
         "contract_type": "storage_replay_execution_compact_manifest",
@@ -844,9 +864,10 @@ def _compact_replay_execution_runs(
         "run_count": len(runs),
         "recent_full_run_retention_count": retain_recent_count,
         "run_summaries": run_rows,
-        "deleted_verbose_file_count": len(deleted_rows),
-        "deleted_verbose_byte_count": sum(int(row.get("byte_count") or 0) for row in deleted_rows),
-        "skipped_verbose_file_count": skipped_count,
+        "preserved_review_evidence_file_names": sorted(REPLAY_REVIEW_EVIDENCE_FILE_NAMES),
+        "deleted_runtime_sidecar_file_count": len(deleted_rows),
+        "deleted_runtime_sidecar_byte_count": sum(int(row.get("byte_count") or 0) for row in deleted_rows),
+        "skipped_runtime_sidecar_file_count": skipped_count,
         "mutation_performed": bool(deleted_rows),
     }
     output_path = output_root / "replay_execution_runs_compact_manifest.json"
@@ -855,12 +876,12 @@ def _compact_replay_execution_runs(
     return {
         "contract_type": "storage_lifecycle_gap_action_receipt",
         "artifact_ref": _relative_path(root, artifact_root),
-        "action": "compact_then_delete",
-        "final_handling_method": "delete",
+        "action": "compact_then_delete_runtime_sidecars",
+        "final_handling_method": "delete_runtime_sidecars",
         "compact_ref": _relative_path(root, output_path),
         "candidate_count": candidate_count,
         "mutated_count": len(deleted_rows),
-        "mutated_byte_count": compact["deleted_verbose_byte_count"],
+        "mutated_byte_count": compact["deleted_runtime_sidecar_byte_count"],
         "skipped_count": skipped_count,
         "mutation_performed": bool(deleted_rows),
     }
