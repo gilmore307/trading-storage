@@ -1,0 +1,7 @@
+event_time,country,event,source_event_type,reference,actual,previous,consensus,te_forecast,revised,importance,symbol
+2019-02-01T08:30:00-05:00,United States,Non Farm Payrolls,non farm payrolls,JAN,304K,222K,165K,170K,®,3,
+2019-02-06T08:30:00-05:00,United States,Balance of Trade,balance of trade,NOV,$-49.3B,$-55.7B,$-54B,$-53B,®,3,
+2019-02-13T08:30:00-05:00,United States,Core Inflation Rate YoY,core inflation rate,JAN,2.2%,2.2%,2.1%,2%,,3,
+2019-02-13T08:30:00-05:00,United States,Inflation Rate YoY,inflation rate,JAN,1.6%,1.9%,1.5%,1.9%,,3,
+2019-02-14T08:30:00-05:00,United States,Retail Sales MoM,retail sales mom,DEC,-1.2%,0.1%,0.2%,0.3%,®,3,
+2019-02-21T08:30:00-05:00,United States,Durable Goods Orders MoM,durable goods orders,DEC,1.2%,1%,1.5%,2.5%,®,3,

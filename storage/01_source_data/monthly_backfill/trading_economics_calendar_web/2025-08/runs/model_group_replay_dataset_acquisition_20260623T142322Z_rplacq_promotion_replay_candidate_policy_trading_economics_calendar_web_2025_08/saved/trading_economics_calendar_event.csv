@@ -1,0 +1,4 @@
+event_time,country,event,source_event_type,reference,actual,previous,consensus,te_forecast,revised,importance,symbol
+2025-08-01T08:30:00-04:00,United States,Non Farm Payrolls,non farm payrolls,JUL,73K,14K,,,®,3,
+2025-08-01T08:30:00-04:00,United States,Unemployment Rate,unemployment rate,JUL,4.2%,4.1%,,,,3,
+2025-08-01T10:00:00-04:00,United States,ISM Manufacturing PMI,business confidence,JUL,48.0,49.0,,,,3,

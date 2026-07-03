@@ -1,0 +1,9 @@
+event_time,country,event,source_event_type,reference,actual,previous,consensus,te_forecast,revised,importance,symbol
+2019-05-03T08:30:00-04:00,United States,Non Farm Payrolls,non farm payrolls,APR,263K,189K,185K,178K,®,3,
+2019-05-09T08:30:00-04:00,United States,Balance of Trade,balance of trade,MAR,$-50B,$-49.3B,$-50.2B,$ -50.1B,®,3,
+2019-05-10T08:30:00-04:00,United States,Core Inflation Rate YoY,core inflation rate,APR,2.1%,2%,2.1%,2%,,3,
+2019-05-10T08:30:00-04:00,United States,Inflation Rate YoY,inflation rate,APR,2%,1.9%,2.1%,1.9%,,3,
+2019-05-15T08:30:00-04:00,United States,Retail Sales MoM,retail sales mom,APR,-0.2%,1.7%,0.2%,0.3%,®,3,
+2019-05-24T08:30:00-04:00,United States,Durable Goods Orders MoM,durable goods orders,APR,-2.1%,1.7%,-2%,-1.7%,®,3,
+2019-05-31T08:30:00-04:00,United States,Personal Income MoM,personal income,APR,0.5%,0.1%,0.3%,0.2%,,3,
+2019-05-31T08:30:00-04:00,United States,Personal Spending MoM,personal spending,APR,0.3%,1.1%,0.2%,0.1%,®,3,

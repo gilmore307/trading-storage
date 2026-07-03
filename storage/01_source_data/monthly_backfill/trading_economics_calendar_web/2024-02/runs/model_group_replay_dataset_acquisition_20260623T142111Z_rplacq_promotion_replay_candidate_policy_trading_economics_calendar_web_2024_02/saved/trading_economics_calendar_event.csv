@@ -1,0 +1,2 @@
+event_time,country,event,source_event_type,reference,actual,previous,consensus,te_forecast,revised,importance,symbol
+2024-02-01T10:00:00-05:00,United States,ISM Manufacturing PMI,business confidence,JAN,49.1,47.1,,,®,3,

@@ -1,0 +1,7 @@
+event_time,country,event,source_event_type,reference,actual,previous,consensus,te_forecast,revised,importance,symbol
+2021-11-03T14:30:00-04:00,United States,Fed Press Conference,interest rate,,,,,,,3,
+2021-11-23T10:45:00-05:00,United States,Markit Manufacturing PMI Flash,manufacturing pmi,NOV,59.1,58.4,,,,3,
+2021-11-23T10:45:00-05:00,United States,Markit Services PMI Flash,services pmi,NOV,57,58.7,,,,3,
+2021-11-24T15:00:00-05:00,United States,FOMC Minutes,interest rate,,,,,,,3,
+2021-11-29T16:05:00-05:00,United States,Fed Chair Powell Speech,interest rate,,,,,,,3,
+2021-11-30T11:00:00-05:00,United States,Fed Chair Powell Testimony,interest rate,,,,,,,3,

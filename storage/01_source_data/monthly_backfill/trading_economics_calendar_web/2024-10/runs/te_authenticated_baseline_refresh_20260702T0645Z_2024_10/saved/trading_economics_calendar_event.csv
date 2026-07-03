@@ -1,0 +1,3 @@
+event_time,country,event,source_event_type,reference,actual,previous,consensus,te_forecast,revised,importance,symbol
+2024-10-01T10:00:00-04:00,United States,ISM Manufacturing PMI,business confidence,SEP,47.2,47.2,47.5,48.3,,3,
+2024-10-01T10:00:00-04:00,United States,JOLTs Job Openings,job offers,AUG,8.04M,7.711M,7.655M,7.65M,®,3,

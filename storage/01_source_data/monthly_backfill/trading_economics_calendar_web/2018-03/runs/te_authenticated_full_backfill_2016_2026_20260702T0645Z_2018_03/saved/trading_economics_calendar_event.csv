@@ -1,0 +1,11 @@
+event_time,country,event,source_event_type,reference,actual,previous,consensus,te_forecast,revised,importance,symbol
+2018-03-01T08:30:00-05:00,United States,Personal Income MoM,personal income,JAN,0.4%,0.4%,0.3%,0.3%,,3,
+2018-03-01T08:30:00-05:00,United States,Personal Spending MoM,personal spending,JAN,0.2%,0.4%,0.2%,0.3%,,3,
+2018-03-07T08:30:00-05:00,United States,Balance of Trade,balance of trade,JAN,$-56.6B,$-53.9B,$-55.1B,$ -52.8B,®,3,
+2018-03-09T08:30:00-05:00,United States,Non Farm Payrolls,non farm payrolls,FEB,313K,239K,200K,192K,®,3,
+2018-03-13T07:30:00-04:00,United States,Core Inflation Rate YoY,core inflation rate,FEB,1.8%,1.8%,1.8%,1.8%,,3,
+2018-03-13T07:30:00-04:00,United States,Inflation Rate YoY,inflation rate,FEB,2.2%,2.1%,2.2%,2.10%,,3,
+2018-03-14T07:30:00-04:00,United States,Retail Sales MoM,retail sales mom,FEB,-0.1%,-0.1%,0.3%,0.4%,®,3,
+2018-03-23T07:30:00-04:00,United States,Durable Goods Orders MoM,durable goods orders,FEB,3.1%,-3.5%,1.5%,1%,®,3,
+2018-03-29T07:30:00-04:00,United States,Personal Income MoM,personal income,FEB,0.4%,0.4%,0.4%,0.4%,,3,
+2018-03-29T07:30:00-04:00,United States,Personal Spending MoM,personal spending,FEB,0.2%,0.2%,0.2%,0.2%,,3,

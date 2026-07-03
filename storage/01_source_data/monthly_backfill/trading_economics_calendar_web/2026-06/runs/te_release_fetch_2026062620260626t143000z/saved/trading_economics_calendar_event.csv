@@ -1,0 +1,13 @@
+event_time,country,event,source_event_type,reference,actual,previous,consensus,te_forecast,revised,importance,symbol
+2026-06-26T08:30:00-04:00,United States,Goods Trade Balance Adv,goods trade balance,MAY,$-105.8B,$-83.01B,,,®,3,
+2026-06-26T08:30:00-04:00,United States,Retail Inventories Ex Autos MoM Adv,retail inventories ex autos,MAY,0.4%,0.7%,,,®,3,
+2026-06-26T08:30:00-04:00,United States,Wholesale Inventories MoM Adv,wholesale inventories,MAY,0.3%,0.7%,,,®,3,
+2026-06-26T10:00:00-04:00,United States,Michigan Consumer Sentiment Final,consumer confidence,JUN,49.5,44.8,,,,3,
+2026-06-26T10:00:00-04:00,United States,Michigan 5 Year Inflation Expectations Final,michigan 5 year inflation expectations,JUN,3.3%,3.9%,,,,3,
+2026-06-26T10:00:00-04:00,United States,Michigan Consumer Expectations Final,michigan consumer expectations,JUN,50.7,44.1,,,,3,
+2026-06-26T10:00:00-04:00,United States,Michigan Current Conditions Final,michigan current economic conditions,JUN,47.7,45.8,,,,3,
+2026-06-26T10:00:00-04:00,United States,Michigan Inflation Expectations Final,michigan inflation expectations,JUN,4.6%,4.8%,,,,3,
+2026-06-26T10:30:00-04:00,United States,Fed Williams Speech,interest rate,,,,,,,3,
+2026-06-26T11:30:00-04:00,United States,Fed Kashkari Speech,interest rate,,,,,,,3,
+2026-06-26T13:00:00-04:00,United States,Baker Hughes Oil Rig Count,crude oil rigs,JUN/26,,433,,,,3,
+2026-06-26T13:00:00-04:00,United States,Baker Hughes Total Rigs Count,total rigs,JUN/26,,563,,,,3,

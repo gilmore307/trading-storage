@@ -1,0 +1,7 @@
+event_time,country,event,source_event_type,reference,actual,previous,consensus,te_forecast,revised,importance,symbol
+2023-06-14T14:00:00-04:00,United States,Fed Interest Rate Decision,interest rate,,5.25%,5.25%,,,,3,
+2023-06-14T14:30:00-04:00,United States,Fed Press Conference,interest rate,,,,,,,3,
+2023-06-21T10:00:00-04:00,United States,Fed Chair Powell Testimony,interest rate,,,,,,,3,
+2023-06-22T10:00:00-04:00,United States,Fed Chair Powell Testimony,interest rate,,,,,,,3,
+2023-06-28T09:30:00-04:00,United States,Fed Chair Powell Speech,interest rate,,,,,,,3,
+2023-06-29T02:30:00-04:00,United States,Fed Chair Powell Speech,interest rate,,,,,,,3,

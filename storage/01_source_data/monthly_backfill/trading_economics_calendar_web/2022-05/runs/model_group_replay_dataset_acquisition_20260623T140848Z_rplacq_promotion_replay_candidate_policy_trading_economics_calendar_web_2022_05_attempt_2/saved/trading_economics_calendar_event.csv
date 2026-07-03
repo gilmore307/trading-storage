@@ -1,0 +1,4 @@
+event_time,country,event,source_event_type,reference,actual,previous,consensus,te_forecast,revised,importance,symbol
+2022-05-04T14:30:00-04:00,United States,Fed Press Conference,interest rate,,,,,,,3,
+2022-05-17T14:00:00-04:00,United States,Fed Chair Powell Speech,interest rate,,,,,,,3,
+2022-05-25T14:00:00-04:00,United States,FOMC Minutes,interest rate,,,,,,,3,

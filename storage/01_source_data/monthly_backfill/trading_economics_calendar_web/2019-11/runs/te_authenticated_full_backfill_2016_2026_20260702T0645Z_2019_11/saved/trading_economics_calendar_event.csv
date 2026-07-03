@@ -1,0 +1,9 @@
+event_time,country,event,source_event_type,reference,actual,previous,consensus,te_forecast,revised,importance,symbol
+2019-11-01T08:30:00-04:00,United States,Non Farm Payrolls,non farm payrolls,OCT,128K,180K,89K,100K,®,3,
+2019-11-05T09:30:00-05:00,United States,Balance of Trade,balance of trade,SEP,$-52.5B,$-55B,$-52.5B,$-52.0B,®,3,
+2019-11-13T09:30:00-05:00,United States,Core Inflation Rate YoY,core inflation rate,OCT,2.3%,2.4%,2.4%,2.4%,,3,
+2019-11-13T09:30:00-05:00,United States,Inflation Rate YoY,inflation rate,OCT,1.8%,1.7%,1.7%,1.6%,,3,
+2019-11-15T09:30:00-05:00,United States,Retail Sales MoM,retail sales mom,OCT,0.3%,-0.3%,0.2%,0.3%,,3,
+2019-11-27T09:30:00-05:00,United States,Durable Goods Orders MoM,durable goods orders,OCT,0.6%,-1.4%,-0.8%,-0.6%,®,3,
+2019-11-27T11:00:00-05:00,United States,Personal Income MoM,personal income,OCT,0.0%,0.3%,0.3%,0.2%,,3,
+2019-11-27T11:00:00-05:00,United States,Personal Spending MoM,personal spending,OCT,0.3%,0.2%,0.3%,0.2%,,3,

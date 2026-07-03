@@ -1,0 +1,9 @@
+event_time,country,event,source_event_type,reference,actual,previous,consensus,te_forecast,revised,importance,symbol
+2020-06-04T08:30:00-04:00,United States,Balance of Trade,balance of trade,APR,$-49.4B,$-42.3B,$-49B,$ -54.3B,®,3,
+2020-06-05T08:30:00-04:00,United States,Non Farm Payrolls,non farm payrolls,MAY,2509K,-20687K,-8000K,-8870K,®,3,
+2020-06-10T08:30:00-04:00,United States,Core Inflation Rate YoY,core inflation rate,MAY,1.2%,1.4%,1.3%,1.2%,,3,
+2020-06-10T08:30:00-04:00,United States,Inflation Rate YoY,inflation rate,MAY,0.1%,0.3%,0.2%,0.2%,,3,
+2020-06-16T08:30:00-04:00,United States,Retail Sales MoM,retail sales mom,MAY,17.7%,-14.7%,8%,7.5%,®,3,
+2020-06-25T08:30:00-04:00,United States,Durable Goods Orders MoM,durable goods orders,MAY,15.8%,-18.1%,10.9%,8.5%,®,3,
+2020-06-26T08:30:00-04:00,United States,Personal Income MoM,personal income,MAY,-4.2%,10.8%,-6%,-5.6%,®,3,
+2020-06-26T08:30:00-04:00,United States,Personal Spending MoM,personal spending,MAY,8.2%,-12.6%,9%,9.5%,®,3,

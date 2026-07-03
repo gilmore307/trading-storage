@@ -1,0 +1,8 @@
+event_time,country,event,source_event_type,reference,actual,previous,consensus,te_forecast,revised,importance,symbol
+2021-09-02T08:30:00-04:00,United States,Balance of Trade,balance of trade,JUL,$-70B,$-73.2B,$-71B,$-70B,®,3,
+2021-09-03T08:30:00-04:00,United States,Non Farm Payrolls,non farm payrolls,AUG,235K,1053K,750K,750K,®,3,
+2021-09-14T08:30:00-04:00,United States,Core Inflation Rate YoY,core inflation rate,AUG,4%,4.3%,4.2%,4.3%,,3,
+2021-09-14T08:30:00-04:00,United States,Inflation Rate YoY,inflation rate,AUG,5.3%,5.4%,5.3%,5.3%,,3,
+2021-09-16T08:30:00-04:00,United States,Retail Sales MoM,retail sales mom,AUG,0.7%,-1.8%,-0.8%,-0.7%,®,3,
+2021-09-22T14:30:00-04:00,United States,Fed Press Conference,interest rate,,,,,,,3,
+2021-09-27T08:30:00-04:00,United States,Durable Goods Orders MoM,durable goods orders,AUG,1.8%,0.5%,0.7%,0.4%,®,3,

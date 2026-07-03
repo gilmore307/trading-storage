@@ -1,0 +1,6 @@
+event_time,country,event,source_event_type,reference,actual,previous,consensus,te_forecast,revised,importance,symbol
+2023-03-07T10:00:00-05:00,United States,Fed Chair Powell Testimony,interest rate,,,,,,,3,
+2023-03-08T10:00:00-05:00,United States,Fed Chair Powell Testimony,interest rate,,,,,,,3,
+2023-03-13T10:30:00-04:00,United States,Closed-door Fed Emergency Meeting,interest rate,,,,,,,3,
+2023-03-22T13:00:00-04:00,United States,Fed Interest Rate Decision,interest rate,,5.0%,4.75%,,,,3,
+2023-03-22T13:30:00-04:00,United States,Fed Press Conference,interest rate,,,,,,,3,

@@ -1,0 +1,4 @@
+event_time,country,event,source_event_type,reference,actual,previous,consensus,te_forecast,revised,importance,symbol
+2026-06-29T10:30:00-04:00,United States,Dallas Fed Manufacturing Index,dallas fed manufacturing index,JUN,0,0.4,,,,3,
+2026-06-29T11:30:00-04:00,United States,3-Month Bill Auction,3 month bill yield,,,3.695%,,,,3,
+2026-06-29T11:30:00-04:00,United States,6-Month Bill Auction,6 month bill yield,,,3.840%,,,,3,

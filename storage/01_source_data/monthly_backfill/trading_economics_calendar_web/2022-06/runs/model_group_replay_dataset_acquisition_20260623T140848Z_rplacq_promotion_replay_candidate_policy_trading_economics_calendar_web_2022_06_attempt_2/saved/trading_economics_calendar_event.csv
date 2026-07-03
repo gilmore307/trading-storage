@@ -1,0 +1,5 @@
+event_time,country,event,source_event_type,reference,actual,previous,consensus,te_forecast,revised,importance,symbol
+2022-06-15T14:30:00-04:00,United States,Fed Press Conference,interest rate,,,,,,,3,
+2022-06-22T09:30:00-04:00,United States,Fed Chair Powell Testimony,interest rate,,,,,,,3,
+2022-06-23T10:00:00-04:00,United States,Fed Chair Powell Testimony,interest rate,,,,,,,3,
+2022-06-29T09:00:00-04:00,United States,Fed Chair Powell Speech,interest rate,,,,,,,3,
