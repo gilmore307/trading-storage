@@ -25,6 +25,25 @@ FOLD_SCOPED_SOURCE_ROOT = Path("storage/01_source_data/fold_scoped")
 TE_MONTHLY_SOURCE_ROOT = Path("storage/01_source_data/monthly_backfill/trading_economics_calendar_web")
 TE_RUN_SIDE_PRODUCT_FILE_NAMES = {"completion_receipt.json", "request_manifest.json"}
 PROOF_SIDECAR_FILE_NAMES = {"completion_receipt.json", "request_manifest.json"}
+EVENT_FEED_MONTHLY_RECEIPT_ACTION_REF = "storage/01_source_data/monthly_backfill/event_feed_completion_receipts"
+EVENT_FEED_MONTHLY_SOURCE_ARTIFACTS = {
+    "alpaca_news": "equity_news.csv",
+    "gdelt_news": "gdelt_article.csv",
+    "release_calendar": "release_calendar.csv",
+    "sec_company_financials": "sec_company_fact.csv",
+    "trading_economics_calendar_web": "trading_economics_calendar_event.csv",
+}
+EVENT_FEED_SQL_ONLY_RUN_SIDECAR_SOURCE_IDS = {
+    "alpaca_news",
+    "gdelt_news",
+    "release_calendar",
+    "sec_company_financials",
+}
+EVENT_FEED_RUN_SIDECAR_FILE_NAMES = {
+    "completion_receipt.json",
+    "request_manifest.json",
+    "schema.json",
+}
 PROOF_SIDECAR_AUDIT_ROOTS = (
     "storage/01_source_data",
     "storage/02_control_plane",
@@ -139,6 +158,16 @@ LIFECYCLE_GAP_SELECTORS: tuple[dict[str, Any], ...] = (
         "trigger_required": "calendar_refresh_completed",
         "consumer_or_use": "TE canonical source payload provenance and freshness dashboard",
         "required_followup": "write month-level source provenance and roll duplicate run-local receipts/manifests without touching saved or cleaned TE source rows",
+    },
+    {
+        "artifact_ref": EVENT_FEED_MONTHLY_RECEIPT_ACTION_REF,
+        "artifact_class": "runtime_evidence",
+        "issue": "redundant_monthly_completion_receipts",
+        "action": "compact",
+        "final_handling_method": "delete",
+        "trigger_required": "source_month_saved_payload_verified",
+        "consumer_or_use": "event-feed readiness after consumers can read saved monthly source payloads",
+        "required_followup": "write source-month receipt compaction manifest and delete only succeeded monthly receipts with matching saved payloads outside dashboard active inputs",
     },
     {
         "artifact_ref": "storage/04_execution_artifacts/runtime/realtime_monitor",
@@ -1495,6 +1524,189 @@ def _compact_te_monthly_run_side_products(
     }
 
 
+def _month_dir_saved_artifacts(month_dir: Path, filename: str) -> tuple[Path, ...]:
+    candidates = sorted(month_dir.glob(f"runs/*/saved/{filename}"))
+    candidates.extend(sorted(month_dir.glob(f"saved/{filename}")))
+    return tuple(path for path in dict.fromkeys(candidates) if path.is_file() and not path.is_symlink())
+
+
+def _receipt_has_success(receipt: Mapping[str, Any]) -> bool:
+    if str(receipt.get("status") or "").lower() in COMPLETE_STATUSES:
+        return True
+    runs = receipt.get("runs")
+    if not isinstance(runs, Sequence) or isinstance(runs, (str, bytes)):
+        return False
+    return any(
+        isinstance(run, Mapping) and str(run.get("status") or "").lower() in COMPLETE_STATUSES
+        for run in runs
+    )
+
+
+def _receipt_row_counts(receipt: Mapping[str, Any]) -> dict[str, Any]:
+    if isinstance(receipt.get("row_counts"), Mapping):
+        return dict(receipt["row_counts"])
+    runs = receipt.get("runs")
+    if not isinstance(runs, Sequence) or isinstance(runs, (str, bytes)):
+        return {}
+    row_counts: dict[str, int] = {}
+    for run in runs:
+        if not isinstance(run, Mapping) or str(run.get("status") or "").lower() not in COMPLETE_STATUSES:
+            continue
+        values = run.get("row_counts")
+        if not isinstance(values, Mapping):
+            continue
+        for key, value in values.items():
+            row_counts[str(key)] = row_counts.get(str(key), 0) + int(value or 0)
+    return row_counts
+
+
+def _event_feed_month_dirs(root: Path) -> tuple[tuple[str, Path], ...]:
+    base = root / "storage/01_source_data/monthly_backfill"
+    month_dirs: list[tuple[str, Path]] = []
+    for source_id in sorted(EVENT_FEED_MONTHLY_SOURCE_ARTIFACTS):
+        source_root = base / source_id
+        if not source_root.exists():
+            continue
+        for month_dir in _run_dirs(source_root):
+            if re.fullmatch(r"20\d{2}-\d{2}", month_dir.name):
+                month_dirs.append((source_id, month_dir))
+    return tuple(month_dirs)
+
+
+def _compact_event_feed_monthly_completion_receipts(
+    *,
+    root: Path,
+    output_root: Path,
+    generated_at_utc: str,
+    apply: bool,
+    include_hashes: bool,
+) -> dict[str, Any]:
+    dashboard_active_refs = _proof_dashboard_active_input_refs(root)
+    source_month_rows: list[dict[str, Any]] = []
+    run_sidecar_rows: list[dict[str, Any]] = []
+    deleted_rows: list[dict[str, Any]] = []
+    candidate_count = 0
+    skipped_count = 0
+    for source_id, month_dir in _event_feed_month_dirs(root):
+        receipt_path = month_dir / "completion_receipt.json"
+        if receipt_path.is_file() and not receipt_path.is_symlink():
+            receipt_ref = _relative_path(root, receipt_path)
+            filename = EVENT_FEED_MONTHLY_SOURCE_ARTIFACTS[source_id]
+            saved_artifacts = _month_dir_saved_artifacts(month_dir, filename)
+            receipt = _read_json_object(receipt_path) or {}
+            row_counts = _receipt_row_counts(receipt)
+            eligible = (
+                (bool(saved_artifacts) or bool(row_counts))
+                and _receipt_has_success(receipt)
+                and receipt_ref not in dashboard_active_refs
+            )
+            if eligible:
+                candidate_count += 1
+            else:
+                skipped_count += 1
+            source_month_rows.append(
+                {
+                    "source_id": source_id,
+                    "month": month_dir.name,
+                    "receipt_ref": receipt_ref,
+                    "status": receipt.get("status"),
+                    "row_counts": row_counts,
+                    "saved_payload_refs": [_relative_path(root, path) for path in saved_artifacts],
+                    "delete_eligible": eligible,
+                    "skip_reason": None
+                    if eligible
+                    else (
+                        "dashboard_active_input"
+                        if receipt_ref in dashboard_active_refs
+                        else "missing_saved_payload_or_row_counts"
+                        if not saved_artifacts and not row_counts
+                        else "receipt_not_succeeded"
+                    ),
+                }
+            )
+            if apply and eligible:
+                deleted_rows.append(_delete_file(receipt_path, root=root, include_hash=include_hashes))
+        if source_id not in EVENT_FEED_SQL_ONLY_RUN_SIDECAR_SOURCE_IDS:
+            continue
+        for run_dir in _run_dirs(month_dir / "runs"):
+            run_receipt = _read_json_object(run_dir / "completion_receipt.json") or {}
+            run_row_counts = _receipt_row_counts(run_receipt)
+            run_sidecars = [
+                run_dir / name
+                for name in sorted(EVENT_FEED_RUN_SIDECAR_FILE_NAMES)
+                if (run_dir / name).is_file() and not (run_dir / name).is_symlink()
+            ]
+            if not run_sidecars:
+                continue
+            active_sidecars = [
+                path for path in run_sidecars if _relative_path(root, path) in dashboard_active_refs
+            ]
+            skipped_count += len(active_sidecars)
+            deletable_sidecars = [path for path in run_sidecars if path not in active_sidecars]
+            run_eligible = bool(deletable_sidecars) and _receipt_has_success(run_receipt) and bool(run_row_counts)
+            if run_eligible:
+                candidate_count += len(deletable_sidecars)
+            else:
+                skipped_count += len(run_sidecars)
+            run_sidecar_rows.append(
+                {
+                    "source_id": source_id,
+                    "month": month_dir.name,
+                    "run_id": run_dir.name,
+                    "run_ref": _relative_path(root, run_dir),
+                    "status": run_receipt.get("status"),
+                    "row_counts": run_row_counts,
+                    "sidecar_refs": [_relative_path(root, path) for path in run_sidecars],
+                    "active_sidecar_refs": [_relative_path(root, path) for path in active_sidecars],
+                    "delete_eligible": run_eligible,
+                    "skip_reason": None
+                    if run_eligible
+                    else (
+                        "dashboard_active_input"
+                        if active_sidecars
+                        else "missing_row_counts"
+                        if not run_row_counts
+                        else "receipt_not_succeeded"
+                    ),
+                }
+            )
+            if apply and run_eligible:
+                for path in deletable_sidecars:
+                    deleted_rows.append(_delete_file(path, root=root, include_hash=include_hashes))
+    compact = {
+        "contract_type": "storage_event_feed_monthly_receipt_compaction_manifest",
+        "generated_at_utc": generated_at_utc,
+        "artifact_ref": EVENT_FEED_MONTHLY_RECEIPT_ACTION_REF,
+        "source_ids": sorted(EVENT_FEED_MONTHLY_SOURCE_ARTIFACTS),
+        "source_month_count": len(source_month_rows),
+        "source_month_summaries": source_month_rows,
+        "run_sidecar_count": len(run_sidecar_rows),
+        "run_sidecar_summaries": run_sidecar_rows,
+        "deleted_receipt_count": len(deleted_rows),
+        "deleted_receipt_byte_count": sum(int(row.get("byte_count") or 0) for row in deleted_rows),
+        "deleted_sidecar_file_count": len(deleted_rows),
+        "deleted_sidecar_byte_count": sum(int(row.get("byte_count") or 0) for row in deleted_rows),
+        "source_payload_mutation_performed": False,
+        "mutation_performed": bool(deleted_rows),
+    }
+    output_path = output_root / "event_feed_monthly_receipt_compaction_manifest.json"
+    if apply:
+        _write_json_object(output_path, compact)
+    return {
+        "contract_type": "storage_lifecycle_gap_action_receipt",
+        "artifact_ref": EVENT_FEED_MONTHLY_RECEIPT_ACTION_REF,
+        "action": "compact_then_delete_redundant_monthly_receipts",
+        "final_handling_method": "delete",
+        "compact_ref": _relative_path(root, output_path),
+        "candidate_count": candidate_count,
+        "mutated_count": len(deleted_rows),
+        "mutated_byte_count": compact["deleted_receipt_byte_count"],
+        "skipped_count": skipped_count,
+        "mutation_performed": bool(deleted_rows),
+        "source_payload_mutation_performed": False,
+    }
+
+
 def _realtime_loop_has_exception(receipt: Mapping[str, Any] | None) -> bool:
     if not receipt:
         return True
@@ -1775,6 +1987,15 @@ def execute_lifecycle_gap_actions(
             generated_at_utc=generated,
             apply=apply,
             retain_recent_count=retain_recent_te_monthly_runs,
+            include_hashes=include_hashes,
+        ))
+    if enabled(EVENT_FEED_MONTHLY_RECEIPT_ACTION_REF):
+        receipts.append(
+        _compact_event_feed_monthly_completion_receipts(
+            root=root,
+            output_root=resolved_output_root,
+            generated_at_utc=generated,
+            apply=apply,
             include_hashes=include_hashes,
         ))
     if enabled("storage/04_execution_artifacts/runtime/realtime_monitor"):

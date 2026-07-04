@@ -436,6 +436,29 @@ class StorageMaintenanceTests(unittest.TestCase):
                     encoding="utf-8",
                 )
 
+            release_month = root / "storage" / "01_source_data" / "monthly_backfill" / "release_calendar" / "2026-06"
+            release_payload = release_month / "runs" / "release_calendar_20260613T000000Z" / "saved" / "release_calendar.csv"
+            release_payload.parent.mkdir(parents=True)
+            release_payload.write_text("event_id,release_time\nr1,2026-06-13T08:30:00-04:00\n", encoding="utf-8")
+            (release_month / "completion_receipt.json").write_text(
+                json.dumps({"status": "succeeded", "row_counts": {"release_calendar": 1}}),
+                encoding="utf-8",
+            )
+            failed_news_month = root / "storage" / "01_source_data" / "monthly_backfill" / "gdelt_news" / "2026-06"
+            failed_news_payload = failed_news_month / "runs" / "gdelt_20260613T000000Z" / "saved" / "gdelt_article.csv"
+            failed_news_payload.parent.mkdir(parents=True)
+            failed_news_payload.write_text("article_id,seen_at\nn1,2026-06-13T08:30:00-04:00\n", encoding="utf-8")
+            (failed_news_month / "completion_receipt.json").write_text(
+                json.dumps({"status": "failed", "row_counts": {"gdelt_article": 1}}),
+                encoding="utf-8",
+            )
+            missing_payload_month = root / "storage" / "01_source_data" / "monthly_backfill" / "alpaca_news" / "2026-06"
+            missing_payload_month.mkdir(parents=True)
+            (missing_payload_month / "completion_receipt.json").write_text(
+                json.dumps({"status": "succeeded", "row_counts": {"equity_news": 1}}),
+                encoding="utf-8",
+            )
+
             realtime_old = root / "storage" / "04_execution_artifacts" / "runtime" / "realtime_monitor" / "20260610T000000Z"
             realtime_new = realtime_old.parent / "20260613T000000Z"
             for run in (realtime_old, realtime_new):
@@ -480,12 +503,17 @@ class StorageMaintenanceTests(unittest.TestCase):
             self.assertFalse((te_month_old / "completion_receipt.json").exists())
             self.assertFalse((te_month_old / "request_manifest.json").exists())
             self.assertTrue((te_month_new / "completion_receipt.json").exists())
+            self.assertTrue(release_payload.exists())
+            self.assertFalse((release_month / "completion_receipt.json").exists())
+            self.assertTrue((failed_news_month / "completion_receipt.json").exists())
+            self.assertFalse((missing_payload_month / "completion_receipt.json").exists())
             self.assertFalse(realtime_old.exists())
             self.assertTrue(realtime_new.exists())
             compact_root = root / "storage" / "90_lifecycle" / "maintenance" / "compact_contracts"
             self.assertTrue((compact_root / "replay_execution_runs_compact_manifest.json").exists())
             self.assertTrue((compact_root / "post_replay_review_latest_per_fold_manifest.json").exists())
             self.assertTrue((compact_root / "te_monthly_source_provenance_manifest.json").exists())
+            self.assertTrue((compact_root / "event_feed_monthly_receipt_compaction_manifest.json").exists())
 
     def test_lifecycle_gap_action_refs_limit_apply_scope(self) -> None:
         with tempfile.TemporaryDirectory() as raw_tmp:
