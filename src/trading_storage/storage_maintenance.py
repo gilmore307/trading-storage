@@ -26,6 +26,12 @@ TE_MONTHLY_SOURCE_ROOT = Path("storage/01_source_data/monthly_backfill/trading_e
 TE_RUN_SIDE_PRODUCT_FILE_NAMES = {"completion_receipt.json", "request_manifest.json"}
 PROOF_SIDECAR_FILE_NAMES = {"completion_receipt.json", "request_manifest.json"}
 EVENT_FEED_MONTHLY_RECEIPT_ACTION_REF = "storage/01_source_data/monthly_backfill/event_feed_completion_receipts"
+ALPACA_BARS_MONTHLY_SOURCE_ACTION_REF = "storage/01_source_data/monthly_backfill/alpaca_bars"
+ALPACA_BARS_RUN_SIDECAR_FILE_NAMES = {
+    "completion_receipt.json",
+    "request_manifest.json",
+    "schema.json",
+}
 EVENT_FEED_MONTHLY_SOURCE_ARTIFACTS = {
     "alpaca_news": "equity_news.csv",
     "gdelt_news": "gdelt_article.csv",
@@ -168,6 +174,16 @@ LIFECYCLE_GAP_SELECTORS: tuple[dict[str, Any], ...] = (
         "trigger_required": "source_month_saved_payload_verified",
         "consumer_or_use": "event-feed readiness after consumers can read saved monthly source payloads",
         "required_followup": "write source-month receipt compaction manifest and delete only succeeded monthly receipts with matching saved payloads outside dashboard active inputs",
+    },
+    {
+        "artifact_ref": ALPACA_BARS_MONTHLY_SOURCE_ACTION_REF,
+        "artifact_class": "runtime_evidence",
+        "issue": "sql_only_bar_source_receipt_bloat",
+        "action": "compact",
+        "final_handling_method": "delete",
+        "trigger_required": "sql_bar_source_month_verified_or_operator_rerun_confirmed",
+        "consumer_or_use": "M01/M02/M03/replay source readiness through compact Alpaca bars provenance",
+        "required_followup": "write symbol-month source provenance and delete verbose receipt/request/schema sidecars without touching SQL or model/replay evidence",
     },
     {
         "artifact_ref": "storage/04_execution_artifacts/runtime/realtime_monitor",
@@ -1006,6 +1022,8 @@ def _lifecycle_gap_inventory(root: Path, artifact_ref: str) -> dict[str, Any]:
         return _rolling_dir_inventory(path, retain_recent_count=24)
     if artifact_ref == TE_MONTHLY_SOURCE_ROOT.as_posix():
         return _te_monthly_run_side_product_inventory(path, retain_recent_count=24)
+    if artifact_ref == ALPACA_BARS_MONTHLY_SOURCE_ACTION_REF:
+        return _named_file_inventory(path, ALPACA_BARS_RUN_SIDECAR_FILE_NAMES)
     if artifact_ref.endswith("realtime_monitor"):
         return _realtime_monitor_gap_inventory(path, retain_recent_count=100)
     if artifact_ref.endswith("provider_task_keys") or artifact_ref.endswith("model_05_option_expression"):
@@ -1560,6 +1578,125 @@ def _receipt_row_counts(receipt: Mapping[str, Any]) -> dict[str, Any]:
     return row_counts
 
 
+def _alpaca_bar_month_dirs(root: Path) -> tuple[Path, ...]:
+    source_root = root / ALPACA_BARS_MONTHLY_SOURCE_ACTION_REF
+    if not source_root.exists():
+        return ()
+    month_dirs: list[Path] = []
+    for symbol_dir in _run_dirs(source_root):
+        for month_dir in _run_dirs(symbol_dir):
+            if re.fullmatch(r"20\d{2}-\d{2}", month_dir.name):
+                month_dirs.append(month_dir)
+    return tuple(sorted(month_dirs))
+
+
+def _alpaca_bar_source_timeframe(month_dir: Path) -> str:
+    task_key_path = month_dir / "task_key.json"
+    try:
+        task_key = _read_json_object(task_key_path) or {}
+    except OSError:
+        task_key = {}
+    params = task_key.get("params") if isinstance(task_key.get("params"), Mapping) else {}
+    timeframe = str(params.get("timeframe") or "").strip()
+    if timeframe:
+        return timeframe
+    for manifest_path in sorted((month_dir / "runs").glob("*/request_manifest.json")):
+        manifest = _read_json_object(manifest_path) or {}
+        params = manifest.get("params") if isinstance(manifest.get("params"), Mapping) else {}
+        timeframe = str(params.get("timeframe") or "").strip()
+        if timeframe:
+            return timeframe
+    return "1Min"
+
+
+def _compact_alpaca_bars_monthly_source_receipts(
+    *,
+    root: Path,
+    output_root: Path,
+    generated_at_utc: str,
+    apply: bool,
+    include_hashes: bool,
+) -> dict[str, Any]:
+    dashboard_active_refs = _proof_dashboard_active_input_refs(root)
+    source_month_rows: list[dict[str, Any]] = []
+    deleted_rows: list[dict[str, Any]] = []
+    candidate_count = 0
+    skipped_count = 0
+    for month_dir in _alpaca_bar_month_dirs(root):
+        symbol = month_dir.parent.name.upper()
+        receipt_path = month_dir / "completion_receipt.json"
+        receipt = _read_json_object(receipt_path) or {}
+        row_counts = _receipt_row_counts(receipt)
+        receipt_ref = _relative_path(root, receipt_path)
+        task_key_path = month_dir / "task_key.json"
+        sidecars = [
+            path
+            for path in [receipt_path, *(month_dir / "runs").glob("*/completion_receipt.json"), *(month_dir / "runs").glob("*/request_manifest.json"), *(month_dir / "runs").glob("*/schema.json")]
+            if path.is_file() and not path.is_symlink()
+        ]
+        active_sidecars = [path for path in sidecars if _relative_path(root, path) in dashboard_active_refs]
+        eligible = bool(sidecars) and not active_sidecars and (bool(row_counts) or _receipt_has_success(receipt))
+        if eligible:
+            candidate_count += len(sidecars)
+        else:
+            skipped_count += len(sidecars)
+        source_month_rows.append(
+            {
+                "source_id": "alpaca_bars",
+                "symbol": symbol,
+                "month": month_dir.name,
+                "source_month_ref": _relative_path(root, month_dir),
+                "receipt_ref": receipt_ref if receipt_path.exists() else None,
+                "task_key_ref": _relative_path(root, task_key_path) if task_key_path.exists() else None,
+                "status": "succeeded" if _receipt_has_success(receipt) else str(receipt.get("status") or ""),
+                "row_counts": row_counts,
+                "source_table": "model_01_market_regime_data_acquisition",
+                "timeframe": _alpaca_bar_source_timeframe(month_dir),
+                "retention": "sql_only_no_jsonl_or_csv_payload",
+                "sidecar_refs": [_relative_path(root, path) for path in sidecars],
+                "active_sidecar_refs": [_relative_path(root, path) for path in active_sidecars],
+                "delete_eligible": eligible,
+                "skip_reason": None
+                if eligible
+                else (
+                    "dashboard_active_input"
+                    if active_sidecars
+                    else "missing_row_counts_or_success_status"
+                ),
+            }
+        )
+        if apply and eligible:
+            for path in sidecars:
+                deleted_rows.append(_delete_file(path, root=root, include_hash=include_hashes))
+    compact = {
+        "contract_type": "storage_alpaca_bars_monthly_source_provenance_manifest",
+        "generated_at_utc": generated_at_utc,
+        "artifact_ref": ALPACA_BARS_MONTHLY_SOURCE_ACTION_REF,
+        "source_month_count": len(source_month_rows),
+        "source_month_summaries": source_month_rows,
+        "deleted_sidecar_file_count": len(deleted_rows),
+        "deleted_sidecar_byte_count": sum(int(row.get("byte_count") or 0) for row in deleted_rows),
+        "source_payload_mutation_performed": False,
+        "mutation_performed": bool(deleted_rows),
+    }
+    output_path = output_root / "alpaca_bars_monthly_source_provenance_manifest.json"
+    if apply:
+        _write_json_object(output_path, compact)
+    return {
+        "contract_type": "storage_lifecycle_gap_action_receipt",
+        "artifact_ref": ALPACA_BARS_MONTHLY_SOURCE_ACTION_REF,
+        "action": "compact_then_delete_alpaca_bar_receipt_sidecars",
+        "final_handling_method": "delete",
+        "compact_ref": _relative_path(root, output_path),
+        "candidate_count": candidate_count,
+        "mutated_count": len(deleted_rows),
+        "mutated_byte_count": compact["deleted_sidecar_byte_count"],
+        "skipped_count": skipped_count,
+        "mutation_performed": bool(deleted_rows),
+        "source_payload_mutation_performed": False,
+    }
+
+
 def _event_feed_month_dirs(root: Path) -> tuple[tuple[str, Path], ...]:
     base = root / "storage/01_source_data/monthly_backfill"
     month_dirs: list[tuple[str, Path]] = []
@@ -1992,6 +2129,15 @@ def execute_lifecycle_gap_actions(
     if enabled(EVENT_FEED_MONTHLY_RECEIPT_ACTION_REF):
         receipts.append(
         _compact_event_feed_monthly_completion_receipts(
+            root=root,
+            output_root=resolved_output_root,
+            generated_at_utc=generated,
+            apply=apply,
+            include_hashes=include_hashes,
+        ))
+    if enabled(ALPACA_BARS_MONTHLY_SOURCE_ACTION_REF):
+        receipts.append(
+        _compact_alpaca_bars_monthly_source_receipts(
             root=root,
             output_root=resolved_output_root,
             generated_at_utc=generated,

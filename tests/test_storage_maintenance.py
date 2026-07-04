@@ -573,6 +573,46 @@ class StorageMaintenanceTests(unittest.TestCase):
             self.assertTrue((replay_old / "replay_runtime_trace.jsonl").exists())
             self.assertTrue((replay_new / "replay_runtime_trace.jsonl").exists())
 
+    def test_alpaca_bars_receipt_sidecars_compact_then_delete(self) -> None:
+        with tempfile.TemporaryDirectory() as raw_tmp:
+            root = Path(raw_tmp)
+            month_dir = root / "storage" / "01_source_data" / "monthly_backfill" / "alpaca_bars" / "BTC" / "2016-01"
+            run_dir = month_dir / "runs" / "run_001"
+            run_dir.mkdir(parents=True)
+            (month_dir / "task_key.json").write_text(
+                json.dumps({"params": {"timeframe": "1Min"}}),
+                encoding="utf-8",
+            )
+            (month_dir / "completion_receipt.json").write_text(
+                json.dumps({"runs": [{"status": "succeeded", "row_counts": {"equity_bar": 0}}]}),
+                encoding="utf-8",
+            )
+            (run_dir / "completion_receipt.json").write_text(
+                json.dumps({"runs": [{"status": "succeeded", "row_counts": {"equity_bar": 0}}]}),
+                encoding="utf-8",
+            )
+            (run_dir / "request_manifest.json").write_text(json.dumps({"params": {"timeframe": "1Min"}}), encoding="utf-8")
+            (run_dir / "schema.json").write_text(json.dumps({"equity_bar": ["symbol"]}), encoding="utf-8")
+
+            summary = run_storage_maintenance(
+                root=root,
+                include_local_retention=False,
+                apply_lifecycle_gap_actions=True,
+                lifecycle_gap_action_refs=("storage/01_source_data/monthly_backfill/alpaca_bars",),
+                generated_at_utc="2026-07-04T04:30:00Z",
+            )
+
+            self.assertTrue(summary.lifecycle_gap_action_summary["mutation_performed"])
+            compact_path = root / "storage" / "90_lifecycle" / "maintenance" / "compact_contracts" / "alpaca_bars_monthly_source_provenance_manifest.json"
+            compact = json.loads(compact_path.read_text(encoding="utf-8"))
+            self.assertEqual(compact["source_month_summaries"][0]["symbol"], "BTC")
+            self.assertEqual(compact["source_month_summaries"][0]["row_counts"], {"equity_bar": 0})
+            self.assertTrue((month_dir / "task_key.json").exists())
+            self.assertFalse((month_dir / "completion_receipt.json").exists())
+            self.assertFalse((run_dir / "completion_receipt.json").exists())
+            self.assertFalse((run_dir / "request_manifest.json").exists())
+            self.assertFalse((run_dir / "schema.json").exists())
+
 
 if __name__ == "__main__":
     unittest.main()

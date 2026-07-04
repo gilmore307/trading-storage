@@ -275,6 +275,7 @@ By default, `scripts/lifecycle/run_storage_maintenance.py` is report-only. It do
 - post-replay failure-triage rows: compact failure-triage manifest, gzip verbose rows, remove uncompressed originals;
 - TE `_manifests/recent_refresh_runs`: compact TE recent-refresh provenance, keep recent receipts, roll older duplicate receipt directories forward without touching canonical TE source rows;
 - TE monthly source run side products: compact month-level source provenance, keep recent run-local receipts/manifests, and roll older `completion_receipt.json` / `request_manifest.json` side products without touching `saved/` or `cleaned/` source payloads;
+- Alpaca bars SQL-only sidecars: compact symbol-month source provenance, keep `task_key.json`, and delete verbose receipt/request/schema sidecars without touching SQL rows or model/replay evidence;
 - realtime monitor timestamp directories: compact rolling summary, keep recent full loops and exception loops, roll older normal completed loop directories forward;
 - M05/provider task keys: compact aggregate manifests only; deletion remains blocked while task-key status fields are missing;
 - scheduler JSONL and stage dashboard/coverage snapshots: compact rollup summaries only; truncation/deletion remains blocked until segmented tails/latest pointers are verified.
