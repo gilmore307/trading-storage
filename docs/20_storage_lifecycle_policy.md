@@ -53,9 +53,9 @@ Do not use blind scheduled deletion as the primary lifecycle mechanism. Preferre
 
 Owns the unified control-plane view for lifecycle maintenance: lifecycle requests, priorities, deadlines, task summary visibility, scheduling intent, run/artifact/ready refs, workflow state, promotion/review decisions, and lifecycle request routing. Storage lifecycle work should enter normal operation through `manager_request`/`storage_lifecycle_request` so it is visible beside data/model tasks.
 
-Manager may request, prioritize, schedule, and observe storage lifecycle work, but it does not delete files, compress SQL, mutate storage paths, choose physical storage actions by itself, or bypass storage protected-set checks.
+Manager may request, prioritize, schedule, and observe storage lifecycle work, but it must not bypass storage protected-set checks or mutate protected source paths. For rerun/reset cleanup, manager owns the logical cutpoint and affected fold/target scope; storage owns the physical mutation and receipt trail for paths under storage control.
 
-Model-group reruns use this same lifecycle boundary. A manager `model_group_rerun_plan` may declare rerun-invalidated artifact candidates and embed a `storage_lifecycle_request`, but that request is classification evidence only. Storage remains responsible for artifact-index coverage, protected-set clearance, quarantine/recheck, lifecycle review, physical mutation, receipts, and tombstones.
+Model-group reruns use this same lifecycle boundary. A manager `model_group_rerun_plan` declares the earliest affected `layer.stage`, affected fold/target scope, and downstream generated artifacts to clear before scheduler reentry. Storage remains responsible for artifact-index coverage, protected-set clearance, quarantine/recheck when required, physical mutation, receipts, and tombstones. For generated downstream outputs, diagnostics, receipts, replay/evaluation/promotion artifacts, and dashboard/read-model artifacts inside the accepted reset scope, the intended lifecycle outcome is physical deletion before rerun, not indefinite retained/excluded display.
 
 ### trading-data
 
@@ -133,19 +133,20 @@ Architecture-driven model group reruns may also place bounded source-data partit
 
 ### Rerun-triggered lifecycle
 
-Reruns are lifecycle events. They can supersede downstream workflow state and mark generated artifacts as stale, but they do not get a separate cleanup path.
+Reruns are lifecycle events. They supersede downstream workflow state and require downstream generated artifacts in the accepted scope to be physically cleared before the scheduler reenters. The reset boundary is scope-first: identify target/fold/cutpoint, remove generated artifacts after that cutpoint, preserve protected evidence, then rerun through the single scheduler.
 
 Storage handles a rerun-triggered lifecycle request through the normal sequence:
 
 1. ingest the manager `storage_lifecycle_request` embedded in the rerun plan;
 2. match candidate refs to artifact-index records and physical paths;
 3. build protected-set evidence, including TE canonical source data, receipts, tombstones, promoted model bodies, and lineage-required source data;
-4. classify each candidate as retain, compress, archive, quarantine candidate, or no-policy retain;
-5. write plan/quarantine/recheck evidence before any destructive action;
+4. classify protected source or lineage evidence as retained, and generated downstream artifacts as delete candidates for the accepted reset scope;
+5. write plan/quarantine/recheck evidence before destructive action when the selected executor requires it;
 6. execute only reviewed storage-owned mutations;
-7. write receipts and tombstones while preserving reset receipts and lifecycle receipts.
+7. write deletion receipts and tombstones while preserving reset receipts and lifecycle receipts;
+8. refresh dashboard/read-models so stale rows disappear rather than becoming a durable excluded bucket.
 
-Anything not matched, not cleared, or not reviewed remains retained. Reset receipts and lifecycle receipts are evidence and are never deleted as part of the rerun that produced them.
+Anything not matched to the accepted reset scope, not cleared by protected-set review, or not reviewed remains retained. Reset receipts and lifecycle receipts are evidence and are never deleted as part of the rerun that produced them. If an operator asks for a scope such as "all folds after M02", generated artifacts after M02 include model outputs, diagnostics, explainability byproducts, stage/task receipts for invalidated downstream stages, logs/progress sidecars, replay outputs, post-replay review/attribution/failure-triage outputs, fold settlements, promotion-review outputs, and derived dashboard/read-model artifacts.
 
 ### Later-layer model-run metadata
 
