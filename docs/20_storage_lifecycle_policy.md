@@ -148,6 +148,25 @@ Storage handles a rerun-triggered lifecycle request through the normal sequence:
 
 Anything not matched to the accepted reset scope, not cleared by protected-set review, or not reviewed remains retained. Reset receipts and lifecycle receipts are evidence and are never deleted as part of the rerun that produced them. If an operator asks for a scope such as "all folds after M02", generated artifacts after M02 include model outputs, diagnostics, explainability byproducts, stage/task receipts for invalidated downstream stages, logs/progress sidecars, replay outputs, post-replay review/attribution/failure-triage outputs, fold settlements, promotion-review outputs, and derived dashboard/read-model artifacts.
 
+The storage-owned reset executor is `scripts/lifecycle/execute_rerun_reset_lifecycle.py`. It consumes a manager `model_group_rerun_plan` or a manager reset result containing a `plan` field. Dry-run is the default and writes a receipt with concrete candidates, retained paths, blocked classes, unmatched refs, and dashboard refresh requirements. `--apply` deletes only unprotected filesystem candidates, writes a `storage_rerun_reset_lifecycle_receipt`, and appends tombstones under `storage/90_lifecycle/tombstones/rerun_reset_lifecycle/`.
+
+Rerun reset file classes are handled as follows:
+
+| File class | Examples | Reset handling |
+|---|---|---|
+| `workflow_state` | `storage/02_control_plane/runtime/model_training_fold_state_<target>_<start>_<end>.json`, monthly workflow-state files | Reset in place by `trading-manager`; storage must not delete the state file as a cleanup substitute. |
+| `stage_receipts` | `storage/02_control_plane/runtime/model_training_stage_receipts/<stage_key>/*.receipt.json` | Delete downstream stage-key directories/files inside the accepted cutpoint scope. |
+| `stage_logs` | `storage/02_control_plane/runtime/model_training_stage_logs/<stage_key>/*.stdout.log`, `*.stderr.log` | Delete downstream stage-key directories/files as runtime sidecars. |
+| `task_progress_sidecars` | `storage/02_control_plane/runtime/task_progress/*<stage_key>*` | Delete downstream progress files after the reset scope accepts that stage as invalidated. |
+| `provider_task_sidecars` | `storage/02_control_plane/runtime/provider_task_keys/**/task_key.json` | Block by default. Provider task keys may encode acquisition authority; delete only after a narrower executor proves terminal generated residue. |
+| `explicit_artifact_refs` | Concrete `storage://...` refs from affected downstream stages | Resolve to physical paths and delete when they are inside storage and outside protected prefixes. Unsupported refs are reported as unmatched. |
+| `model_artifacts` | Unpromoted model outputs, checkpoints, diagnostics, explainability byproducts under `storage/03_model_artifacts/runtime/` | Delete only when scope-matched and not promoted or activation lineage. Promoted bodies and activation/deactivation evidence are retained. |
+| `replay_evaluation_settlement_promotion` | `replay_execution_runs`, `post_replay_review_runs`, `post_replay_attribution_runs`, `post_replay_failure_triage_runs`, `fold_settlement_runs`, `model_evaluation_runs`, `promotion_review_runs` | Delete run directories whose compact JSON evidence references the reset plan's `candidate_model_ref`. Reusable replay inputs and semantic event evidence outside the scope remain retained. |
+| `dashboard_read_models` | `storage/06_dashboard_cache/read_models/**/snapshots/*`, latest public read-model JSON files | Delete stale timestamped snapshots. Keep latest JSON files as hot derived read models and require immediate refresh after deletion. |
+| `sql_rows` | Generated rows in model, replay, settlement, promotion, task, or dashboard SQL tables | Block in filesystem executor. Owning SQL/table executors must clear generated rows before clean reentry when affected rows exist. |
+| `source_evidence` | Alpaca monthly bars, Trading Economics source payloads, PIT/vintage source rows, lineage-required source manifests | Retain by default. Delete source only through a separate accepted source-data lifecycle scope. |
+| `reset_lifecycle_receipts` | Manager reset receipts, storage lifecycle receipts, delete receipts, tombstones, quarantine/recheck evidence, archive/restore receipts | Retain as audit evidence. A reset never deletes the receipts that prove its own mutation. |
+
 ### Later-layer model-run metadata
 
 Includes M02+ diagnostic summaries, runtime metadata, dashboard snapshots, staging/intermediate files, scratch feature files, failed-run temp files, duplicated dry-run payloads, and old stdout/stderr logs that are not the only remaining receipt/manifest/lineage evidence.
