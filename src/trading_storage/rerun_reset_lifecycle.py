@@ -84,6 +84,17 @@ PROTECTED_RELATIVE_PREFIXES = (
     "storage/02_control_plane/runtime/model_group_rerun_resets",
     "storage/90_lifecycle",
 )
+PROTECTED_RELATIVE_PARTS = (
+    "activation",
+    "activations",
+    "active_model",
+    "active_models",
+    "deactivation",
+    "deactivations",
+    "promoted",
+    "promoted_model",
+    "promoted_models",
+)
 
 REPLAY_RUN_ROOTS = (
     "replay_execution_runs",
@@ -136,7 +147,18 @@ def _is_inside(root: Path, path: Path) -> bool:
 
 def _is_protected(root: Path, path: Path) -> bool:
     relative = _relative(root, path)
-    return any(relative == prefix or relative.startswith(f"{prefix}/") for prefix in PROTECTED_RELATIVE_PREFIXES)
+    if any(relative == prefix or relative.startswith(f"{prefix}/") for prefix in PROTECTED_RELATIVE_PREFIXES):
+        return True
+    parts = Path(relative).parts
+    if len(parts) >= 3 and parts[:3] == ("storage", "03_model_artifacts", "runtime"):
+        return any(part in PROTECTED_RELATIVE_PARTS or part.startswith("promoted_") for part in parts)
+    return False
+
+
+def _has_protected_descendant(root: Path, path: Path) -> bool:
+    if not path.is_dir():
+        return False
+    return any(_is_protected(root, child) for child in path.rglob("*"))
 
 
 def _inventory(root: Path, path: Path) -> dict[str, Any]:
@@ -210,6 +232,21 @@ def _candidate_model_refs(plan: Mapping[str, Any]) -> tuple[str, ...]:
     return tuple(dict.fromkeys(refs))
 
 
+def _scope_tokens(plan: Mapping[str, Any]) -> tuple[str, ...]:
+    scope = _scope(plan)
+    tokens: list[str] = []
+    for key in ("start_month", "end_month", "state_path", "fold_id"):
+        value = str(scope.get(key) or "")
+        if value:
+            tokens.append(value)
+            tokens.append(Path(value).name)
+    for symbol in scope.get("target_symbols") or []:
+        value = str(symbol)
+        tokens.extend([value, value.lower(), value.upper()])
+    tokens.extend(_candidate_model_refs(plan))
+    return tuple(dict.fromkeys(token for token in tokens if token and token != "."))
+
+
 def _resolve_storage_ref(root: Path, ref: str) -> Path | None:
     clean = ref.split("#", 1)[0]
     if clean.startswith("storage://trading-storage/"):
@@ -249,7 +286,7 @@ def _add_delete_candidate(
             }
         )
         return
-    if _is_protected(root, path):
+    if _is_protected(root, path) or _has_protected_descendant(root, path):
         blocked.append(
             {
                 "file_class": file_class,
@@ -257,7 +294,7 @@ def _add_delete_candidate(
                 "path": str(path),
                 "relative_path": _relative(root, path),
                 "action": "retain",
-                "reason": "protected_prefix",
+                "reason": "protected_prefix_or_descendant",
             }
         )
         return
@@ -301,15 +338,29 @@ def _iter_scope_matched_run_dirs(root: Path, plan: Mapping[str, Any]) -> Iterabl
 
 def _dir_mentions_any(path: Path, needles: Sequence[str]) -> bool:
     for child in sorted(path.rglob("*.json")):
-        if child.stat().st_size > 2_000_000:
-            continue
-        try:
-            content = child.read_text(encoding="utf-8")
-        except UnicodeDecodeError:
-            continue
-        if any(needle in content for needle in needles):
+        if _file_mentions_any(child, needles):
             return True
     return False
+
+
+def _file_mentions_any(path: Path, needles: Sequence[str]) -> bool:
+    if any(needle in path.as_posix() for needle in needles):
+        return True
+    if path.stat().st_size > 5_000_000:
+        return False
+    try:
+        content = path.read_text(encoding="utf-8", errors="ignore")
+    except OSError:
+        return False
+    return any(needle in content for needle in needles)
+
+
+def _iter_scope_matched_files(root_path: Path, needles: Sequence[str]) -> tuple[Path, ...]:
+    if not root_path.exists():
+        return ()
+    if root_path.is_file():
+        return (root_path,) if _file_mentions_any(root_path, needles) else ()
+    return tuple(path for path in sorted(root_path.rglob("*")) if path.is_file() and _file_mentions_any(path, needles))
 
 
 def _planned_rows(root: Path, plan: Mapping[str, Any]) -> dict[str, list[dict[str, Any]]]:
@@ -320,6 +371,7 @@ def _planned_rows(root: Path, plan: Mapping[str, Any]) -> dict[str, list[dict[st
     unmatched: list[dict[str, Any]] = []
     storage_root = _storage_dir(root)
     stage_keys = _stage_keys(plan)
+    scope_tokens = _scope_tokens(plan)
 
     for selector in plan.get("generated_class_selectors") or []:
         if not isinstance(selector, dict):
@@ -334,15 +386,27 @@ def _planned_rows(root: Path, plan: Mapping[str, Any]) -> dict[str, list[dict[st
         if root_class in {"stage_receipts", "stage_logs"}:
             root_path = _selector_root_path(root, selector, storage_root / "02_control_plane" / "runtime" / root_class)
             for key in keys:
-                _add_delete_candidate(
-                    delete_candidates,
-                    blocked,
-                    root=root,
-                    path=root_path / key,
-                    file_class=root_class,
-                    selector_id=selector_id,
-                    reason=reason,
-                )
+                stage_bucket = root_path / key
+                matched_files = _iter_scope_matched_files(stage_bucket, scope_tokens)
+                if stage_bucket.exists() and not matched_files:
+                    unmatched.append(
+                        {
+                            "file_class": root_class,
+                            "selector_id": selector_id,
+                            "path": str(stage_bucket),
+                            "reason": "stage_bucket_present_but_no_scope_matched_files",
+                        }
+                    )
+                for path in matched_files:
+                    _add_delete_candidate(
+                        delete_candidates,
+                        blocked,
+                        root=root,
+                        path=path,
+                        file_class=root_class,
+                        selector_id=selector_id,
+                        reason=reason,
+                    )
             continue
 
         if root_class == "task_progress_sidecars":
@@ -359,15 +423,26 @@ def _planned_rows(root: Path, plan: Mapping[str, Any]) -> dict[str, list[dict[st
                 continue
             for key in keys:
                 for path in sorted(root_path.glob(f"*{key}*")):
-                    _add_delete_candidate(
-                        delete_candidates,
-                        blocked,
-                        root=root,
-                        path=path,
-                        file_class=root_class,
-                        selector_id=selector_id,
-                        reason=reason,
-                    )
+                    matched_files = _iter_scope_matched_files(path, scope_tokens)
+                    if path.exists() and not matched_files:
+                        unmatched.append(
+                            {
+                                "file_class": root_class,
+                                "selector_id": selector_id,
+                                "path": str(path),
+                                "reason": "task_progress_present_but_no_scope_match",
+                            }
+                        )
+                    for matched in matched_files:
+                        _add_delete_candidate(
+                            delete_candidates,
+                            blocked,
+                            root=root,
+                            path=matched,
+                            file_class=root_class,
+                            selector_id=selector_id,
+                            reason=reason,
+                        )
             continue
 
         if root_class == "provider_task_sidecars":
@@ -419,6 +494,21 @@ def _planned_rows(root: Path, plan: Mapping[str, Any]) -> dict[str, list[dict[st
                     root=root,
                     path=path,
                     file_class=f"replay_datasets/{run_root_name}",
+                    selector_id=selector_id,
+                    reason=reason,
+                )
+            continue
+
+        if root_class == "model_artifacts":
+            model_root = _selector_root_path(root, selector, storage_root / "03_model_artifacts" / "runtime")
+            for matched_file in _iter_scope_matched_files(model_root, _candidate_model_refs(plan)):
+                candidate_path = matched_file.parent if matched_file.parent != model_root else matched_file
+                _add_delete_candidate(
+                    delete_candidates,
+                    blocked,
+                    root=root,
+                    path=candidate_path,
+                    file_class="model_artifacts",
                     selector_id=selector_id,
                     reason=reason,
                 )
@@ -563,6 +653,8 @@ def execute_rerun_reset_lifecycle(
     """Optionally delete scoped generated files and write lifecycle receipts/tombstones."""
 
     root = root.resolve()
+    if apply and not approval_ref:
+        raise ValueError("approval_ref is required when applying rerun reset lifecycle deletion")
     generated = generated_at or now_utc()
     plan = build_rerun_reset_lifecycle_plan(root=root, rerun_plan=rerun_plan, generated_at=generated)
     deleted: list[dict[str, Any]] = []
@@ -573,7 +665,7 @@ def execute_rerun_reset_lifecycle(
             if not path.exists():
                 skipped.append({**row, "skip_reason": "already_absent"})
                 continue
-            if _is_protected(root, path) or not _is_inside(root, path):
+            if _is_protected(root, path) or _has_protected_descendant(root, path) or not _is_inside(root, path):
                 skipped.append({**row, "skip_reason": "protected_or_outside_root"})
                 continue
             deleted.append(dict(row))
