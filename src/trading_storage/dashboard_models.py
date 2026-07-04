@@ -285,6 +285,161 @@ def _first_nonempty_string(*values: Any) -> str:
     return ""
 
 
+def _utc_timestamp(value: Any) -> float | None:
+    text = str(value or "").strip()
+    if not text:
+        return None
+    if text.endswith("Z"):
+        text = f"{text[:-1]}+00:00"
+    try:
+        parsed = datetime.fromisoformat(text)
+    except ValueError:
+        return None
+    if parsed.tzinfo is None:
+        parsed = parsed.replace(tzinfo=timezone.utc)
+    return parsed.astimezone(timezone.utc).timestamp()
+
+
+def _file_timestamp(path: Path) -> float | None:
+    try:
+        return path.stat().st_mtime
+    except OSError:
+        return None
+
+
+def _artifact_timestamp(path: Path, payload: Mapping[str, Any] | None = None) -> float | None:
+    if payload is None:
+        payload = _load_json_object(path) or {}
+    for key in (
+        "created_at_utc",
+        "generated_at_utc",
+        "completed_at_utc",
+        "ended_at_utc",
+        "updated_at_utc",
+        "timestamp_utc",
+    ):
+        timestamp = _utc_timestamp(payload.get(key))
+        if timestamp is not None:
+            return timestamp
+    return _file_timestamp(path)
+
+
+def _model_group_scope_key(target: str, start_month: str, end_month: str) -> str:
+    normalized_target = target.strip().upper().replace("_", ".")
+    return f"{normalized_target}:{start_month}_{end_month}" if normalized_target and start_month and end_month else ""
+
+
+def _model_group_scope_key_from_candidate_ref(candidate_model_ref: str) -> str:
+    match = re.search(
+        r"/model_group/(?P<target>[A-Za-z0-9_]+)/(?P<start>20\d{2}-\d{2})_(?P<end>20\d{2}-\d{2})$",
+        candidate_model_ref,
+    )
+    if not match:
+        return ""
+    return _model_group_scope_key(match.group("target"), match.group("start"), match.group("end"))
+
+
+def _model_group_scope_key_from_reset_receipt(receipt: Mapping[str, Any]) -> str:
+    state_path = str(receipt.get("state_path") or "")
+    match = re.search(
+        r"model_training_fold_state_(?P<target>[A-Za-z0-9_]+)_(?P<start>20\d{2}-\d{2})_(?P<end>20\d{2}-\d{2})\.json$",
+        state_path,
+    )
+    if match:
+        return _model_group_scope_key(match.group("target"), match.group("start"), match.group("end"))
+    rerun_id = str(receipt.get("rerun_id") or "")
+    rerun_match = re.search(
+        r"model_group_rerun_(?P<start>20\d{2}-\d{2})_(?P<end>20\d{2}-\d{2})",
+        rerun_id,
+    )
+    target = str(receipt.get("target_symbol") or receipt.get("candidate_training_target") or "").strip()
+    if rerun_match and target:
+        return _model_group_scope_key(target, rerun_match.group("start"), rerun_match.group("end"))
+    return ""
+
+
+def _model_group_rerun_reset_floors(storage_root: Path) -> dict[str, dict[str, Any]]:
+    reset_root = storage_root / "02_control_plane" / "runtime" / "model_group_rerun_resets"
+    if not reset_root.exists():
+        return {}
+    floors: dict[str, dict[str, Any]] = {}
+    for receipt_path in sorted(reset_root.glob("*/**/*.reset_receipt.json")):
+        receipt = _load_json_object(receipt_path)
+        if receipt is None or receipt.get("contract_type") != "manager_model_group_rerun_reset_receipt":
+            continue
+        scope_key = _model_group_scope_key_from_reset_receipt(receipt)
+        if not scope_key:
+            continue
+        timestamp = _artifact_timestamp(receipt_path, receipt)
+        if timestamp is None:
+            continue
+        existing = floors.get(scope_key)
+        if existing is None or timestamp >= float(existing["timestamp"]):
+            floors[scope_key] = {
+                "timestamp": timestamp,
+                "reset_ref": str(receipt_path),
+                "reset_created_at_utc": receipt.get("created_at_utc"),
+                "cutpoint_stage_id": receipt.get("cutpoint_stage_id"),
+                "rerun_id": receipt.get("rerun_id"),
+            }
+    return floors
+
+
+def _model_group_evidence_timestamps(
+    *,
+    decision_path: Path,
+    decision: Mapping[str, Any],
+    review: Mapping[str, Any],
+    receipt: Mapping[str, Any],
+    settlement_path: Path,
+    settlement: Mapping[str, Any] | None,
+    replay_result_ref: str,
+) -> list[float]:
+    artifacts: list[tuple[Path, Mapping[str, Any] | None]] = [
+        (decision_path, decision),
+        (decision_path.parent / "promotion_evaluation_review.json", review),
+        (decision_path.parent / "model_group_evaluation_receipt.json", receipt),
+    ]
+    if isinstance(settlement, Mapping):
+        artifacts.append((settlement_path, settlement))
+    if replay_result_ref:
+        replay_path = Path(replay_result_ref)
+        artifacts.append((replay_path, _load_json_object(replay_path)))
+    timestamps: list[float] = []
+    for path, payload in artifacts:
+        timestamp = _artifact_timestamp(path, payload)
+        if timestamp is not None:
+            timestamps.append(timestamp)
+    return timestamps
+
+
+def _model_group_rerun_reset_exclusion_reason(
+    *,
+    reset_floors: Mapping[str, Mapping[str, Any]],
+    candidate_model_ref: str,
+    evidence_timestamps: list[float],
+) -> dict[str, Any] | None:
+    if not evidence_timestamps:
+        return None
+    scope_key = _model_group_scope_key_from_candidate_ref(candidate_model_ref)
+    if not scope_key:
+        return None
+    reset = reset_floors.get(scope_key)
+    if not reset:
+        return None
+    reset_timestamp = float(reset.get("timestamp") or 0.0)
+    if min(evidence_timestamps) >= reset_timestamp:
+        return None
+    return {
+        "reason_code": "superseded_by_model_group_rerun_reset",
+        "reason": "promotion evidence chain includes artifacts that predate the latest model-group rerun reset for this fold",
+        "reset_ref": str(reset.get("reset_ref") or ""),
+        "reset_created_at_utc": reset.get("reset_created_at_utc"),
+        "cutpoint_stage_id": reset.get("cutpoint_stage_id"),
+        "rerun_id": reset.get("rerun_id"),
+    }
+
+
 def _explicit_model_training_targets(storage_root: Path) -> set[str]:
     queue_path = storage_root / "02_control_plane" / "runtime" / "model_training_target_queue.json"
     payload = _load_json_object(queue_path)
@@ -677,6 +832,7 @@ def _model_group_promotion_evidence(storage_root: Path, *, active_ref: str | Non
     rows_by_version_key: dict[str, dict[str, Any]] = {}
     exclusions: list[dict[str, Any]] = []
     explicit_training_targets = _explicit_model_training_targets(storage_root)
+    reset_floors = _model_group_rerun_reset_floors(storage_root)
     for decision_path in sorted(review_root.glob("*/promotion_eligibility_decision.json")):
         decision = _load_json_object(decision_path)
         if decision is None:
@@ -744,17 +900,34 @@ def _model_group_promotion_evidence(storage_root: Path, *, active_ref: str | Non
             candidate_training_target,
             _target_symbol_from_candidate_ref(candidate_model_ref) or "",
         ).upper()
-        exclusion_reasons = _model_group_version_exclusion_reasons(
-            decision=decision,
-            settlement=settlement,
-            target_symbol=target_symbol,
-            candidate_model_ref=candidate_model_ref,
-            fold_id=fold_id,
-            candidate_fold_id=candidate_fold_id,
-            candidate_training_target=candidate_training_target,
-            replay_execution_run_id=replay_execution_run_id,
-            explicit_training_targets=explicit_training_targets,
+        exclusion_reasons: list[dict[str, Any]] = list(
+            _model_group_version_exclusion_reasons(
+                decision=decision,
+                settlement=settlement,
+                target_symbol=target_symbol,
+                candidate_model_ref=candidate_model_ref,
+                fold_id=fold_id,
+                candidate_fold_id=candidate_fold_id,
+                candidate_training_target=candidate_training_target,
+                replay_execution_run_id=replay_execution_run_id,
+                explicit_training_targets=explicit_training_targets,
+            )
         )
+        reset_reason = _model_group_rerun_reset_exclusion_reason(
+            reset_floors=reset_floors,
+            candidate_model_ref=candidate_model_ref,
+            evidence_timestamps=_model_group_evidence_timestamps(
+                decision_path=decision_path,
+                decision=decision,
+                review=review,
+                receipt=receipt,
+                settlement_path=settlement_path,
+                settlement=settlement,
+                replay_result_ref=replay_result_ref,
+            ),
+        )
+        if reset_reason:
+            exclusion_reasons.append(reset_reason)
         if exclusion_reasons:
             exclusions.append(
                 {

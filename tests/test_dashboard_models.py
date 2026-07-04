@@ -131,6 +131,36 @@ def _write_target_queue(storage_root: Path, symbols: list[str]) -> None:
     )
 
 
+def _write_model_group_rerun_reset_receipt(storage_root: Path) -> None:
+    reset_root = (
+        storage_root
+        / "02_control_plane"
+        / "runtime"
+        / "model_group_rerun_resets"
+        / "model_group_rerun_2016-01_2017-06_03_data_acquisition"
+    )
+    reset_root.mkdir(parents=True, exist_ok=True)
+    (reset_root / "2026-05-29T000500+0000.reset_receipt.json").write_text(
+        json.dumps(
+            {
+                "contract_type": "manager_model_group_rerun_reset_receipt",
+                "created_at_utc": "2026-05-29T00:05:00+00:00",
+                "cutpoint_stage_id": "model_03_event_state.data_acquisition",
+                "rerun_id": "model_group_rerun_2016-01_2017-06_03_data_acquisition",
+                "state_path": str(
+                    storage_root
+                    / "02_control_plane"
+                    / "runtime"
+                    / "model_training_fold_state_aapl_2016-01_2017-06.json"
+                ),
+            },
+            sort_keys=True,
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+
+
 def _write_group_promotion_version(storage_root: Path) -> None:
     alpha_artifact_path = (
         storage_root
@@ -1161,6 +1191,30 @@ class DashboardModelsTests(unittest.TestCase):
 
             self.assertEqual(payload["chart_payload"]["group_versions"], [])
             self.assertEqual(payload["chart_payload"]["excluded_group_versions"], [])
+
+    def test_model_group_versions_skip_rerun_superseded_artifacts(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            storage_root = Path(tmp)
+            _write_latest(storage_root, "historical_task_progress_summary", _historical_payload())
+            _write_latest(storage_root, "execution_realtime_trading_runtime_status", _runtime_payload())
+            _write_group_promotion_version(storage_root)
+            _write_model_group_rerun_reset_receipt(storage_root)
+
+            payload = build_model_promotion_posture_summary(
+                storage_root=storage_root,
+                generated_at_utc="2026-05-29T00:06:00Z",
+            )
+
+            self.assertEqual(payload["chart_payload"]["group_versions"], [])
+            exclusions = payload["chart_payload"]["excluded_group_versions"]
+            self.assertEqual(len(exclusions), 1)
+            self.assertIn("superseded_by_model_group_rerun_reset", exclusions[0]["reason_codes"])
+            reset_reason = next(
+                reason
+                for reason in exclusions[0]["reasons"]
+                if reason["reason_code"] == "superseded_by_model_group_rerun_reset"
+            )
+            self.assertEqual(reset_reason["cutpoint_stage_id"], "model_03_event_state.data_acquisition")
 
     def test_model_group_versions_are_fold_level_not_review_run_level(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
