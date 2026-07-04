@@ -6,6 +6,7 @@ import argparse
 import gzip
 import hashlib
 import json
+import os
 import re
 import shutil
 from dataclasses import dataclass
@@ -23,6 +24,16 @@ FOLD_STATE_GLOB = "model_training_fold_state_*.json"
 FOLD_SCOPED_SOURCE_ROOT = Path("storage/01_source_data/fold_scoped")
 TE_MONTHLY_SOURCE_ROOT = Path("storage/01_source_data/monthly_backfill/trading_economics_calendar_web")
 TE_RUN_SIDE_PRODUCT_FILE_NAMES = {"completion_receipt.json", "request_manifest.json"}
+PROOF_SIDECAR_FILE_NAMES = {"completion_receipt.json", "request_manifest.json"}
+PROOF_SIDECAR_AUDIT_ROOTS = (
+    "storage/01_source_data",
+    "storage/02_control_plane",
+    "storage/03_model_artifacts",
+    "storage/04_execution_artifacts",
+    "storage/05_replay_datasets",
+    "storage/06_dashboard_cache/read_models",
+    "storage/90_lifecycle",
+)
 REPLAY_REVIEW_EVIDENCE_FILE_NAMES = {
     "decision_rows.jsonl",
     "entry_threshold_calibration.json",
@@ -36,10 +47,36 @@ REPLAY_RUNTIME_SIDECAR_FILE_NAMES = {
     "replay_resume_checkpoint.json",
     "replay_runtime_trace.jsonl",
 }
+REPLAY_REVIEW_EVIDENCE_MARKERS = {
+    "baseline_comparison",
+    "decision_rows",
+    "model_candidate_selection_trace",
+    "replay_execution_receipt",
+    "replay_review",
+    "scorecard",
+}
 ATTRIBUTION_RUNTIME_SIDECAR_FILE_NAMES = {
     "event_family_occurrence_scan.jsonl",
     "event_source_downloads.jsonl",
     "raw_event_downloads.jsonl",
+}
+RUNTIME_SIDECAR_NAME_MARKERS = {
+    "checkpoint",
+    "progress",
+    "runtime_trace",
+    "stderr",
+    "stdout",
+}
+REFETCHABLE_EVENT_ORIGINAL_MARKERS = {
+    "downloaded_event",
+    "downloaded_news",
+    "event_family_occurrence_scan",
+    "event_news",
+    "event_original",
+    "event_source_download",
+    "raw_event",
+    "raw_news",
+    "source_news",
 }
 CURRENT_MODEL_WORKER_FOLD_RE = re.compile(r"^fold_[a-z0-9]+_20\d{2}$")
 LIFECYCLE_GAP_SELECTORS: tuple[dict[str, Any], ...] = (
@@ -233,6 +270,8 @@ class StorageMaintenanceSummary:
     lifecycle_gap_findings: tuple[dict[str, Any], ...]
     lifecycle_gap_action_summary: dict[str, Any]
     lifecycle_gap_action_receipts: tuple[dict[str, Any], ...]
+    proof_sidecar_audit_summary: dict[str, Any]
+    proof_sidecar_audit_findings: tuple[dict[str, Any], ...]
     fold_sql_backup_phase_status: str
     fold_source_cleanup_phase_status: str
     deletion_phase_status: str
@@ -262,6 +301,8 @@ class StorageMaintenanceSummary:
             "lifecycle_gap_findings": list(self.lifecycle_gap_findings),
             "lifecycle_gap_action_summary": self.lifecycle_gap_action_summary,
             "lifecycle_gap_action_receipts": list(self.lifecycle_gap_action_receipts),
+            "proof_sidecar_audit_summary": self.proof_sidecar_audit_summary,
+            "proof_sidecar_audit_findings": list(self.proof_sidecar_audit_findings),
             "fold_sql_backup_phase_status": self.fold_sql_backup_phase_status,
             "fold_source_cleanup_phase_status": self.fold_source_cleanup_phase_status,
             "deletion_phase_status": self.deletion_phase_status,
@@ -485,6 +526,264 @@ def _named_file_rolling_inventory(path: Path, names: set[str], *, retain_recent_
         "byte_count": byte_count,
         "largest_file_path": largest_file_path,
         "largest_file_bytes": largest_file_bytes,
+    }
+
+
+def _latest_matching_file(root: Path, pattern: str) -> Path | None:
+    if not root.exists():
+        return None
+    candidates = [path for path in root.glob(pattern) if path.is_file() and not path.is_symlink()]
+    if not candidates:
+        return None
+    return max(candidates, key=lambda path: (path.stat().st_mtime, path.as_posix()))
+
+
+def _proof_dashboard_active_input_refs(root: Path) -> set[str]:
+    refs: set[str] = set()
+    exact_paths = (
+        "storage/02_control_plane/runtime/historical_scheduler_decisions.jsonl",
+        "storage/02_control_plane/runtime/historical_scheduler_state.json",
+        "storage/04_execution_artifacts/runtime/realtime_trading_runtime/runtime_status.json",
+    )
+    for relative in exact_paths:
+        path = root / relative
+        if path.exists() and path.is_file() and not path.is_symlink():
+            refs.add(relative)
+    for pattern_root, pattern in (
+        ("storage/02_control_plane/runtime", "model_training_workflow_state_*.json"),
+        ("storage/02_control_plane/runtime/stage_coverage", "*.json"),
+        ("storage/02_control_plane/runtime/stage_run_dashboard", "*.json"),
+        ("storage/04_execution_artifacts/runtime/realtime_monitor", "**/loop_receipt.json"),
+        ("storage/04_execution_artifacts/runtime/realtime_monitor", "**/cycle_*.json"),
+        (TE_MONTHLY_SOURCE_ROOT.as_posix(), "**/completion_receipt.json"),
+    ):
+        latest = _latest_matching_file(root / pattern_root, pattern)
+        if latest is not None:
+            refs.add(_relative_path(root, latest))
+    read_model_root = root / "storage/06_dashboard_cache/read_models"
+    if read_model_root.exists():
+        refs.update(
+            _relative_path(root, path)
+            for path in sorted(read_model_root.glob("*.json"))
+            if path.is_file() and not path.is_symlink()
+        )
+    return refs
+
+
+def _is_top_level_dashboard_read_model(relative: str) -> bool:
+    parts = Path(relative).parts
+    return len(parts) == 4 and parts[:3] == ("storage", "06_dashboard_cache", "read_models") and relative.endswith(".json")
+
+
+def _is_te_canonical_source_payload(relative: str) -> bool:
+    parts = Path(relative).parts
+    return (
+        len(parts) >= 7
+        and parts[:4] == ("storage", "01_source_data", "monthly_backfill", "trading_economics_calendar_web")
+        and any(part in {"saved", "cleaned"} for part in parts)
+    )
+
+
+def _is_durable_lifecycle_boundary(relative: str) -> bool:
+    normalized = relative.lower().replace("-", "_")
+    return any(
+        token in normalized
+        for token in (
+            "archive_manifest",
+            "archive_receipt",
+            "compression_manifest",
+            "compression_receipt",
+            "delete_receipt",
+            "deletion_receipt",
+            "lifecycle_decision",
+            "lifecycle_gap_action_receipt",
+            "quarantine_recheck",
+            "restore_receipt",
+            "storage_lifecycle_plan",
+            "tombstone",
+        )
+    )
+
+
+def _proof_sidecar_bucket(*, root: Path, path: Path, dashboard_active_refs: set[str]) -> str | None:
+    relative = _relative_path(root, path)
+    normalized = relative.lower().replace("\\", "/")
+    name = path.name.lower()
+    stem = path.stem.lower()
+    if relative in dashboard_active_refs:
+        return "dashboard_active_input_retained"
+    if _is_top_level_dashboard_read_model(relative):
+        return "dashboard_latest_retained"
+    if _is_te_canonical_source_payload(relative):
+        return "canonical_source_retained"
+    if _is_durable_lifecycle_boundary(relative):
+        return "durable_boundary_evidence_retained"
+    if "event_interpretations" in normalized or "event_interpretation" in normalized:
+        return "formal_event_interpretation_retained"
+    if normalized.startswith("storage/05_replay_datasets/") and (
+        name in REPLAY_REVIEW_EVIDENCE_FILE_NAMES or any(marker in stem for marker in REPLAY_REVIEW_EVIDENCE_MARKERS)
+    ):
+        return "replay_review_evidence_retained"
+    if any(marker in normalized for marker in REFETCHABLE_EVENT_ORIGINAL_MARKERS):
+        return "refetchable_event_original_candidate"
+    if name in PROOF_SIDECAR_FILE_NAMES:
+        return "redundant_proof_sidecar_candidate"
+    if name.endswith(".log") or any(marker in name for marker in RUNTIME_SIDECAR_NAME_MARKERS):
+        return "runtime_sidecar_candidate"
+    return None
+
+
+def _is_proof_sidecar_audit_target(relative: str, filename: str) -> bool:
+    normalized = relative.lower().replace("\\", "/")
+    stem = Path(filename).stem.lower()
+    if filename in PROOF_SIDECAR_FILE_NAMES:
+        return True
+    if filename.endswith(".log") or any(marker in filename for marker in RUNTIME_SIDECAR_NAME_MARKERS):
+        return True
+    if _is_top_level_dashboard_read_model(relative):
+        return True
+    if _is_te_canonical_source_payload(relative):
+        return True
+    if _is_durable_lifecycle_boundary(relative):
+        return True
+    if "event_interpretations" in normalized or "event_interpretation" in normalized:
+        return True
+    if normalized.startswith("storage/05_replay_datasets/") and (
+        filename in REPLAY_REVIEW_EVIDENCE_FILE_NAMES or any(marker in stem for marker in REPLAY_REVIEW_EVIDENCE_MARKERS)
+    ):
+        return True
+    return any(marker in normalized for marker in REFETCHABLE_EVENT_ORIGINAL_MARKERS)
+
+
+def _iter_proof_sidecar_audit_files(root: Path, *, dashboard_active_refs: set[str]) -> list[Path]:
+    files: list[Path] = []
+    seen: set[Path] = set()
+    for relative in sorted(dashboard_active_refs):
+        path = root / relative
+        if path.exists() and path.is_file() and not path.is_symlink():
+            files.append(path)
+            seen.add(path)
+    for relative in PROOF_SIDECAR_AUDIT_ROOTS:
+        base = root / relative
+        if not base.exists():
+            continue
+        if base.is_file():
+            candidates = [base]
+        else:
+            candidates = []
+            for directory, dirnames, filenames in os.walk(base):
+                dirnames.sort()
+                for filename in sorted(filenames):
+                    path = Path(directory) / filename
+                    try:
+                        candidate_relative = _relative_path(root, path)
+                    except OSError:
+                        continue
+                    if _is_proof_sidecar_audit_target(candidate_relative, filename.lower()):
+                        candidates.append(path)
+        for path in candidates:
+            if path.is_symlink() or not path.is_file() or path in seen:
+                continue
+            if _proof_sidecar_bucket(root=root, path=path, dashboard_active_refs=dashboard_active_refs) is not None:
+                files.append(path)
+                seen.add(path)
+    return sorted(files)
+
+
+def audit_proof_sidecars(*, root: Path) -> tuple[dict[str, Any], tuple[dict[str, Any], ...]]:
+    """Bucket proof/runtime sidecars without hashing or mutating payloads."""
+
+    root = root.resolve()
+    dashboard_active_refs = _proof_dashboard_active_input_refs(root)
+    by_bucket: dict[str, dict[str, Any]] = {}
+    for path in _iter_proof_sidecar_audit_files(root, dashboard_active_refs=dashboard_active_refs):
+        bucket = _proof_sidecar_bucket(root=root, path=path, dashboard_active_refs=dashboard_active_refs)
+        if bucket is None:
+            continue
+        relative = _relative_path(root, path)
+        try:
+            size = path.stat().st_size
+        except OSError:
+            continue
+        row = by_bucket.setdefault(
+            bucket,
+            {
+                "contract_type": "storage_proof_sidecar_bucket_finding",
+                "bucket": bucket,
+                "file_count": 0,
+                "byte_count": 0,
+                "largest_file_path": None,
+                "largest_file_bytes": 0,
+                "sample_paths": [],
+                "mutation_performed": False,
+            },
+        )
+        row["file_count"] += 1
+        row["byte_count"] += size
+        if size > int(row["largest_file_bytes"] or 0):
+            row["largest_file_bytes"] = size
+            row["largest_file_path"] = relative
+        if len(row["sample_paths"]) < 10:
+            row["sample_paths"].append(relative)
+
+    findings: list[dict[str, Any]] = []
+    retained_buckets = {
+        "canonical_source_retained",
+        "dashboard_active_input_retained",
+        "dashboard_latest_retained",
+        "durable_boundary_evidence_retained",
+        "formal_event_interpretation_retained",
+        "replay_review_evidence_retained",
+    }
+    candidate_buckets = {
+        "redundant_proof_sidecar_candidate",
+        "refetchable_event_original_candidate",
+        "runtime_sidecar_candidate",
+    }
+    for bucket, row in sorted(by_bucket.items()):
+        if bucket in retained_buckets:
+            row["handling_status"] = "retained"
+            row["review_required"] = False
+        elif bucket in candidate_buckets:
+            row["handling_status"] = "cleanup_candidate"
+            row["review_required"] = True
+        else:
+            row["handling_status"] = "manual_review_required"
+            row["review_required"] = True
+        findings.append(row)
+
+    summary = {
+        "contract_type": "storage_proof_sidecar_audit_summary",
+        "bucket_count": len(findings),
+        "total_file_count": sum(int(row["file_count"]) for row in findings),
+        "total_byte_count": sum(int(row["byte_count"]) for row in findings),
+        "cleanup_candidate_file_count": sum(
+            int(row["file_count"]) for row in findings if row["handling_status"] == "cleanup_candidate"
+        ),
+        "cleanup_candidate_byte_count": sum(
+            int(row["byte_count"]) for row in findings if row["handling_status"] == "cleanup_candidate"
+        ),
+        "retained_file_count": sum(int(row["file_count"]) for row in findings if row["handling_status"] == "retained"),
+        "retained_byte_count": sum(int(row["byte_count"]) for row in findings if row["handling_status"] == "retained"),
+        "dashboard_active_input_count": len(dashboard_active_refs),
+        "mutation_performed": False,
+    }
+    return summary, tuple(findings)
+
+
+def _empty_proof_sidecar_audit_summary(*, skipped: bool) -> dict[str, Any]:
+    return {
+        "contract_type": "storage_proof_sidecar_audit_summary",
+        "bucket_count": 0,
+        "total_file_count": 0,
+        "total_byte_count": 0,
+        "cleanup_candidate_file_count": 0,
+        "cleanup_candidate_byte_count": 0,
+        "retained_file_count": 0,
+        "retained_byte_count": 0,
+        "dashboard_active_input_count": 0,
+        "mutation_performed": False,
+        "skipped": skipped,
     }
 
 
@@ -1736,6 +2035,7 @@ def run_storage_maintenance(
     apply_lifecycle_gap_actions: bool = False,
     include_local_retention: bool = True,
     include_fold_monitor: bool = True,
+    include_proof_sidecar_audit: bool = True,
     include_hashes: bool = False,
     retain_recent_replay_runs: int = 3,
     retain_recent_attribution_runs: int = 3,
@@ -1766,6 +2066,11 @@ def run_storage_maintenance(
         completed_fold_ids=completed_fold_ids,
     )
     lifecycle_gap_findings = detect_lifecycle_gap_findings(root=root)
+    if include_proof_sidecar_audit:
+        proof_sidecar_audit_summary, proof_sidecar_audit_findings = audit_proof_sidecars(root=root)
+    else:
+        proof_sidecar_audit_summary = _empty_proof_sidecar_audit_summary(skipped=True)
+        proof_sidecar_audit_findings = ()
     lifecycle_gap_action_receipts = execute_lifecycle_gap_actions(
         root=root,
         output_root=compact_output_root,
@@ -1807,6 +2112,8 @@ def run_storage_maintenance(
             apply=apply_lifecycle_gap_actions,
         ),
         lifecycle_gap_action_receipts=lifecycle_gap_action_receipts,
+        proof_sidecar_audit_summary=proof_sidecar_audit_summary,
+        proof_sidecar_audit_findings=proof_sidecar_audit_findings,
         fold_sql_backup_phase_status="ready_for_storage_backup" if fold_candidates else "no_completed_fold_detected",
         fold_source_cleanup_phase_status=fold_source_cleanup_phase,
         deletion_phase_status="local_retention_only" if include_local_retention else "local_retention_skipped",
@@ -1850,6 +2157,11 @@ def main(argv: Sequence[str] | None = None) -> int:
     parser.add_argument("--retain-recent-realtime-loops", type=int, default=100)
     parser.add_argument("--skip-local-retention", action="store_true", help="Skip local retention planning.")
     parser.add_argument("--skip-fold-monitor", action="store_true", help="Skip direct manager fold-state reads.")
+    parser.add_argument(
+        "--skip-proof-sidecar-audit",
+        action="store_true",
+        help="Skip the proof/sidecar bucket audit for fast heartbeat-style maintenance checks.",
+    )
     parser.add_argument("--json", action="store_true", help="Print the summary JSON to stdout.")
     args = parser.parse_args(argv)
     summary = run_storage_maintenance(
@@ -1861,6 +2173,7 @@ def main(argv: Sequence[str] | None = None) -> int:
         apply_lifecycle_gap_actions=args.apply_lifecycle_gap_actions,
         include_local_retention=not args.skip_local_retention,
         include_fold_monitor=not args.skip_fold_monitor,
+        include_proof_sidecar_audit=not args.skip_proof_sidecar_audit,
         include_hashes=args.include_hashes,
         retain_recent_replay_runs=args.retain_recent_replay_runs,
         retain_recent_attribution_runs=args.retain_recent_attribution_runs,
@@ -1879,6 +2192,7 @@ __all__ = [
     "DEFAULT_MAINTENANCE_OUTPUT",
     "DEFAULT_COMPACT_OUTPUT_ROOT",
     "StorageMaintenanceSummary",
+    "audit_proof_sidecars",
     "detect_completed_model_worker_folds",
     "detect_fold_scoped_source_cleanup_candidates",
     "detect_lifecycle_gap_findings",

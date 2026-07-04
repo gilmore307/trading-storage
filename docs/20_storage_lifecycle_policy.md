@@ -175,6 +175,8 @@ Proof-file default:
 - Long-running progress files, stdout/stderr logs, task diagnostics, runtime traces, checkpoints, and repeated request/completion sidecars are operational diagnostics. They may be recent-hot for debugging, but they are not the durable audit ledger.
 - A runtime file read directly by the dashboard or by a dashboard read-model producer is an active consumer input, not an ordinary sidecar. It may be compacted, tailed, or replaced, but not deleted until dashboard consumers read the replacement.
 
+The default maintenance report includes a proof-sidecar audit before any cleanup action. The audit buckets files as retained formal evidence, canonical source payloads, dashboard-active inputs, durable boundary evidence, runtime sidecar candidates, redundant proof sidecar candidates, or refetchable event-original candidates. A cleanup executor may only act on candidate buckets after the usual protected-set, quarantine/recheck, compact replacement, and review gates pass.
+
 ### Replay datasets and replay downloads
 
 Replay storage separates reusable replay inputs, model-specific temporary downloads, and permanent model-pipeline replay results.

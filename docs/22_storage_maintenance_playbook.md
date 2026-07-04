@@ -19,6 +19,8 @@ Lifecycle actions here follow the shared taxonomy in `docs/20_storage_lifecycle_
 - Diagnostic payloads keep compact decisions and repair evidence. Verbose dumps roll off after the decision is represented elsewhere.
 - Realtime runtime cycles keep latest/current-window state plus compact metrics. Per-cycle JSON directories are not a permanent data model.
 - Trading Economics source rows/payloads under the canonical monthly root are protected and are not deleted. TE side products are not protected data: duplicate run-local receipts/manifests, diagnostics, no-op run context, provisional web-search fallback artifacts after formal TE capture, derived dashboard/control-plane materializations, and old consolidation working evidence may be compacted, compressed, deleted, or placed under rolling retention once concise provenance remains.
+- The default maintenance pass must produce proof-sidecar buckets before cleanup: `*_retained` buckets are protection evidence, and `*_candidate` buckets are only reviewed candidates. Dashboard-active source inputs stay retained even when their filename looks like a receipt, progress file, trace, or checkpoint.
+- `--skip-proof-sidecar-audit` is only for fast status checks. Do not use it to justify cleanup, deletion, compression, or rolling retention.
 
 ## File-Class Decisions
 
@@ -58,12 +60,13 @@ Use this sequence for every class except dashboard timestamped snapshots, which 
 
 1. Identify the class and concrete bounded path.
 2. Confirm the path is not a protected canonical source, promoted model body, lifecycle receipt, tombstone, active task state, unresolved alert, or lineage-required artifact.
-3. Confirm the current consumer has a replacement: current read-model file, compact summary, batch manifest, SQL rows, source receipt, lineage ref, or archive.
-4. Build an artifact-index record for the candidate.
-5. Build protected-set evidence.
-6. For deletion, build quarantine/recheck evidence and wait for the required review gate.
-7. Delete only the bounded candidate path or file class.
-8. Write a lifecycle receipt or tombstone that records path, byte count, checksum where available, replacement evidence, reviewer/approval ref, and deletion time.
+3. Confirm the proof-sidecar audit bucket is a candidate bucket, not retained formal evidence or dashboard-active input.
+4. Confirm the current consumer has a replacement: current read-model file, compact summary, batch manifest, SQL rows, source receipt, lineage ref, bounded tail, or archive.
+5. Build an artifact-index record for the candidate.
+6. Build protected-set evidence.
+7. For deletion, build quarantine/recheck evidence and wait for the required review gate.
+8. Delete only the bounded candidate path or file class.
+9. Write a lifecycle receipt or tombstone that records path, byte count, checksum where available, replacement evidence, reviewer/approval ref, and deletion time.
 
 ## Immediate Execution Order
 
@@ -74,6 +77,6 @@ Use this sequence for every class except dashboard timestamped snapshots, which 
 5. Realtime monitor cycles: implemented for normal completed loops. The executor writes a rolling summary, keeps recent full loops and exception loops, and removes older normal completed timestamp directories.
 6. TE recent refresh manifests: implemented for `_manifests/recent_refresh_runs`. The executor writes compact provenance, keeps recent receipt directories, and rolls older duplicate receipt directories without touching canonical TE source rows.
 7. M05 task keys: compact aggregate manifests are implemented, but deletion remains blocked because existing task keys lack explicit terminal status fields.
-8. Scheduler/stage dashboard logs: compact rollups are implemented, but JSONL truncation and snapshot deletion remain blocked until segmented tails/latest pointers are verified.
+8. Scheduler/stage dashboard logs: compact rollups and proof-sidecar bucket reporting are implemented, but JSONL truncation and snapshot deletion remain blocked until segmented tails/latest pointers are verified and dashboard producers no longer read the old direct paths.
 9. M05 gate reviews: refresh stale 103M evidence, then define compact gate-review contract before compressing/removing any verbose diagnostic payloads.
 10. M02 materialization and M05 source duplication: close through lineage and shared option-source contracts.

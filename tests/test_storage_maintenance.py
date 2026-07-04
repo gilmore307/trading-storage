@@ -7,6 +7,7 @@ import gzip
 from pathlib import Path
 
 from trading_storage.storage_maintenance import (
+    audit_proof_sidecars,
     detect_completed_model_worker_folds,
     detect_fold_scoped_source_cleanup_candidates,
     detect_lifecycle_gap_findings,
@@ -42,6 +43,8 @@ class StorageMaintenanceTests(unittest.TestCase):
         )
         self.assertEqual(summary.lifecycle_gap_audit_summary["finding_count"], 0)
         self.assertEqual(summary.lifecycle_gap_findings, ())
+        self.assertEqual(summary.proof_sidecar_audit_summary["bucket_count"], 0)
+        self.assertEqual(summary.proof_sidecar_audit_findings, ())
         self.assertFalse(summary.provider_calls_performed)
         self.assertFalse(summary.model_activation_performed)
         self.assertFalse(summary.broker_execution_performed)
@@ -90,6 +93,25 @@ class StorageMaintenanceTests(unittest.TestCase):
         self.assertFalse(summary.local_retention_enabled)
         self.assertEqual(summary.deletion_phase_status, "local_retention_skipped")
         self.assertEqual(summary.storage_root_inventory_summary["root_count"], 7)
+
+    def test_skip_proof_sidecar_audit_keeps_fast_summary_shape(self) -> None:
+        with tempfile.TemporaryDirectory() as raw_tmp:
+            root = Path(raw_tmp)
+            receipt = root / "storage" / "01_source_data" / "monthly_backfill" / "example" / "completion_receipt.json"
+            receipt.parent.mkdir(parents=True)
+            receipt.write_text("{}\n", encoding="utf-8")
+
+            summary = run_storage_maintenance(
+                root=root,
+                include_local_retention=False,
+                include_fold_monitor=False,
+                include_proof_sidecar_audit=False,
+                generated_at_utc="2026-05-19T12:00:00Z",
+            )
+
+        self.assertTrue(summary.proof_sidecar_audit_summary["skipped"])
+        self.assertEqual(summary.proof_sidecar_audit_summary["bucket_count"], 0)
+        self.assertEqual(summary.proof_sidecar_audit_findings, ())
 
     def test_detects_completed_manager_fold_state_without_manager_plan(self) -> None:
         with tempfile.TemporaryDirectory() as raw_tmp:
@@ -221,6 +243,82 @@ class StorageMaintenanceTests(unittest.TestCase):
         self.assertEqual(by_ref[task_key_ref]["file_count"], 1)
         self.assertEqual(summary.lifecycle_gap_audit_summary["finding_count"], 2)
         self.assertFalse(summary.lifecycle_gap_audit_summary["mutation_performed"])
+
+    def test_proof_sidecar_audit_separates_evidence_active_inputs_and_candidates(self) -> None:
+        with tempfile.TemporaryDirectory() as raw_tmp:
+            root = Path(raw_tmp)
+            replay_run = (
+                root
+                / "storage"
+                / "05_replay_datasets"
+                / "promotion_replay_candidate_policy"
+                / "replay_execution_runs"
+                / "replay_20260610T000000Z"
+            )
+            replay_run.mkdir(parents=True)
+            (replay_run / "decision_rows.jsonl").write_text("row\n", encoding="utf-8")
+            (replay_run / "model_candidate_selection_trace.jsonl").write_text("trace\n", encoding="utf-8")
+            (replay_run / "replay_runtime_trace.jsonl").write_text("runtime\n", encoding="utf-8")
+            (replay_run / "replay_resume_checkpoint.json").write_text("{}\n", encoding="utf-8")
+
+            attribution_run = (
+                root
+                / "storage"
+                / "05_replay_datasets"
+                / "promotion_replay_candidate_policy"
+                / "post_replay_attribution_runs"
+                / "attribution_20260610T000000Z"
+            )
+            attribution_run.mkdir(parents=True)
+            (attribution_run / "event_interpretations.jsonl").write_text('{"event_id":"e1"}\n', encoding="utf-8")
+            (attribution_run / "raw_event_downloads.jsonl").write_text('{"raw":"event"}\n', encoding="utf-8")
+
+            te_old = (
+                root
+                / "storage"
+                / "01_source_data"
+                / "monthly_backfill"
+                / "trading_economics_calendar_web"
+                / "2026-06"
+                / "runs"
+                / "calendar_maintenance_20260610T000000Z_te"
+            )
+            te_new = te_old.parent / "calendar_maintenance_20260613T000000Z_te"
+            for run in (te_old, te_new):
+                (run / "saved").mkdir(parents=True)
+                (run / "cleaned").mkdir(parents=True)
+                (run / "saved" / "trading_economics_calendar_event.csv").write_text("event_time,event\n", encoding="utf-8")
+                (run / "cleaned" / "trading_economics_calendar_event.jsonl").write_text('{"event":"NFP"}\n', encoding="utf-8")
+                (run / "completion_receipt.json").write_text("{}\n", encoding="utf-8")
+                (run / "request_manifest.json").write_text("{}\n", encoding="utf-8")
+
+            monitor_old = root / "storage" / "04_execution_artifacts" / "runtime" / "realtime_monitor" / "20260610T000000Z"
+            monitor_new = monitor_old.parent / "20260613T000000Z"
+            for run in (monitor_old, monitor_new):
+                run.mkdir(parents=True)
+                (run / "loop_receipt.json").write_text("{}\n", encoding="utf-8")
+                (run / "cycle_001.json").write_text("{}\n", encoding="utf-8")
+
+            runtime_status = root / "storage" / "04_execution_artifacts" / "runtime" / "realtime_trading_runtime" / "runtime_status.json"
+            runtime_status.parent.mkdir(parents=True)
+            runtime_status.write_text("{}\n", encoding="utf-8")
+
+            summary, findings = audit_proof_sidecars(root=root)
+            by_bucket = {finding["bucket"]: finding for finding in findings}
+
+        self.assertEqual(summary["contract_type"], "storage_proof_sidecar_audit_summary")
+        self.assertGreater(summary["cleanup_candidate_file_count"], 0)
+        self.assertGreater(summary["retained_file_count"], 0)
+        self.assertIn("replay_review_evidence_retained", by_bucket)
+        self.assertIn("formal_event_interpretation_retained", by_bucket)
+        self.assertIn("canonical_source_retained", by_bucket)
+        self.assertIn("dashboard_active_input_retained", by_bucket)
+        self.assertIn("runtime_sidecar_candidate", by_bucket)
+        self.assertIn("redundant_proof_sidecar_candidate", by_bucket)
+        self.assertIn("refetchable_event_original_candidate", by_bucket)
+        self.assertEqual(by_bucket["dashboard_active_input_retained"]["handling_status"], "retained")
+        self.assertEqual(by_bucket["runtime_sidecar_candidate"]["handling_status"], "cleanup_candidate")
+        self.assertEqual(by_bucket["redundant_proof_sidecar_candidate"]["handling_status"], "cleanup_candidate")
 
     def test_lifecycle_gap_actions_apply_only_explicit_compact_safe_mutations(self) -> None:
         with tempfile.TemporaryDirectory() as raw_tmp:
