@@ -86,10 +86,10 @@ def _fixture_plan(root: Path) -> dict[str, object]:
                 "root_class": "provider_task_sidecars",
                 "artifact_class": "runtime_evidence",
                 "root_path": str(root / "storage/02_control_plane/runtime/provider_task_keys"),
-                "action": "blocked_pending_explicit_task_key_status",
-                "final_handling_method": "not_applicable",
+                "action": "delete_if_scope_matched",
+                "final_handling_method": "delete",
                 "scope": scope,
-                "reason": "status required",
+                "reason": "delete scoped task identity",
             },
             {
                 "selector_id": "downstream_explicit_artifact_refs",
@@ -164,7 +164,10 @@ class RerunResetLifecycleTests(unittest.TestCase):
             receipt_dir = root / "storage/02_control_plane/runtime/model_training_stage_receipts" / stage_key
             log_dir = root / "storage/02_control_plane/runtime/model_training_stage_logs" / stage_key
             progress = root / "storage/02_control_plane/runtime/task_progress" / f"{stage_key}.json"
-            provider_key = root / "storage/02_control_plane/runtime/provider_task_keys" / stage_key / "task_key.json"
+            provider_key = root / "storage/02_control_plane/runtime/provider_task_keys/mgrreq_option_chain_window_aapl_2016_01_2016_01_12_0930/task_key.json"
+            overlap_provider_key = root / "storage/02_control_plane/runtime/provider_task_keys/mgrreq_option_chain_window_aapl_2016_03_2016_03_12_0930/task_key.json"
+            other_provider_key = root / "storage/02_control_plane/runtime/provider_task_keys/mgrreq_option_chain_window_aapl_2024_01_2024_01_12_0930/task_key.json"
+            substring_provider_key = root / "storage/02_control_plane/runtime/provider_task_keys/mgrreq_option_chain_window_aapl2_2016_01_2016_01_12_0930/task_key.json"
             explicit_artifact = root / "storage/03_model_artifacts/runtime/aapl/generated/output.json"
             model_run = root / "storage/03_model_artifacts/runtime/aapl/model_run_1/metadata.json"
             mixed_model_run = root / "storage/03_model_artifacts/runtime/aapl/mixed_model_run/metadata.json"
@@ -180,7 +183,10 @@ class RerunResetLifecycleTests(unittest.TestCase):
             _write(receipt_dir / "receipt.json", json.dumps({"target": "AAPL", "start_month": "2016-01", "end_month": "2017-06"}))
             _write(log_dir / "stdout.log", "AAPL 2016-01 2017-06\n")
             _write(progress, json.dumps({"target": "AAPL", "start_month": "2016-01", "end_month": "2017-06"}))
-            _write(provider_key)
+            _write(provider_key, json.dumps({"target": "AAPL", "start_month": "2016-01", "end_month": "2017-06"}))
+            _write(overlap_provider_key, json.dumps({"target": "AAPL", "window_start": "2016-03-12T09:30:00-05:00"}))
+            _write(other_provider_key, json.dumps({"target": "AAPL", "start_month": "2024-01", "end_month": "2024-06"}))
+            _write(substring_provider_key, json.dumps({"target": "AAPL2", "window_start": "2016-01-12T09:30:00-05:00"}))
             _write(explicit_artifact)
             _write(model_run, json.dumps({"candidate_model_ref": "storage://trading-manager/model_group/aapl/2016-01_2017-06"}))
             _write(mixed_model_run, json.dumps({"candidate_model_ref": "storage://trading-manager/model_group/aapl/2016-01_2017-06"}))
@@ -198,6 +204,10 @@ class RerunResetLifecycleTests(unittest.TestCase):
             self.assertTrue(receipt_dir.exists())
             self.assertTrue(log_dir.exists())
             self.assertTrue(progress.exists())
+            self.assertTrue(provider_key.exists())
+            self.assertTrue(overlap_provider_key.exists())
+            self.assertTrue(other_provider_key.exists())
+            self.assertTrue(substring_provider_key.exists())
             self.assertTrue(explicit_artifact.exists())
             self.assertTrue(model_run.exists())
             self.assertTrue(mixed_model_run.exists())
@@ -207,8 +217,9 @@ class RerunResetLifecycleTests(unittest.TestCase):
             self.assertGreaterEqual(plan["summary"]["delete_candidate_count"], 6)
             self.assertGreaterEqual(plan["summary"]["refresh_required_count"], 1)
             blocked_classes = {row["file_class"] for row in plan["blocked"]}
-            self.assertIn("provider_task_sidecars", blocked_classes)
             self.assertIn("sql_rows", blocked_classes)
+            candidate_classes = {row["file_class"] for row in plan["delete_candidates"]}
+            self.assertIn("provider_task_sidecars", candidate_classes)
             self.assertTrue(any(row["file_class"] == "explicit_artifact_refs" and row.get("action") == "retain" for row in plan["blocked"]))
             self.assertTrue(any(row["file_class"] == "model_artifacts" and row.get("action") == "retain" for row in plan["blocked"]))
 
@@ -219,7 +230,12 @@ class RerunResetLifecycleTests(unittest.TestCase):
             receipt_dir = root / "storage/02_control_plane/runtime/model_training_stage_receipts" / stage_key
             log_dir = root / "storage/02_control_plane/runtime/model_training_stage_logs" / stage_key
             progress = root / "storage/02_control_plane/runtime/task_progress" / f"{stage_key}.json"
-            provider_key = root / "storage/02_control_plane/runtime/provider_task_keys" / stage_key / "task_key.json"
+            provider_key_dir = root / "storage/02_control_plane/runtime/provider_task_keys/mgrreq_option_chain_window_aapl_2016_01_2016_01_12_0930"
+            provider_key = provider_key_dir / "task_key.json"
+            overlap_provider_key_dir = root / "storage/02_control_plane/runtime/provider_task_keys/mgrreq_option_chain_window_aapl_2016_03_2016_03_12_0930"
+            overlap_provider_key = overlap_provider_key_dir / "task_key.json"
+            other_provider_key = root / "storage/02_control_plane/runtime/provider_task_keys/mgrreq_option_chain_window_aapl_2024_01_2024_01_12_0930/task_key.json"
+            substring_provider_key = root / "storage/02_control_plane/runtime/provider_task_keys/mgrreq_option_chain_window_aapl2_2016_01_2016_01_12_0930/task_key.json"
             explicit_artifact = root / "storage/03_model_artifacts/runtime/aapl/generated/output.json"
             model_run_dir = root / "storage/03_model_artifacts/runtime/aapl/model_run_1"
             mixed_model_run_dir = root / "storage/03_model_artifacts/runtime/aapl/mixed_model_run"
@@ -237,7 +253,10 @@ class RerunResetLifecycleTests(unittest.TestCase):
             )
             log_file = _write(log_dir / "stdout.log", "AAPL 2016-01 2017-06\n")
             _write(progress, json.dumps({"target": "AAPL", "start_month": "2016-01", "end_month": "2017-06"}))
-            _write(provider_key)
+            _write(provider_key, json.dumps({"target": "AAPL", "start_month": "2016-01", "end_month": "2017-06"}))
+            _write(overlap_provider_key, json.dumps({"target": "AAPL", "window_start": "2016-03-12T09:30:00-05:00"}))
+            _write(other_provider_key, json.dumps({"target": "AAPL", "start_month": "2024-01", "end_month": "2024-06"}))
+            _write(substring_provider_key, json.dumps({"target": "AAPL2", "window_start": "2016-01-12T09:30:00-05:00"}))
             _write(explicit_artifact)
             _write(
                 model_run_dir / "metadata.json",
@@ -267,13 +286,16 @@ class RerunResetLifecycleTests(unittest.TestCase):
             self.assertFalse(receipt_file.exists())
             self.assertFalse(log_file.exists())
             self.assertFalse(progress.exists())
+            self.assertFalse(provider_key_dir.exists())
+            self.assertFalse(overlap_provider_key_dir.exists())
             self.assertFalse(explicit_artifact.exists())
             self.assertFalse(model_run_dir.exists())
             self.assertTrue(mixed_model_run_dir.exists())
             self.assertFalse(replay_run_dir.exists())
             self.assertFalse(promotion_run_dir.exists())
             self.assertFalse(snapshot.exists())
-            self.assertTrue(provider_key.exists())
+            self.assertTrue(other_provider_key.exists())
+            self.assertTrue(substring_provider_key.exists())
             self.assertTrue(promoted_model.exists())
             self.assertTrue(latest.exists())
             self.assertTrue(protected_source.exists())
@@ -283,6 +305,40 @@ class RerunResetLifecycleTests(unittest.TestCase):
             self.assertTrue(receipt["mutation_performed"])
             self.assertTrue(receipt["requires_dashboard_refresh"])
             self.assertTrue(receipt["requires_sql_cleanup"])
+
+    def test_provider_keys_are_not_deleted_when_reset_scope_has_no_target(self):
+        with tempfile.TemporaryDirectory() as raw_tmp:
+            root = Path(raw_tmp)
+            provider_key = root / "storage/02_control_plane/runtime/provider_task_keys/mgrreq_option_chain_window_aapl_2016_01_2016_01_12_0930/task_key.json"
+            _write(provider_key, json.dumps({"target": "AAPL", "window_start": "2016-01-12T09:30:00-05:00"}))
+            plan = _fixture_plan(root)
+            plan["reset_scope"]["target_symbols"] = []
+            for selector in plan["generated_class_selectors"]:
+                if isinstance(selector, dict) and isinstance(selector.get("scope"), dict):
+                    selector["scope"]["target_symbols"] = []
+
+            receipt = execute_rerun_reset_lifecycle(root=root, rerun_plan=plan, apply=True, approval_ref="test")
+
+            self.assertTrue(provider_key.exists())
+            self.assertFalse(any(row["file_class"] == "provider_task_sidecars" for row in receipt["deleted"]))
+
+    def test_provider_keys_are_not_deleted_by_target_only_scope(self):
+        with tempfile.TemporaryDirectory() as raw_tmp:
+            root = Path(raw_tmp)
+            provider_key = root / "storage/02_control_plane/runtime/provider_task_keys/mgrreq_option_chain_window_aapl_2016_01_2016_01_12_0930/task_key.json"
+            _write(provider_key, json.dumps({"target": "AAPL", "window_start": "2016-01-12T09:30:00-05:00"}))
+            plan = _fixture_plan(root)
+            for key in ("start_month", "end_month", "fold_id", "state_path", "candidate_model_refs"):
+                plan["reset_scope"].pop(key, None)
+            for selector in plan["generated_class_selectors"]:
+                if isinstance(selector, dict) and isinstance(selector.get("scope"), dict):
+                    for key in ("start_month", "end_month", "fold_id", "state_path", "candidate_model_refs"):
+                        selector["scope"].pop(key, None)
+
+            receipt = execute_rerun_reset_lifecycle(root=root, rerun_plan=plan, apply=True, approval_ref="test")
+
+            self.assertTrue(provider_key.exists())
+            self.assertFalse(any(row["file_class"] == "provider_task_sidecars" for row in receipt["deleted"]))
 
 
 if __name__ == "__main__":

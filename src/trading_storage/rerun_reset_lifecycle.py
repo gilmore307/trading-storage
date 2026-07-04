@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import re
 import shutil
 from datetime import UTC, datetime
 from pathlib import Path
@@ -38,8 +39,8 @@ RERUN_RESET_FILE_CLASSES: tuple[dict[str, str], ...] = (
     },
     {
         "file_class": "provider_task_sidecars",
-        "handling": "blocked_without_status",
-        "description": "Provider task keys may carry acquisition authority and need a narrower terminal status before deletion.",
+        "handling": "delete_if_scope_matched",
+        "description": "Provider task keys inside the accepted target/window scope are generated task identity and are removed before rerun.",
     },
     {
         "file_class": "explicit_artifact_refs",
@@ -227,24 +228,58 @@ def _candidate_model_refs(plan: Mapping[str, Any]) -> tuple[str, ...]:
     scope = _scope(plan)
     start = str(scope.get("start_month") or "")
     end = str(scope.get("end_month") or "")
+    if not start or not end:
+        return ()
     for symbol in scope.get("target_symbols") or []:
         refs.append(f"storage://trading-manager/model_group/{str(symbol).lower()}/{start}_{end}")
     return tuple(dict.fromkeys(refs))
 
 
-def _scope_tokens(plan: Mapping[str, Any]) -> tuple[str, ...]:
-    scope = _scope(plan)
+def _month_range_tokens(start_month: str, end_month: str) -> tuple[str, ...]:
+    if not start_month or not end_month:
+        return ()
+    try:
+        start_year, start_mon = (int(part) for part in start_month.split("-", 1))
+        end_year, end_mon = (int(part) for part in end_month.split("-", 1))
+    except ValueError:
+        return (start_month, end_month)
     tokens: list[str] = []
-    for key in ("start_month", "end_month", "state_path", "fold_id"):
-        value = str(scope.get(key) or "")
-        if value:
-            tokens.append(value)
-            tokens.append(Path(value).name)
+    year = start_year
+    month = start_mon
+    while (year, month) <= (end_year, end_mon):
+        value = f"{year:04d}-{month:02d}"
+        tokens.append(value)
+        tokens.append(value.replace("-", "_"))
+        month += 1
+        if month > 12:
+            month = 1
+            year += 1
+    return tuple(tokens)
+
+
+def _scope_match_groups(plan: Mapping[str, Any]) -> tuple[tuple[str, ...], tuple[str, ...]]:
+    scope = _scope(plan)
+    target_tokens: list[str] = []
+    scope_tokens: list[str] = []
     for symbol in scope.get("target_symbols") or []:
         value = str(symbol)
-        tokens.extend([value, value.lower(), value.upper()])
-    tokens.extend(_candidate_model_refs(plan))
-    return tuple(dict.fromkeys(token for token in tokens if token and token != "."))
+        target_tokens.extend([value, value.lower(), value.upper()])
+    scope_tokens.extend(_month_range_tokens(str(scope.get("start_month") or ""), str(scope.get("end_month") or "")))
+    for key in ("state_path", "fold_id"):
+        value = str(scope.get(key) or "")
+        if not value:
+            continue
+        scope_tokens.append(value)
+        scope_tokens.append(value.replace("-", "_"))
+        scope_tokens.append(Path(value).name)
+        scope_tokens.append(Path(value).name.replace("-", "_"))
+    for ref in _candidate_model_refs(plan):
+        scope_tokens.append(ref)
+        scope_tokens.append(ref.replace("-", "_"))
+    return (
+        tuple(dict.fromkeys(token for token in target_tokens if token)),
+        tuple(dict.fromkeys(token for token in scope_tokens if token and token != ".")),
+    )
 
 
 def _resolve_storage_ref(root: Path, ref: str) -> Path | None:
@@ -344,7 +379,7 @@ def _dir_mentions_any(path: Path, needles: Sequence[str]) -> bool:
 
 
 def _file_mentions_any(path: Path, needles: Sequence[str]) -> bool:
-    if any(needle in path.as_posix() for needle in needles):
+    if _text_has_any(path.as_posix(), needles):
         return True
     if path.stat().st_size > 5_000_000:
         return False
@@ -352,15 +387,75 @@ def _file_mentions_any(path: Path, needles: Sequence[str]) -> bool:
         content = path.read_text(encoding="utf-8", errors="ignore")
     except OSError:
         return False
+    return _text_has_any(content, needles)
+
+
+def _text_has_any(content: str, needles: Sequence[str]) -> bool:
     return any(needle in content for needle in needles)
 
 
-def _iter_scope_matched_files(root_path: Path, needles: Sequence[str]) -> tuple[Path, ...]:
+def _text_has_any_target_token(content: str, target_tokens: Sequence[str]) -> bool:
+    return any(re.search(rf"(?<![A-Za-z0-9]){re.escape(token)}(?![A-Za-z0-9])", content) for token in target_tokens)
+
+
+def _file_matches_scope(
+    path: Path,
+    *,
+    target_tokens: Sequence[str],
+    scope_tokens: Sequence[str],
+    require_target: bool = False,
+    require_scope: bool = False,
+) -> bool:
+    if require_target and not target_tokens:
+        return False
+    if require_scope and not scope_tokens:
+        return False
+    chunks = [path.as_posix()]
+    if path.is_file() and path.stat().st_size <= 5_000_000:
+        try:
+            chunks.append(path.read_text(encoding="utf-8", errors="ignore"))
+        except OSError:
+            pass
+    content = "\n".join(chunks)
+    target_ok = _text_has_any_target_token(content, target_tokens) if target_tokens else True
+    scope_ok = _text_has_any(content, scope_tokens) if scope_tokens else True
+    return target_ok and scope_ok and (bool(target_tokens) or bool(scope_tokens))
+
+
+def _iter_scope_matched_files(
+    root_path: Path,
+    *,
+    target_tokens: Sequence[str],
+    scope_tokens: Sequence[str],
+    require_target: bool = False,
+    require_scope: bool = False,
+) -> tuple[Path, ...]:
     if not root_path.exists():
         return ()
     if root_path.is_file():
-        return (root_path,) if _file_mentions_any(root_path, needles) else ()
-    return tuple(path for path in sorted(root_path.rglob("*")) if path.is_file() and _file_mentions_any(path, needles))
+        return (
+            (root_path,)
+            if _file_matches_scope(
+                root_path,
+                target_tokens=target_tokens,
+                scope_tokens=scope_tokens,
+                require_target=require_target,
+                require_scope=require_scope,
+            )
+            else ()
+        )
+    return tuple(
+        path
+        for path in sorted(root_path.rglob("*"))
+        if path.is_file()
+        and _file_matches_scope(
+            path,
+            target_tokens=target_tokens,
+            scope_tokens=scope_tokens,
+            require_target=require_target,
+            require_scope=require_scope,
+        )
+    )
 
 
 def _planned_rows(root: Path, plan: Mapping[str, Any]) -> dict[str, list[dict[str, Any]]]:
@@ -371,7 +466,7 @@ def _planned_rows(root: Path, plan: Mapping[str, Any]) -> dict[str, list[dict[st
     unmatched: list[dict[str, Any]] = []
     storage_root = _storage_dir(root)
     stage_keys = _stage_keys(plan)
-    scope_tokens = _scope_tokens(plan)
+    target_tokens, scope_tokens = _scope_match_groups(plan)
 
     for selector in plan.get("generated_class_selectors") or []:
         if not isinstance(selector, dict):
@@ -387,7 +482,11 @@ def _planned_rows(root: Path, plan: Mapping[str, Any]) -> dict[str, list[dict[st
             root_path = _selector_root_path(root, selector, storage_root / "02_control_plane" / "runtime" / root_class)
             for key in keys:
                 stage_bucket = root_path / key
-                matched_files = _iter_scope_matched_files(stage_bucket, scope_tokens)
+                matched_files = _iter_scope_matched_files(
+                    stage_bucket,
+                    target_tokens=target_tokens,
+                    scope_tokens=scope_tokens,
+                )
                 if stage_bucket.exists() and not matched_files:
                     unmatched.append(
                         {
@@ -423,7 +522,11 @@ def _planned_rows(root: Path, plan: Mapping[str, Any]) -> dict[str, list[dict[st
                 continue
             for key in keys:
                 for path in sorted(root_path.glob(f"*{key}*")):
-                    matched_files = _iter_scope_matched_files(path, scope_tokens)
+                    matched_files = _iter_scope_matched_files(
+                        path,
+                        target_tokens=target_tokens,
+                        scope_tokens=scope_tokens,
+                    )
                     if path.exists() and not matched_files:
                         unmatched.append(
                             {
@@ -446,15 +549,34 @@ def _planned_rows(root: Path, plan: Mapping[str, Any]) -> dict[str, list[dict[st
             continue
 
         if root_class == "provider_task_sidecars":
-            blocked.append(
-                {
-                    "file_class": root_class,
-                    "selector_id": selector_id,
-                    "path": str(_selector_root_path(root, selector, storage_root / "02_control_plane" / "runtime" / "provider_task_keys")),
-                    "action": "blocked",
-                    "reason": "provider_task_key_status_required_before_delete",
-                }
+            root_path = _selector_root_path(root, selector, storage_root / "02_control_plane" / "runtime" / "provider_task_keys")
+            matched_files = _iter_scope_matched_files(
+                root_path,
+                target_tokens=target_tokens,
+                scope_tokens=scope_tokens,
+                require_target=True,
+                require_scope=True,
             )
+            if root_path.exists() and not matched_files:
+                unmatched.append(
+                    {
+                        "file_class": root_class,
+                        "selector_id": selector_id,
+                        "path": str(root_path),
+                        "reason": "provider_task_key_root_present_but_no_scope_matched_files",
+                    }
+                )
+            for path in matched_files:
+                candidate_path = path.parent if path.name == "task_key.json" else path
+                _add_delete_candidate(
+                    delete_candidates,
+                    blocked,
+                    root=root,
+                    path=candidate_path,
+                    file_class=root_class,
+                    selector_id=selector_id,
+                    reason=reason,
+                )
             continue
 
         if root_class == "explicit_artifact_refs":
@@ -501,7 +623,11 @@ def _planned_rows(root: Path, plan: Mapping[str, Any]) -> dict[str, list[dict[st
 
         if root_class == "model_artifacts":
             model_root = _selector_root_path(root, selector, storage_root / "03_model_artifacts" / "runtime")
-            for matched_file in _iter_scope_matched_files(model_root, _candidate_model_refs(plan)):
+            for matched_file in _iter_scope_matched_files(
+                model_root,
+                target_tokens=target_tokens,
+                scope_tokens=_candidate_model_refs(plan),
+            ):
                 candidate_path = matched_file.parent if matched_file.parent != model_root else matched_file
                 _add_delete_candidate(
                     delete_candidates,
