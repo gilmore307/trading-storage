@@ -1068,6 +1068,8 @@ def _published_layer_decision_row(row: Mapping[str, Any]) -> dict[str, Any]:
         "downstream_review_input_policy",
         "upstream_error_isolation_scope",
         "responsibility_assignment_policy",
+        "factor_ownership_policy",
+        "fusion_responsibility_policy",
         "effective_decision",
         "effective_decision_status",
         "selected_output_ref",
@@ -1366,6 +1368,8 @@ def _replay_decisions_m01_m05_summary(
         "classification_policy": {
             "correctness_class": "Derived from published M01-M05 layer review rows when available; legacy fallback uses replay decision traces and scored M04/M05 labels only.",
             "acceptability_class": "Correct rows are acceptable; incorrect rows are unacceptable until a narrower acceptance threshold is published.",
+            "m01_m03_independent_review": "M01-M03 rows require independent post-replay label joins before final losses can be attributed to M04 fusion.",
+            "missing_independent_layer_review_label": "A missing M01-M03 independent label is an upstream review evidence gap, not proof of M04 responsibility.",
             "unscored_effective_trace": "Only legacy review runs without layer_review_rows_ref use unscored effective traces.",
             "hindsight_caution": "Future returns are labels for review; they must not be displayed as decision-time inputs.",
         },
