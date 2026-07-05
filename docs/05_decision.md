@@ -568,7 +568,7 @@ Allow target-specific or experiment-specific source data to become cleanup candi
 storage/01_source_data/fold_scoped/<fold_id>/
 ```
 
-The cleanup unit is the fold folder. Storage maintenance may emit a `storage_fold_source_cleanup_candidate` only after the corresponding manager fold state proves the full M01-M06 fold is complete. File-level artifact metadata may also use `storage_retention_class=fold_complete_delete_allowed` for fold-scoped source artifacts, which maps to quarantine planning after protected-set clearance.
+The cleanup unit is the fold folder. Storage maintenance may emit a `storage_fold_source_cleanup_candidate` only after the corresponding manager fold state proves the full M01-M05 fold is complete. File-level artifact metadata may also use `storage_retention_class=fold_complete_delete_allowed` for fold-scoped source artifacts, which maps to quarantine planning after protected-set clearance.
 
 ### Consequences
 

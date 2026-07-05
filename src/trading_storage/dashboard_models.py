@@ -33,7 +33,6 @@ MODEL_LAYERS = (
     (3, "model_03_event_state", "Event State"),
     (4, "model_04_unified_decision", "Unified Decision"),
     (5, "model_05_option_expression", "Option Expression"),
-    (6, "model_06_residual_event_governance", "Residual Event Governance"),
 )
 
 

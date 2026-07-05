@@ -1308,7 +1308,7 @@ def _compact_post_replay_attribution_runs(
     run_rows: list[dict[str, Any]] = []
     candidate_count = 0
     for run in runs:
-        receipt = _read_json_object(run / "post_replay_residual_event_governance_receipt.json") or {}
+        receipt = _read_json_object(run / "post_replay_failure_review_receipt.json") or {}
         runtime_sidecar_files = [
             path for path in sorted(run.iterdir()) if path.is_file() and path.name in ATTRIBUTION_RUNTIME_SIDECAR_FILE_NAMES
         ]

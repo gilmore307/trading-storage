@@ -13,7 +13,7 @@ Core rule:
 ```text
 M01 and M02 data are persistent source/feature foundations and must be retained, compressed, and protected from deletion by default.
 Reusable source data, including M01/M02 market-regime and sector-context foundations, is never a fold-completion delete target.
-Target-specific or experiment-specific source data that will not be reused may enter deletion planning only as an explicit fold-scoped folder after the full M01-M06 fold closes.
+Target-specific or experiment-specific source data that will not be reused may enter deletion planning only as an explicit fold-scoped folder after the full M01-M05 fold closes.
 Later-layer model-run metadata and dashboard/cache snapshots may be handled only after the model run cycle closes, provided latest summaries, receipts, manifests, lineage refs, unresolved-alert evidence, and any needed regeneration/debug evidence remain. While the event model is being redesigned and downstream models must be regenerated, dashboard/model-run metadata pruning is on hold unless a bounded reviewed slice says otherwise.
 Promoted model bodies are preserved permanently.
 Regenerable intermediate training data may be deleted after the owning run/fold/replay closes and compact evidence proves no active consumer remains.
@@ -127,7 +127,7 @@ Policy: delete after the run or fold closes and after compact summaries, receipt
 
 Includes target-symbol or experiment-specific source folders created for a bounded 12+3+3 model-worker fold, where the folder is not intended to serve as reusable M01/M02 source foundation or durable replay/source history.
 
-Policy: delete by fold folder only after the full M01-M06 fold closes. The accepted folder boundary is `storage/01_source_data/fold_scoped/<fold_id>/...`; storage maintenance emits `storage_fold_source_cleanup_candidate` rows only for completed fold ids under that root. These candidates still require artifact-index coverage, protected-set clearance, quarantine/recheck, and deletion receipts before any destructive executor may remove bytes. Individual files inside a fold-scoped folder should not be independently deleted out of order.
+Policy: delete by fold folder only after the full M01-M05 fold closes. The accepted folder boundary is `storage/01_source_data/fold_scoped/<fold_id>/...`; storage maintenance emits `storage_fold_source_cleanup_candidate` rows only for completed fold ids under that root. These candidates still require artifact-index coverage, protected-set clearance, quarantine/recheck, and deletion receipts before any destructive executor may remove bytes. Individual files inside a fold-scoped folder should not be independently deleted out of order.
 
 Architecture-driven model group reruns may also place bounded source-data partitions into lifecycle candidates, but only when the manager `model_group_rerun_plan` cutpoint is `data_acquisition` and the source definition, provider/source parameters, acquisition contract, or existing source partition is itself stale or wrong. The candidate scope must name the provider/source, target symbol where applicable, fold or month window, timeframe, artifact family, and contract/schema. Source data remains protected for reruns whose cutpoint is `feature_generation` or later. The rerun plan's `delete_set` is treated as lifecycle candidate input, not deletion authority.
 

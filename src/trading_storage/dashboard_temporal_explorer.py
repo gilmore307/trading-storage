@@ -489,19 +489,21 @@ def _metadata_text(row: Mapping[str, Any], field: str) -> str:
     return str(value).strip()
 
 
-def _is_m06_residual_event_governance_accepted_event(row: Mapping[str, Any]) -> bool:
-    """Return true only for event kinds accepted by M06/review for chart markers."""
+def _is_m03_event_effect_model_accepted_event(row: Mapping[str, Any]) -> bool:
+    """Return true only for event kinds accepted by M03 event-effect review."""
 
     accepted_values = {
         "accepted",
-        "m06_residual_event_governance_accepted",
-        "accepted_m06_residual_event_governance_event",
-        "accepted_layer4_event_family",
+        "m03_event_effect_model_accepted",
+        "accepted_m03_event_effect_model_event",
+        "accepted_event_effect_model",
+        "accepted_event_family",
         "production_accepted",
     }
     candidate_fields = (
-        "m06_residual_event_governance_status",
-        "m06_residual_event_governance_disposition",
+        "m03_event_effect_model_status",
+        "m03_event_effect_model_disposition",
+        "event_effect_model_status",
         "event_family_status",
         "promotion_status",
         "review_status",
@@ -531,7 +533,7 @@ def _event_payloads(rows: Mapping[str, Sequence[Mapping[str, Any]]]) -> list[dic
         if str(row.get("venue") or "") == "NYSE"
     }
     for row in rows.get("scheduled_events", []):
-        if not _is_m06_residual_event_governance_accepted_event(row):
+        if not _is_m03_event_effect_model_accepted_event(row):
             continue
         at = _event_time(row)
         event_date = str(row.get("event_date") or (at.date().isoformat() if at else ""))
@@ -542,13 +544,13 @@ def _event_payloads(rows: Mapping[str, Sequence[Mapping[str, Any]]]) -> list[dic
                 "event_time": _iso_utc(at or datetime.now(UTC)),
                 "market_state": market_state_by_date.get(event_date, "unknown"),
                 "title": title,
-                "lane": "m06_residual_event_governance_accepted_event",
+                "lane": "m03_event_effect_model_accepted_event",
                 "family_id": _event_family_id(str(row.get("event_type") or "scheduled")),
                 "family_label": str(row.get("event_type") or "scheduled"),
                 "event_type": str(row.get("event_type") or "scheduled"),
                 "scope": str(row.get("event_scope") or ""),
                 "symbol": row.get("symbol"),
-                "status": _row_text(row, "m06_residual_event_governance_status") or _metadata_text(row, "m06_residual_event_governance_status") or "accepted",
+                "status": _row_text(row, "m03_event_effect_model_status") or _metadata_text(row, "m03_event_effect_model_status") or _row_text(row, "event_effect_model_status") or _metadata_text(row, "event_effect_model_status") or "accepted",
                 "source_priority": str(row.get("source_priority") or ""),
                 "summary": _event_detail_summary(row, title),
                 "source_name": _metadata_text(row, "source_name") or str(row.get("source_priority") or ""),
@@ -557,7 +559,7 @@ def _event_payloads(rows: Mapping[str, Sequence[Mapping[str, Any]]]) -> list[dic
             }
         )
     for row in rows.get("event_results", []):
-        if not _is_m06_residual_event_governance_accepted_event(row):
+        if not _is_m03_event_effect_model_accepted_event(row):
             continue
         at = _event_time(row)
         event_date = at.date().isoformat() if at else ""
@@ -567,21 +569,21 @@ def _event_payloads(rows: Mapping[str, Sequence[Mapping[str, Any]]]) -> list[dic
                 "event_time": _iso_utc(at or datetime.now(UTC)),
                 "market_state": market_state_by_date.get(event_date, "unknown"),
                 "title": "Released event result",
-                "lane": "m06_residual_event_governance_accepted_event",
+                "lane": "m03_event_effect_model_accepted_event",
                 "family_id": _event_family_id("result"),
                 "family_label": "result",
                 "event_type": "result",
                 "scope": "event",
-                "status": _row_text(row, "m06_residual_event_governance_status") or "accepted",
+                "status": _row_text(row, "m03_event_effect_model_status") or _row_text(row, "event_effect_model_status") or "accepted",
                 "source_priority": "result_artifact",
-                "summary": "Accepted M06 event result is available.",
+                "summary": "Accepted M03 event result is available.",
                 "source_name": "calendar_event_result",
                 "reference_type": "artifact",
                 "reference": str(row.get("raw_artifact_ref") or ""),
             }
         )
     for row in rows.get("news_events", []):
-        if not _is_m06_residual_event_governance_accepted_event(row):
+        if not _is_m03_event_effect_model_accepted_event(row):
             continue
         at = _event_time(row)
         event_date = str(row.get("event_date") or (at.date().isoformat() if at else ""))
@@ -591,15 +593,15 @@ def _event_payloads(rows: Mapping[str, Sequence[Mapping[str, Any]]]) -> list[dic
                 "event_time": _iso_utc(at or datetime.now(UTC)),
                 "market_state": market_state_by_date.get(event_date, "unknown"),
                 "title": str(row.get("headline") or "News event"),
-                "lane": "m06_residual_event_governance_accepted_event",
+                "lane": "m03_event_effect_model_accepted_event",
                 "family_id": _event_family_id(str(row.get("event_family_candidate") or "news")),
                 "family_label": str(row.get("event_family_candidate") or "news"),
                 "event_type": str(row.get("event_family_candidate") or "news"),
                 "scope": "news",
                 "symbol": row.get("symbol"),
-                "status": _row_text(row, "m06_residual_event_governance_status") or str(row.get("dedup_status") or "accepted"),
+                "status": _row_text(row, "m03_event_effect_model_status") or _row_text(row, "event_effect_model_status") or str(row.get("dedup_status") or "accepted"),
                 "source_priority": str(row.get("source") or ""),
-                "summary": str(row.get("headline") or "Accepted M06 news event."),
+                "summary": str(row.get("headline") or "Accepted M03 news event."),
                 "source_name": str(row.get("source") or "calendar_news_event_index"),
                 "reference_type": "artifact",
                 "reference": str(row.get("raw_artifact_ref") or row.get("interpreted_event_ref") or ""),

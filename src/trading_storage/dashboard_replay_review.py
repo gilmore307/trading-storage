@@ -36,7 +36,7 @@ REPLAY_DECISION_LAYER_IDS = (
     "model_04_unified_decision",
     "model_05_option_expression",
 )
-EXCLUDED_REPLAY_DECISION_LAYER_IDS = ("model_06_residual_event_governance",)
+EXCLUDED_REPLAY_DECISION_LAYER_IDS: tuple[str, ...] = ()
 REPLAY_OPERATION_COMPONENTS = (
     ("component_01_intake", "C01 Intake"),
     ("component_02_entry", "C02 Entry"),
@@ -78,7 +78,6 @@ REPLAY_DECISION_LAYER_LABELS = {
     "model_03_event_state": "M03 Event State",
     "model_04_unified_decision": "M04 Unified Decision",
     "model_05_option_expression": "M05 Option Expression",
-    "model_06_residual_event_governance": "M06 Residual Event Governance",
 }
 REPLAY_DECISION_LAYER_ALIASES = {
     "m01": "model_01_background_context",
@@ -96,9 +95,6 @@ REPLAY_DECISION_LAYER_ALIASES = {
     "m05": "model_05_option_expression",
     "model_05": "model_05_option_expression",
     "model_05_option_expression": "model_05_option_expression",
-    "m06": "model_06_residual_event_governance",
-    "model_06": "model_06_residual_event_governance",
-    "model_06_residual_event_governance": "model_06_residual_event_governance",
 }
 PASSIVE_BASELINE_ACTIONS = {"baseline_action", "no_trade", "avoid_trade", "hold_cash"}
 UNSCORED_LAYER_TRACE_STATUS = "effective_trace_unscored"
@@ -1352,7 +1348,7 @@ def _replay_decisions_m01_m05_summary(
             {
                 "layer_id": layer_id,
                 "layer_label": REPLAY_DECISION_LAYER_LABELS[layer_id],
-                "reason": "post_replay_residual_event_governance_not_in_decision_scope",
+                "reason": "not_in_decision_scope",
             }
             for layer_id in EXCLUDED_REPLAY_DECISION_LAYER_IDS
         ],

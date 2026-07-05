@@ -576,12 +576,11 @@ def _retention_class(
             "model_03",
             "model_04",
             "model_05",
-            "model_06",
             "m05_option_expression_feature_generation",
             "m05_option_expression_data_acquisition_contract_path",
-            "m06_residual_event_governance_feature_generation",
-            "m06_residual_event_governance_data_acquisition",
-            "event_risk_governor",
+            "m03_event_state_feature_generation",
+            "m03_event_state_data_acquisition",
+            "event_effect_model",
         )
     ) and any(token in text for token in ("metadata", "summary", "diagnostic", "scratch", "intermediate", "runtime", "staging")):
         return "ttl_delete_allowed"

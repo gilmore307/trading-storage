@@ -392,7 +392,7 @@ class StorageMaintenanceTests(unittest.TestCase):
             attribution_new = attribution_old.parent / "attribution_20260613T000000Z"
             for run in (attribution_old, attribution_new):
                 run.mkdir(parents=True)
-                (run / "post_replay_residual_event_governance_receipt.json").write_text(
+                (run / "post_replay_failure_review_receipt.json").write_text(
                     json.dumps({"status": "completed"}),
                     encoding="utf-8",
                 )

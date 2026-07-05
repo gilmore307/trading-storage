@@ -861,7 +861,6 @@ def _write_replay_review_run(storage_root: Path) -> None:
                     },
                     "model_04_unified_decision": {"row_count": 2, "varying_scalar_keys": ["dominant_horizon"]},
                     "model_05_option_expression": {"row_count": 2, "varying_scalar_keys": ["selected_contract_ref"]},
-                    "model_06_residual_event_governance": {"row_count": 2, "varying_scalar_keys": ["event_risk_intervention_ref"]},
                 },
             },
             sort_keys=True,
@@ -894,7 +893,7 @@ def _write_replay_review_run(storage_root: Path) -> None:
                 "component_index,operation_component_id,runtime_component_ref,operation_component_label,operation_role,applicability_status,input_count,output_count,dropped_or_blocked_count,censored_count,settled_metric_eligible_count,settled_metric_excluded_count,first_limiting_projection_count,first_limiting_projections,review_projection_refs,outcome_metric_available,mean_prediction_score,score_label_spearman,score_return_spearman,mean_realized_return,hit_rate,tail_loss_count,stage_verdict,verdict_basis,threshold_selection_performed,retraining_performed,fixed_input_only",
                 "1,C01_intake_operation,component_01_intake,C01 Intake,prepare inputs,candidate_entry_path,2,2,0,0,2,0,0,,background_context;target_state,True,0.81,0.2,0.3,0.02,0.5,1,neutral_measured,no_prior_observable_bad_rate,False,False,True",
                 "3,C03_lifecycle_operation,component_03_lifecycle,C03 Lifecycle,manage positions,portfolio_lifecycle_state_reviewed,2,1,0,0,1,0,0,,portfolio_lifecycle_summary;replacement_review,True,,,,,,0,neutral_measured,portfolio_lifecycle_state_reviewed,False,False,True",
-                "7,C07_failure_review_operation,component_07_failure_review,C07 Failure Review,review settled failures,candidate_entry_path,2,2,0,0,2,0,2,settled_prediction_quality,residual_event_governance;settled_prediction_quality,True,0.81,0.2,0.3,0.02,0.5,1,first_observed_deterioration,settled_survivor_cohort_bad_rate_above_half,False,False,True",
+                "7,C07_failure_review_operation,component_07_failure_review,C07 Failure Review,review settled failures,candidate_entry_path,2,2,0,0,2,0,2,settled_prediction_quality,settled_failure_review;settled_prediction_quality,True,0.81,0.2,0.3,0.02,0.5,1,first_observed_deterioration,settled_survivor_cohort_bad_rate_above_half,False,False,True",
             ]
         )
         + "\n",
@@ -906,7 +905,7 @@ def _write_replay_review_run(storage_root: Path) -> None:
                 "component_index,operation_component_id,runtime_component_ref,operation_component_label,operation_role,applicability_status,input_count,output_count,dropped_or_blocked_count,settled_metric_eligible_count,survival_verdict,survival_verdict_basis,review_projections,internal_review_refs,missing_review_outputs,metric_effectiveness_status,metric_effectiveness_flags,first_limiting_projection_count,can_assign_operation_fault,interpretation_status,threshold_selection_performed,retraining_performed,fixed_input_only",
                 "1,C01_intake_operation,component_01_intake,C01 Intake,prepare inputs,candidate_entry_path,2,2,0,2,neutral_measured,no_prior_observable_bad_rate,background_context;target_state,operation_component_metrics.csv,,effectiveness_metrics_reviewed,,0,False,reviewable_no_problem_observed,False,False,True",
                 "3,C03_lifecycle_operation,component_03_lifecycle,C03 Lifecycle,manage positions,portfolio_lifecycle_state_reviewed,2,1,0,1,neutral_measured,portfolio_lifecycle_state_reviewed,portfolio_lifecycle_summary;replacement_review,operation_component_metrics.csv;replay_execution_receipt.json,,effectiveness_metrics_reviewed,,0,False,reviewable_no_problem_observed,False,False,True",
-                "7,C07_failure_review_operation,component_07_failure_review,C07 Failure Review,review settled failures,candidate_entry_path,2,2,0,2,first_observed_deterioration,settled_survivor_cohort_bad_rate_above_half,residual_event_governance;settled_prediction_quality,operation_component_metrics.csv,,effectiveness_metrics_reviewed,,2,False,problem_observed_at_failure_review_not_causal_operation_fault,False,False,True",
+                "7,C07_failure_review_operation,component_07_failure_review,C07 Failure Review,review settled failures,candidate_entry_path,2,2,0,2,first_observed_deterioration,settled_survivor_cohort_bad_rate_above_half,settled_failure_review;settled_prediction_quality,operation_component_metrics.csv,,effectiveness_metrics_reviewed,,2,False,problem_observed_at_failure_review_not_causal_operation_fault,False,False,True",
             ]
         )
         + "\n",
@@ -930,7 +929,7 @@ def _write_replay_review_run(storage_root: Path) -> None:
                 "operation_action_row_id,source_decision_id,source_decision_index,decision_time,replay_month,target_symbol,operation_component_id,runtime_component_ref,operation_component_label,component_index,operation_action,operation_status,input_ref,input_summary,output_ref,output_summary,block_reason,analysis_method,evidence_role,label_role,trigger_state,pit_feasible_action_set_ref,pit_feasible_action_count,pit_feasible_action_set_status,review_boundary_ref,review_boundary_status,component_objective,chosen_action,best_available_action_by_future_outcome,chosen_action_return,best_available_action_return,chosen_rank_ex_post,component_correctness_class,post_replay_label_basis,upstream_decision_state_policy,downstream_review_input_policy,upstream_error_isolation_scope,responsibility_assignment_policy,decision_time_evidence_fields,post_replay_label_fields,realized_return,regret_to_best_available,impact_normalized_severity_score,review_status,fixed_input_only",
                 "decision-1:c01,decision-1,1,2021-01-19T16:00:00-05:00,2021-01,AAPL,C01_intake_operation,component_01_intake,C01 Intake,1,prepare_point_in_time_inputs,inputs_ready,selected_target:AAPL,AAPL at 2021-01-19T16:00:00-05:00,model_evidence_chain,model_01_background_context;model_02_target_state,,point_in_time_source_candidate_and_sector_intake_review,source_candidate_context_readiness,forward_return_labels_only_for_intake_opportunity_review,clock_triggered,selected_target:AAPL,2,published,selected_target:AAPL,received_boundary_complete,publish_pit_inputs,publish_inputs,not_determinable_from_current_review,,,,not_scored,future_labels_audit_opportunity_coverage_only,received_upstream_state_is_fixed_review_input,judge_component_only_against_received_decision_time_inputs,attribute_upstream_defects_to_earliest_layer_or_boundary,component_local_correctness_given_received_inputs,model_evidence_chain;candidate_set_scope,,0.02,0,0,reviewable_from_replay_row,True",
                 "decision-1:c03,decision-1,1,2021-01-19T16:00:00-05:00,2021-01,AAPL,C03_lifecycle_operation,component_03_lifecycle,C03 Lifecycle,3,check_portfolio_lifecycle_and_replacement,portfolio_lifecycle_state_reviewed,portfolio_selection_summary,continued=1; replacement_evaluated=0; replacement_triggered=0,portfolio_position_state,final_positions=1; allocation_violations=0,,portfolio_lifecycle_state_transition_and_replacement_policy_review,open_position_state_and_replacement_policy_evidence,operational_state_transition_counts_not_future_return_decision_inputs,position_or_intent_state_triggered,decision_time_portfolio_lifecycle_transitions,,not_published,decision_time_portfolio_lifecycle_transitions,received_boundary_missing,apply_legal_lifecycle_transitions,apply_lifecycle_state,not_determinable_from_current_review,,,,not_scored,lifecycle_correctness_requires_position_state_transition_labels,received_upstream_state_is_fixed_review_input,judge_component_only_against_received_decision_time_inputs,attribute_upstream_defects_to_earliest_layer_or_boundary,component_local_correctness_given_received_inputs,portfolio_selection_summary;replacement_review,,0.02,0,0,reviewable_from_replay_row,True",
-                "decision-1:c07,decision-1,1,2021-01-19T16:00:00-05:00,2021-01,AAPL,C07_failure_review_operation,component_07_failure_review,C07 Failure Review,7,review_settled_failure_and_residual_gap,reviewed,model_05_option_expression,model_05_option_expression,execution_or_position_management,outcome=0; regret=0.08; gap=execution_or_position_management,,settled_failure_review_and_residual_gap_explanation_review,post_action_failure_review_and_settlement_evidence,settled_outcomes_are_review_labels_not_m06_decision_inputs,clock_triggered,settled_component_incident_labels,2,published,settled_component_incident_labels,received_boundary_complete,classify_settled_incidents,review_settled_failure,baseline_action,-0.08,0,2,regretful_choice,settled_outcomes_classify_incidents_after_replay,received_upstream_state_is_fixed_review_input,judge_component_only_against_received_decision_time_inputs,attribute_upstream_defects_to_earliest_layer_or_boundary,component_local_correctness_given_received_inputs,decision_status;fill_status;miss_attribution_layer,realized_return;baseline_return;regret_to_best_available;outcome_label,-0.08,0.08,0.08,reviewable_from_replay_row,True",
+                "decision-1:c07,decision-1,1,2021-01-19T16:00:00-05:00,2021-01,AAPL,C07_failure_review_operation,component_07_failure_review,C07 Failure Review,7,review_settled_failure_and_residual_gap,reviewed,model_05_option_expression,model_05_option_expression,execution_or_position_management,outcome=0; regret=0.08; gap=execution_or_position_management,,settled_failure_review_and_residual_gap_explanation_review,post_action_failure_review_and_settlement_evidence,settled_outcomes_are_review_labels_not_m03_decision_inputs,clock_triggered,settled_component_incident_labels,2,published,settled_component_incident_labels,received_boundary_complete,classify_settled_incidents,review_settled_failure,baseline_action,-0.08,0,2,regretful_choice,settled_outcomes_classify_incidents_after_replay,received_upstream_state_is_fixed_review_input,judge_component_only_against_received_decision_time_inputs,attribute_upstream_defects_to_earliest_layer_or_boundary,component_local_correctness_given_received_inputs,decision_status;fill_status;miss_attribution_layer,realized_return;baseline_return;regret_to_best_available;outcome_label,-0.08,0.08,0.08,reviewable_from_replay_row,True",
             ]
         )
         + "\n",
@@ -944,13 +943,13 @@ def _write_residual_event_run(storage_root: Path) -> None:
         / "05_replay_datasets"
         / "promotion_replay_candidate_policy"
         / "post_replay_attribution_runs"
-        / "post_replay_residual_event_governance_20260629T120500Z"
+        / "post_replay_failure_review_20260629T120500Z"
     )
     run_root.mkdir(parents=True, exist_ok=True)
     (run_root / "post_replay_attribution_receipt.json").write_text(
         json.dumps(
             {
-                "contract_type": "post_replay_residual_event_governance_receipt",
+                "contract_type": "post_replay_failure_review_receipt",
                 "status": "succeeded",
                 "run_id": run_root.name,
                 "candidate_model_ref": "storage://trading-manager/model_group/aapl/2016-01_2017-06",
@@ -967,7 +966,7 @@ def _write_residual_event_run(storage_root: Path) -> None:
     (run_root / "event_focus_proposals.jsonl").write_text(
         json.dumps(
             {
-                "contract_type": "model_06_residual_event_governance_event_focus_proposal",
+                "contract_type": "model_03_event_state_event_focus_proposal",
                 "event_focus_proposal_id": "event_focus_1",
                 "event_ref": "event_1",
                 "event_summary": "Market holiday affected the replay decision window.",
@@ -985,10 +984,10 @@ def _write_residual_event_run(storage_root: Path) -> None:
         + "\n",
         encoding="utf-8",
     )
-    (run_root / "residual_event_governance_rows.jsonl").write_text(
+    (run_root / "settled_failure_review_rows.jsonl").write_text(
         json.dumps(
             {
-                "contract_type": "model_06_residual_event_governance_event_attribution_row",
+                "contract_type": "model_03_event_state_event_attribution_row",
                 "attribution_id": "attr_1",
                 "attribution_status": "attributed",
                 "target_symbol": "AAPL",
@@ -1104,7 +1103,7 @@ class DashboardModelsTests(unittest.TestCase):
             self.assertEqual(payload["contract_type"], MODEL_READINESS_CONTRACT)
             self.assertEqual(validate_dashboard_read_model(payload), MODEL_READINESS_CONTRACT)
             layers = payload["chart_payload"]["layers"]
-            self.assertEqual(len(layers), 6)
+            self.assertEqual(len(layers), 5)
             layer_five = next(layer for layer in layers if layer["layer"] == 5)
             self.assertEqual(layer_five["versions"][0]["version_id"], "2016-01..2017-06:model_05_option_expression")
             self.assertEqual(layer_five["promotion"]["status"], "deferred")
@@ -1427,7 +1426,7 @@ class DashboardModelsTests(unittest.TestCase):
                 "model_04_unified_decision",
                 "model_05_option_expression",
             ])
-            self.assertEqual(replay_decisions["excluded_layers"][0]["layer_id"], "model_06_residual_event_governance")
+            self.assertEqual(replay_decisions["excluded_layers"], [])
             self.assertEqual(replay_decisions["detail_row_count"], 10)
             self.assertEqual(replay_decisions["layer_quality_summary"]["model_01_background_context"]["effective_decision_count"], 2)
             self.assertEqual(replay_decisions["layer_quality_summary"]["model_01_background_context"]["coverage_row_count"], 9)
@@ -1461,7 +1460,6 @@ class DashboardModelsTests(unittest.TestCase):
             m04_rows = [row for row in replay_decisions["layer_decision_rows"] if row["layer_id"] == "model_04_unified_decision"]
             self.assertEqual(m04_rows[0]["correctness_class"], "incorrect")
             self.assertEqual(m04_rows[1]["correctness_class"], "correct")
-            self.assertNotIn("model_06_residual_event_governance", replay_decisions["layer_quality_summary"])
             replay_operations = review["replay_operations_c01_c07"]
             self.assertEqual(replay_operations["status"], "ready")
             self.assertEqual(
@@ -1600,7 +1598,7 @@ class DashboardModelsTests(unittest.TestCase):
                 / "05_replay_datasets"
                 / "promotion_replay_candidate_policy"
                 / "post_replay_attribution_runs"
-                / "post_replay_residual_event_governance_20260629T120500Z"
+                / "post_replay_failure_review_20260629T120500Z"
                 / "post_replay_attribution_receipt.json"
             )
             event_payload = json.loads(event_receipt.read_text(encoding="utf-8"))
