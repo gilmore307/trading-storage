@@ -331,6 +331,11 @@ def _write_group_promotion_version(storage_root: Path) -> None:
                     "predictive_diagnostics": {"base_rate": 0.54, "pr_auc": 0.61},
                     "calibration_diagnostics": {"ece": 0.12, "mce": 0.22},
                     "economic_diagnostics": {"profit_factor": 1.4, "tail_loss_p05": -0.021},
+                    "return_semantics_diagnostics": {
+                        "status": "passed",
+                        "capital_return_status": "unavailable",
+                        "potential_double_cost_row_count": 0,
+                    },
                     "data_integrity_diagnostics": {"status": "passed", "leakage_check_status": "passed"},
                     "temporal_stability_diagnostics": {
                         "month_slice_count": 6,
@@ -353,6 +358,14 @@ def _write_group_promotion_version(storage_root: Path) -> None:
                     },
                     "benchmark_diagnostics": {"status": "available", "benchmark_symbol": "SPY"},
                     "baseline_comparison_diagnostics": {"candidate_minus_no_trade": 1.98},
+                    "m05_expression_mechanics_diagnostics": {
+                        "singleton_after_filter_rate": 1.0,
+                        "high_score_singleton_loss_count": 8,
+                    },
+                    "m04_m05_bridge_diagnostics": {
+                        "high_score_singleton_loss_count": 8,
+                        "material_regressions": ["M04 high-score losses are coupled to M05 singleton contract selection"],
+                    },
                     "uncertainty_diagnostics": {"available": False, "reason": "single fold"},
                     "scorecards": {
                         "ranking_calibration": {
@@ -1161,6 +1174,9 @@ class DashboardModelsTests(unittest.TestCase):
             self.assertEqual(payload["chart_payload"]["group_versions"][0]["metrics"]["pca_variance_top2"], 0.81)
             self.assertEqual(payload["chart_payload"]["group_versions"][0]["metrics"]["silhouette_outcome_label"], 0.18)
             self.assertEqual(payload["chart_payload"]["group_versions"][0]["metrics"]["decision_variable_schema_status"], "passed")
+            self.assertEqual(payload["chart_payload"]["group_versions"][0]["metrics"]["return_semantics_diagnostics"]["capital_return_status"], "unavailable")
+            self.assertEqual(payload["chart_payload"]["group_versions"][0]["metrics"]["m05_expression_mechanics_diagnostics"]["singleton_after_filter_rate"], 1.0)
+            self.assertEqual(payload["chart_payload"]["group_versions"][0]["metrics"]["m04_m05_bridge_diagnostics"]["high_score_singleton_loss_count"], 8)
             self.assertEqual(payload["chart_payload"]["group_versions"][0]["metrics"]["diagnostic_availability"]["slice_distribution"]["status"], "available")
             variable_diagnostics = payload["chart_payload"]["group_versions"][0]["metrics"]["decision_variable_schema_diagnostics"]
             self.assertEqual(variable_diagnostics["coverage"]["decision_intended_side"]["values"]["long"], 3400)
