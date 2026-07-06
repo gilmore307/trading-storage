@@ -41,7 +41,7 @@ REPLAY_OPERATION_COMPONENTS = (
     ("component_01_intake", "C01 Intake"),
     ("component_02_entry", "C02 Entry"),
     ("component_03_lifecycle", "C03 Lifecycle"),
-    ("component_04_option_review", "C04 Option Review"),
+    ("component_04_option_review", "C04 Expression Review"),
     ("component_05_order_intent", "C05 Order Intent"),
     ("component_06_execution_gate", "C06 Execution Gate"),
     ("component_07_failure_review", "C07 Failure Review"),
