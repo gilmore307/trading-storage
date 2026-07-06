@@ -1468,7 +1468,7 @@ class DashboardModelsTests(unittest.TestCase):
                     "component_01_intake",
                     "component_02_entry",
                     "component_03_lifecycle",
-                    "component_04_option_review",
+                    "component_04_expression_review",
                     "component_05_order_intent",
                     "component_06_execution_gate",
                     "component_07_failure_review",
