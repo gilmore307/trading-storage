@@ -132,7 +132,7 @@ LIFECYCLE_GAP_SELECTORS: tuple[dict[str, Any], ...] = (
         "action": "compact",
         "final_handling_method": "rolling_retention",
         "trigger_required": "post_replay_attribution_completed",
-        "consumer_or_use": "residual event governance attribution review",
+        "consumer_or_use": "component-owned failure review and M03 event-effect feedback",
         "required_followup": "write attribution summary, preserve semantic event interpretations, and roll only raw scans/download sidecars",
     },
     {
