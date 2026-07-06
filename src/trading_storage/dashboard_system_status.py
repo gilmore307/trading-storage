@@ -816,13 +816,6 @@ def _dashboard_source_outputs(*, storage_root: Path, manager_storage_root: Path,
             execution_note,
         ),
         (
-            "Trading Economics Canonical Source Receipt",
-            "trading_economics_calendar_source_receipt",
-            _latest_matching_file(storage_root / "01_source_data/monthly_backfill/trading_economics_calendar_web", "**/completion_receipt.json"),
-            "event_driven",
-            source_note,
-        ),
-        (
             "Trading Economics Canonical Source Events",
             "trading_economics_calendar_source_events",
             _latest_matching_file(storage_root / "01_source_data/monthly_backfill/trading_economics_calendar_web", "**/saved/trading_economics_calendar_event.csv"),

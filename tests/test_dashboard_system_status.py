@@ -86,7 +86,6 @@ class DashboardSystemStatusTests(unittest.TestCase):
                     "Execution Runtime Status",
                     "Latest Realtime Monitor Receipt",
                     "Latest Realtime Monitor Cycle",
-                    "Trading Economics Canonical Source Receipt",
                     "Trading Economics Canonical Source Events",
                     "Status Read Model",
                     "Historical Task Progress Read Model",
