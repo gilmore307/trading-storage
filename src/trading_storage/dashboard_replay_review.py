@@ -187,6 +187,20 @@ def _safe_number(value: object) -> float | None:
     return None
 
 
+def _nested_number(row: Mapping[str, Any], section: str, field: str) -> float | None:
+    value = row.get(section)
+    if isinstance(value, Mapping):
+        return _safe_number(value.get(field))
+    return None
+
+
+def _nested_bool(row: Mapping[str, Any], section: str, field: str) -> bool | None:
+    value = row.get(section)
+    if isinstance(value, Mapping) and isinstance(value.get(field), bool):
+        return bool(value.get(field))
+    return None
+
+
 def _rate(numerator: int, denominator: int) -> float | None:
     if denominator <= 0:
         return None
@@ -1213,6 +1227,19 @@ def _layer_quality_summary(
         source_gap_codes.append("missing_layer_impact_values")
     if coverage_row_count is None:
         source_gap_codes.append("missing_layer_coverage_rows")
+    rank_values = [
+        value
+        for row in attributed_rows
+        if (value := _nested_number(row, "trace_evidence", "model_rank_within_timestamp")) is not None
+    ]
+    selected_values = [
+        value
+        for row in attributed_rows
+        if (value := _nested_bool(row, "trace_evidence", "selected_by_replay")) is not None
+    ]
+    selected_count = sum(1 for value in selected_values if value)
+    top_10_count = sum(1 for value in rank_values if value <= 10)
+    top_25_count = sum(1 for value in rank_values if value <= 25)
     evidence_status = (
         "published"
         if scored_decision_count
@@ -1255,6 +1282,28 @@ def _layer_quality_summary(
         "missed_good_rate": _rate(missed_good_count, scored_decision_count),
         "mean_regret_to_best_available": _numeric_mean_by(attributed_rows, _review_regret_value),
         "mean_impact_normalized_severity_score": _numeric_mean_by(attributed_rows, _review_impact_value),
+        "candidate_rank_mean": round(sum(rank_values) / len(rank_values), 6) if rank_values else None,
+        "candidate_rank_value_count": len(rank_values),
+        "candidate_top_10_rate": _rate(top_10_count, len(rank_values)),
+        "candidate_top_25_rate": _rate(top_25_count, len(rank_values)),
+        "selected_candidate_count": selected_count if selected_values else None,
+        "selected_candidate_rate": _rate(selected_count, len(selected_values)) if selected_values else None,
+        "alpha_score_mean": _numeric_mean_by(
+            attributed_rows,
+            lambda row: _nested_number(row, "trace_evidence", "alpha_score"),
+        ),
+        "expected_return_score_mean": _numeric_mean_by(
+            attributed_rows,
+            lambda row: _nested_number(row, "trace_evidence", "expected_return_score"),
+        ),
+        "action_direction_score_mean": _numeric_mean_by(
+            attributed_rows,
+            lambda row: _nested_number(row, "trace_evidence", "action_direction_score"),
+        ),
+        "trade_intensity_score_mean": _numeric_mean_by(
+            attributed_rows,
+            lambda row: _nested_number(row, "trace_evidence", "trade_intensity_score"),
+        ),
         "quality_score": _rate(acceptable_count, scored_decision_count),
         "evidence_status": evidence_status,
         "source_gap_codes": source_gap_codes,
