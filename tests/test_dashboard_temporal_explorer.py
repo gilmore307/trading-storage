@@ -163,13 +163,13 @@ class DashboardTemporalExplorerTests(unittest.TestCase):
             storage_root = Path(tmp) / "storage"
             packet_path = (
                 storage_root
-                / "02_control_plane/runtime/model_06_event_family_modelability/evidence_packets/cpi_release/aapl/2021_01_2025_12/evidence_packet.json"
+                / "02_control_plane/runtime/model_03_event_family_modelability/evidence_packets/cpi_release/aapl/2021_01_2025_12/evidence_packet.json"
             )
             packet_path.parent.mkdir(parents=True)
             packet_path.write_text(
                 json.dumps(
                     {
-                        "contract_type": "model_06_event_family_modelability_evidence_packet",
+                        "contract_type": "model_03_event_family_modelability_evidence_packet",
                         "event_family_id": "cpi_release",
                         "target_symbol": "AAPL",
                         "start_month": "2021-01",
@@ -216,7 +216,7 @@ class DashboardTemporalExplorerTests(unittest.TestCase):
             )
             chart = payload["chart_payload"]
             self.assertEqual(len(chart["events"]), 1)
-            self.assertEqual(chart["events"][0]["lane"], "model_06_event_family_modelability_observation")
+            self.assertEqual(chart["events"][0]["lane"], "model_03_event_family_modelability_observation")
             self.assertEqual(chart["events"][0]["family_id"], "cpi_release")
             self.assertEqual(chart["events"][0]["status"], "blocked_missing_modelability_gates")
             self.assertEqual(len(chart["event_families"]), 1)

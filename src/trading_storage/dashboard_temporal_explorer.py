@@ -28,7 +28,7 @@ SOURCE_BAR_TABLE = "model_01_market_regime_data_acquisition"
 DEFAULT_REPLAY_START_MONTH = "2021-01"
 DEFAULT_REPLAY_END_MONTH = "2026-01"
 OPERATOR_TIMEZONE = ZoneInfo("America/New_York")
-MODELABILITY_ROOT_RELATIVE = Path("02_control_plane/runtime/model_06_event_family_modelability/evidence_packets")
+MODELABILITY_ROOT_RELATIVE = Path("02_control_plane/runtime/model_03_event_family_modelability/evidence_packets")
 
 SUBSTRATE_TABLES = (
     "calendar_day",
@@ -838,14 +838,14 @@ def _modelability_observation_payloads(
                 "event_time": _iso_utc(at),
                 "market_state": "unknown",
                 "title": title,
-                "lane": "model_06_event_family_modelability_observation",
+                "lane": "model_03_event_family_modelability_observation",
                 "family_id": family_id,
                 "family_label": _event_family_label(family_id),
                 "event_type": family_id,
                 "scope": affected_scope,
                 "symbol": symbol or None,
                 "status": readiness_status,
-                "source_priority": "model_06_event_family_modelability",
+                "source_priority": "model_03_event_family_modelability",
                 "summary": str(observation.get("event_summary") or required_next_action or readiness_status),
                 "source_name": str(observation.get("source_name") or source_category),
                 "reference_type": "modelability_evidence_packet",
@@ -1087,7 +1087,7 @@ def build_temporal_explorer_summary(
             {"contract_type": "calendar_event_result", "included": True},
             {"contract_type": "calendar_news_event_index", "included": True},
             {"contract_type": "chart_ohlcv_cache", "included": True},
-            {"contract_type": "model_06_event_family_modelability_evidence_packet", "included": True},
+            {"contract_type": "model_03_event_family_modelability_evidence_packet", "included": True},
         ],
         "freshness": {"class": "temporal_explorer_snapshot", "status": "fresh", "stale_after_seconds": 3600},
         "schema_ref": TEMPORAL_EXPLORER_SCHEMA_REF,
