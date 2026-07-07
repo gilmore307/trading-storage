@@ -96,7 +96,7 @@ REPLAY_DECISION_LAYER_ALIASES = {
 }
 PASSIVE_BASELINE_ACTIONS = {"baseline_action", "no_trade", "avoid_trade", "hold_cash"}
 UNSCORED_LAYER_TRACE_STATUS = "effective_trace_unscored"
-UNSCORED_EVENT_POOL_STATUS = "event_pool_unscored"
+UNSCORED_EVENT_EFFECT_STATUS = "event_effect_unscored"
 
 
 def _read_json_object(path: Path) -> dict[str, Any] | None:
@@ -163,6 +163,19 @@ def _count_by(rows: Iterable[Mapping[str, Any]], field: str) -> dict[str, int]:
     for row in rows:
         value = str(row.get(field) or "not_reported")
         counts[value] = counts.get(value, 0) + 1
+    return dict(sorted(counts.items()))
+
+
+def _nested_count_by(rows: Iterable[Mapping[str, Any]], section: str, field: str) -> dict[str, int]:
+    counts: dict[str, int] = {}
+    for row in rows:
+        nested = row.get(section)
+        value = None
+        if isinstance(nested, Mapping):
+            value = nested.get(field)
+        value = row.get(field) if value in {None, ""} else value
+        label = str(value or "not_reported")
+        counts[label] = counts.get(label, 0) + 1
     return dict(sorted(counts.items()))
 
 
@@ -1196,6 +1209,8 @@ def _layer_quality_summary(
         coverage_row_count = (
             coverage.get("continuous_trigger_count")
             or coverage.get("trace_timestamp_count")
+            or coverage.get("event_effect_row_count")
+            or coverage.get("event_pool_row_count")
             or coverage.get("row_count")
         )
     correct_count = sum(1 for row in attributed_rows if _correctness_class(row) == "correct")
@@ -1240,10 +1255,31 @@ def _layer_quality_summary(
     selected_count = sum(1 for value in selected_values if value)
     top_10_count = sum(1 for value in rank_values if value <= 10)
     top_25_count = sum(1 for value in rank_values if value <= 25)
+    event_impact_disposition_counts = (
+        _nested_count_by(attributed_rows, "layer_diagnostics", "event_impact_disposition")
+        if layer_id == "model_03_event_state" and attributed_rows
+        else {}
+    )
+    if layer_id == "model_03_event_state" and not event_impact_disposition_counts and isinstance(coverage, Mapping):
+        coverage_disposition_counts = coverage.get("event_impact_disposition_counts")
+        if isinstance(coverage_disposition_counts, Mapping):
+            event_impact_disposition_counts = {
+                str(key): int(value)
+                for key, value in coverage_disposition_counts.items()
+                if isinstance(value, int)
+            }
+    if (
+        layer_id == "model_03_event_state"
+        and not event_impact_disposition_counts
+        and not attributed_rows
+        and isinstance(coverage_row_count, int)
+        and coverage_row_count > 0
+    ):
+        event_impact_disposition_counts = {"unresolved_insufficient_evidence": coverage_row_count}
     evidence_status = (
         "published"
         if scored_decision_count
-        else UNSCORED_EVENT_POOL_STATUS
+        else UNSCORED_EVENT_EFFECT_STATUS
         if layer_id == "model_03_event_state" and effective_decision_count
         else UNSCORED_LAYER_TRACE_STATUS
         if effective_decision_count
@@ -1288,6 +1324,12 @@ def _layer_quality_summary(
         "candidate_top_25_rate": _rate(top_25_count, len(rank_values)),
         "selected_candidate_count": selected_count if selected_values else None,
         "selected_candidate_rate": _rate(selected_count, len(selected_values)) if selected_values else None,
+        "event_impact_disposition_counts": event_impact_disposition_counts or None,
+        "event_no_impact_count": event_impact_disposition_counts.get("no_impact", 0) if event_impact_disposition_counts else None,
+        "event_context_only_count": event_impact_disposition_counts.get("context_only", 0) if event_impact_disposition_counts else None,
+        "event_risk_shape_count": event_impact_disposition_counts.get("risk_shape", 0) if event_impact_disposition_counts else None,
+        "event_directional_effect_count": event_impact_disposition_counts.get("directional_effect", 0) if event_impact_disposition_counts else None,
+        "event_unresolved_count": event_impact_disposition_counts.get("unresolved_insufficient_evidence", 0) if event_impact_disposition_counts else None,
         "alpha_score_mean": _numeric_mean_by(
             attributed_rows,
             lambda row: _nested_number(row, "trace_evidence", "alpha_score"),
