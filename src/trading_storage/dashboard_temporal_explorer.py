@@ -824,34 +824,45 @@ def _modelability_observation_payloads(
             affected_scope = str(observation.get("affected_scope") or params.get("event_scope") or "event_family")
             symbol = str(observation.get("target_symbol") or params.get("symbol") or "").strip()
             title = str(observation.get("event_title") or params.get("headline") or _event_family_label(family_id))
-            events.append(
-                {
-                    "event_id": "modelability:" + _event_family_id(event_ref),
-                    "event_time": _iso_utc(at),
-                    "market_state": "unknown",
-                    "title": title,
-                    "lane": "model_06_event_family_modelability_observation",
-                    "family_id": family_id,
-                    "family_label": _event_family_label(family_id),
-                    "event_type": family_id,
-                    "scope": affected_scope,
-                    "symbol": symbol or None,
-                    "status": readiness_status,
-                    "source_priority": "model_06_event_family_modelability",
-                    "summary": str(observation.get("event_summary") or required_next_action or readiness_status),
-                    "source_name": str(observation.get("source_name") or source_category),
-                    "reference_type": "modelability_evidence_packet",
-                    "reference": reference,
-                    "taxonomy_domain": "market_event",
-                    "taxonomy_kingdom": affected_scope,
-                    "taxonomy_phylum": source_category,
-                    "taxonomy_class": readiness_status,
-                    "taxonomy_order": family_id,
-                    "taxonomy_family": family_id,
-                    "taxonomy_genus": event_subtype,
-                    "taxonomy_species": title,
-                }
-            )
+            explicit_species = str(
+                params.get("taxonomy_species")
+                or params.get("species_node")
+                or params.get("specific_event_dossier")
+                or params.get("specific_event_dossier_id")
+                or params.get("dossier_id")
+                or ""
+            ).strip()
+            repeated_calendar_species = source_category in {"calendar_market_session", "scheduled_macro_release"}
+            event_payload = {
+                "event_id": "modelability:" + _event_family_id(event_ref),
+                "event_time": _iso_utc(at),
+                "market_state": "unknown",
+                "title": title,
+                "lane": "model_06_event_family_modelability_observation",
+                "family_id": family_id,
+                "family_label": _event_family_label(family_id),
+                "event_type": family_id,
+                "scope": affected_scope,
+                "symbol": symbol or None,
+                "status": readiness_status,
+                "source_priority": "model_06_event_family_modelability",
+                "summary": str(observation.get("event_summary") or required_next_action or readiness_status),
+                "source_name": str(observation.get("source_name") or source_category),
+                "reference_type": "modelability_evidence_packet",
+                "reference": reference,
+                "taxonomy_domain": "market_event",
+                "taxonomy_kingdom": affected_scope,
+                "taxonomy_phylum": source_category,
+                "taxonomy_class": readiness_status,
+                "taxonomy_order": family_id,
+                "taxonomy_family": family_id,
+                "taxonomy_genus": event_subtype,
+            }
+            if explicit_species:
+                event_payload["taxonomy_species"] = explicit_species
+            elif repeated_calendar_species:
+                event_payload["taxonomy_species"] = title
+            events.append(event_payload)
     events.sort(key=lambda item: item["event_time"])
     return events[:limit]
 
