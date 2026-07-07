@@ -28,6 +28,7 @@ SOURCE_BAR_TABLE = "model_01_market_regime_data_acquisition"
 DEFAULT_REPLAY_START_MONTH = "2021-01"
 DEFAULT_REPLAY_END_MONTH = "2026-01"
 OPERATOR_TIMEZONE = ZoneInfo("America/New_York")
+MODELABILITY_ROOT_RELATIVE = Path("02_control_plane/runtime/model_06_event_family_modelability/evidence_packets")
 
 SUBSTRATE_TABLES = (
     "calendar_day",
@@ -738,6 +739,123 @@ def _event_family_id(value: str) -> str:
     return normalized or "unknown"
 
 
+def _event_family_label(value: str) -> str:
+    return " ".join(part.capitalize() for part in _event_family_id(value).split("_")) or "Unknown"
+
+
+def _month_range_overlaps(left_start: str, left_end: str, right_start: str, right_end: str) -> bool:
+    if not (_is_month_key(left_start) and _is_month_key(left_end) and _is_month_key(right_start) and _is_month_key(right_end)):
+        return False
+    return left_start <= right_end and right_start <= left_end
+
+
+def _modelability_packet_paths(
+    *,
+    storage_root: Path,
+    replay_start_month: str,
+    replay_end_month: str,
+    target_symbol: str = "aapl",
+) -> list[Path]:
+    packet_root = storage_root / MODELABILITY_ROOT_RELATIVE
+    if not packet_root.exists():
+        return []
+    packets: dict[str, tuple[str, str, Path]] = {}
+    for path in packet_root.glob(f"*/{target_symbol.lower()}/*/evidence_packet.json"):
+        try:
+            payload = json.loads(path.read_text(encoding="utf-8"))
+        except (OSError, json.JSONDecodeError):
+            continue
+        start_month = str(payload.get("start_month") or "")
+        end_month = str(payload.get("end_month") or "")
+        if not _month_range_overlaps(start_month, end_month, replay_start_month, replay_end_month):
+            continue
+        family_id = _event_family_id(str(payload.get("event_family_id") or path.parents[2].name))
+        current = packets.get(family_id)
+        current_width = 10_000 if current is None else _month_distance(current[0], current[1])
+        width = _month_distance(start_month, end_month)
+        if current is None or width <= current_width:
+            packets[family_id] = (start_month, end_month, path)
+    return [item[2] for item in sorted(packets.values(), key=lambda item: (item[0], item[1], str(item[2])))]
+
+
+def _month_distance(start_month: str, end_month: str) -> int:
+    if not (_is_month_key(start_month) and _is_month_key(end_month)):
+        return 10_000
+    return (int(end_month[:4]) - int(start_month[:4])) * 12 + int(end_month[5:]) - int(start_month[5:])
+
+
+def _modelability_observation_payloads(
+    *,
+    storage_root: Path,
+    replay_start_month: str,
+    replay_end_month: str,
+    window_start: datetime,
+    window_end: datetime,
+    limit: int = 500,
+) -> list[dict[str, Any]]:
+    events: list[dict[str, Any]] = []
+    for packet_path in _modelability_packet_paths(
+        storage_root=storage_root,
+        replay_start_month=replay_start_month,
+        replay_end_month=replay_end_month,
+    ):
+        try:
+            packet = json.loads(packet_path.read_text(encoding="utf-8"))
+        except (OSError, json.JSONDecodeError):
+            continue
+        family_id = _event_family_id(str(packet.get("event_family_id") or packet_path.parents[2].name))
+        observations = packet.get("observations")
+        if not isinstance(observations, Sequence) or isinstance(observations, (str, bytes)):
+            continue
+        readiness_status = str(packet.get("readiness_status") or "modelability_evidence_published")
+        required_next_action = str(packet.get("required_next_action") or "")
+        reference = str(packet_path)
+        for index, observation in enumerate(observations):
+            if not isinstance(observation, Mapping):
+                continue
+            at = _event_time(observation)
+            if at is None or at < window_start or at >= window_end:
+                continue
+            parameters = observation.get("normalized_event_parameters")
+            params = parameters if isinstance(parameters, Mapping) else {}
+            event_ref = str(observation.get("event_ref") or f"{family_id}:{_iso_utc(at)}:{index}")
+            source_category = str(params.get("source_category") or observation.get("source_name") or "modelability_evidence")
+            event_subtype = str(params.get("event_subtype") or params.get("event_kind") or family_id)
+            affected_scope = str(observation.get("affected_scope") or params.get("event_scope") or "event_family")
+            symbol = str(observation.get("target_symbol") or params.get("symbol") or "").strip()
+            title = str(observation.get("event_title") or params.get("headline") or _event_family_label(family_id))
+            events.append(
+                {
+                    "event_id": "modelability:" + _event_family_id(event_ref),
+                    "event_time": _iso_utc(at),
+                    "market_state": "unknown",
+                    "title": title,
+                    "lane": "model_06_event_family_modelability_observation",
+                    "family_id": family_id,
+                    "family_label": _event_family_label(family_id),
+                    "event_type": family_id,
+                    "scope": affected_scope,
+                    "symbol": symbol or None,
+                    "status": readiness_status,
+                    "source_priority": "model_06_event_family_modelability",
+                    "summary": str(observation.get("event_summary") or required_next_action or readiness_status),
+                    "source_name": str(observation.get("source_name") or source_category),
+                    "reference_type": "modelability_evidence_packet",
+                    "reference": reference,
+                    "taxonomy_domain": "market_event",
+                    "taxonomy_kingdom": affected_scope,
+                    "taxonomy_phylum": source_category,
+                    "taxonomy_class": readiness_status,
+                    "taxonomy_order": family_id,
+                    "taxonomy_family": family_id,
+                    "taxonomy_genus": event_subtype,
+                    "taxonomy_species": title,
+                }
+            )
+    events.sort(key=lambda item: item["event_time"])
+    return events[:limit]
+
+
 def _event_market_state(event: Mapping[str, Any], ticks: Sequence[Mapping[str, Any]]) -> str:
     explicit = str(event.get("market_state") or "").strip()
     if explicit:
@@ -885,7 +1003,15 @@ def build_temporal_explorer_summary(
         window_label = "model_group_replay_window"
     statuses = dict(substrate_status or _table_statuses())
     rows = dict(sql_rows or _fetch_sql_rows(start_time=window_start, end_time=window_end, frame=frame))
-    events = _event_payloads(rows)
+    sql_events = _event_payloads(rows)
+    modelability_events = _modelability_observation_payloads(
+        storage_root=Path(storage_root),
+        replay_start_month=replay_start_month,
+        replay_end_month=replay_end_month,
+        window_start=window_start,
+        window_end=window_end,
+    )
+    events = sorted([*sql_events, *modelability_events], key=lambda item: item["event_time"])[:500]
     ticks = _tick_payloads(start_time=window_start, end_time=window_end, rows=rows, events=events)
     left_lanes, right_lanes = _lane_payloads(statuses=statuses, rows=rows, storage_root=Path(storage_root))
     chart_bars = _chart_bars(rows.get("chart_bars", []))
@@ -903,7 +1029,7 @@ def build_temporal_explorer_summary(
         "source_system": "trading-storage",
         "status": status,
         "severity": "info" if status == "ready" else "medium",
-        "summary": f"Events attention pool has {len(events)} certified event-family markers, {len(chart_bars)} ETF chart bars across the replay window, and {populated_tables} populated context tables.",
+        "summary": f"Event Families has {len(events)} published event rows ({len(sql_events)} accepted M03 markers and {len(modelability_events)} modelability observations), {len(chart_bars)} ETF chart bars across the replay window, and {populated_tables} populated context tables.",
         "chart_payload": {
             "viewport": {
                 "center_time_utc": _iso_utc(center_time),
@@ -940,6 +1066,8 @@ def build_temporal_explorer_summary(
         "diagnostic_refs": [
             {"ref_type": "temporal_substrate_tables", "statuses": statuses},
             {"ref_type": "timewheel_visible_event_markers", "count": len(events)},
+            {"ref_type": "accepted_m03_event_markers", "count": len(sql_events)},
+            {"ref_type": "modelability_observation_events", "count": len(modelability_events)},
         ],
         "lineage_refs": [
             {"contract_type": "calendar_day", "included": True},
@@ -948,6 +1076,7 @@ def build_temporal_explorer_summary(
             {"contract_type": "calendar_event_result", "included": True},
             {"contract_type": "calendar_news_event_index", "included": True},
             {"contract_type": "chart_ohlcv_cache", "included": True},
+            {"contract_type": "model_06_event_family_modelability_evidence_packet", "included": True},
         ],
         "freshness": {"class": "temporal_explorer_snapshot", "status": "fresh", "stale_after_seconds": 3600},
         "schema_ref": TEMPORAL_EXPLORER_SCHEMA_REF,

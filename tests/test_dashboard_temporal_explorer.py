@@ -158,6 +158,70 @@ class DashboardTemporalExplorerTests(unittest.TestCase):
             self.assertEqual(viewport["start_utc"], "2021-01-01T05:00:00Z")
             self.assertEqual(viewport["end_utc"], "2026-02-01T05:00:00Z")
 
+    def test_event_families_include_modelability_evidence_packets(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            storage_root = Path(tmp) / "storage"
+            packet_path = (
+                storage_root
+                / "02_control_plane/runtime/model_06_event_family_modelability/evidence_packets/cpi_release/aapl/2021_01_2025_12/evidence_packet.json"
+            )
+            packet_path.parent.mkdir(parents=True)
+            packet_path.write_text(
+                json.dumps(
+                    {
+                        "contract_type": "model_06_event_family_modelability_evidence_packet",
+                        "event_family_id": "cpi_release",
+                        "target_symbol": "AAPL",
+                        "start_month": "2021-01",
+                        "end_month": "2025-12",
+                        "readiness_status": "blocked_missing_modelability_gates",
+                        "required_next_action": "build_modelability_control_gate_evidence",
+                        "observations": [
+                            {
+                                "event_ref": "scheduled-macro-release://cpi-20210113",
+                                "event_time": "2021-01-13T08:30:00-05:00",
+                                "event_title": "CPI release",
+                                "event_summary": "United States CPI release",
+                                "affected_scope": "macro",
+                                "source_name": "calendar_scheduled_event",
+                                "normalized_event_parameters": {
+                                    "event_kind": "cpi_release",
+                                    "event_scope": "macro",
+                                    "source_category": "scheduled_macro_release",
+                                    "symbol": "CPI",
+                                },
+                            }
+                        ],
+                    }
+                )
+            )
+            payload = build_temporal_explorer_summary(
+                storage_root=storage_root,
+                generated_at_utc="2026-06-30T00:00:00Z",
+                substrate_status={
+                    "calendar_day": {"status": "empty", "row_count": 0},
+                    "calendar_market_session": {"status": "empty", "row_count": 0},
+                    "calendar_scheduled_event": {"status": "empty", "row_count": 0},
+                    "calendar_event_result": {"status": "empty", "row_count": 0},
+                    "calendar_news_event_index": {"status": "empty", "row_count": 0},
+                    "chart_ohlcv_cache": {"status": "empty", "row_count": 0},
+                },
+                sql_rows={
+                    "sessions": [],
+                    "scheduled_events": [],
+                    "event_results": [],
+                    "news_events": [],
+                    "chart_bars": [],
+                },
+            )
+            chart = payload["chart_payload"]
+            self.assertEqual(len(chart["events"]), 1)
+            self.assertEqual(chart["events"][0]["lane"], "model_06_event_family_modelability_observation")
+            self.assertEqual(chart["events"][0]["family_id"], "cpi_release")
+            self.assertEqual(chart["events"][0]["status"], "blocked_missing_modelability_gates")
+            self.assertEqual(len(chart["event_families"]), 1)
+            self.assertEqual(chart["event_families"][0]["family_id"], "cpi_release")
+
     def test_refresh_materializes_temporal_explorer_summary(self):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp) / "storage"
